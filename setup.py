@@ -97,7 +97,7 @@ class UploadCommand(Command):
 
 # Where the magic happens:
 setup(
-    name=NAME,
+    name="index.py",
     version=about['__version__'],
     description=DESCRIPTION,
     long_description=long_description,
