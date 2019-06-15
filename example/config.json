@@ -1,7 +1,6 @@
 {
     "debug": true,
-    "log_level": "debug",
-    "env": "demo",
+    "log_level": "info",
     "port": 419,
     "demo": {
         "host": "0.0.0.0"

@@ -77,10 +77,16 @@ class UpperDict:
         return self.__repr__()
 
     def __setitem__(self, key, value):
+        key = key.upper()
+
         if isinstance(value, dict):
-            self.__dict[key.upper()] = UpperDict(value)
+            self.__dict[key] = UpperDict(value)
         else:
-            self.__dict[key.upper()] = value
+            if key == "DEBUG":
+                value = bool(value)
+            elif key == "PORT":
+                value = int(value)
+            self.__dict[key] = value
 
     def __getitem__(self, key):
         return self.__dict[key.upper()]
