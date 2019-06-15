@@ -1,6 +1,5 @@
 from index import templates
 from index.views import View
-from starlette.responses import PlainTextResponse
 
 
 class HTTP(View):
