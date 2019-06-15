@@ -16,6 +16,9 @@ LOG_LEVELS = {
 }
 
 
+logger: logging.Logger = logging.getLogger("index")
+
+
 class ConfigError(Exception):
     pass
 
@@ -96,7 +99,10 @@ class UpperDict:
 
     def __getattr__(self, name):
         try:
-            return self.__dict[name.upper()]
+            value = self.get(name)
+            if value is None:
+                raise KeyError()
+            return value
         except KeyError:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
@@ -130,6 +136,7 @@ class Config(UpperDict, metaclass=Singleton):
         return os.getcwd()
 
     def import_from_file(self, jsonfile: str):
+        print(jsonfile)
         try:
             with open(jsonfile, "r") as file:
                 data = json.load(file)
@@ -161,9 +168,9 @@ class Config(UpperDict, metaclass=Singleton):
         return value
 
 
-def get_logger():
-    log_level = LOG_LEVELS[Config().log_level]
-    logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", datefmt='%Y-%m-%d %H:%M:%S', level=log_level)
-    logger = logging.getLogger("index")
-    logger.setLevel(log_level)
-    return logger
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s: %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    level=LOG_LEVELS[Config().log_level]
+)
+logger.setLevel(LOG_LEVELS[Config().log_level])

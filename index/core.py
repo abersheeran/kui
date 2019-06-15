@@ -7,10 +7,11 @@ import uvicorn
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
-from starlette.responses import RedirectResponse, PlainTextResponse
+from starlette.responses import Response, RedirectResponse
 
-from .config import Config
-from .errors import Http404
+from .config import Config, logger
+from .responses import auto
+from .errors import Http404, Http500
 
 config = Config()
 
@@ -35,7 +36,7 @@ def favicon(request):
     return RedirectResponse("/static/favicon.ico")
 
 
-@app.route("/{filepath:path}.py")
+@app.route("/{filepath:path}.py", methods=['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'])
 def http(request):
     filepath = request.path_params['filepath']
     # Google SEO
@@ -55,8 +56,17 @@ def http(request):
             importlib.reload(module)
     except AttributeError:
         module.AUTORELOAD = True
-    return module.HTTP(request).dispatch()
+
+    resp = module.HTTP(request).dispatch()
+    # judge response type
+    if isinstance(resp, tuple):
+        return auto(*resp)
+    elif isinstance(resp, Response):
+        return resp
+
+    logger.error("The response must be `Response` or `tuple`.")
+    raise Http500()
 
 
 def main():
-    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level=config.LOG_LEVEL)
+    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level=config.LOG_LEVEL, logger=logger)

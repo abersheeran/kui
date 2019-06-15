@@ -1,8 +1,6 @@
 from starlette.responses import Response
 
-from .config import get_logger
-
-logger = get_logger()
+from .config import logger
 
 
 class View:
@@ -19,7 +17,7 @@ class View:
             handler = getattr(self, self.request.method.lower(), self.http_method_not_allowed)
         else:
             handler = self.http_method_not_allowed
-        return handler(self.request)
+        return handler()
 
     def http_method_not_allowed(self, *args, **kwargs):
         logger.warning(

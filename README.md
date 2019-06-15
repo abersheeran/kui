@@ -1,6 +1,6 @@
 # index.py
 
-Although I've never used PHP, I like its hot-swap mechanism. I expect to use index.py to make Python's Web program deployment easier. 
+Although I've never used PHP, I like its hot-swap mechanism. I expect to use index.py to make Python's Web program deployment easier.
 
 ## Install
 

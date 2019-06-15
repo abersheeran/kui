@@ -13,7 +13,7 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'index'
-DESCRIPTION = ''
+DESCRIPTION = 'Oldschool Web Development for Humans™'
 URL = 'https://github.com/abersheeran/index.py'
 EMAIL = 'abersheeran@qq.com'
 AUTHOR = 'Aber Sheeran'
@@ -111,7 +111,7 @@ setup(
     # py_modules=['mypackage'],
 
     entry_points={
-        'console_scripts': ['index=index.cli:main'],
+        'console_scripts': ['index=index.core:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,

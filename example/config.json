@@ -1,8 +1,14 @@
 {
-    "debug": true,
     "log_level": "info",
-    "port": 419,
-    "demo": {
-        "host": "0.0.0.0"
+    "env": "pro",
+    "dev": {
+        "host": "0.0.0.0",
+        "debug": true,
+        "log_level": "debug"
+    },
+    "pro": {
+        "host": "127.0.0.1",
+        "port": "41900",
+        "log_level": "warning"
     }
 }
