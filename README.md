@@ -56,3 +56,15 @@ example:
 * ENV
 
   `ENV` is an important configuration that allows for the distinction between different configuration environments.
+
+* LOG_LEVEL
+
+  `log_level` has five values, the corresponding table to the `logging` is as follows
+
+  log_level   |loggins
+  ---         |---
+  "critical"  | logging.CRITICAL
+  "error"     | logging.ERROR
+  "warning"   | logging.WARNING
+  "info"      | logging.INFO
+  "debug"     | logging.DEBUG
