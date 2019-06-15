@@ -136,7 +136,6 @@ class Config(UpperDict, metaclass=Singleton):
         return os.getcwd()
 
     def import_from_file(self, jsonfile: str):
-        print(jsonfile)
         try:
             with open(jsonfile, "r") as file:
                 data = json.load(file)
