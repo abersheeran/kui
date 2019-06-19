@@ -14,11 +14,16 @@ from .config import logger
 from .errors import Http500
 
 
-def auto(*args):
+def automatic(*args):
     if len(args) > 3:
         logger.error("The response cannot exceed three parameters.")
         raise Http500()
 
+    # Response or Response subclass
+    if isinstance(args[0], Response):
+        return args[0]
+
+    # judge status code and headers
     try:
         if not isinstance(args[1], int):
             logger.error("The response status code must be integer.")
@@ -35,3 +40,6 @@ def auto(*args):
         return JSONResponse(*args)
     elif isinstance(args[0], str):
         return PlainTextResponse(*args)
+
+    logger.error("Wrong response type")
+    raise Http500()

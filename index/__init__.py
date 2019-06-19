@@ -1,2 +1,2 @@
 from .config import Config
-from .cli import templates
+from .core import templates

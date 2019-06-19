@@ -10,7 +10,7 @@ from starlette.templating import Jinja2Templates
 from starlette.responses import Response, RedirectResponse
 
 from .config import Config, logger
-from .responses import auto
+from .responses import automatic
 from .errors import Http404, Http500
 
 config = Config()
@@ -47,7 +47,7 @@ def http(request):
     # judge python file
     abspath = os.path.join(config.path, filepath + ".py")
     if not os.path.exists(abspath):
-        raise Http404("page not found")
+        raise Http404()
 
     module_path = ".".join(filepath.split("/"))
     module = importlib.import_module(module_path)
@@ -57,16 +57,22 @@ def http(request):
     except AttributeError:
         module.AUTORELOAD = True
 
-    resp = module.HTTP(request).dispatch()
-    # judge response type
-    if isinstance(resp, tuple):
-        return auto(*resp)
-    elif isinstance(resp, Response):
-        return resp
+    try:
+        resp = module.HTTP(request).dispatch()
+    except AttributeError:
+        raise Http404()
 
-    logger.error("The response must be `Response` or `tuple`.")
-    raise Http500()
+    if not isinstance(resp, tuple):
+        resp = (resp,)
+    return automatic(*resp)
 
 
 def main():
-    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level=config.LOG_LEVEL, logger=logger)
+    uvicorn.run(
+        app,
+        host=config.HOST,
+        port=config.PORT,
+        log_level=config.LOG_LEVEL,
+        debug=config.DEBUG,
+        logger=logger
+    )
