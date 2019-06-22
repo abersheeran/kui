@@ -1,0 +1,215 @@
+[2019-06-22 19:26:43 +0800] [2126] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 19:26:43 +0800] [2126] [INFO] Listening at: http://127.0.0.1:8000 (2126)
+[2019-06-22 19:26:43 +0800] [2126] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 19:26:43 +0800] [2142] [INFO] Booting worker with pid: 2142
+[2019-06-22 19:26:43 +0800] [2145] [INFO] Booting worker with pid: 2145
+[2019-06-22 19:26:43 +0800] [2147] [INFO] Booting worker with pid: 2147
+[2019-06-22 19:26:43 +0800] [2150] [INFO] Booting worker with pid: 2150
+[2019-06-22 19:26:43 +0800] [2142] [INFO] Started server process [2142]
+[2019-06-22 19:26:43 +0800] [2142] [INFO] Waiting for application startup.
+[2019-06-22 19:26:43 +0800] [2145] [INFO] Started server process [2145]
+[2019-06-22 19:26:43 +0800] [2145] [INFO] Waiting for application startup.
+[2019-06-22 19:26:43 +0800] [2147] [INFO] Started server process [2147]
+[2019-06-22 19:26:43 +0800] [2147] [INFO] Waiting for application startup.
+[2019-06-22 19:26:43 +0800] [2150] [INFO] Started server process [2150]
+[2019-06-22 19:26:43 +0800] [2150] [INFO] Waiting for application startup.
+[2019-06-22 19:50:24 +0800] [2403] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 19:50:24 +0800] [2403] [INFO] Listening at: http://0.0.0.0:4190 (2403)
+[2019-06-22 19:50:24 +0800] [2403] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 19:50:24 +0800] [2406] [INFO] Booting worker with pid: 2406
+[2019-06-22 19:50:24 +0800] [2406] [INFO] Started server process [2406]
+[2019-06-22 19:50:24 +0800] [2406] [INFO] Waiting for application startup.
+[2019-06-22 19:51:08 +0800] [2403] [INFO] Handling signal: int
+[2019-06-22 19:51:08 +0800] [2406] [INFO] Shutting down
+[2019-06-22 19:51:08 +0800] [2406] [INFO] Waiting for application shutdown.
+[2019-06-22 19:51:08 +0800] [2406] [INFO] Finished server process [2406]
+[2019-06-22 19:51:08 +0800] [2406] [INFO] Worker exiting (pid: 2406)
+[2019-06-22 19:51:08 +0800] [2403] [INFO] Shutting down: Master
+[2019-06-22 19:52:25 +0800] [2573] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 19:52:25 +0800] [2573] [INFO] Listening at: http://0.0.0.0:4190 (2573)
+[2019-06-22 19:52:25 +0800] [2573] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 19:52:25 +0800] [2576] [INFO] Booting worker with pid: 2576
+[2019-06-22 19:52:25 +0800] [2577] [INFO] Booting worker with pid: 2577
+[2019-06-22 19:52:25 +0800] [2578] [INFO] Booting worker with pid: 2578
+[2019-06-22 19:52:25 +0800] [2579] [INFO] Booting worker with pid: 2579
+[2019-06-22 19:52:25 +0800] [2576] [INFO] Started server process [2576]
+[2019-06-22 19:52:25 +0800] [2576] [INFO] Waiting for application startup.
+[2019-06-22 19:52:25 +0800] [2577] [INFO] Started server process [2577]
+[2019-06-22 19:52:25 +0800] [2577] [INFO] Waiting for application startup.
+[2019-06-22 19:52:25 +0800] [2578] [INFO] Started server process [2578]
+[2019-06-22 19:52:25 +0800] [2578] [INFO] Waiting for application startup.
+[2019-06-22 19:52:25 +0800] [2579] [INFO] Started server process [2579]
+[2019-06-22 19:52:25 +0800] [2579] [INFO] Waiting for application startup.
+[2019-06-22 19:52:39 +0800] [2573] [INFO] Handling signal: int
+[2019-06-22 19:52:39 +0800] [2576] [INFO] Shutting down
+[2019-06-22 19:52:39 +0800] [2579] [INFO] Shutting down
+[2019-06-22 19:52:39 +0800] [2577] [INFO] Shutting down
+[2019-06-22 19:52:39 +0800] [2578] [INFO] Shutting down
+[2019-06-22 19:52:39 +0800] [2579] [INFO] Waiting for application shutdown.
+[2019-06-22 19:52:39 +0800] [2576] [INFO] Waiting for application shutdown.
+[2019-06-22 19:52:39 +0800] [2579] [INFO] Finished server process [2579]
+[2019-06-22 19:52:39 +0800] [2576] [INFO] Finished server process [2576]
+[2019-06-22 19:52:39 +0800] [2579] [INFO] Worker exiting (pid: 2579)
+[2019-06-22 19:52:39 +0800] [2576] [INFO] Worker exiting (pid: 2576)
+[2019-06-22 19:52:39 +0800] [2577] [INFO] Waiting for application shutdown.
+[2019-06-22 19:52:39 +0800] [2577] [INFO] Finished server process [2577]
+[2019-06-22 19:52:39 +0800] [2578] [INFO] Waiting for application shutdown.
+[2019-06-22 19:52:39 +0800] [2578] [INFO] Finished server process [2578]
+[2019-06-22 19:52:39 +0800] [2577] [INFO] Worker exiting (pid: 2577)
+[2019-06-22 19:52:39 +0800] [2578] [INFO] Worker exiting (pid: 2578)
+[2019-06-22 19:52:39 +0800] [2573] [INFO] Shutting down: Master
+[2019-06-22 19:52:47 +0800] [2608] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 19:52:47 +0800] [2608] [INFO] Listening at: http://0.0.0.0:4190 (2608)
+[2019-06-22 19:52:47 +0800] [2608] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 19:52:47 +0800] [2611] [INFO] Booting worker with pid: 2611
+[2019-06-22 19:52:47 +0800] [2612] [INFO] Booting worker with pid: 2612
+[2019-06-22 19:52:47 +0800] [2613] [INFO] Booting worker with pid: 2613
+[2019-06-22 19:52:47 +0800] [2611] [INFO] Started server process [2611]
+[2019-06-22 19:52:47 +0800] [2611] [INFO] Waiting for application startup.
+[2019-06-22 19:52:47 +0800] [2614] [INFO] Booting worker with pid: 2614
+[2019-06-22 19:52:47 +0800] [2612] [INFO] Started server process [2612]
+[2019-06-22 19:52:47 +0800] [2612] [INFO] Waiting for application startup.
+[2019-06-22 19:52:48 +0800] [2613] [INFO] Started server process [2613]
+[2019-06-22 19:52:48 +0800] [2613] [INFO] Waiting for application startup.
+[2019-06-22 19:52:48 +0800] [2614] [INFO] Started server process [2614]
+[2019-06-22 19:52:48 +0800] [2614] [INFO] Waiting for application startup.
+[2019-06-22 19:53:04 +0800] [2608] [INFO] Handling signal: int
+[2019-06-22 19:53:04 +0800] [2613] [INFO] Shutting down
+[2019-06-22 19:53:04 +0800] [2612] [INFO] Shutting down
+[2019-06-22 19:53:04 +0800] [2614] [INFO] Shutting down
+[2019-06-22 19:53:04 +0800] [2611] [INFO] Shutting down
+[2019-06-22 19:53:05 +0800] [2613] [INFO] Waiting for application shutdown.
+[2019-06-22 19:53:05 +0800] [2613] [INFO] Finished server process [2613]
+[2019-06-22 19:53:05 +0800] [2613] [INFO] Worker exiting (pid: 2613)
+[2019-06-22 19:53:05 +0800] [2614] [INFO] Waiting for application shutdown.
+[2019-06-22 19:53:05 +0800] [2612] [INFO] Waiting for application shutdown.
+[2019-06-22 19:53:05 +0800] [2612] [INFO] Finished server process [2612]
+[2019-06-22 19:53:05 +0800] [2614] [INFO] Finished server process [2614]
+[2019-06-22 19:53:05 +0800] [2612] [INFO] Worker exiting (pid: 2612)
+[2019-06-22 19:53:05 +0800] [2614] [INFO] Worker exiting (pid: 2614)
+[2019-06-22 19:53:05 +0800] [2611] [INFO] Waiting for application shutdown.
+[2019-06-22 19:53:05 +0800] [2611] [INFO] Finished server process [2611]
+[2019-06-22 19:53:05 +0800] [2611] [INFO] Worker exiting (pid: 2611)
+[2019-06-22 19:53:05 +0800] [2608] [INFO] Shutting down: Master
+[2019-06-22 19:53:13 +0800] [2673] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 19:53:13 +0800] [2673] [INFO] Listening at: http://0.0.0.0:4190 (2673)
+[2019-06-22 19:53:13 +0800] [2673] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 19:53:13 +0800] [2689] [INFO] Booting worker with pid: 2689
+[2019-06-22 19:53:13 +0800] [2692] [INFO] Booting worker with pid: 2692
+[2019-06-22 19:53:13 +0800] [2694] [INFO] Booting worker with pid: 2694
+[2019-06-22 19:53:13 +0800] [2689] [INFO] Started server process [2689]
+[2019-06-22 19:53:13 +0800] [2689] [INFO] Waiting for application startup.
+[2019-06-22 19:53:13 +0800] [2697] [INFO] Booting worker with pid: 2697
+[2019-06-22 19:53:13 +0800] [2692] [INFO] Started server process [2692]
+[2019-06-22 19:53:13 +0800] [2692] [INFO] Waiting for application startup.
+[2019-06-22 19:53:13 +0800] [2694] [INFO] Started server process [2694]
+[2019-06-22 19:53:13 +0800] [2694] [INFO] Waiting for application startup.
+[2019-06-22 19:53:14 +0800] [2697] [INFO] Started server process [2697]
+[2019-06-22 19:53:14 +0800] [2697] [INFO] Waiting for application startup.
+[2019-06-22 19:53:40 +0800] [2692] [INFO] ('127.0.0.1', 64986) - "GET / HTTP/1.1" 301
+[2019-06-22 19:53:40 +0800] [2692] [INFO] ('127.0.0.1', 64986) - "GET /home.py HTTP/1.1" 200
+[2019-06-22 19:53:40 +0800] [2692] [INFO] ('127.0.0.1', 64986) - "GET /favicon.ico HTTP/1.1" 302
+[2019-06-22 19:53:40 +0800] [2692] [INFO] ('127.0.0.1', 64986) - "GET /static/favicon.ico HTTP/1.1" 404
+[2019-06-22 19:54:28 +0800] [2694] [INFO] ('127.0.0.1', 64998) - "GET /home.py HTTP/1.1" 200
+[2019-06-22 19:54:29 +0800] [2694] [INFO] ('127.0.0.1', 64998) - "GET /home.py HTTP/1.1" 200
+[2019-06-22 19:54:31 +0800] [2694] [INFO] ('127.0.0.1', 64998) - "GET /home.py HTTP/1.1" 200
+[2019-06-22 19:54:31 +0800] [2694] [INFO] ('127.0.0.1', 64998) - "GET /favicon.ico HTTP/1.1" 302
+[2019-06-22 19:54:31 +0800] [2694] [INFO] ('127.0.0.1', 64998) - "GET /static/favicon.ico HTTP/1.1" 404
+[2019-06-22 19:55:28 +0800] [2697] [INFO] ('127.0.0.1', 65012) - "GET /home.py HTTP/1.1" 200
+[2019-06-22 20:00:07 +0800] [81] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 20:00:07 +0800] [81] [INFO] Listening at: http://0.0.0.0:4190 (81)
+[2019-06-22 20:00:07 +0800] [81] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 20:00:07 +0800] [97] [INFO] Booting worker with pid: 97
+[2019-06-22 20:00:07 +0800] [98] [INFO] Booting worker with pid: 98
+[2019-06-22 20:00:07 +0800] [101] [INFO] Booting worker with pid: 101
+[2019-06-22 20:00:07 +0800] [105] [INFO] Booting worker with pid: 105
+[2019-06-22 20:00:07 +0800] [97] [INFO] Started server process [97]
+[2019-06-22 20:00:07 +0800] [97] [INFO] Waiting for application startup.
+[2019-06-22 20:00:07 +0800] [98] [INFO] Started server process [98]
+[2019-06-22 20:00:07 +0800] [98] [INFO] Waiting for application startup.
+[2019-06-22 20:00:07 +0800] [101] [INFO] Started server process [101]
+[2019-06-22 20:00:07 +0800] [101] [INFO] Waiting for application startup.
+[2019-06-22 20:00:07 +0800] [105] [INFO] Started server process [105]
+[2019-06-22 20:00:07 +0800] [105] [INFO] Waiting for application startup.
+[2019-06-22 20:02:48 +0800] [97] [INFO] Shutting down
+[2019-06-22 20:02:49 +0800] [97] [INFO] Waiting for application shutdown.
+[2019-06-22 20:02:49 +0800] [97] [INFO] Finished server process [97]
+[2019-06-22 20:02:49 +0800] [97] [INFO] Worker exiting (pid: 97)
+[2019-06-22 20:03:13 +0800] [101] [INFO] Shutting down
+[2019-06-22 20:03:13 +0800] [105] [INFO] Shutting down
+[2019-06-22 20:03:13 +0800] [98] [INFO] Shutting down
+[2019-06-22 20:03:13 +0800] [101] [INFO] Waiting for application shutdown.
+[2019-06-22 20:03:13 +0800] [101] [INFO] Finished server process [101]
+[2019-06-22 20:03:13 +0800] [101] [INFO] Worker exiting (pid: 101)
+[2019-06-22 20:03:13 +0800] [105] [INFO] Waiting for application shutdown.
+[2019-06-22 20:03:13 +0800] [105] [INFO] Finished server process [105]
+[2019-06-22 20:03:13 +0800] [105] [INFO] Worker exiting (pid: 105)
+[2019-06-22 20:03:13 +0800] [98] [INFO] Waiting for application shutdown.
+[2019-06-22 20:03:13 +0800] [98] [INFO] Finished server process [98]
+[2019-06-22 20:03:13 +0800] [98] [INFO] Worker exiting (pid: 98)
+[2019-06-22 20:04:16 +0800] [475] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 20:04:16 +0800] [475] [INFO] Listening at: http://0.0.0.0:4190 (475)
+[2019-06-22 20:04:16 +0800] [475] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 20:04:16 +0800] [491] [INFO] Booting worker with pid: 491
+[2019-06-22 20:04:16 +0800] [492] [INFO] Booting worker with pid: 492
+[2019-06-22 20:04:16 +0800] [493] [INFO] Booting worker with pid: 493
+[2019-06-22 20:04:16 +0800] [496] [INFO] Booting worker with pid: 496
+[2019-06-22 20:04:16 +0800] [491] [INFO] Started server process [491]
+[2019-06-22 20:04:16 +0800] [491] [INFO] Waiting for application startup.
+[2019-06-22 20:04:16 +0800] [492] [INFO] Started server process [492]
+[2019-06-22 20:04:16 +0800] [492] [INFO] Waiting for application startup.
+[2019-06-22 20:04:16 +0800] [493] [INFO] Started server process [493]
+[2019-06-22 20:04:16 +0800] [493] [INFO] Waiting for application startup.
+[2019-06-22 20:04:16 +0800] [496] [INFO] Started server process [496]
+[2019-06-22 20:04:16 +0800] [496] [INFO] Waiting for application startup.
+[2019-06-22 20:04:20 +0800] [475] [INFO] Handling signal: term
+[2019-06-22 20:04:20 +0800] [492] [INFO] Shutting down
+[2019-06-22 20:04:20 +0800] [496] [INFO] Shutting down
+[2019-06-22 20:04:20 +0800] [493] [INFO] Shutting down
+[2019-06-22 20:04:20 +0800] [491] [INFO] Shutting down
+[2019-06-22 20:04:20 +0800] [492] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:20 +0800] [492] [INFO] Finished server process [492]
+[2019-06-22 20:04:20 +0800] [496] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:20 +0800] [496] [INFO] Finished server process [496]
+[2019-06-22 20:04:20 +0800] [492] [INFO] Worker exiting (pid: 492)
+[2019-06-22 20:04:20 +0800] [496] [INFO] Worker exiting (pid: 496)
+[2019-06-22 20:04:20 +0800] [493] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:20 +0800] [493] [INFO] Finished server process [493]
+[2019-06-22 20:04:20 +0800] [493] [INFO] Worker exiting (pid: 493)
+[2019-06-22 20:04:20 +0800] [491] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:20 +0800] [491] [INFO] Finished server process [491]
+[2019-06-22 20:04:20 +0800] [491] [INFO] Worker exiting (pid: 491)
+[2019-06-22 20:04:20 +0800] [475] [INFO] Shutting down: Master
+[2019-06-22 20:04:32 +0800] [591] [INFO] Starting gunicorn 19.9.0
+[2019-06-22 20:04:32 +0800] [591] [INFO] Listening at: http://0.0.0.0:4190 (591)
+[2019-06-22 20:04:32 +0800] [591] [INFO] Using worker: uvicorn.workers.UvicornWorker
+[2019-06-22 20:04:32 +0800] [607] [INFO] Booting worker with pid: 607
+[2019-06-22 20:04:32 +0800] [608] [INFO] Booting worker with pid: 608
+[2019-06-22 20:04:32 +0800] [613] [INFO] Booting worker with pid: 613
+[2019-06-22 20:04:32 +0800] [607] [INFO] Started server process [607]
+[2019-06-22 20:04:32 +0800] [607] [INFO] Waiting for application startup.
+[2019-06-22 20:04:32 +0800] [617] [INFO] Booting worker with pid: 617
+[2019-06-22 20:04:32 +0800] [608] [INFO] Started server process [608]
+[2019-06-22 20:04:32 +0800] [608] [INFO] Waiting for application startup.
+[2019-06-22 20:04:32 +0800] [613] [INFO] Started server process [613]
+[2019-06-22 20:04:32 +0800] [613] [INFO] Waiting for application startup.
+[2019-06-22 20:04:32 +0800] [617] [INFO] Started server process [617]
+[2019-06-22 20:04:32 +0800] [617] [INFO] Waiting for application startup.
+[2019-06-22 20:04:43 +0800] [591] [INFO] Handling signal: term
+[2019-06-22 20:04:43 +0800] [613] [INFO] Shutting down
+[2019-06-22 20:04:43 +0800] [608] [INFO] Shutting down
+[2019-06-22 20:04:43 +0800] [607] [INFO] Shutting down
+[2019-06-22 20:04:43 +0800] [617] [INFO] Shutting down
+[2019-06-22 20:04:43 +0800] [613] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:43 +0800] [613] [INFO] Finished server process [613]
+[2019-06-22 20:04:43 +0800] [608] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:43 +0800] [608] [INFO] Finished server process [608]
+[2019-06-22 20:04:43 +0800] [613] [INFO] Worker exiting (pid: 613)
+[2019-06-22 20:04:43 +0800] [608] [INFO] Worker exiting (pid: 608)
+[2019-06-22 20:04:43 +0800] [607] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:43 +0800] [607] [INFO] Finished server process [607]
+[2019-06-22 20:04:43 +0800] [607] [INFO] Worker exiting (pid: 607)
+[2019-06-22 20:04:43 +0800] [617] [INFO] Waiting for application shutdown.
+[2019-06-22 20:04:43 +0800] [617] [INFO] Finished server process [617]
+[2019-06-22 20:04:43 +0800] [617] [INFO] Worker exiting (pid: 617)
+[2019-06-22 20:04:43 +0800] [591] [INFO] Shutting down: Master

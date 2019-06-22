@@ -22,6 +22,7 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
+    "gunicorn; sys_platform != 'win32' and sys_platform != 'cygwin' and sys_platform != 'cli'",
     'uvicorn',
     'starlette',
     'aiofiles',
@@ -111,7 +112,7 @@ setup(
     # py_modules=['mypackage'],
 
     entry_points={
-        'console_scripts': ['index=index.core:main'],
+        'console_scripts': ['index-cli=index.cli:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,

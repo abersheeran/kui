@@ -17,7 +17,15 @@ sudo python3 setup.py install
 
 ## How to use
 
-Execute the command `index` under the path where you place your Web program.
+Execute the command `index-cli dev` under the path where you place your Web program.
+
+### deploy
+
+In linux, you can use `index-cli gunicorn start` to start server.
+
+* `-w INT`: The number of worker processes for handling requests. This value is best when it is equal to the number of cores of the CPU.
+
+* `-d`: Increasing this parameter will cause the program to run in the background and redirect the log to the `log.index` in the current directory.
 
 ## Configuration
 

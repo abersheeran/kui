@@ -3,7 +3,6 @@ import sys
 import json
 import importlib
 
-import uvicorn
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
@@ -65,14 +64,3 @@ def http(request):
     if not isinstance(resp, tuple):
         resp = (resp,)
     return automatic(*resp)
-
-
-def main():
-    uvicorn.run(
-        app,
-        host=config.HOST,
-        port=config.PORT,
-        log_level=config.LOG_LEVEL,
-        debug=config.DEBUG,
-        logger=logger
-    )
