@@ -13,17 +13,19 @@ class MonitorFileEventHandler(FileSystemEventHandler):
         if not event.src_path.endswith(".py"):
             return
         event.filepath = os.path.relpath(event.src_path, Config().path).replace("\\", "/")[:-3]
+        if event.filepath.endswith("/__init__"):
+            event.filepath = event.filepath[:-len("/__init__")]
         return super().dispatch(event)
 
     def on_modified(self, event):
-        logger.debug(f"reloading {event.filepath} as {module_path}")
         module_path = ".".join(event.filepath.split("/"))
+        logger.debug(f"reloading {event.filepath} as {module_path}")
         module = importlib.import_module(module_path)
         importlib.reload(module)
 
     def on_created(self, event):
-        logger.debug(f"loading {event.filepath} as {module_path}")
         module_path = ".".join(event.filepath.split("/"))
+        logger.debug(f"loading {event.filepath} as {module_path}")
         module = importlib.import_module(module_path)
 
 

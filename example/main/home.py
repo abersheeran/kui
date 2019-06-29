@@ -1,12 +1,14 @@
 from index import templates, Config
 from index.views import View
+from index.config import logger
 
-from utils.db import some_db_settings
+from main.utils.db import some_db_settings
 
 
 class HTTP(View):
 
     def get(self):
+        print("get repsonse")
         return templates.TemplateResponse("home.html", {"request": self.request, "db": some_db_settings})
 
     def post(self):

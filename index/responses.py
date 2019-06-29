@@ -1,5 +1,5 @@
 """
-Maybe some packaging will be done in the future
+Maybe more repsonse type will be done in the future
 """
 from starlette.responses import (
     Response,
@@ -41,5 +41,5 @@ def automatic(*args):
     elif isinstance(args[0], str):
         return PlainTextResponse(*args)
 
-    logger.error("Wrong response type")
+    logger.error(f"Wrong response type: {type(args[0])}")
     raise Http500()

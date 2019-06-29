@@ -6,7 +6,7 @@ import importlib
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
-from starlette.responses import Response, RedirectResponse
+from starlette.responses import RedirectResponse
 
 from .config import Config, logger
 from .responses import automatic
@@ -30,7 +30,7 @@ app.mount('/static', StaticFiles(directory="statics"))
 
 @app.route("/")
 def index(request):
-    return RedirectResponse("/home.py", status_code=301)
+    return RedirectResponse("/index.py", status_code=301)
 
 
 @app.route('/favicon.ico')
@@ -47,23 +47,31 @@ def http(request):
 
     filepath = filepath.strip(".").replace("-", "_")
     # judge python file
-    abspath = os.path.join(config.path, filepath + ".py")
+    abspath = os.path.join(config.path, "main", filepath + ".py")
     if not os.path.exists(abspath):
         raise Http404()
 
-    module_path = ".".join(filepath.split("/"))
+    pathlist = ['main'] + filepath.split("/")
+
+    # find http handler
+    module_path = ".".join(pathlist)
     module = importlib.import_module(module_path)
     try:
-        if module.AUTORELOAD:
-            importlib.reload(module)
-    except AttributeError:
-        module.AUTORELOAD = True
-
-    try:
-        resp = module.HTTP(request).dispatch()
+        get_response = module.HTTP().dispatch
     except AttributeError:
         raise Http404()
 
+    # call middleware
+    for deep in range(len(pathlist), 0, -1):
+        try:
+            module = importlib.import_module(".".join(pathlist[:deep]))
+            logger.debug(f"Call middleware in {module}")
+            get_response = module.Middleware(get_response)
+        except AttributeError:
+            continue
+
+    # get response
+    resp = get_response(request)
     if not isinstance(resp, tuple):
         resp = (resp,)
     return automatic(*resp)

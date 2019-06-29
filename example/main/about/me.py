@@ -1,4 +1,3 @@
-from index import templates, Config
 from index.views import View
 
 
