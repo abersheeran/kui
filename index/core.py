@@ -11,12 +11,15 @@ from starlette.responses import Response, RedirectResponse
 from .config import Config, logger
 from .responses import automatic
 from .errors import Http404, Http500
+from .watchdog import MonitorFile
 
 config = Config()
 
 sys.path.insert(0, config.path)
 
 app = Starlette(debug=config.DEBUG)
+
+monitorfile = MonitorFile()
 
 os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
 os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)

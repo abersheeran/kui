@@ -11,6 +11,7 @@ pylint = "*"
 uvicorn = "*"
 starlette = "*"
 aiofiles = "*"
+watchdog = "*"
 
 [requires]
 python_version = "3.6"
