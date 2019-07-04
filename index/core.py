@@ -57,7 +57,7 @@ def http(request):
     module_path = ".".join(pathlist)
     module = importlib.import_module(module_path)
     try:
-        get_response = module.HTTP().dispatch
+        get_response = module.HTTP()
     except AttributeError:
         raise Http404()
 

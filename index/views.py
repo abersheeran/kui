@@ -9,6 +9,9 @@ class View:
     def __init__(self):
         pass
 
+    def __call__(self, request):
+        return self.dispatch(request)
+
     def dispatch(self, request):
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
