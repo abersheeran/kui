@@ -16,8 +16,7 @@ from .errors import Http500
 
 def automatic(*args):
     if len(args) > 3:
-        logger.error("The response cannot exceed three parameters.")
-        raise Http500()
+        raise ValueError("The response cannot exceed three parameters.")
 
     # Response or Response subclass
     if isinstance(args[0], Response):
@@ -26,12 +25,10 @@ def automatic(*args):
     # judge status code and headers
     try:
         if not isinstance(args[1], int):
-            logger.error("The response status code must be integer.")
-            raise Http500()
+            raise TypeError("The response status code must be integer.")
 
         if not isinstance(args[2], dict):
-            logger.error("The response headers must be dictionary.")
-            raise Http500()
+            raise TypeError("The response headers must be dictionary.")
 
     except IndexError:
         pass
@@ -41,5 +38,4 @@ def automatic(*args):
     elif isinstance(args[0], str):
         return PlainTextResponse(*args)
 
-    logger.error(f"Wrong response type: {type(args[0])}")
-    raise Http500()
+    raise TypeError(f"Wrong response type: {type(args[0])}")
