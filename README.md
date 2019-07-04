@@ -76,3 +76,5 @@ example:
   "warning"   | logging.WARNING
   "info"      | logging.INFO
   "debug"     | logging.DEBUG
+
+> to be continue......
