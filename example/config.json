@@ -1,5 +1,8 @@
 {
     "log_level": "info",
+    "allowed_hosts": [
+        "localhost"
+    ],
     "dev": {
         "host": "0.0.0.0",
         "debug": true

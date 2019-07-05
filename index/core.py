@@ -7,6 +7,7 @@ from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import Config, logger
 from .responses import automatic
