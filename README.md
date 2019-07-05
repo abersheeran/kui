@@ -65,13 +65,13 @@ example:
 
 * ENV
 
-  Default: "dev"
+  **Default: `"dev"`**
   
   `env` is an important configuration that allows for the distinction between different configuration environments.
 
 * DEBUG
   
-  Default: False
+  **Default: `False`**
   
   Although I don't think this needs explanation.
   
@@ -79,7 +79,7 @@ example:
 
 * LOG_LEVEL
 
-  Default: "info"
+  **Default: `"info"`**
 
   `log_level` has five values, the corresponding table to the `logging` is as follows
 
@@ -93,19 +93,19 @@ example:
 
 * HOST
 
-  Default: "127.0.0.1"
+  **Default: `"127.0.0.1"`**
   
   `host` specifies the bound HOST address.
 
 * PORT
 
-  Default: 4190
+  **Default: `4190`**
 
   `port` pecifies the bound HOST port.
 
 * ALLOWED_HOSTS
 
-  Default: ["*"]
+  **Default: `["*"]`**
   
   `allowed_hosts` allows you to restrict access to this application's host.
 
