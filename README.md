@@ -31,6 +31,16 @@ In windows......maybe you can use `index-cli dev` to deploy, but I don't think i
 
 ## Configuration
 
+The configuration allows the configuration to be automatically separated by ENV, and lowercase letters in all keys are automatically converted to uppercase.
+
+You can use `Config()` anywhere in the program to use the configuration, which is a class that uses the singleton pattern. Like this
+
+```
+from index import Config
+
+print(Config())
+```
+
 ### Environment variables
 
 At startup, index automatically reads the configuration from the environment variable that begins with `INDEX_`.
@@ -73,7 +83,7 @@ example:
   
   **Default: `False`**
   
-  Although I don't think this needs explanation.
+  I don't think this needs explanation.
   
   In the environment variable, INDEX_DEBUG is true when it is on or True, otherwise it is false.
 
