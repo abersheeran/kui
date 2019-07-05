@@ -119,7 +119,10 @@ def _import_environ():
         lambda x: x.startswith("INDEX_"),
         os.environ.keys()
     ):
-        result[key[6:]] = os.environ.get(key)
+        if key.upper() == "DEBUG":
+            result[key[6:]] = os.environ.get(key) in ("on", "True")
+        else:
+            result[key[6:]] = os.environ.get(key)
     return result
 
 
@@ -128,11 +131,14 @@ class Config(UpperDict, metaclass=Singleton):
     def __init__(self):
         super().__init__({})
         self.setdefault()
-        self.update(_import_environ())
+        # read config from `config.json`
         self.import_from_file(os.path.join(self.path, "config.json"))
+        # read config from environ
+        self.update(_import_environ())
 
     @property
     def path(self):
+        """return os.getcwd()"""
         return os.getcwd()
 
     def import_from_file(self, jsonfile: str):
@@ -154,6 +160,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self['log_level'] = "info"
+        self['allowed_hosts'] = ["*"]
 
     def update(self, data: dict):
         for key in data.keys():

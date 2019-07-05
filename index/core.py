@@ -19,8 +19,13 @@ sys.path.insert(0, config.path)
 
 app = Starlette(debug=config.DEBUG)
 
+# middleware
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
+
+# monitor file event
 monitorfile = MonitorFile()
 
+# static & template
 os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
 os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
 
