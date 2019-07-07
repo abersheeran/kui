@@ -3,7 +3,15 @@ from starlette.responses import Response
 from .config import logger
 
 
-class View:
+class NoMixedCaseMeta(type):
+    def __new__(cls, clsname, bases, clsdict):
+        for name in clsdict:
+            if name.lower() != name:
+                raise TypeError('Bad attribute name: ' + name)
+        return super().__new__(cls, clsname, bases, clsdict)
+
+
+class View(metaclass=NoMixedCaseMeta):
     http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']
 
     def __init__(self):
