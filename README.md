@@ -4,13 +4,13 @@ Although I've never used PHP, I like its hot-swap mechanism. I expect to use ind
 
 ## Install
 
-```
+```bash
 pip install -U index.py
 ```
 
 Or get the latest version on Github
 
-```
+```bash
 git clone https://github.com/abersheeran/index.py
 sudo python3 setup.py install
 ```
@@ -27,7 +27,19 @@ In linux, you can use `index-cli gunicorn start` to start server.
 
 * `-d`: Increasing this parameter will cause the program to run in the background and redirect the log to the `log.index` in the current directory.
 
+In windows......maybe you can use `index-cli dev` to deploy, but I don't think it's a good idea.
+
 ## Configuration
+
+The configuration allows the configuration to be automatically separated by ENV, and lowercase letters in all keys are automatically converted to uppercase.
+
+You can use `Config()` anywhere in the program to use the configuration, which is a class that uses the singleton pattern. Like this
+
+```
+from index import Config
+
+print(Config())
+```
 
 ### Environment variables
 
@@ -42,7 +54,7 @@ INDEX_ENV=pro
 
 ### Config file
 
-At the root of your web program, the configuration in config.json will be read when index starts.
+At the root of your web program, the configuration in `config.json` will be read when index starts.
 
 example:
 
@@ -63,9 +75,21 @@ example:
 
 * ENV
 
-  `ENV` is an important configuration that allows for the distinction between different configuration environments.
+  **Default: `"dev"`**
+  
+  `env` is an important configuration that allows for the distinction between different configuration environments.
+
+* DEBUG
+  
+  **Default: `False`**
+  
+  I don't think this needs explanation.
+  
+  In the environment variable, INDEX_DEBUG is true when it is on or True, otherwise it is false.
 
 * LOG_LEVEL
+
+  **Default: `"info"`**
 
   `log_level` has five values, the corresponding table to the `logging` is as follows
 
@@ -77,4 +101,28 @@ example:
   "info"      | logging.INFO
   "debug"     | logging.DEBUG
 
-> to be continue......
+* HOST
+
+  **Default: `"127.0.0.1"`**
+  
+  `host` specifies the bound HOST address.
+
+* PORT
+
+  **Default: `4190`**
+
+  `port` pecifies the bound HOST port.
+
+* ALLOWED_HOSTS
+
+  **Default: `["*"]`**
+  
+  `allowed_hosts` allows you to restrict access to this application's host.
+
+  Some examples:
+
+    - ["*"]
+
+    - ["example.com", "*example.com"]
+
+    - ["example.com", "test.com"]
