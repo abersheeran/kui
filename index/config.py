@@ -23,29 +23,6 @@ class ConfigError(Exception):
     pass
 
 
-class Singleton(type):
-    """
-    单例控制
-
-    example:
-        class Config(metaclass=Singleton):
-            def __init__(self):
-                pass
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.__instance = None
-        super().__init__(*args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        if self.__instance is None:
-            self.__instance = super().__call__(*args, **kwargs)
-            return self.__instance
-        else:
-            return self.__instance
-
-
 class UpperDict:
 
     def __init__(self, data: dict):
@@ -100,8 +77,8 @@ class UpperDict:
     def __getattr__(self, name):
         try:
             value = self.get(name)
-            if value is None:
-                raise KeyError()
+            # if value is None:
+            #     raise KeyError()
             return value
         except KeyError:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
@@ -126,7 +103,12 @@ def _import_environ():
     return result
 
 
-class Config(UpperDict, metaclass=Singleton):
+class Config(UpperDict):
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, '_instance'):
+            cls._instance = super().__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self):
         super().__init__({})
