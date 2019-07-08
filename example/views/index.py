@@ -2,7 +2,7 @@ from index import templates, Config
 from index.views import View
 from index.config import logger
 
-from main.utils.db import some_db_settings
+from views.utils.db import some_db_settings
 
 
 class HTTP(View):

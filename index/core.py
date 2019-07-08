@@ -45,7 +45,7 @@ def favicon(request):
 
 
 @app.route("/{filepath:path}.py", methods=['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'])
-def http(request):
+async def http(request):
     filepath = request.path_params['filepath']
     # Google SEO
     if "_" in filepath:
@@ -53,11 +53,11 @@ def http(request):
 
     filepath = filepath.strip(".").replace("-", "_")
     # judge python file
-    abspath = os.path.join(config.path, "main", filepath + ".py")
+    abspath = os.path.join(config.path, "views", filepath + ".py")
     if not os.path.exists(abspath):
         raise Http404()
 
-    pathlist = ['main'] + filepath.split("/")
+    pathlist = ['views'] + filepath.split("/")
 
     # find http handler
     module_path = ".".join(pathlist)
