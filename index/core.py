@@ -11,7 +11,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import Config, logger
 from .responses import automatic
-from .errors import Http404, Http500
+from .errors import Http404
 from .watchdog import MonitorFile
 
 config = Config()
@@ -77,7 +77,7 @@ async def http(request):
             continue
 
     # get response
-    resp = get_response(request)
+    resp = await get_response(request)
     if not isinstance(resp, tuple):
         resp = (resp,)
     return automatic(*resp)

@@ -1,6 +1,7 @@
 from starlette.responses import Response
 
 from .config import logger
+from .concurrency import complicating
 
 
 class NoMixedCaseMeta(type):
@@ -17,10 +18,10 @@ class View(metaclass=NoMixedCaseMeta):
     def __init__(self):
         pass
 
-    def __call__(self, request):
-        return self.dispatch(request)
+    async def __call__(self, request):
+        return await self.dispatch(request)
 
-    def dispatch(self, request):
+    async def dispatch(self, request):
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
@@ -30,7 +31,7 @@ class View(metaclass=NoMixedCaseMeta):
             handler = getattr(self, self.request.method.lower(), self.http_method_not_allowed)
         else:
             handler = self.http_method_not_allowed
-        return handler()
+        return await complicating(handler)()
 
     def http_method_not_allowed(self):
         logger.warning(f'Method Not Allowed ({self.request.method}): {self.request.url.path}')

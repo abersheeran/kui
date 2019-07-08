@@ -8,6 +8,10 @@ def complicating(func):
     """
     always return a coroutine function
     """
-    if not asyncio.iscoroutinefunction(func):
-        func = functools.partial(run_in_threadpool, func)
-    return func
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await run_in_threadpool(func, *args, **kwargs)
+    return wrapper

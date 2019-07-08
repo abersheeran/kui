@@ -11,7 +11,6 @@ from starlette.responses import (
     FileResponse
 )
 from .config import logger
-from .errors import Http500
 
 
 def automatic(*args):

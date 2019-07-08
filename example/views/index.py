@@ -1,5 +1,5 @@
 from index import templates, Config
-from index.views import View
+from index.view import View
 from index.config import logger
 
 from views.utils.db import some_db_settings
