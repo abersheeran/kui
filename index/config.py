@@ -30,7 +30,7 @@ class UpperDict:
         for key in data.keys():
             self[key] = data[key]
 
-    def __repr__(self):
+    def __str__(self):
         indent = 4
         result = ["{"]
 
@@ -52,9 +52,6 @@ class UpperDict:
         result.append("}")
 
         return "\n".join(result)
-
-    def __str__(self):
-        return self.__repr__()
 
     def __setitem__(self, key, value):
         key = key.upper()
