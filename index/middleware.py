@@ -3,7 +3,7 @@ from .concurrency import complicating
 
 class MiddlewareMixin:
     def __init__(self, get_response):
-        self.get_response = get_response
+        self.get_response = complicating(get_response)
 
     async def __call__(self, request):
         response = None

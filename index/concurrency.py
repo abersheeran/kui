@@ -13,5 +13,8 @@ def complicating(func):
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
-        return await run_in_threadpool(func, *args, **kwargs)
+        result = await run_in_threadpool(func, *args, **kwargs)
+        if asyncio.iscoroutine(result):
+            return await result
+        return result
     return wrapper
