@@ -68,8 +68,10 @@ class UpperDict:
     def __getitem__(self, key):
         return self.__dict[key.upper()]
 
-    # def __setattr__(self, name, value):
-    #     raise ConfigError("Modifying the attribute value of Config is not allowed.")
+    def __setattr__(self, name, value):
+        if name == f"_UpperDict__dict":
+            return super().__setattr__(name, value)
+        raise ConfigError("Modifying the attribute value of Config is not allowed.")
 
     def __getattr__(self, name):
         try:
