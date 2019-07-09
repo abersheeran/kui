@@ -40,7 +40,7 @@ class UpperDict:
         for key, value in self.__dict.items():
             if isinstance(value, UpperDict):
                 append(f"{key}: {{")
-                for line in repr(value).splitlines()[1:-1]:
+                for line in str(value).splitlines()[1:-1]:
                     append(f"{line}")
                 append("}")
             else:
