@@ -49,7 +49,7 @@ async def http(request):
     filepath = request.path_params['filepath']
     # Google SEO
     if (not config.ALLOW_UNDERLINE) and "_" in filepath:
-        return RedirectResponse(f'/{filepath.replace("_", "-")}', status_code=301)
+        return RedirectResponse(f'/{filepath.replace("_", "-")}.py', status_code=301)
 
     filepath = filepath.strip(".").replace("-", "_")
     # judge python file
