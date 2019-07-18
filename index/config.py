@@ -142,6 +142,7 @@ class Config(UpperDict):
         self["port"] = 4190
         self['log_level'] = "info"
         self['allowed_hosts'] = ["*"]
+        self['allow_underline'] = False
 
     def update(self, data: dict):
         for key in data.keys():

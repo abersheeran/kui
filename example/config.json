@@ -3,6 +3,7 @@
     "allowed_hosts": [
         "localhost"
     ],
+    "allow_underline": true,
     "dev": {
         "host": "0.0.0.0",
         "debug": true

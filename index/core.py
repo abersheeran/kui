@@ -48,8 +48,8 @@ def favicon(request):
 async def http(request):
     filepath = request.path_params['filepath']
     # Google SEO
-    if "_" in filepath:
-        return RedirectResponse(filepath.replace("_", "-"), status_code=301)
+    if (not config.ALLOW_UNDERLINE) and "_" in filepath:
+        return RedirectResponse(f'/{filepath.replace("_", "-")}', status_code=301)
 
     filepath = filepath.strip(".").replace("-", "_")
     # judge python file

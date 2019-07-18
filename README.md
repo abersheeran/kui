@@ -140,3 +140,9 @@ example:
     - ["example.com", "*example.com"]
 
     - ["example.com", "test.com"]
+
+* ALLOW_UNDERLINE
+
+  **Default: `False`**
+
+  `allow_underline` allows you to determine if an underscore is allowed in the URI by configuring a boolean value. When it is false, if _ exists in the uri, it will be replaced with - and redirected.
