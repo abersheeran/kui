@@ -1,4 +1,5 @@
 import os
+import threading
 import importlib
 
 from watchdog.events import FileSystemEventHandler
@@ -20,13 +21,16 @@ class MonitorFileEventHandler(FileSystemEventHandler):
     def on_modified(self, event):
         module_path = ".".join(event.filepath.split("/"))
         logger.debug(f"reloading {event.filepath} as {module_path}")
-        module = importlib.import_module(module_path)
-        importlib.reload(module)
+
+        def reload():
+            module = importlib.import_module(module_path)
+            importlib.reload(module)
+        threading.Thread(target=reload, daemon=True).start()
 
     def on_created(self, event):
         module_path = ".".join(event.filepath.split("/"))
         logger.debug(f"loading {event.filepath} as {module_path}")
-        module = importlib.import_module(module_path)
+        threading.Thread(target=importlib.import_module, args=(module_path, ), daemon=True).start()
 
 
 class MonitorFile:
