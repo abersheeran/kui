@@ -137,14 +137,69 @@ example:
 
   Some examples:
 
-    * ["*"]
+    - ["*"]
 
-    * ["example.com", "*example.com"]
+    - ["example.com", "*example.com"]
 
-    * ["example.com", "test.com"]
+    - ["example.com", "test.com"]
 
 * ALLOW_UNDERLINE
 
   **Default: `False`**
 
   `allow_underline` allows you to determine if an underscore is allowed in the URI by configuring a boolean value. When it is false, if _ exists in the uri, it will be replaced with - and redirected.
+  
+* CORS_SETTINGS
+
+  **Default:**
+
+    ```python
+    {
+        "allow_origins": (),
+        "allow_methods": ("GET",),
+        "allow_headers": (),
+        "allow_credentials": False,
+        "allow_origin_regex": None,
+        "expose_headers": (),
+        "max_age": 600,
+    }
+    ```
+    
+    The following arguments are supported:
+
+    - allow_origins - A list of origins that should be permitted to make cross-origin requests. 
+        
+        eg. `['https://example.org', 'https://www.example.org']`. 
+        
+        You can use ['*'] to allow any origin.
+    
+    - allow_origin_regex
+    
+        A regex string to match against origins that should be permitted to make cross-origin requests. 
+        
+        eg. 'https://.*\.example\.org'.
+    
+    - allow_methods 
+        
+        A list of HTTP methods that should be allowed for cross-origin requests. 
+        
+        You can use ['*'] to allow all standard methods.
+    
+    - allow_headers
+    
+        A list of HTTP request headers that should be supported for cross-origin requests. 
+        
+        You can use ['*'] to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
+    
+    - allow_credentials
+    
+        Indicate that cookies should be supported for cross-origin requests. 
+    
+    - expose_headers
+        
+        Indicate any response headers that should be made accessible to the browser. 
+    
+    - max_age 
+        
+        Sets a maximum time in seconds for browsers to cache CORS responses. 
+
