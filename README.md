@@ -167,29 +167,31 @@ example:
     
     The following arguments are supported:
 
-    - allow_origins - A list of origins that should be permitted to make cross-origin requests. 
+    - allow_origins 
+    
+        A list of origins that should be permitted to make cross-origin requests. 
         
         eg. `['https://example.org', 'https://www.example.org']`. 
         
-        You can use ['*'] to allow any origin.
+        You can use `['*']` to allow any origin.
     
     - allow_origin_regex
     
         A regex string to match against origins that should be permitted to make cross-origin requests. 
         
-        eg. 'https://.*\.example\.org'.
+        eg. `'https://.*\.example\.org'`.
     
     - allow_methods 
         
         A list of HTTP methods that should be allowed for cross-origin requests. 
         
-        You can use ['*'] to allow all standard methods.
+        You can use `['*']` to allow all standard methods.
     
     - allow_headers
     
         A list of HTTP request headers that should be supported for cross-origin requests. 
         
-        You can use ['*'] to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
+        You can use `['*']` to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
     
     - allow_credentials
     
