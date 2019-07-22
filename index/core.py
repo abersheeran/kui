@@ -8,6 +8,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 from .config import Config, logger
 from .responses import automatic
@@ -21,7 +22,20 @@ sys.path.insert(0, config.path)
 app = Starlette(debug=config.DEBUG)
 
 # middleware
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=config.ALLOWED_HOSTS
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.CORS_SETTINGS.allow_origins,
+    allow_methods=config.CORS_SETTINGS.allow_methods,
+    allow_headers=config.CORS_SETTINGS.allow_headers,
+    allow_credentials=config.CORS_SETTINGS.allow_credentials,
+    allow_origin_regex=config.CORS_SETTINGS.allow_origin_regex,
+    expose_headers=config.CORS_SETTINGS.expose_headers,
+    max_age=config.CORS_SETTINGS.max_age,
+)
 
 # monitor file event
 monitorfile = MonitorFile()

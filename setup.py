@@ -27,6 +27,7 @@ REQUIRED = [
     'starlette',
     'aiofiles',
     'jinja2',
+    'watchdog',
 ]
 
 # What packages are optional?

@@ -57,7 +57,11 @@ class UpperDict:
         key = key.upper()
 
         if isinstance(value, dict):
-            self.__dict[key] = UpperDict(value)
+            if key in self.__dict.keys():
+                for k, v in value.items():
+                    self.__dict[key][k] = v
+            else:
+                self.__dict[key] = UpperDict(value)
         else:
             if key == "DEBUG":
                 value = bool(value)
@@ -92,7 +96,7 @@ class UpperDict:
 def _import_environ():
     result = {}
     for key in filter(
-        lambda x: x.startswith("INDEX_"),
+        lambda x: x.startswith("INDEX_") and x.upper() in ("DEBUG", "ENV"),
         os.environ.keys()
     ):
         if key.upper() == "DEBUG":
@@ -141,8 +145,19 @@ class Config(UpperDict):
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self['log_level'] = "info"
-        self['allowed_hosts'] = ["*"]
+        # url
         self['allow_underline'] = False
+        # middleware
+        self['allowed_hosts'] = ["*"]
+        self['cors_settings'] = {
+            "allow_origins": (),
+            "allow_methods": ("GET",),
+            "allow_headers": (),
+            "allow_credentials": False,
+            "allow_origin_regex": None,
+            "expose_headers": (),
+            "max_age": 600,
+        }
 
     def update(self, data: dict):
         for key in data.keys():

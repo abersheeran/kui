@@ -49,7 +49,7 @@ The configuration allows the configuration to be automatically separated by ENV,
 
 You can use `Config()` anywhere in the program to use the configuration, which is a class that uses the singleton pattern. Like this
 
-```
+```python
 from index import Config
 
 print(Config())
@@ -57,11 +57,13 @@ print(Config())
 
 ### Environment variables
 
-At startup, index automatically reads the configuration from the environment variable that begins with `INDEX_`.
+At startup, index automatically reads `INDEX_DEBUG` and `INDEX_ENV` from the environment variable.
+
+Environment variables take precedence over configuration files. This means that you can use environment variables to force the value of `ENV` to be specified.
 
 like this
 
-```
+```bash
 INDEX_DEBUG=on
 INDEX_ENV=pro
 ```
@@ -135,11 +137,11 @@ example:
 
   Some examples:
 
-    - ["*"]
+    * ["*"]
 
-    - ["example.com", "*example.com"]
+    * ["example.com", "*example.com"]
 
-    - ["example.com", "test.com"]
+    * ["example.com", "test.com"]
 
 * ALLOW_UNDERLINE
 

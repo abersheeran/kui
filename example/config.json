@@ -1,9 +1,18 @@
 {
     "log_level": "info",
+    "allow_underline": true,
     "allowed_hosts": [
         "localhost"
     ],
-    "allow_underline": true,
+    "cors_settings": {
+        "allow_origins": [
+            "*"
+        ],
+        "allow_methods": [
+            "GET"
+        ],
+        "allow_credentials": false
+    },
     "dev": {
         "host": "0.0.0.0",
         "debug": true
