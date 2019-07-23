@@ -56,3 +56,5 @@ def gunicorn(workers, daemon, method):
         execute(command)
     elif method == "stop":
         execute("kill -TERM `cat .pid`")
+    elif method == "reload":
+        execute("kill -HUP `cat .pid`")
