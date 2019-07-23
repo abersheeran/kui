@@ -11,8 +11,7 @@ pip install -U index.py
 Or get the latest version on Github
 
 ```bash
-git clone https://github.com/abersheeran/index.py
-sudo python3 setup.py install
+pip install -U git+https://github.com/abersheeran/index.py
 ```
 
 ## How to use
