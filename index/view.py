@@ -1,4 +1,5 @@
 from starlette.responses import Response
+from starlette.requests import Request
 
 from .config import logger
 from .concurrency import complicating
@@ -18,10 +19,7 @@ class View(metaclass=NoMixedCaseMeta):
     def __init__(self):
         pass
 
-    async def __call__(self, request):
-        return await self.dispatch(request)
-
-    async def dispatch(self, request):
+    async def __call__(self, request: Request):
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
