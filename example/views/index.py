@@ -8,7 +8,7 @@ from views.utils.db import some_db_settings
 class HTTP(View):
 
     def get(self):
-        print("get repsonse")
+        logger.info("get repsonse")
         return templates.TemplateResponse("home.html", {"request": self.request, "db": some_db_settings})
 
 
