@@ -127,7 +127,7 @@ class DocsCommand(Command):
         self.status("Uploading the package'docs to gh-pages")
         os.system('cd ' + os.path.join(here, 'site'))
         os.system('git init')
-        os.system('git remote add master '+URL)
+        os.system('git remote add gh-pages ' + URL)
         os.system('git add .')
         os.system('git commit -m "auto build by mkdocs"')
         os.system('git push --set-upstream gh-pages master -f')
