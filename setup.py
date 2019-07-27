@@ -122,7 +122,7 @@ class DocsCommand(Command):
             pass
 
         self.status('Building site by mkdocs')
-        os.system('pipenv run python mkdocs build')
+        os.system('pipenv run mkdocs build')
 
         self.status("Uploading the package'docs to gh-pages")
         os.system('cd ' + os.path.join(here, 'site'))
