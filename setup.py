@@ -130,7 +130,7 @@ class DocsCommand(Command):
         os.system('git remote add master '+URL)
         os.system('git add .')
         os.system('git commit -m "auto build by mkdocs"')
-        os.system('git push --set-upstream master gh-pages -f')
+        os.system('git push --set-upstream gh-pages master -f')
 
         self.status('Removing docs builds…')
         rmtree(os.path.join(here, 'site'))
