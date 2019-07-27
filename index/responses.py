@@ -12,6 +12,7 @@ from starlette.responses import (
     StreamingResponse,
     FileResponse
 )
+from starlette.templating import Jinja2Templates
 
 from .config import logger
 
@@ -23,8 +24,12 @@ __all__ = [
     "JSONResponse",
     "RedirectResponse",
     "StreamingResponse",
-    "FileResponse"
+    "FileResponse",
+    "TemplateResponse",
 ]
+
+
+TemplateResponse = Jinja2Templates(directory='templates').TemplateResponse
 
 
 class AutoResponseType:

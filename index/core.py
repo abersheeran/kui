@@ -5,7 +5,6 @@ import importlib
 
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -44,7 +43,6 @@ monitorfile = MonitorFile()
 os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
 os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
 
-templates = Jinja2Templates(directory='templates')
 app.mount('/static', StaticFiles(directory="statics"))
 
 

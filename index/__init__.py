@@ -1,2 +1,2 @@
-from .core import app, templates
+from .core import app
 from .config import Config
