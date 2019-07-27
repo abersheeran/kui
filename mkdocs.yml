@@ -1,0 +1,19 @@
+site_name: Index.py
+site_description: Asynchronous HTTP server using file mapping.
+
+theme:
+    name: 'material'
+
+repo_name: abersheeran/index.py
+repo_url: https://github.com/abersheeran/index.py
+edit_uri: ""
+
+nav:
+    - Getting started: 'index.md'
+    - Configuration: 'config.md'
+    - Middleware & View: 'view.md'
+    - Response: 'response.md'
+
+markdown_extensions:
+  - markdown.extensions.codehilite:
+      guess_lang: false

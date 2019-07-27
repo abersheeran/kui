@@ -1,6 +1,7 @@
-from index import templates, Config
+from index import Config
 from index.view import View
 from index.config import logger
+from index.responses import TemplateResponse
 
 from views.utils.db import some_db_settings
 
@@ -9,7 +10,7 @@ class HTTP(View):
 
     def get(self):
         logger.info("get repsonse")
-        return templates.TemplateResponse("home.html", {"request": self.request, "db": some_db_settings})
+        return TemplateResponse("home.html", {"request": self.request, "db": some_db_settings})
 
 
     def post(self):
