@@ -125,12 +125,13 @@ class DocsCommand(Command):
         os.system('pipenv run mkdocs build')
 
         self.status("Uploading the package'docs to gh-pages")
-        os.system('cd ' + os.path.join(here, 'site'))
+        os.chdir(os.path.join(here, 'site'))
         os.system('git init')
-        os.system('git remote add gh-pages ' + URL)
+        os.system('git remote add origin ' + URL)
         os.system('git add .')
         os.system('git commit -m "auto build by mkdocs"')
-        os.system('git push --set-upstream gh-pages master -f')
+        os.system('git push --set-upstream origin gh-pages -f')
+        os.system('git push --set-upstream origin gh-pages -f')
 
         self.status('Removing docs builds…')
         rmtree(os.path.join(here, 'site'))
