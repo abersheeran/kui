@@ -7,6 +7,7 @@
 import io
 import os
 import sys
+import time
 from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
@@ -133,8 +134,6 @@ class DocsCommand(Command):
         os.system('git commit -m "auto build by mkdocs"')
         os.system('git push --set-upstream  origin gh-pages -f')
 
-        self.status('Removing docs builds…')
-        rmtree(os.path.join(here, 'site'))
         sys.exit()
 
 
