@@ -69,7 +69,7 @@ class UploadCommand(Command):
     @staticmethod
     def status(s):
         """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
+        print('\033[1m{0}\033[0m'.format(s), flush=True)
 
     def initialize_options(self):
         pass
@@ -94,6 +94,46 @@ class UploadCommand(Command):
         os.system('git tag v{0}'.format(about['__version__']))
         os.system('git push --tags')
 
+        sys.exit()
+
+
+class DocsCommand(Command):
+    """Support setup.py docs."""
+
+    description = "Build and publish the package'docs."
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s), flush=True)
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status('Removing previous builds…')
+            rmtree(os.path.join(here, 'site'))
+        except OSError:
+            pass
+
+        self.status('Building site by mkdocs')
+        os.system('pipenv run python mkdocs build')
+
+        self.status("Uploading the package'docs to gh-pages")
+        os.system('cd ' + os.path.join(here, 'site'))
+        os.system('git init')
+        os.system('git remote add master '+URL)
+        os.system('git add .')
+        os.system('git commit -m "auto build by mkdocs"')
+        os.system('git push --set-upstream master master -f')
+
+        self.status('Removing docs builds…')
+        rmtree(os.path.join(here, 'site'))
         sys.exit()
 
 
@@ -131,5 +171,6 @@ setup(
     # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,
+        'docs': DocsCommand,
     },
 )
