@@ -2,7 +2,7 @@
 
 Although I've never used PHP, I like its hot-swap mechanism. I expect to use index.py to make Python's Web program deployment easier.
 
-- [Index.py Document](https://abersheeran.com/index.py/)
+- [Index.py Document](https://abersheeran.github.io/index.py/)
 
 ## Install
 
