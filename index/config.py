@@ -171,9 +171,4 @@ class Config(UpperDict):
         return value
 
 
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt='%Y-%m-%d %H:%M:%S',
-    level=LOG_LEVELS[Config().log_level]
-)
 logger.setLevel(LOG_LEVELS[Config().log_level])

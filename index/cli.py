@@ -1,15 +1,22 @@
 import os
 import re
 import sys
+import logging
 import subprocess
 
 import click
 import uvicorn
 
 from . import app, Config
-from .config import logger
+from .config import logger, LOG_LEVELS
 
 config = Config()
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s: %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    level=LOG_LEVELS[Config().log_level]
+)
 
 
 def execute(command: str):
