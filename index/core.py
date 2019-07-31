@@ -84,8 +84,8 @@ async def http(request):
     for deep in range(len(pathlist), 0, -1):
         try:
             module = importlib.import_module(".".join(pathlist[:deep]))
-            logger.debug(f"Call middleware in {module}")
             get_response = module.Middleware(get_response)
+            logger.debug(f"Call middleware in {module}")
         except AttributeError:
             continue
 
