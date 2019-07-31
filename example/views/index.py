@@ -12,6 +12,5 @@ class HTTP(View):
         logger.info("get repsonse")
         return TemplateResponse("home.html", {"request": self.request, "db": some_db_settings})
 
-
     def post(self):
         return {"message": "some error in server"}, 500, {"server": "index.py"}
