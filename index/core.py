@@ -8,10 +8,10 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException
 
 from .config import Config, logger
 from .responses import automatic
-from .errors import Http404
 from .watchdog import MonitorFile
 
 config = Config()
@@ -68,7 +68,7 @@ async def http(request):
     # judge python file
     abspath = os.path.join(config.path, "views", filepath + ".py")
     if not os.path.exists(abspath):
-        raise Http404()
+        raise HTTPException(404)
 
     pathlist = ['views'] + filepath.split("/")
 
@@ -78,7 +78,7 @@ async def http(request):
     try:
         get_response = module.HTTP()
     except AttributeError:
-        raise Http404()
+        raise HTTPException(404)
 
     # call middleware
     for deep in range(len(pathlist), 0, -1):
