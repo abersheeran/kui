@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 import importlib
 
 from starlette.applications import Starlette
@@ -10,10 +11,11 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
-from .config import Config, logger
+from .config import Config
 from .responses import automatic
-from .watchdog import MonitorFile
+from .autoreload import MonitorFile, CheckImport
 
+logger = logging.getLogger(__name__)
 config = Config()
 
 sys.path.insert(0, config.path)
@@ -36,12 +38,22 @@ app.add_middleware(
     max_age=config.CORS_SETTINGS.max_age,
 )
 
-# monitor file event
-monitorfile = MonitorFile()
 
-# static & template
-os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
-os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
+@app.on_event('startup')
+def startup():
+    # monitor file event
+    if CheckImport()(config.path):
+        monitorfile = MonitorFile(config.path)
+
+    # static & template
+    os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
+    os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
+
+
+@app.on_event('shutdown')
+async def shutdown():
+    pass
+
 
 app.mount('/static', StaticFiles(directory="statics"))
 

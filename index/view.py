@@ -1,8 +1,11 @@
+import logging
+
 from starlette.responses import Response
 from starlette.requests import Request
 
-from .config import logger
 from .concurrency import complicating
+
+logger = logging.getLogger(__name__)
 
 
 class NoMixedCaseMeta(type):

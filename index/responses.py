@@ -1,6 +1,7 @@
 """
 Maybe more repsonse type will be done in the future
 """
+import logging
 import functools
 
 from starlette.responses import (
@@ -14,7 +15,7 @@ from starlette.responses import (
 )
 from starlette.templating import Jinja2Templates
 
-from .config import logger
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "register_type",
