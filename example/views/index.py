@@ -4,7 +4,6 @@ from index.config import logger
 from index.responses import TemplateResponse
 
 from views.utils import db
-from views.utils.db import some_db_settings
 
 
 class HTTP(View):
