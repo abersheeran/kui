@@ -8,9 +8,9 @@ from views.utils import db
 
 class HTTP(View):
 
-    def get(self):
+    async def get(self):
         logger.info("get repsonse")
         return TemplateResponse("home.html", {"request": self.request, "db": db.some_db_settings})
 
-    def post(self):
+    async def post(self):
         return {"message": "some error in server"}, 500, {"server": "index.py"}

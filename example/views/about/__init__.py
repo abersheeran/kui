@@ -4,9 +4,9 @@ from index.config import logger
 
 class Middleware(MiddlewareMixin):
 
-    def process_request(self, request):
+    async def process_request(self, request):
         logger.info("enter second process request")
 
-    def process_response(self, request, response):
+    async def process_response(self, request, response):
         logger.info("enter second last process response")
         return response
