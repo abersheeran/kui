@@ -9,9 +9,14 @@ import click
 import uvicorn
 
 from . import app, Config
+from .config import LOG_LEVELS
 
-logger = logging.getLogger(__name__)
 config = Config()
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s: %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    level=LOG_LEVELS[config.log_level]
+)
 
 
 def execute(command: str):
@@ -32,6 +37,7 @@ def dev():
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,
+        logger=logging.getLogger("index"),
         debug=config.DEBUG,
         lifespan="on"
     )
@@ -40,8 +46,9 @@ def dev():
 @main.command(help="deploy by gunicorn")
 @click.option("--workers", "-w", default=cpu_count())
 @click.option("--daemon", "-d", default=False, is_flag=True)
+@click.option("--configuration", "-c")
 @click.argument("method")
-def gunicorn(workers, daemon, method):
+def gunicorn(workers, daemon, configuration, method):
     if sys.platform != "linux":
         raise RuntimeError("gunicorn can only run on Linux.")
     if method == "start":
@@ -53,6 +60,7 @@ def gunicorn(workers, daemon, method):
             f" --log-level {config.LOG_LEVEL}"
             f"{' -D --log-file log.index' if daemon else ''}"
             f" -w {workers}"
+            f"{' -c ' + configuration if configuration else ''}"
             f" index:app"
         )
         execute(command)
