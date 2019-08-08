@@ -59,22 +59,25 @@ app.mount('/static', StaticFiles(directory="statics"))
 
 
 @app.route("/")
-def index(request):
-    return RedirectResponse("/index.py", status_code=301)
+async def index(request):
+    request.path_params['filepath'] = ""
+    return await http(request)
 
 
 @app.route('/favicon.ico')
-def favicon(request):
+async def favicon(request):
     return RedirectResponse("/static/favicon.ico")
 
 
-@app.route("/{filepath:path}.py", methods=['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'])
+@app.route("/{filepath:path}", methods=['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'])
 async def http(request):
     filepath = request.path_params['filepath']
+    if filepath == "" or filepath.endswith("/"):
+        filepath += "index"
     # Google SEO
     if not config.ALLOW_UNDERLINE:
         if "_" in filepath:
-            return RedirectResponse(f'/{filepath.replace("_", "-")}.py', status_code=301)
+            return RedirectResponse(f'/{filepath.replace("_", "-")}', status_code=301)
         filepath = filepath.strip(".").replace("-", "_")
 
     # judge python file
