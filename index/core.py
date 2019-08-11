@@ -13,7 +13,7 @@ from starlette.exceptions import HTTPException
 
 from .config import Config
 from .responses import automatic
-from .autoreload import MonitorFile, CheckImport
+from .autoreload import MonitorFile, checkall
 
 logger = logging.getLogger(__name__)
 config = Config()
@@ -41,9 +41,11 @@ app.add_middleware(
 
 @app.on_event('startup')
 def startup():
+    # check import
+    checkall(config.path)
+
     # monitor file event
-    if CheckImport()(config.path):
-        monitorfile = MonitorFile(config.path)
+    monitorfile = MonitorFile(config.path)
 
     # static & template
     os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
