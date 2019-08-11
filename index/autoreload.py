@@ -17,7 +17,7 @@ config = Config()
 IMPORT_PATTERN = re.compile("from (?P<path>.*?) import ")
 
 
-def check(filepath: str) -> typing.Iterable[int, str]:
+def check(filepath: str) -> typing.Iterable[typing.Tuple[int, str]]:
     """
     check `from ... import ...` in file
 
@@ -46,7 +46,7 @@ def _import(abspath: str):
     """
     relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
     # check import
-    for error_line_num, error_sentence in self.check(abspath):
+    for error_line_num, error_sentence in check(abspath):
         flag = False
         e = ImportTypeError(f"{relpath} line {error_line_num}", error_sentence)
         logger.warning(f"Check import type error in {e.position}: '{e.sentence}'")
@@ -67,6 +67,8 @@ def _reload(abspath: str):
 def checkall(path: str):
     for root, dirs, files in os.walk(path):
         for file in files:
+            if not file.endswith(".py"):
+                continue
             abspath = os.path.join(root, file)
             _import(abspath)
 
@@ -79,12 +81,12 @@ class MonitorFileEventHandler(FileSystemEventHandler):
         return super().dispatch(event)
 
     def on_modified(self, event):
-        logger.debug(f"reloading {event.filepath}")
-        threading.Thread(target=_reload, args=(event.filepath, ), daemon=True).start()
+        logger.debug(f"reloading {event.src_path}")
+        threading.Thread(target=_reload, args=(event.src_path, ), daemon=True).start()
 
     def on_created(self, event):
-        logger.debug(f"loading {event.filepath}")
-        threading.Thread(target=_import, args=(event.filepath, ), daemon=True).start()
+        logger.debug(f"loading {event.src_path}")
+        threading.Thread(target=_import, args=(event.src_path, ), daemon=True).start()
 
 
 class MonitorFile:

@@ -38,14 +38,17 @@ app.add_middleware(
     max_age=config.CORS_SETTINGS.max_age,
 )
 
+monitor: MonitorFile = None
+
 
 @app.on_event('startup')
-def startup():
+async def startup():
     # check import
     checkall(config.path)
 
     # monitor file event
-    monitorfile = MonitorFile(config.path)
+    global monitor
+    monitor = MonitorFile(config.path)
 
     # static & template
     os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
@@ -54,7 +57,8 @@ def startup():
 
 @app.on_event('shutdown')
 async def shutdown():
-    pass
+    global monitor
+    monitor.stop()
 
 
 app.mount('/static', StaticFiles(directory="statics"))
