@@ -1,8 +1,10 @@
 """
 Maybe more repsonse type will be done in the future
 """
+import typing
 import functools
 
+from starlette.background import BackgroundTask
 from starlette.responses import (
     Response,
     HTMLResponse,
@@ -14,6 +16,7 @@ from starlette.responses import (
 )
 from starlette.templating import Jinja2Templates
 
+from .types import typeassert
 
 __all__ = [
     "register_type",
@@ -36,17 +39,17 @@ class AutoResponseType:
     type_map = {}
 
     @classmethod
-    def register_type(cls, type_):
-        def register_func(func):
+    def register_type(cls, type_: typing.Any) -> typing.Callable:
+        def register_func(func: typing.Callable) -> typing.Callable:
             cls.type_map[type_] = func
 
-            def wrapper(*args, **kwargs):
+            def wrapper(*args, **kwargs) -> Response:
                 return func(*args, **kwargs)
             return wrapper
         return register_func
 
     @classmethod
-    def automatic(cls, *args):
+    def automatic(cls, *args) -> Response:
 
         # Response or Response subclass
         if isinstance(args[0], Response):
@@ -55,7 +58,7 @@ class AutoResponseType:
         try:
             return cls.type_map[type(args[0])](*args)
         except KeyError:
-            raise TypeError(f"Wrong response type: {type(args[0])}")
+            raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
 
 
 register_type = functools.partial(AutoResponseType.register_type)
@@ -63,38 +66,34 @@ automatic = functools.partial(AutoResponseType.automatic)
 
 
 @register_type(dict)
-def json_type(*args):
-    if len(args) > 3:
-        raise ValueError("The response cannot exceed three parameters.")
+@typeassert
+def json_type(
+    body: dict,
+    status: int = 200,
+    headers: dict = None,
+    background: BackgroundTask = None
+) -> Response:
 
-    # judge status code and headers
-    try:
-        if not isinstance(args[1], int):
-            raise TypeError("The response status code must be integer.")
-
-        if not isinstance(args[2], dict):
-            raise TypeError("The response headers must be dictionary.")
-
-    except IndexError:
-        pass
-
-    return JSONResponse(*args)
+    return JSONResponse(
+        body,
+        status,
+        headers,
+        background=background
+    )
 
 
 @register_type(str)
-def text_type(*args):
-    if len(args) > 3:
-        raise ValueError("The response cannot exceed three parameters.")
+@typeassert
+def text_type(
+    body: str,
+    status: int = 200,
+    headers: dict = None,
+    background: BackgroundTask = None
+) -> Response:
 
-    # judge status code and headers
-    try:
-        if not isinstance(args[1], int):
-            raise TypeError("The response status code must be integer.")
-
-        if not isinstance(args[2], dict):
-            raise TypeError("The response headers must be dictionary.")
-
-    except IndexError:
-        pass
-
-    return PlainTextResponse(*args)
+    return PlainTextResponse(
+        body,
+        status,
+        headers,
+        background=background
+    )

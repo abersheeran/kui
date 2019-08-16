@@ -12,7 +12,6 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
 from .config import Config
-from .responses import automatic
 from .autoreload import MonitorFile, checkall
 
 logger = logging.getLogger(__name__)
@@ -111,7 +110,4 @@ async def http(request):
             continue
 
     # get response
-    resp = await get_response(request)
-    if not isinstance(resp, tuple):
-        resp = (resp,)
-    return automatic(*resp)
+    return await get_response(request)
