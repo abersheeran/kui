@@ -52,15 +52,13 @@ async def startup():
     # static & template
     os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
     os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
+    app.mount('/static', StaticFiles(directory="statics"))
 
 
 @app.on_event('shutdown')
 async def shutdown():
     global monitor
     monitor.stop()
-
-
-app.mount('/static', StaticFiles(directory="statics"))
 
 
 @app.route("/")
