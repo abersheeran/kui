@@ -116,11 +116,8 @@ class DocsCommand(Command):
         pass
 
     def run(self):
-        try:
-            self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'site'))
-        except OSError:
-            pass
+        self.status('Removing previous builds…')
+        rmtree(os.path.join(here, 'site'), ignore_errors=True)
 
         self.status('Building site by mkdocs')
         os.system('pipenv run mkdocs build')
@@ -129,12 +126,10 @@ class DocsCommand(Command):
         os.chdir(os.path.join(here, 'site'))
         os.system('git init')
         os.system('git remote add origin ' + URL)
-        os.system('git checkout -b gh-pages')
+        os.system('git checkout -B gh-pages')
         os.system('git add .')
         os.system('git commit -m "auto build by mkdocs"')
         os.system('git push --set-upstream  origin gh-pages -f')
-
-        sys.exit()
 
 
 # Where the magic happens:
