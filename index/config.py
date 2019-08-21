@@ -148,6 +148,7 @@ class Config(UpperDict):
         # url
         self['allow_underline'] = False
         # middleware
+        self['force_ssl'] = False
         self['allowed_hosts'] = ["*"]
         self['cors_settings'] = {
             "allow_origins": (),

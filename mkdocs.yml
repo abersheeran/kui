@@ -11,7 +11,6 @@ edit_uri: ""
 nav:
     - Getting started: 'index.md'
     - Configuration: 'config.md'
-    - Middleware & View: 'view.md'
     - Response: 'response.md'
 
 markdown_extensions:

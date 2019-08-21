@@ -8,7 +8,9 @@ from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException
 
 from .config import Config
@@ -26,6 +28,8 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=config.ALLOWED_HOSTS
 )
+if config.FORCE_SSL:
+    app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_SETTINGS.allow_origins,
@@ -35,6 +39,10 @@ app.add_middleware(
     allow_origin_regex=config.CORS_SETTINGS.allow_origin_regex,
     expose_headers=config.CORS_SETTINGS.expose_headers,
     max_age=config.CORS_SETTINGS.max_age,
+)
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=1024
 )
 
 monitor: MonitorFile = None

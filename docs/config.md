@@ -59,119 +59,125 @@ example:
 
 ### All available configurations
 
-* ENV
+#### ENV
 
-    **Default: `"dev"`**
+**Default: `"dev"`**
 
-    `env` is an important configuration that allows for the distinction between different configuration environments.
+`env` is an important configuration that allows for the distinction between different configuration environments.
 
-* DEBUG
+#### DEBUG
 
-    **Default: `False`**
+**Default: `False`**
 
-    I don't think this needs explanation.
+I don't think this needs explanation.
 
-    In the environment variable, INDEX_DEBUG is true when it is on or True, otherwise it is false.
+In the environment variable, INDEX_DEBUG is true when it is on or True, otherwise it is false.
 
-* LOG_LEVEL
+#### LOG_LEVEL
 
-    **Default: `"info"`**
+**Default: `"info"`**
 
-    `log_level` has five values, the corresponding table to the `logging` is as follows
+`log_level` has five values, the corresponding table to the `logging` is as follows
 
-    log_level   | logging
-    ---         | ---
-    "critical"  | logging.CRITICAL
-    "error"     | logging.ERROR
-    "warning"   | logging.WARNING
-    "info"      | logging.INFO
-    "debug"     | logging.DEBUG
+log_level   | logging
+---         | ---
+"critical"  | logging.CRITICAL
+"error"     | logging.ERROR
+"warning"   | logging.WARNING
+"info"      | logging.INFO
+"debug"     | logging.DEBUG
 
-* HOST
+#### HOST
 
-    **Default: `"127.0.0.1"`**
+**Default: `"127.0.0.1"`**
 
-    `host` specifies the bound HOST address.
+`host` specifies the bound HOST address.
 
-* PORT
+#### PORT
 
-    **Default: `4190`**
+**Default: `4190`**
 
-    `port` pecifies the bound HOST port.
+`port` pecifies the bound HOST port.
 
-* ALLOWED_HOSTS
+#### ALLOWED_HOSTS
 
-    **Default: `["*"]`**
+**Default: `["*"]`**
 
-    `allowed_hosts` allows you to restrict access to this application's host.
+`allowed_hosts` allows you to restrict access to this application's host.
 
-    Some examples:
+Some examples:
 
-        - ["*"]
+    - ["*"]
 
-        - ["example.com", "*example.com"]
+    - ["example.com", "*example.com"]
 
-        - ["example.com", "test.com"]
+    - ["example.com", "test.com"]
 
-* ALLOW_UNDERLINE
+#### FORCE_SSL
 
-    **Default: `False`**
+**Default: `False`**
 
-    `allow_underline` allows you to determine if an underscore is allowed in the URI by configuring a boolean value. When it is false, if _ exists in the uri, it will be replaced with - and redirected.
+`force_ssl` can force HTTP/WS to jump to HTTPS/WSS.
 
-* CORS_SETTINGS
+#### ALLOW_UNDERLINE
 
-    **Default:**
+**Default: `False`**
 
-        {
-            "allow_origins": (),
-            "allow_methods": ("GET",),
-            "allow_headers": (),
-            "allow_credentials": False,
-            "allow_origin_regex": None,
-            "expose_headers": (),
-            "max_age": 600,
-        }
+`allow_underline` allows you to determine if an underscore is allowed in the URI by configuring a boolean value. When it is false, if _ exists in the uri, it will be replaced with - and redirected.
 
-    The following arguments are supported:
+#### CORS_SETTINGS
 
-    - allow_origins
+**Default:**
 
-        A list of origins that should be permitted to make cross-origin requests.
+    {
+        "allow_origins": (),
+        "allow_methods": ("GET",),
+        "allow_headers": (),
+        "allow_credentials": False,
+        "allow_origin_regex": None,
+        "expose_headers": (),
+        "max_age": 600,
+    }
 
-        eg. `['https://example.org', 'https://www.example.org']`.
+The following arguments are supported:
 
-        You can use `['*']` to allow any origin.
+- allow_origins
 
-    - allow_origin_regex
+    A list of origins that should be permitted to make cross-origin requests.
 
-        A regex string to match against origins that should be permitted to make cross-origin requests.
+    eg. `['https://example.org', 'https://www.example.org']`.
 
-        eg. `'https://.*\.example\.org'`.
+    You can use `['*']` to allow any origin.
 
-    - allow_methods
+- allow_origin_regex
 
-        A list of HTTP methods that should be allowed for cross-origin requests.
+    A regex string to match against origins that should be permitted to make cross-origin requests.
 
-        You can use `['*']` to allow all standard methods.
+    eg. `'https://.*\.example\.org'`.
 
-    - allow_headers
+- allow_methods
 
-        A list of HTTP request headers that should be supported for cross-origin requests.
+    A list of HTTP methods that should be allowed for cross-origin requests.
 
-        You can use `['*']` to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
+    You can use `['*']` to allow all standard methods.
 
-    - allow_credentials
+- allow_headers
 
-        Indicate that cookies should be supported for cross-origin requests.
+    A list of HTTP request headers that should be supported for cross-origin requests.
 
-    - expose_headers
+    You can use `['*']` to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
 
-        Indicate any response headers that should be made accessible to the browser.
+- allow_credentials
 
-    - max_age
+    Indicate that cookies should be supported for cross-origin requests.
 
-        Sets a maximum time in seconds for browsers to cache CORS responses.
+- expose_headers
+
+    Indicate any response headers that should be made accessible to the browser.
+
+- max_age
+
+    Sets a maximum time in seconds for browsers to cache CORS responses.
 
 ## Explain environmental isolation
 
