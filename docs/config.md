@@ -1,33 +1,28 @@
-## Configuration
+## 编写配置
 
-The configuration allows the configuration to be automatically separated by ENV, and lowercase letters in all keys are automatically converted to uppercase.
+Index.py 内置的配置类 `index.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
 
-You can use `Config()` anywhere in the program to use the configuration, which is a class that uses the singleton pattern. Like this
+所有配置都是大小写无关的，但推荐在程序中使用大写——因为所有配置在启动后都只读。
 
-```python
-from index import Config
+在 Index 启动时，它将自动从环境变量与项目根目录下 config.json 里读取配置。
 
-print(Config())
-```
+**注意**：在 Index 运行之后更改 config.json 或者环境变量并不会触发 Index 的热更新，你只能通过重启来使用新配置启动 Index。
 
-### Environment variables
+### 环境变量
 
-At startup, index automatically reads `INDEX_DEBUG` and `INDEX_ENV` from the environment variable.
+Index 在启动时将从环境变量里读取 `INDEX_DEBUG` 和 `INDEX_ENV` 两个值.
 
-Environment variables take precedence over configuration files. This means that you can use environment variables to force the value of `ENV` to be specified.
+`INDEX_DEBUG` 的值为 `True` 或者 `on` 则 `DEBUG` 为真，其他任何值都是假。
 
-like this
+`INDEX_ENV` 的值可以是任何字符串，它对应 `ENV`。
 
-```bash
-INDEX_DEBUG=on
-INDEX_ENV=pro
-```
+**注意**：环境变量在读取配置文件之后读取，这意味你可以使用环境变量的配置来覆盖配置文件里的配置。
 
-### Config file
+### 配置文件
 
-At the root of your web program, the configuration in `config.json` will be read when index starts.
+在你的项目根目录下的 config.json 文件，将会在 Index 启动时被读取。
 
-example:
+下面是一个配置样例：
 
 ```json
 {
@@ -57,27 +52,27 @@ example:
 }
 ```
 
-### All available configurations
+### 所有可用的配置
 
 #### ENV
 
-**Default: `"dev"`**
+- **默认值:** `"dev"`
 
-`env` is an important configuration that allows for the distinction between different configuration environments.
+`env` 是一个十分重要的配置，它允许自动使用对应环境下的配置。
 
 #### DEBUG
 
-**Default: `False`**
+- **默认值:** `False`
 
-I don't think this needs explanation.
+我不认为这个配置需要解释什么。
 
-In the environment variable, INDEX_DEBUG is true when it is on or True, otherwise it is false.
+在环境变量里 `INDEX_DEBUG` 为 `"on"` 或者 `"True"` 时，`DEBUG` 为真。
 
 #### LOG_LEVEL
 
-**Default: `"info"`**
+- **默认值:** `"info"`
 
-`log_level` has five values, the corresponding table to the `logging` is as follows
+`log_level` 有五个可用值, 下面是它与 `logging` 的等级对应表
 
 log_level   | logging
 ---         | ---
@@ -89,55 +84,63 @@ log_level   | logging
 
 #### HOST
 
-**Default: `"127.0.0.1"`**
+- **默认值:** `"127.0.0.1"`
 
-`host` specifies the bound HOST address.
+`host` 指定 Index 监听的地址。
 
 #### PORT
 
-**Default: `4190`**
+- **默认值:** `4190`
 
-`port` pecifies the bound HOST port.
+`port` 指定 Index 监听的端口。
 
 #### ALLOWED_HOSTS
 
-**Default: `["*"]`**
+- **默认值:** `["*"]`
 
-`allowed_hosts` allows you to restrict access to this application's host.
+`allowed_hosts` 用于指定 Index 允许被访问的 HOST。
 
-Some examples:
+一些例子:
 
-    - ["*"]
+  1. `["*"]`
 
-    - ["example.com", "*example.com"]
+    允许所有的 HOST 访问
 
-    - ["example.com", "test.com"]
+  2. `["example.com", "*example.com"]`
+
+    允许 example.com 以及 example.com 的子域名访问。
+
+  3. `["example.com", "test.com"]`
+
+    允许 example.com 与 test.com 的访问。
 
 #### FORCE_SSL
 
-**Default: `False`**
+- **默认值:** `False`
 
-`force_ssl` can force HTTP/WS to jump to HTTPS/WSS.
+`force_ssl` 允许 HTTP/WS 强制跳转到 HTTPS/WSS。
 
 #### ALLOW_UNDERLINE
 
-**Default: `False`**
+- **默认值:** `False`
 
-`allow_underline` allows you to determine if an underscore is allowed in the URI by configuring a boolean value. When it is false, if _ exists in the uri, it will be replaced with - and redirected.
+由于 Python 的 module 只允许字母、数字与下划线，但 URI 中出现出现下划线是被谷歌不推荐的，所以有了这个配置选项。
+
+当 `allow_underline` 为假时，如果 _ 存在于 URI 中，它将会被自动替换成 - 并且 301 跳转过去。
 
 #### CORS_SETTINGS
 
-**Default:**
+- **默认值:**
 
-    {
-        "allow_origins": (),
-        "allow_methods": ("GET",),
-        "allow_headers": (),
-        "allow_credentials": False,
-        "allow_origin_regex": None,
-        "expose_headers": (),
-        "max_age": 600,
-    }
+  {
+    "allow_origins": (),
+    "allow_methods": ("GET",),
+    "allow_headers": (),
+    "allow_credentials": False,
+    "allow_origin_regex": None,
+    "expose_headers": (),
+    "max_age": 600,
+  }
 
 The following arguments are supported:
 

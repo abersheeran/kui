@@ -1,26 +1,30 @@
-Although I've never used PHP, I like its hot-swap mechanism. I expect to use index.py to make Python's Web program deployment easier.
+尽管我从没使用过PHP编写过任何程序，但我很喜欢它使用文件系统映射到 URI 的设计和它的热重载。
 
-Index.py can automatically update your Python file changes to the server. Managing your index.py service, maybe you only need one ftp.
+Index.py 让你能够轻松惬意的使用这两个特性，并且还提供了更多的特性。譬如加载时自动异步化，进程内后台任务，任意层级中间件等。
 
-## Install
+那么，从安装开始吧。
 
-Index.py requires python version at least 3.6.
+## 安装
+
+Index.py 要求 Python 的版本至少是 3.6。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
+
+安装 [pypi](https://pypi.org) 上的包
 
 ```bash
 pip install -U index.py
 ```
 
-Or get the latest version on Github
+或者直接从 Github 上安装最新版本
 
 ```bash
 pip install -U git+https://github.com/abersheeran/index.py
 ```
 
-## How to use
+## 第一步
 
-Make a folder that name is `views` and create `index.py` in it.
+约定一个目录为项目的根目录，在其中创建名为 `views` 的文件夹，在其中创建 `index.py` 文件。
 
-Write the following in `index.py`
+将下面的代码写入 `index.py` 里。
 
 ```python
 from index.view import View
@@ -32,16 +36,6 @@ class HTTP(View):
         return "hello world"
 ```
 
-### develop
+在项目的根目录下，执行命令 `index-cli dev`。
 
-Execute the command `index-cli dev` in the same directory as `views`.
-
-### deploy
-
-In linux, you can use `index-cli gunicorn start` to start server.
-
-* `-w INT`: The number of worker processes for handling requests. This value is best when it is equal to the number of cores of the CPU.
-
-* `-d`: Increasing this parameter will cause the program to run in the background and redirect the log to the `log.index` in the current directory.
-
-In windows......maybe you can use `index-cli dev` to deploy, it uses asyncio to build the server, performance is not too bad.
+访问 [http://localhost:4190](http://localhost:4190) 吧！

@@ -1,6 +1,6 @@
-The program must respond to a `index.responses.Response` object or its subclass object.
+你编写的程序必须返回一个 `index.responses.Response` 对象或者是它的子类对象。
 
-The list of available Response classes is as follows:
+在 `index.repsonses` 里内置的可用对象如下：
 
 * Response
 * HTMLResponse

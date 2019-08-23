@@ -1,5 +1,5 @@
 site_name: Index.py
-site_description: Asynchronous HTTP server using file mapping.
+site_description: 一个基于 ASGI 协议的异步 Web 框架.
 
 theme:
     name: 'material'
@@ -9,9 +9,9 @@ repo_url: https://github.com/abersheeran/index.py
 edit_uri: ""
 
 nav:
-    - Getting started: 'index.md'
-    - Configuration: 'config.md'
-    - Response: 'response.md'
+    - 最初的开始: 'index.md'
+    - 可用的配置: 'config.md'
+    - 响应Web请求: 'response.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:
