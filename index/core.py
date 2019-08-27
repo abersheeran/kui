@@ -32,13 +32,13 @@ if config.FORCE_SSL:
     app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.CORS_SETTINGS.allow_origins,
-    allow_methods=config.CORS_SETTINGS.allow_methods,
-    allow_headers=config.CORS_SETTINGS.allow_headers,
-    allow_credentials=config.CORS_SETTINGS.allow_credentials,
-    allow_origin_regex=config.CORS_SETTINGS.allow_origin_regex,
-    expose_headers=config.CORS_SETTINGS.expose_headers,
-    max_age=config.CORS_SETTINGS.max_age,
+    allow_origins=config.CORS_SETTINGS.ALLOW_ORIGINS,
+    allow_methods=config.CORS_SETTINGS.ALLOW_METHODS,
+    allow_headers=config.CORS_SETTINGS.ALLOW_HEADERS,
+    allow_credentials=config.CORS_SETTINGS.ALLOW_CREDENTIALS,
+    allow_origin_regex=config.CORS_SETTINGS.ALLOW_ORIGIN_REGEX,
+    expose_headers=config.CORS_SETTINGS.EXPOSE_HEADERS,
+    max_age=config.CORS_SETTINGS.MAX_AGE,
 )
 app.add_middleware(
     GZipMiddleware,
