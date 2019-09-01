@@ -49,8 +49,8 @@ def dev():
 @click.option("--configuration", "-c")
 @click.argument("method")
 def gunicorn(workers, daemon, configuration, method):
-    if sys.platform != "linux":
-        raise RuntimeError("gunicorn can only run on Linux.")
+    if sys.platform in ("win32", "cygwin", "msys"):
+        raise RuntimeError("gunicorn can't run on windows system.")
     if method == "start":
         command = (
             f"gunicorn -k uvicorn.workers.UvicornWorker"
