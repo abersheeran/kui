@@ -47,7 +47,6 @@ def _import(abspath: str):
     relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
     # check import
     for error_line_num, error_sentence in check(abspath):
-        flag = False
         e = ImportTypeError(f"{relpath} line {error_line_num}", error_sentence)
         logger.warning(f"Check import type error in {e.position}: '{e.sentence}'")
     # loading
