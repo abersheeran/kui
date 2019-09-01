@@ -51,7 +51,10 @@ monitor: MonitorFile = None
 @app.on_event('startup')
 async def startup():
     # check import
-    checkall(config.path)
+    for _path_ in os.listdir(config.path):
+        if _path_ in ("statics", "templates"):
+            continue
+        checkall(_path_)
 
     # monitor file event
     global monitor
