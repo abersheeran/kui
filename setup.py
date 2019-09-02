@@ -29,6 +29,7 @@ REQUIRED = [
     'aiofiles',
     'jinja2',
     'watchdog',
+    'python-multipart',
 ]
 
 # What packages are optional?
