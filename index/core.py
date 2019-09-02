@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import copy
 import typing
 import logging
 import importlib
@@ -64,8 +65,9 @@ class Filepath:
         # static files
         if request.url.path.startswith("/static"):
             response = self.staticfiles
-            scope['path'] = scope['path'][len('/static'):]
-            await response(scope, receive, send)
+            subscope = copy.copy(scope)
+            subscope['path'] = subscope['path'][len('/static'):]
+            await response(subscope, receive, send)
             return
 
         pathlist = self.get_pathlist(request.url.path)
@@ -88,6 +90,8 @@ class Filepath:
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
+        # websocket_close = WebSocketClose()
+        # await websocket_close(receive, send)
         pass
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
