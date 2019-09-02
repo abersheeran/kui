@@ -1,17 +1,21 @@
 import os
 import sys
 import json
+import typing
 import logging
 import importlib
 
-from starlette.applications import Starlette
+from starlette.types import Scope, Receive, Send
+from starlette.routing import Lifespan, WebSocketClose
 from starlette.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse
+from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
-from starlette.exceptions import HTTPException
+from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .config import Config
 from .autoreload import MonitorFile, checkall
@@ -21,15 +25,150 @@ config = Config()
 
 sys.path.insert(0, config.path)
 
-app = Starlette(debug=config.DEBUG)
+
+class Filepath:
+
+    def __init__(self):
+        self.lifespan = Lifespan()
+        self.staticfiles = StaticFiles(
+            directory=os.path.join(config.path, 'statics'),
+            check_dir=False,
+        )
+
+    def get_pathlist(self, uri: str) -> typing.List[str]:
+        if uri.endswith("/index"):
+            return RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
+
+        if uri.endswith("/"):
+            uri += "index"
+
+        filepath = uri[1:].strip(".")
+        # Google SEO
+        if not config.ALLOW_UNDERLINE:
+            if "_" in uri:
+                return RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
+            filepath = filepath.replace("-", "_")
+
+        # judge python file
+        abspath = os.path.join(config.path, "views", filepath + ".py")
+        if not os.path.exists(abspath):
+            raise HTTPException(404)
+
+        pathlist = filepath.split("/")
+        pathlist.insert(0, 'views')
+
+        return pathlist
+
+    async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        request = Request(scope, receive)
+        # static files
+        if request.url.path.startswith("/static"):
+            response = self.staticfiles
+            scope['path'] = scope['path'][len('/static'):]
+            await response(scope, receive, send)
+            return
+
+        pathlist = self.get_pathlist(request.url.path)
+        # find http handler
+        module_path = ".".join(pathlist)
+        module = importlib.import_module(module_path)
+        try:
+            get_response = module.HTTP()
+        except AttributeError:
+            raise HTTPException(404)
+        # call middleware
+        for deep in range(len(pathlist), 0, -1):
+            try:
+                module = importlib.import_module(".".join(pathlist[:deep]))
+                get_response = module.Middleware(get_response)
+            except AttributeError:
+                continue
+        # get response
+        response = await get_response(request)
+        await response(scope, receive, send)
+
+    async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
+        pass
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        assert scope["type"] in ("http", "websocket", "lifespan")
+        await getattr(self, scope["type"])(scope, receive, send)
+
+
+class Index:
+    def __init__(self, debug: bool = False) -> None:
+        self._debug = debug
+        self.router = Filepath()
+        self.exception_middleware = ExceptionMiddleware(self.router, debug=debug)
+        self.error_middleware = ServerErrorMiddleware(
+            self.exception_middleware, debug=debug
+        )
+
+    @property
+    def debug(self) -> bool:
+        return self._debug
+
+    @debug.setter
+    def debug(self, value: bool) -> None:
+        self._debug = value
+        self.exception_middleware.debug = value
+        self.error_middleware.debug = value
+
+    def add_middleware(self, middleware_class: type, **kwargs: typing.Any) -> None:
+        self.error_middleware.app = middleware_class(
+            self.error_middleware.app, **kwargs
+        )
+
+    def add_exception_handler(
+        self,
+        exc_class_or_status_code: typing.Union[int, typing.Type[Exception]],
+        handler: typing.Callable,
+    ) -> None:
+        if exc_class_or_status_code in (500, Exception):
+            self.error_middleware.handler = handler
+        else:
+            self.exception_middleware.add_exception_handler(
+                exc_class_or_status_code, handler
+            )
+
+    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
+        self.router.lifespan.add_event_handler(event_type, func)
+
+    def on_event(self, event_type: str) -> typing.Callable:
+        return self.router.lifespan.on_event(event_type)
+
+    def exception_handler(
+        self, exc_class_or_status_code: typing.Union[int, typing.Type[Exception]]
+    ) -> typing.Callable:
+        def decorator(func: typing.Callable) -> typing.Callable:
+            self.add_exception_handler(exc_class_or_status_code, func)
+            return func
+
+        return decorator
+
+    def middleware(self, middleware_type: str) -> typing.Callable:
+        assert (
+            middleware_type == "http"
+        ), 'Currently only middleware("http") is supported.'
+
+        def decorator(func: typing.Callable) -> typing.Callable:
+            self.add_middleware(BaseHTTPMiddleware, dispatch=func)
+            return func
+
+        return decorator
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        scope["app"] = self
+        await self.error_middleware(scope, receive, send)
+
+
+app = Index(debug=config.DEBUG)
 
 # middleware
 app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=config.ALLOWED_HOSTS
+    GZipMiddleware,
+    minimum_size=1024
 )
-if config.FORCE_SSL:
-    app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_SETTINGS.ALLOW_ORIGINS,
@@ -40,16 +179,21 @@ app.add_middleware(
     expose_headers=config.CORS_SETTINGS.EXPOSE_HEADERS,
     max_age=config.CORS_SETTINGS.MAX_AGE,
 )
+
+if config.FORCE_SSL:
+    app.add_middleware(HTTPSRedirectMiddleware)
+
 app.add_middleware(
-    GZipMiddleware,
-    minimum_size=1024
+    TrustedHostMiddleware,
+    allowed_hosts=config.ALLOWED_HOSTS
 )
+
 
 monitor: MonitorFile = None
 
 
 @app.on_event('startup')
-async def startup():
+async def check_on_startup():
     # check import
     for _path_ in os.listdir(config.path):
         if _path_ in ("statics", "templates"):
@@ -63,60 +207,9 @@ async def startup():
     # static & template
     os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
     os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
-    app.mount('/static', StaticFiles(directory="statics"))
 
 
 @app.on_event('shutdown')
-async def shutdown():
+async def clear_check_on_shutdown():
     global monitor
     monitor.stop()
-
-
-@app.route("/")
-async def index(request):
-    request.path_params['filepath'] = ""
-    return await http(request)
-
-
-@app.route('/favicon.ico')
-async def favicon(request):
-    return RedirectResponse("/static/favicon.ico")
-
-
-@app.route("/{filepath:path}", methods=['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'])
-async def http(request):
-    filepath = request.path_params['filepath']
-    if filepath == "" or filepath.endswith("/"):
-        filepath += "index"
-    # Google SEO
-    if not config.ALLOW_UNDERLINE:
-        if "_" in filepath:
-            return RedirectResponse(f'/{filepath.replace("_", "-")}', status_code=301)
-        filepath = filepath.strip(".").replace("-", "_")
-
-    # judge python file
-    abspath = os.path.join(config.path, "views", filepath + ".py")
-    if not os.path.exists(abspath):
-        raise HTTPException(404)
-
-    pathlist = ['views'] + filepath.split("/")
-
-    # find http handler
-    module_path = ".".join(pathlist)
-    module = importlib.import_module(module_path)
-    try:
-        get_response = module.HTTP()
-    except AttributeError:
-        raise HTTPException(404)
-
-    # call middleware
-    for deep in range(len(pathlist), 0, -1):
-        try:
-            module = importlib.import_module(".".join(pathlist[:deep]))
-            get_response = module.Middleware(get_response)
-            logger.debug(f"Call middleware in {module}")
-        except AttributeError:
-            continue
-
-    # get response
-    return await get_response(request)
