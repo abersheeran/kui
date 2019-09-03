@@ -1,16 +1,17 @@
 import os
 import sys
-import json
 import copy
 import typing
 import logging
 import importlib
 
 from starlette.types import Scope, Receive, Send
-from starlette.routing import Lifespan, WebSocketClose
+from starlette.routing import Lifespan
 from starlette.staticfiles import StaticFiles
 from starlette.requests import Request
-from starlette.responses import PlainTextResponse
+from starlette.websockets import WebSocket, WebSocketClose
+from starlette.responses import RedirectResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -90,9 +91,21 @@ class Filepath:
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        # websocket_close = WebSocketClose()
-        # await websocket_close(receive, send)
-        pass
+        websocket = WebSocket(scope, receive=receive, send=send)
+        try:
+            pathlist = self.get_pathlist(websocket.url.path)
+            # find websocket handler
+            module_path = ".".join(pathlist)
+            module = importlib.import_module(module_path)
+            try:
+                handler = module.Socket()
+            except AttributeError:
+                raise HTTPException(404)
+        except HTTPException:
+            websocket_close = WebSocketClose()
+            await websocket_close(receive, send)
+            return
+        await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         assert scope["type"] in ("http", "websocket", "lifespan")
@@ -208,12 +221,17 @@ async def check_on_startup():
     global monitor
     monitor = MonitorFile(config.path)
 
-    # static & template
-    os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
-    os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
-
 
 @app.on_event('shutdown')
 async def clear_check_on_shutdown():
     global monitor
     monitor.stop()
+
+
+@app.on_event('startup')
+async def create_directories():
+    """
+    create directories for static & template
+    """
+    os.makedirs(os.path.join(config.path, "statics"), exist_ok=True)
+    os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)

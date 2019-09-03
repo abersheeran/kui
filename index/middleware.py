@@ -1,4 +1,7 @@
 import typing
+
+from starlette.requests import Request
+
 from .concurrency import keepasync
 
 
@@ -14,7 +17,7 @@ class MiddlewareMixin(metaclass=keepasync('process_request', 'process_response')
             get_response = base_middleware(get_response)
         return get_response
 
-    async def __call__(self, request):
+    async def __call__(self, request: Request):
         response = None
         if hasattr(self, 'process_request'):
             response = await self.process_request(request)
