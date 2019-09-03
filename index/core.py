@@ -101,10 +101,12 @@ class Filepath:
                 handler = module.Socket()
             except AttributeError:
                 raise HTTPException(404)
-        except HTTPException:
-            websocket_close = WebSocketClose()
-            await websocket_close(receive, send)
-            return
+        except HTTPException as exception:
+            if exception.status_code == 404:
+                websocket_close = WebSocketClose()
+                await websocket_close(receive, send)
+                return
+            raise exception
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:

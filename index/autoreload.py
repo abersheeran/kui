@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import logging
 import typing
 import threading
@@ -38,12 +39,16 @@ class ImportTypeError(Exception):
         self.sentence = sentence
 
 
-def _import(abspath: str):
+def _import(abspath: str, nosleep: bool = False):
     """
     import module in Config().path
 
     return: module
     """
+    if not nosleep:
+        time.sleep(1.3)
+        if not os.path.exists(abspath):
+            return
     relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
     # check import
     for error_line_num, error_sentence in check(abspath):
@@ -60,7 +65,8 @@ def _reload(abspath: str):
     reload module in Config().path
     """
     module = _import(abspath)
-    importlib.reload(module)
+    if module is not None:
+        importlib.reload(module)
 
 
 def checkall(path: str):
@@ -69,7 +75,7 @@ def checkall(path: str):
             if not file.endswith(".py"):
                 continue
             abspath = os.path.join(root, file)
-            _import(abspath)
+            _import(abspath, True)
 
 
 class MonitorFileEventHandler(FileSystemEventHandler):

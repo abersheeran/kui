@@ -2,6 +2,7 @@ import os
 import json
 import logging
 
+from .utils import Singleton
 
 __all__ = [
     "Config"
@@ -106,12 +107,7 @@ def _import_environ():
     return result
 
 
-class Config(UpperDict):
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_instance'):
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
+class Config(UpperDict, metaclass=Singleton):
 
     def __init__(self):
         super().__init__({})
