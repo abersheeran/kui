@@ -3,7 +3,7 @@ from index.view import View
 from index.config import logger
 from index.responses import TemplateResponse
 
-from views.utils import db
+from utils import db
 
 
 class HTTP(View):
