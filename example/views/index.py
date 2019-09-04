@@ -1,4 +1,3 @@
-from index import Config
 from index.view import View
 from index.config import logger
 from index.responses import TemplateResponse

@@ -18,9 +18,6 @@ HTTP_METHOD_NAMES = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options',
 
 class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
 
-    def __init__(self) -> None:
-        pass
-
     async def __call__(self, request: Request) -> Response:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
@@ -59,9 +56,6 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
 class SocketView:
 
     encoding = None  # May be "text", "bytes", or "json".
-
-    def __init__(self) -> None:
-        pass
 
     async def __call__(self, websocket: WebSocket) -> None:
         await self.on_connect(websocket)
