@@ -21,6 +21,7 @@ from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .config import Config
 from .autoreload import MonitorFile, checkall
+from .responses import FileResponse
 
 logger = logging.getLogger(__name__)
 config = Config()
@@ -69,6 +70,11 @@ class Filepath:
             subscope = copy.copy(scope)
             subscope['path'] = subscope['path'][len('/static'):]
             await response(subscope, receive, send)
+            return
+        # favicon.ico
+        if request.url.path == "/favicon.ico":
+            response = FileResponse('favicon.ico')
+            await response(scope, receive, send)
             return
 
         pathlist = self.get_pathlist(request.url.path)
