@@ -190,13 +190,13 @@ app.add_middleware(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.CORS_SETTINGS.ALLOW_ORIGINS,
-    allow_methods=config.CORS_SETTINGS.ALLOW_METHODS,
-    allow_headers=config.CORS_SETTINGS.ALLOW_HEADERS,
-    allow_credentials=config.CORS_SETTINGS.ALLOW_CREDENTIALS,
-    allow_origin_regex=config.CORS_SETTINGS.ALLOW_ORIGIN_REGEX,
-    expose_headers=config.CORS_SETTINGS.EXPOSE_HEADERS,
-    max_age=config.CORS_SETTINGS.MAX_AGE,
+    allow_origins=config.CORS_ALLOW_ORIGINS,
+    allow_methods=config.CORS_ALLOW_METHODS,
+    allow_headers=config.CORS_ALLOW_HEADERS,
+    allow_credentials=config.CORS_ALLOW_CREDENTIALS,
+    allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
+    expose_headers=config.CORS_EXPOSE_HEADERS,
+    max_age=config.CORS_MAX_AGE,
 )
 
 if config.FORCE_SSL:

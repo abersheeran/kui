@@ -4,15 +4,13 @@
     "allowed_hosts": [
         "localhost"
     ],
-    "cors_settings": {
-        "allow_origins": [
-            "*"
-        ],
-        "allow_methods": [
-            "GET"
-        ],
-        "allow_credentials": false
-    },
+    "cors_allow_origins": [
+        "*"
+    ],
+    "cors_allow_methods": [
+        "GET"
+    ],
+    "cors_allow_credentials": false,
     "dev": {
         "host": "0.0.0.0",
         "debug": true

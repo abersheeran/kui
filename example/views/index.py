@@ -12,4 +12,4 @@ class HTTP(View):
         return TemplateResponse("home.html", {"request": self.request, "db": db.some_db_settings})
 
     async def post(self):
-        return {"message": "some error in server"}, 500, {"server": "index.py"}
+        return {"message": "some error in server"}, 200, {"server": "index.py"}

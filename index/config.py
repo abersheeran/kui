@@ -146,15 +146,13 @@ class Config(UpperDict, metaclass=Singleton):
         # middleware
         self['force_ssl'] = False
         self['allowed_hosts'] = ["*"]
-        self['cors_settings'] = {
-            "allow_origins": (),
-            "allow_methods": ("GET",),
-            "allow_headers": (),
-            "allow_credentials": False,
-            "allow_origin_regex": None,
-            "expose_headers": (),
-            "max_age": 600,
-        }
+        self['cors_allow_origins'] = ()
+        self["cors_allow_methods"] = ("GET",)
+        self["cors_allow_headers"] = ()
+        self["cors_allow_credentials"] = False
+        self["cors_allow_origin_regex"] = None
+        self["cors_expose_headers"] = ()
+        self["cors_max_age"] = 600
 
     def update(self, data: dict):
         for key in data.keys():

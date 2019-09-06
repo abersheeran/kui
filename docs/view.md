@@ -1,23 +1,21 @@
-## View
+## HTTP
 
-In all Python files that you expect to handle HTTP requests, you need to define a class called `HTTP`.
+在`views`里创建任意合法名称的`.py`文件，并在其中创建名为 `HTTP` 的类，即可使此文件能够处理对应其相对于 `views` 的路径的 HTTP 请求。
 
-Example:
+但较为特殊的是名为 `index.py` 的文件，它能够处理以 `/` 作为最后一个字符的 URI。
 
-```python
-from index.view import View
+**注意**：由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 302 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/#allow_underline) 为真去关闭此功能。
 
+* 一些例子：
 
-class HTTP(View):
+    文件相对路径|文件能处理的URI
+    ---|---
+    views/index.py|/
+    views/about.py|/about
+    views/api/create_article.py|/api/create-article
+    views/article/index.py|/article/
 
-    def get(self):
-        return templates.TemplateResponse("home.html", {"request": self.request})
-
-    def post(self):
-        return {"message": "some error in server"}, 500, {"server": "index.py"}
-```
-
-In the class, you can define the following methods to handle the corresponding HTTP request.
+`HTTP` 的类应从 `index.view.View` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
 
 1. get
 2. post
@@ -28,32 +26,52 @@ In the class, you can define the following methods to handle the corresponding H
 7. options
 8. trace
 
-The `self.request` is the `starlette.requests.Request` object.
+这些函数不接受任何参数，但可以使用 `self.request` 去获取此次请求的一些信息，它是一个 `starlette.requests.Request` 对象。
+
+**注意：这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了不必要的损耗，尽量使用 `async def` 去定义它们。**
 
 ## Middleware
 
-Define a class named `Middleware` in any `__init__.py` under views, which will intercept or process any request or response that passes this path.
+在 `views` 中任意 `__init__.py` 中定义名为 `Middleware` 的类, 它将能处理所有通过该路径的 HTTP 请求。
 
-`Middleware` inherits from `MiddlewareMixin` and there are two methods to override it.
+譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/*` 的请求。
+
+`Middleware` 需要继承 `index.middleware.MiddlewareMixin`，有以下两个方法可以重写。
 
 1. `process_request(request)`
 
-    This method must return `None`, otherwise the process will be terminated early.
+    此方法在请求被层层传递时调用，可用于修改 `request` 对象以供后续处理使用。必须返回 `None`，否则返回值将作为最终结果并直接终止此次请求。
 
 2. `process_response(request, response)`
 
-    This method must return a response.
+    此方法在请求被正常处理、已经返回响应对象后调用，它必须返回一个可用的响应对象（一般来说直接返回 `response` 即可）。
 
-### example
+**注意：以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了不必要的损耗，尽量使用 `async def` 去定义它们。**
 
-Write the following in `views/__init__.py`
+### 子中间件
+
+很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `ChildMiddlwares` 属性，可以为中间件指定子中间件。
+
+**注意：子中间件的执行顺序是从右到左。**
 
 ```python
 from index.middleware import MiddlewareMixin
 from index.config import logger
 
 
+class ExampleChildMiddleware(MiddlewareMixin):
+
+    async def process_request(self, request):
+        logger.info("example base middleware request")
+
+    async def process_response(self, request, response):
+        logger.info("example base middleware response")
+        return response
+
+
 class Middleware(MiddlewareMixin):
+
+    ChildMiddlwares = (ExampleChildMiddleware, )
 
     async def process_request(self, request):
         logger.info("enter first process request")
@@ -61,39 +79,4 @@ class Middleware(MiddlewareMixin):
     async def process_response(self, request, response):
         logger.info("enter last process response")
         return response
-```
-
-Visit `/index.py` in browser, to see the following information in the console
-
-```text
-INFO: enter first process request
-INFO: enter last process response
-INFO: ('127.0.0.1', 21203) - "GET /index.py HTTP/1.1" 200
-```
-
-And then, write the following in `views/about/__init__.py`
-
-```python
-from index.middleware import MiddlewareMixin
-from index.config import logger
-
-
-class Middleware(MiddlewareMixin):
-
-    def process_request(self, request):
-        logger.info("enter second process request")
-
-    def process_response(self, request, response):
-        logger.info("enter second last process response")
-        return response
-```
-
-Visit `/about/me.py` in browser, to see the following information in the console
-
-```text
-INFO: enter first process request
-INFO: enter second process request
-INFO: enter second last process response
-INFO: enter last process response
-INFO: ('127.0.0.1', 21223) - "GET /about/me.py HTTP/1.1" 200
 ```

@@ -2,7 +2,7 @@
 
 Index.py 内置的配置类 `index.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
 
-所有配置都是大小写无关的，但推荐在程序中使用大写——因为所有配置在启动后都只读。
+所有配置都是大小写无关的，但推荐在程序中使用大写。
 
 在 Index 启动时，它将自动从环境变量与项目根目录下 config.json 里读取配置。
 
@@ -128,65 +128,63 @@ log_level   | logging
 
 当 `allow_underline` 为假时，如果 _ 存在于 URI 中，它将会被自动替换成 - 并且 301 跳转过去。
 
-#### CORS_SETTINGS
+#### CORS_ALLOW_ORIGINS
 
-- **默认值:**
+- **默认值:** `()`
 
-  {
-    "allow_origins": (),
-    "allow_methods": ("GET",),
-    "allow_headers": (),
-    "allow_credentials": False,
-    "allow_origin_regex": None,
-    "expose_headers": (),
-    "max_age": 600,
-  }
+在跨域请求中允许的 ORIGIN 列表。
 
-The following arguments are supported:
+例如： `['https://example.org', 'https://www.example.org']`
 
-- allow_origins
+你可以使用 `['*']` 来允许所有的 ORIGIN 值。
 
-    A list of origins that should be permitted to make cross-origin requests.
+#### CORS_ALLOW_ORIGIN_REGEX
 
-    eg. `['https://example.org', 'https://www.example.org']`.
+- **默认值:** `None`
 
-    You can use `['*']` to allow any origin.
+需要是一个正则表达式字符串，它将用于匹配在跨域请求中允许的 ORIGIN 。
 
-- allow_origin_regex
+例如：`'https://.*\.example\.org'`
 
-    A regex string to match against origins that should be permitted to make cross-origin requests.
+#### CORS_ALLOW_METHODS
 
-    eg. `'https://.*\.example\.org'`.
+- **默认值:** `("GET",)`
 
-- allow_methods
+在跨域请求中允许的 HTTP 请求方法列表。
 
-    A list of HTTP methods that should be allowed for cross-origin requests.
+你可以使用 `['*']` 来允许所有的请求方法。
 
-    You can use `['*']` to allow all standard methods.
+#### CORS_ALLOW_HEADERS
 
-- allow_headers
+- **默认值:** `()`
 
-    A list of HTTP request headers that should be supported for cross-origin requests.
+在跨域请求中允许被使用的 header 列表。
 
-    You can use `['*']` to allow all headers. The Accept, Accept-Language, Content-Language and Content-Type headers are always allowed for CORS requests.
+你可以使用 `['*']` 来允许所有的 header。`Accept`、`Accept-Language`、`Content-Language` 和 `Content-Type` 在跨域请求中是默认允许的。
 
-- allow_credentials
+#### CORS_ALLOW_CREDENTIALS
 
-    Indicate that cookies should be supported for cross-origin requests.
+- **默认值:** `False`
 
-- expose_headers
+允许在跨域请求中携带 cookies。
 
-    Indicate any response headers that should be made accessible to the browser.
+#### CORS_EXPOSE_HEADERS
 
-- max_age
+- **默认值:** `()`
 
-    Sets a maximum time in seconds for browsers to cache CORS responses.
+指定可供浏览器访问的任何响应头。
 
-## Explain environmental isolation
+#### CORS_MAX_AGE
 
-Some configurations of the development and production environments may differ when developing a website. Index.py has this isolation built in. You only need to specify the value of INDEX-_ENV in the environment variable. It will first read from the specified environment. If the specified environment does not exist, it will continue to look up.
+- **默认值:** `600`
 
-Like this configuration file
+设置浏览器缓存 CORS 响应的最长时间（单位：秒）。
+
+## 什么是配置隔离？
+
+同一个项目，不同环境下的部分配置可能不同。Index 内置的配置允许使用 `ENV` 来指定当前使用的配置环境。
+
+看下面这个配置文件
 
 ```json
 {
@@ -195,15 +193,13 @@ Like this configuration file
     "allowed_hosts": [
         "localhost"
     ],
-    "cors_settings": {
-        "allow_origins": [
-            "*"
-        ],
-        "allow_methods": [
-            "GET"
-        ],
-        "allow_credentials": false
-    },
+    "cors_allow_origins": [
+        "*"
+    ],
+    "cors_allow_methods": [
+        "GET"
+    ],
+    "cors_allow_credentials": false,
     "dev": {
         "host": "0.0.0.0",
         "debug": true
@@ -216,8 +212,8 @@ Like this configuration file
 }
 ```
 
-`Config().DEBUG` will be `True` when you specify the value of `INDEX_ENV` as "dev".
+当 `ENV` 的值为 `"dev"` 时，`Config().DEBUG` 会为 `True`。
 
-When you specify the value of `INDEX_ENV` as "pro", when using `Config().DEBUG`, it will first look for "pro". When it is not found, it continues to look up. However, this configuration file does not have `DEBUG` configured on root, so the default value of `False` is used.
+当你指定 `ENV` 的值为 `"pro"` 时, 在使用 `Config().DEBUG` 的时候，它将先从 `"pro"` 中查找 `"debug"`（不分大小写）。当没有找到时，继续向上查找。然而这份配置文件并没有在根配置中指定 `"debug"`，所以 `Config().DEBUG` 会使用默认值 `False`。
 
-Other configurations are also like this.
+其他的配置同理。
