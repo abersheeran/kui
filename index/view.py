@@ -117,3 +117,4 @@ class SocketView:
 
     async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
         """Override to handle a disconnecting websocket"""
+        await websocket.close(code=close_code)

@@ -12,7 +12,7 @@ Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射�
 
     这个函数在一个 websocket 连接被建立后调用，你必须在其中显式的调用 `await websocket.accept()` 来接受 websocket 连接的建立。
 
-2. `on_receive(websocket: WebSocket, data)`
+2. `on_receive(websocket: WebSocket, data: typing.Any)`
 
     这个函数在接受一条完整的数据时被调用（你不需要考虑数据帧），`data` 的类型由类属性 `encoding` 控制。
 

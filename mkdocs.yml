@@ -13,7 +13,9 @@ nav:
     - 可用的配置: 'config.md'
     - 处理 HTTP: 'view.md'
     - HTTP 响应对象: 'response.md'
+    - 中间件: 'middleware.md'
     - 处理 Websocket: 'websocket.md'
+    - 事件钩子: 'event.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:

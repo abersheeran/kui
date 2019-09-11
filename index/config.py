@@ -166,4 +166,5 @@ class Config(UpperDict, metaclass=Singleton):
         return value
 
 
+config = Config()
 logger.setLevel(LOG_LEVELS[Config().log_level])

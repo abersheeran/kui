@@ -4,14 +4,14 @@
 
 在 `index.repsonses` 里内置的可用对象如下：
 
-* Response
-* HTMLResponse
-* PlainTextResponse
-* JSONResponse
-* RedirectResponse
-* StreamingResponse
-* FileResponse
-* TemplateResponse
+* [Response](https://www.starlette.io/responses/#response)
+* [HTMLResponse](https://www.starlette.io/responses/#htmlresponse)
+* [PlainTextResponse](https://www.starlette.io/responses/#plaintextresponse)
+* [JSONResponse](https://www.starlette.io/responses/#jsonresponse)
+* [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
+* [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
+* [FileResponse](https://www.starlette.io/responses/#fileresponse)
+* [TemplateResponse](https://www.starlette.io/templates/#testing-template-responses)
 
 ## 自定义返回类型
 
