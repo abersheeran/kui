@@ -1,6 +1,6 @@
 # index.py
 
-Although I've never used PHP, I like its hot-swap mechanism. I expect to use index.py to make Python's Web program deployment easier.
+An easy-to-use asynchronous web framework based on ASGI. Support hot overload (real).
 
 - [Index.py Document](https://abersheeran.github.io/index.py/)
 
@@ -36,4 +36,4 @@ Execute the command `index-cli dev` in the same directory as `views`.
 
 And then, try to change the content in `index.py`, refresh your browser, the page content will be changed.
 
-Index.py can automatically update your Python file changes to the server, manage your index.py service, maybe you only need one ftp.
+Index.py can automatically update your Python file changes to the server, manage your index.py service, maybe you only need ftp.
