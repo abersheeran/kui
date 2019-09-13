@@ -32,7 +32,7 @@ class HTTP(View):
         return "hello world"
 ```
 
-Execute the command `index-cli dev` in the same directory as `views`.
+Execute the command `index-cli serve` in the same directory as `views`.
 
 And then, try to change the content in `index.py`, refresh your browser, the page content will be changed.
 

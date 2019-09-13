@@ -36,6 +36,6 @@ class HTTP(View):
         return "hello world"
 ```
 
-在项目的根目录下，执行命令 `index-cli dev`。
+在项目的根目录下，执行命令 `index-cli serve`。
 
 访问 [http://localhost:4190](http://localhost:4190) 吧！

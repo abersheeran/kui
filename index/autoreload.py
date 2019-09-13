@@ -69,15 +69,6 @@ def _reload(abspath: str):
         importlib.reload(module)
 
 
-def checkall(path: str):
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if not file.endswith(".py"):
-                continue
-            abspath = os.path.join(root, file)
-            _import(abspath, True)
-
-
 class MonitorFileEventHandler(FileSystemEventHandler):
 
     def dispatch(self, event):

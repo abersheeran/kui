@@ -1,17 +1,17 @@
 import os
-import re
 import sys
 import logging
-import subprocess
 from multiprocessing import cpu_count
 
 import click
 import uvicorn
 
-from . import app, Config
-from .config import LOG_LEVELS
+from .config import LOG_LEVELS, config
+from .autoreload import _import
+from .__version__ import __version__
 
-config = Config()
+from . import app
+
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
     datefmt='%Y-%m-%d %H:%M:%S',
@@ -25,13 +25,13 @@ def execute(command: str):
     os.system(command)
 
 
-@click.group()
+@click.group(help=f"Index.py {__version__}")
 def main():
     pass
 
 
-@main.command(help='use only uvicorn')
-def dev():
+@main.command(help='use only uvicorn to deploy')
+def serve():
     uvicorn.run(
         app,
         host=config.HOST,
@@ -43,7 +43,7 @@ def dev():
     )
 
 
-@main.command(help="deploy by gunicorn")
+@main.command(help="use uvicorn to deploy by gunicorn")
 @click.option("--workers", "-w", default=cpu_count())
 @click.option("--daemon", "-d", default=False, is_flag=True)
 @click.option("--configuration", "-c")
@@ -68,3 +68,17 @@ def gunicorn(workers, daemon, configuration, method):
         execute("kill -TERM `cat .pid`")
     elif method == "reload":
         execute("kill -HUP `cat .pid`")
+
+
+@main.command(help="check .py files in program")
+def check():
+    views_path = os.path.join(config.path, 'views/').replace("\\", "/")
+    for root, dirs, files in os.walk(config.path):
+        for file in files:
+            if not file.endswith(".py"):
+                continue
+            abspath = os.path.join(root, file).replace("\\", "/")
+            module = _import(abspath, nosleep=True)
+            if abspath.startswith(views_path) and not abspath.endswith("__init__.py"):
+                if not(hasattr(module, 'HTTP') or hasattr(module, 'Socket')):
+                    print(f'- {module} must have HTTP or Socket')

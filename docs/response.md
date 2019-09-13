@@ -1,4 +1,4 @@
-## Response
+## 响应类型
 
 对于任何正常处理的 HTTP 请求都必须返回一个 `index.responses.Response` 对象或者是它的子类对象。
 

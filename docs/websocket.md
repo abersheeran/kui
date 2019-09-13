@@ -1,4 +1,4 @@
-## Websocket
+## Socket
 
 Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射到 URI 的设计。
 
