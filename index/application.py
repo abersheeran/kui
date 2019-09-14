@@ -61,6 +61,8 @@ class Filepath:
             return
         # favicon.ico
         if request.url.path == "/favicon.ico":
+            if not os.path.exists(os.path.normpath('favicon.ico')):
+                raise HTTPException(404)
             response = FileResponse('favicon.ico')
             await response(scope, receive, send)
             return
