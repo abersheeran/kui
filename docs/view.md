@@ -4,7 +4,7 @@
 
 但较为特殊的是名为 `index.py` 的文件，它能够处理以 `/` 作为最后一个字符的 URI。
 
-**注意**：由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 302 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/#allow_underline) 为真去关闭此功能。
+**注意**：由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/#allow_underline) 为真去关闭此功能。
 
 * 一些例子：
 
