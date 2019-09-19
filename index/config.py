@@ -1,5 +1,6 @@
 import os
 import json
+import typing
 import logging
 
 from .utils import Singleton
@@ -31,7 +32,7 @@ class UpperDict:
         for key in data.keys():
             self[key] = data[key]
 
-    def __str__(self):
+    def __str__(self) -> str:
         indent = 4
         result = ["{"]
 
@@ -54,7 +55,7 @@ class UpperDict:
 
         return "\n".join(result)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: typing.Any) -> None:
         key = key.upper()
 
         if isinstance(value, dict):
@@ -70,15 +71,15 @@ class UpperDict:
                 value = int(value)
             self.__dict[key] = value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> typing.Any:
         return self.__dict[key.upper()]
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: typing.Any) -> None:
         if name == f"_UpperDict__dict":
             return super().__setattr__(name, value)
         raise ConfigError("Modifying the attribute value of Config is not allowed.")
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> typing.Any:
         try:
             value = self.get(name)
             # if value is None:
@@ -87,14 +88,14 @@ class UpperDict:
         except KeyError:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
-    def get(self, key, default=None):
+    def get(self, key: str, default=None) -> typing.Any:
         try:
             return self.__dict[key.upper()]
         except KeyError:
             return default
 
 
-def _import_environ():
+def _import_environ() -> typing.Dict:
     result = {}
     for key in filter(
         lambda x: x.startswith("INDEX_") and x.upper() in ("DEBUG", "ENV"),
@@ -109,7 +110,7 @@ def _import_environ():
 
 class Config(UpperDict, metaclass=Singleton):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__({})
         self.setdefault()
         # read config from `config.json`
@@ -118,11 +119,11 @@ class Config(UpperDict, metaclass=Singleton):
         self.update(_import_environ())
 
     @property
-    def path(self):
+    def path(self) -> str:
         """return os.getcwd()"""
         return os.getcwd()
 
-    def import_from_file(self, jsonfile: str):
+    def import_from_file(self, jsonfile: str) -> None:
         try:
             with open(jsonfile, "r") as file:
                 data = json.load(file)
@@ -133,7 +134,7 @@ class Config(UpperDict, metaclass=Singleton):
         except FileNotFoundError:
             pass
 
-    def setdefault(self):
+    def setdefault(self) -> None:
         """set default value"""
 
         self["env"] = "dev"
@@ -154,11 +155,11 @@ class Config(UpperDict, metaclass=Singleton):
         self["cors_expose_headers"] = ()
         self["cors_max_age"] = 600
 
-    def update(self, data: dict):
+    def update(self, data: dict) -> None:
         for key in data.keys():
             self[key] = data[key]
 
-    def get(self, key, default=None):
+    def get(self, key, default=None) -> typing.Any:
         env = super().get(self['env'], {})
         value = env.get(key, None)
         if value is None:

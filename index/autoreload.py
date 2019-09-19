@@ -6,7 +6,7 @@ import typing
 import threading
 import importlib
 
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
 
 from .config import Config
@@ -60,7 +60,7 @@ def _import(abspath: str, nosleep: bool = False):
     return importlib.import_module(relpath.replace("/", "."))
 
 
-def _reload(abspath: str):
+def _reload(abspath: str) -> None:
     """
     reload module in Config().path
     """
@@ -71,16 +71,16 @@ def _reload(abspath: str):
 
 class MonitorFileEventHandler(FileSystemEventHandler):
 
-    def dispatch(self, event):
+    def dispatch(self, event: FileSystemEvent):
         if not event.src_path.endswith(".py"):
             return
         return super().dispatch(event)
 
-    def on_modified(self, event):
+    def on_modified(self, event: FileSystemEvent):
         logger.debug(f"reloading {event.src_path}")
         threading.Thread(target=_reload, args=(event.src_path, ), daemon=True).start()
 
-    def on_created(self, event):
+    def on_created(self, event: FileSystemEvent):
         logger.debug(f"loading {event.src_path}")
         threading.Thread(target=_import, args=(event.src_path, ), daemon=True).start()
 

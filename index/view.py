@@ -49,7 +49,7 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
             "Content-Length": "0"
         })
 
-    def allowed_methods(self):
+    def allowed_methods(self) -> typing.List[str]:
         return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(self, m)]
 
 

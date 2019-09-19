@@ -5,6 +5,9 @@ from functools import wraps
 from .config import Config
 
 
+AsyncCallable = typing.Callable[[typing.Any], typing.Awaitable]
+
+
 def typeassert(func: typing.Callable) -> typing.Callable:
     """
     Force check parameter type by type hint
@@ -48,7 +51,7 @@ def typeassert(func: typing.Callable) -> typing.Callable:
     return wrapper
 
 
-def typeasserts(*ty_args, **ty_kwargs):
+def typeasserts(*ty_args, **ty_kwargs) -> typing.Callable:
     """
     Type checking without parameter annotation
 
@@ -56,7 +59,7 @@ def typeasserts(*ty_args, **ty_kwargs):
 
     """
 
-    def decorate(func):
+    def decorate(func: typing.Callable) -> typing.Callable:
         # If in optimized mode, disable type checking
         if not Config().DEBUG:
             return func
@@ -66,7 +69,7 @@ def typeasserts(*ty_args, **ty_kwargs):
         bound_types = sig.bind_partial(*ty_args, **ty_kwargs).arguments
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> typing.Any:
             bound_values = sig.bind(*args, **kwargs)
             # Enforce type assertions across supplied arguments
             for name, value in bound_values.arguments.items():

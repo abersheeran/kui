@@ -46,20 +46,20 @@ monitor: MonitorFile = None
 
 
 @app.on_event('startup')
-async def check_on_startup():
+async def check_on_startup() -> None:
     # monitor file event
     global monitor
     monitor = MonitorFile(config.path)
 
 
 @app.on_event('shutdown')
-async def clear_check_on_shutdown():
+async def clear_check_on_shutdown() -> None:
     global monitor
     monitor.stop()
 
 
 @app.on_event('startup')
-async def create_directories():
+async def create_directories() -> None:
     """
     create directories for static & template
     """

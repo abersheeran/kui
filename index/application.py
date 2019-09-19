@@ -19,7 +19,7 @@ from .config import config
 
 class Filepath:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lifespan = Lifespan()
         self.staticfiles = StaticFiles(
             directory=os.path.join(config.path, 'statics'),
