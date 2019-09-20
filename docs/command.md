@@ -12,7 +12,7 @@ Index 内置了一些命令方便使用。**注意：它们都必须在项目根
 
 * `index-cli gunicorn start`
 
-    通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令。
+    通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。
 
         ❯ index-cli gunicorn --help
         Usage: index-cli gunicorn [OPTIONS] METHOD

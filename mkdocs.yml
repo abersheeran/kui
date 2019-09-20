@@ -12,10 +12,11 @@ nav:
   - 开始: 'index.md'
   - 配置: 'config.md'
   - HTTP:
-    - 请求 : 'view.md'
+    - 请求: 'http.md'
     - 响应: 'response.md'
     - 中间件: 'middleware.md'
-  - Websocket: 'websocket.md'
+  - Websocket:
+    - 处理: 'websocket.md'
   - 事件: 'event.md'
   - 命令: 'command.md'
 

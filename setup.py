@@ -132,6 +132,9 @@ class DocsCommand(Command):
         os.system('git commit -m "auto build by mkdocs"')
         os.system('git push --set-upstream  origin gh-pages -f')
 
+        self.status('Removing builds…')
+        rmtree(os.path.join(here, 'site'), ignore_errors=True)
+
 
 # Where the magic happens:
 setup(
