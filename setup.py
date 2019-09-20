@@ -14,7 +14,7 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'index'
-DESCRIPTION = 'Oldschool Web Development for Humans™'
+DESCRIPTION = 'An easy-to-use asynchronous web framework based on ASGI.'
 URL = 'https://github.com/abersheeran/index.py'
 EMAIL = 'abersheeran@qq.com'
 AUTHOR = 'Aber Sheeran'
