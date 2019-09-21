@@ -23,7 +23,7 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "gunicorn; sys_platform != 'win32' and sys_platform != 'cygwin' and sys_platform != 'cli'",
+    "gunicorn",
     'uvicorn',
     'starlette',
     'aiofiles',
