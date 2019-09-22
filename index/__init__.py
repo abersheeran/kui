@@ -13,8 +13,3 @@ if sys.platform == 'win32' and (sys.version_info.major >= 3 and sys.version_info
 import_module('commands')
 import_module('events')
 import_module('responses')
-
-__all__ = [
-    'app',
-    'Config'
-]
