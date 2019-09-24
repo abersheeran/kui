@@ -98,7 +98,7 @@ class UpperDict:
 def _import_environ() -> typing.Dict:
     result = {}
     for key in filter(
-        lambda x: x.startswith("INDEX_") and x.upper() in ("INDEX_DEBUG", "INDEX_ENV"),
+        lambda x: x.startswith("INDEX_") and x[6:].upper() in ("DEBUG", "ENV"),
         os.environ.keys()
     ):
         if key.upper() == "DEBUG":
