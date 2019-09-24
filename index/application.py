@@ -22,7 +22,7 @@ class Filepath:
     def __init__(self) -> None:
         self.lifespan = Lifespan()
         self.staticfiles = StaticFiles(
-            directory=os.path.join(config.path, 'statics'),
+            directory=os.path.join(config.path, 'static'),
             check_dir=False,
         )
 
