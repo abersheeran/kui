@@ -1,6 +1,9 @@
 import os
 import sys
+import time
+import signal
 import logging
+import subprocess
 from multiprocessing import cpu_count
 
 import click
@@ -68,6 +71,32 @@ def gunicorn(workers, daemon, configuration, method):
         execute("kill -TERM `cat .pid`")
     elif method == "reload":
         execute("kill -HUP `cat .pid`")
+
+
+@main.command(help="run gunicorn in docker")
+@click.option("--workers", "-w", default=2)
+@click.option("--configuration", "-c")
+def docker(workers, configuration):
+    command = (
+        f"gunicorn -k uvicorn.workers.UvicornWorker"
+        f" --bind {config.HOST}:{config.PORT}"
+        f" --chdir {config.path}"
+        f" --log-level {config.LOG_LEVEL}"
+        f" -w {workers}"
+        f"{' -c ' + configuration if configuration else ''}"
+        f" index:app"
+    )
+    process = subprocess.Popen(command, shell=True)
+
+    def sigterm_handler(signo, frame):
+        process.terminate()
+        process.wait()
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
+    while process.poll() is None:
+        time.sleep(3.1)
 
 
 @main.command(help="check .py files in program")

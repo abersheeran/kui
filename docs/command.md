@@ -41,6 +41,14 @@ Index 内置了一些命令方便使用。**注意：它们都必须在项目根
 
     这一般在你更改了配置之后使用，因为 Index 内置了真正的热重载能力，如果只是更新代码，你并不需要重启服务。
 
+### docker
+
+* `index-cli docker`
+
+    使用 `index-cli gunicorn start` 命令运行在 docker 中，会导致容器销毁时，无法优雅的停止 gunicorn (无法接收到 SIGTERM 信号)，所以有了此命令。
+
+    它除了 `--daemon` 参数，其他参数与 `index-cli gunicorn start` 相同。
+
 ### check
 
 * `index-cli check`
