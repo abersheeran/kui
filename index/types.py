@@ -7,6 +7,11 @@ from .config import Config
 
 AsyncCallable = typing.Callable[[typing.Any], typing.Awaitable]
 
+# WSGI: view PEP3333
+Environ = typing.MutableMapping[str, typing.Any]
+StartResponse = typing.Callable[[str, typing.Iterable[typing.Tuple[str, str]]], None]
+WSGIApp = typing.Callable[[Environ, StartResponse], typing.Iterable[typing.Union[str, bytes]]]
+
 
 def typeassert(func: typing.Callable) -> typing.Callable:
     """

@@ -9,3 +9,4 @@ from .core import app
 import_module('commands')
 import_module('events')
 import_module('responses')
+import_module('mounts')

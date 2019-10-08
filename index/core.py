@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 
+from starlette.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -9,13 +10,20 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from .config import config
 from .autoreload import MonitorFile
-from .application import Index
+from .application import Index, favicon
 
 logger = logging.getLogger(__name__)
 
 sys.path.insert(0, config.path)
 
 app = Index(debug=config.DEBUG)
+
+app.mount("/favicon.ico", favicon)
+app.mount("/static", StaticFiles(
+    directory=os.path.join(config.path, 'static'),
+    check_dir=False,
+))
+
 
 # middleware
 app.add_middleware(
