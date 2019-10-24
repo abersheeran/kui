@@ -3,6 +3,7 @@ site_description: 一个基于 ASGI 协议的异步 Web 框架.
 
 theme:
     name: 'material'
+    language: 'zh'
 
 repo_name: abersheeran/index.py
 repo_url: https://github.com/abersheeran/index.py
