@@ -49,21 +49,19 @@ app.add_middleware(
     allowed_hosts=config.ALLOWED_HOSTS
 )
 
+if config.AUTORELOAD:
+    monitor: MonitorFile = None
 
-monitor: MonitorFile = None
+    @app.on_event('startup')
+    async def check_on_startup() -> None:
+        # monitor file event
+        global monitor
+        monitor = MonitorFile(config.path)
 
-
-@app.on_event('startup')
-async def check_on_startup() -> None:
-    # monitor file event
-    global monitor
-    monitor = MonitorFile(config.path)
-
-
-@app.on_event('shutdown')
-async def clear_check_on_shutdown() -> None:
-    global monitor
-    monitor.stop()
+    @app.on_event('shutdown')
+    async def clear_check_on_shutdown() -> None:
+        global monitor
+        monitor.stop()
 
 
 @app.on_event('startup')
