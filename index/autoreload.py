@@ -9,10 +9,9 @@ import importlib
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
 
-from .config import Config
+from .config import config
 
 logger = logging.getLogger(__name__)
-config = Config()
 
 
 IMPORT_PATTERN = re.compile("from (?P<path>.*?) import ")

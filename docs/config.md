@@ -118,6 +118,12 @@ log_level   | logging
 
 `force_ssl` 允许 HTTP/WS 强制跳转到 HTTPS/WSS。
 
+### AUTORELOAD
+
+**默认值:** `True`
+
+`autoreload` 为真时，将允许 Index 提供真正的热重载功能。
+
 ### ALLOW_UNDERLINE
 
 **默认值:** `False`
