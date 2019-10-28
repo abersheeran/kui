@@ -21,3 +21,13 @@ Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射�
     这个函数在一个 websocket 即将被关闭时调用，你必须在其中显式的调用 `await websocket.close(code=close_code)` 用以关闭 websocket 连接。
 
 **注意：这三个函数必须都以 `async def` 的方式被定义为异步函数**
+
+### WebSocket 对象
+
+每个 websocket 连接都会对应一个 `WebSocket` 对象，它拥有一对 `receive`/`send` 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。
+
+- `receive_byte`/`send_byte`: 接收/发送 `bytes` 类型的数据
+
+- `receive_text`/`send_text`: 接收/发送 `text` 类型的数据
+
+- `receive_json`/`send_json`: 接收/发送 `bytes`/`text` 类型的数据，但以 JSON 格式作为中转。这意味着你可以直接发送/接收任何能被 `json.dumps`/`json.loads` 解析的对象。
