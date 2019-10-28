@@ -61,6 +61,8 @@ class Filepath:
         self.lifespan = Lifespan()
 
     def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
+        assert route.startswith("/"), "prefix must be start with '/'"
+        assert not route.endswith("/"), "prefix can't end with '/'"
         self.apps.update({route: app})
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:

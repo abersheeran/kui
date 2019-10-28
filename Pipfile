@@ -8,6 +8,7 @@ autopep8 = "*"
 pylint = "*"
 mkdocs = "*"
 mkdocs-material = "*"
+pytest = "*"
 
 [packages]
 uvicorn = "*"

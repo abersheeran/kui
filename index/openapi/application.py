@@ -1,6 +1,7 @@
 import os
 import typing
 import importlib
+from inspect import signature
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import HTTPEndpoint, Request, Response
@@ -35,5 +36,8 @@ class OpenAPI(HTTPEndpoint):
         return self.post(request)
 
     def post(self, request: Request) -> Response:
-        # TODO
-        pass
+        for view in get_views():
+            for method in view.HTTP.allowed_methods():
+                sig = signature(method)
+                print(sig)
+        return ""
