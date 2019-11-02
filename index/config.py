@@ -142,6 +142,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self['log_level'] = "info"
+        self['autoreload'] = True
         # url
         self['allow_underline'] = False
         # middleware
