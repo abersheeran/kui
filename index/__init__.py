@@ -2,11 +2,11 @@ import sys
 import asyncio
 import importlib
 
-from .utils import import_module
+from .utils import _import_module
 from .config import Config
 from .core import app
 
-import_module('mounts')
-import_module('commands')
-import_module('events')
-import_module('responses')
+_import_module('mounts')
+_import_module('commands')
+_import_module('events')
+_import_module('responses')

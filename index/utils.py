@@ -1,3 +1,4 @@
+import os
 import typing
 import importlib
 
@@ -18,10 +19,11 @@ class Singleton(type):
         return cls.instance
 
 
-def import_module(name: str) -> None:
+def _import_module(name: str) -> None:
     """
     try importlib.import_module, nothing to do when ImportError be raised
     """
+    from .config import config
     try:
         importlib.import_module(name)
     except ImportError:
