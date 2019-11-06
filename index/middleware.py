@@ -7,7 +7,7 @@ from .types import AsyncCallable
 from .concurrency import keepasync
 
 
-class MiddlewareMixin(metaclass=keepasync('process_request', 'process_response')):
+class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):
 
     ChildMiddlwares: typing.Iterable[typing.Callable] = ()
 
@@ -21,12 +21,12 @@ class MiddlewareMixin(metaclass=keepasync('process_request', 'process_response')
 
     async def __call__(self, request: Request) -> Response:
         response = None
-        if hasattr(self, 'process_request'):
+        if hasattr(self, "process_request"):
             response = await self.process_request(request)
 
         if response is None:
             response = await self.get_response(request)
 
-        if hasattr(self, 'process_response'):
+        if hasattr(self, "process_response"):
             response = await self.process_response(request, response)
         return response

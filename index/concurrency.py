@@ -12,7 +12,7 @@ def complicating(func: typing.Callable) -> AsyncCallable:
     """
     always return a coroutine function
     """
-    if not(inspect.isfunction(func) or inspect.ismethod(func)):
+    if not (inspect.isfunction(func) or inspect.ismethod(func)):
         if inspect.iscoroutinefunction(func.__call__):
             return func.__call__
 
@@ -22,6 +22,7 @@ def complicating(func: typing.Callable) -> AsyncCallable:
     @functools.wraps(func)
     async def wrapper(*args, **kwargs) -> typing.Any:
         return await run_in_threadpool(func, *args, **kwargs)
+
     return wrapper
 
 
@@ -38,6 +39,7 @@ def keepasync(*args):
             async def b(self):
                 pass
     """
+
     class AlwaysAsyncMeta(type):
         def __new__(cls, clsname, bases, clsdict):
             for name in args:
@@ -45,4 +47,5 @@ def keepasync(*args):
                     continue
                 clsdict[name] = complicating(clsdict[name])
             return super().__new__(cls, clsname, bases, clsdict)
+
     return AlwaysAsyncMeta

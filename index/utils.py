@@ -4,12 +4,11 @@ import importlib
 
 
 class Singleton(type):
-
     def __init__(
         cls,
         name: str,
         bases: typing.Iterable[str],
-        namespace: typing.Dict[str, typing.Any]
+        namespace: typing.Dict[str, typing.Any],
     ) -> None:
         cls.instance = None
 
@@ -24,6 +23,7 @@ def _import_module(name: str) -> None:
     try importlib.import_module, nothing to do when ImportError be raised
     """
     from .config import config
+
     try:
         importlib.import_module(name)
     except ImportError:

@@ -12,14 +12,14 @@ from .utils import currying, merge_mapping
 
 
 __all__ = [
-    'Model',
-    'IntField',
-    'FloatField',
-    'StrField',
-    'BooleanField',
-    'FileField',
-    'ModelField',
-    'ListField',
+    "Model",
+    "IntField",
+    "FloatField",
+    "StrField",
+    "BooleanField",
+    "FileField",
+    "ModelField",
+    "ListField",
 ]
 
 EMPTY_VALUE = ("", {}, [], None, ())
@@ -32,28 +32,25 @@ class VerifyError(Exception):
 
 
 class FieldError(VerifyError):
-
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
 
 
 class ModelFieldError(VerifyError):
-
     def __init__(self, message: typing.Dict[str, typing.Any]) -> None:
         super().__init__(message)
         self.message = message
 
 
 class Field(metaclass=ABCMeta):
-
     def __init__(
-            self,
-            *,
-            description: str = "No description.",
-            example: typing.Any = None,
-            allow_null: bool = False,
-            default: typing.Any = None
+        self,
+        *,
+        description: str = "No description.",
+        example: typing.Any = None,
+        allow_null: bool = False,
+        default: typing.Any = None,
     ):
         self.description = description
         self.example = example
@@ -64,7 +61,7 @@ class Field(metaclass=ABCMeta):
         if value is None:
             if self.allow_null:
                 return self.default
-            raise FieldError('Not allowed to be empty.')
+            raise FieldError("Not allowed to be empty.")
         return value
 
     @abstractmethod
@@ -76,63 +73,53 @@ class Field(metaclass=ABCMeta):
             "description": self.description,
         }
         if self.default not in EMPTY_VALUE:
-            schema['default'] = self.default
+            schema["default"] = self.default
         return schema
 
 
 class ChoiceField(Field, metaclass=ABCMeta):
-
-    def __init__(
-            self,
-            *,
-            choices: typing.Iterable[str] = (),
-            **kwargs
-    ):
+    def __init__(self, *, choices: typing.Iterable[str] = (), **kwargs):
         super().__init__(**kwargs)
         self.choices = choices
         if choices:
-            assert self.default in choices, 'default value must be in choices'
+            assert self.default in choices, "default value must be in choices"
 
     def check_choice(self, value: typing.Any) -> typing.Any:
         if self.choices and value in self.choices:
             return value
-        raise FieldError(f'value must be in {self.choices}')
+        raise FieldError(f"value must be in {self.choices}")
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
         pass
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
-        schema = {
-            "description": self.description,
-            "": list(self.choices)
-        }
+        schema = {"description": self.description, "": list(self.choices)}
         if self.default not in EMPTY_VALUE:
-            schema['default'] = self.default
+            schema["default"] = self.default
         return schema
 
 
 class FileField(Field):
-
     def __init__(
-            self,
-            prefix: str,
-            *,
-            description: str = "No description.",
-            allow_null: bool = False,
-            save: typing.Callable[[UploadFile], typing.Awaitable[str]] = None,
+        self,
+        prefix: str,
+        *,
+        description: str = "No description.",
+        allow_null: bool = False,
+        save: typing.Callable[[UploadFile], typing.Awaitable[str]] = None,
     ):
         super().__init__(description=description, allow_null=allow_null)
         self.prefix = prefix
         assert not prefix.startswith("/"), 'Prefix cannot start with "/".'
         if save is not None:
-            setattr(self, 'save', save)
+            setattr(self, "save", save)
 
     async def save(self, file: UploadFile) -> str:
         abspath = os.path.join(config.path, self.prefix, file.filename)
         if os.path.exists(abspath):
             raise FileExistsError(abspath)
-        async with asyncopen(abspath, 'w+') as target:
+        async with asyncopen(abspath, "w+") as target:
             while True:
                 data = await file.read(1024)
                 if not data:
@@ -148,24 +135,14 @@ class FileField(Field):
             raise FieldError(f'This file "{value.filename}" already exists.')
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
-        schema = {
-            "description": self.description,
-            "type": "string",
-            "format": "binary"
-        }
+        schema = {"description": self.description, "type": "string", "format": "binary"}
         return schema
 
 
 class BooleanField(Field):
-
-    def __init__(
-            self,
-            *,
-            default: typing.Any = None,
-            **kwargs
-    ):
+    def __init__(self, *, default: typing.Any = None, **kwargs):
         assert default in (True, False), "default in BooleanField must be bool"
-        kwargs['default'] = default
+        kwargs["default"] = default
         super().__init__(**kwargs)
 
     def verify(self, value: typing.Any) -> bool:
@@ -174,50 +151,47 @@ class BooleanField(Field):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update({
-            "type": "boolean",
-        })
+        schema.update(
+            {"type": "boolean",}
+        )
         return schema
 
 
 class IntField(ChoiceField):
-
     def verify(self, value: typing.Any) -> int:
         value = self.check_null(value)
         value = self.check_choice(value)
         try:
             return int(value)
         except ValueError:
-            raise FieldError('Must be an integer.')
+            raise FieldError("Must be an integer.")
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update({
-            "type": "integer",
-        })
+        schema.update(
+            {"type": "integer",}
+        )
         return schema
 
 
 class FloatField(ChoiceField):
-
     def verify(self, value: typing.Any) -> float:
         value = self.check_null(value)
         value = self.check_choice(value)
         try:
             return float(value)
         except ValueError:
-            raise FieldError('Must be an floating point number.')
+            raise FieldError("Must be an floating point number.")
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update({
-            "type": "number",
-        })
+        schema.update(
+            {"type": "number",}
+        )
         return schema
 
 
 class StrField(ChoiceField):
-
     def verify(self, value: typing.Any) -> str:
         value = self.check_null(value)
         value = self.check_choice(value)
@@ -225,42 +199,41 @@ class StrField(ChoiceField):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update({
-            "type": "string",
-        })
+        schema.update(
+            {"type": "string",}
+        )
         return schema
 
 
 class MatchFieldMeta(type):
-
     def __new__(
-            cls,
-            name: str,
-            bases: typing.Iterable[typing.Any],
-            namespace: typing.Dict[str, typing.Any]
+        cls,
+        name: str,
+        bases: typing.Iterable[typing.Any],
+        namespace: typing.Dict[str, typing.Any],
     ):
         fields = {}
         for key, value in namespace:
             if isinstance(value, Field):
                 fields[key] = value
                 if isinstance(value, FileField):
-                    cls._content_type = 'multipart/form-data'
+                    cls._content_type = "multipart/form-data"
                 if isinstance(value, (ListField, ModelField)):
-                    cls._content_type = 'application/json'
+                    cls._content_type = "application/json"
         cls.fields = fields
 
 
 class Model(metaclass=MatchFieldMeta):
-    default_content_type = 'application/json'
+    default_content_type = "application/json"
     _content_type: str
     fields: typing.Dict[str, Field]
 
     def __init__(
-            self,
-            raw_data: typing.Dict[str, typing.Any],
-            *,
-            default: typing.Dict[str, typing.Any] = None,
-            description: str = "",
+        self,
+        raw_data: typing.Dict[str, typing.Any],
+        *,
+        default: typing.Dict[str, typing.Any] = None,
+        description: str = "",
     ) -> None:
         self.raw_data = raw_data
         self.description = description
@@ -287,33 +260,22 @@ class Model(metaclass=MatchFieldMeta):
         for name, field in self.fields:
             if not field.allow_null:
                 required.append(name)
-            properties.append({
-                name: field.openapi()
-            })
-        return {
-            "type": "object",
-            "required": required,
-            "properties": properties
-        }
+            properties.append({name: field.openapi()})
+        return {"type": "object", "required": required, "properties": properties}
 
     @property
     @classmethod
     def content_type(cls) -> str:
-        if hasattr(cls, '_content_type'):
+        if hasattr(cls, "_content_type"):
             return cls._content_type
         return cls.default_content_type
 
 
 class ModelField(Field):
-
     def __init__(
-            self,
-            model: Model,
-            *,
-            default: typing.Dict[str, typing.Any] = {},
-            **kwargs
+        self, model: Model, *, default: typing.Dict[str, typing.Any] = {}, **kwargs
     ):
-        kwargs['default'] = default
+        kwargs["default"] = default
         super().__init__(**kwargs)
         self.model = currying(model)(default=default)
 
@@ -331,15 +293,10 @@ class ModelField(Field):
 
 
 class ListField(Field):
-
     def __init__(
-            self,
-            field: Field,
-            *,
-            default: typing.List[typing.Any] = [],
-            **kwargs
+        self, field: Field, *, default: typing.List[typing.Any] = [], **kwargs
     ):
-        kwargs['default'] = default
+        kwargs["default"] = default
         super().__init__(**kwargs)
         self.field = field
 

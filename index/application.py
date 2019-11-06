@@ -2,6 +2,7 @@ import os
 import copy
 import typing
 import importlib
+from inspect import signature
 
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
 from starlette.routing import Lifespan
@@ -22,8 +23,8 @@ async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
     """
     favicon.ico
     """
-    if scope['type'] == "http" and os.path.exists(os.path.normpath('favicon.ico')):
-        response = FileResponse('favicon.ico')
+    if scope["type"] == "http" and os.path.exists(os.path.normpath("favicon.ico")):
+        response = FileResponse("favicon.ico")
         await response(scope, receive, send)
         return
     raise HTTPException(404)
@@ -49,13 +50,12 @@ def get_pathlist(uri: str) -> typing.List[str]:
         raise HTTPException(404)
 
     pathlist = filepath.split("/")
-    pathlist.insert(0, 'views')
+    pathlist.insert(0, "views")
 
     return pathlist
 
 
 class Filepath:
-
     def __init__(self) -> None:
         self.apps = {}
         self.lifespan = Lifespan()
@@ -121,13 +121,14 @@ class Filepath:
             app: typing.Union[ASGIApp, WSGIApp],
             scope: Scope,
             receive: Receive,
-            send: Send
+            send: Send,
         ) -> None:
-            try:
+            sig = signature(app)
+            if len(sig.parameters) == 3:
                 await app(scope, receive, send)
                 return
-            except TypeError:
-                if scope['type'] != "http":
+            elif len(sig.parameters) == 2:
+                if scope["type"] != "http":
                     raise HTTPException(404)
 
                 app = WSGIMiddleware(app)
@@ -141,7 +142,7 @@ class Filepath:
         for path_prefix, app in self.apps.items():
             if path.startswith(path_prefix):
                 subscope = copy.copy(scope)
-                subscope['path'] = path[len(path_prefix):]
+                subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     await callapp(app, subscope, receive, subsend)

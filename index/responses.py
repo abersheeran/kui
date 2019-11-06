@@ -12,7 +12,7 @@ from starlette.responses import (
     JSONResponse,
     RedirectResponse,
     StreamingResponse,
-    FileResponse
+    FileResponse,
 )
 from starlette.templating import Jinja2Templates
 
@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-TemplateResponse = Jinja2Templates(directory='templates').TemplateResponse
+TemplateResponse = Jinja2Templates(directory="templates").TemplateResponse
 
 
 class AutoResponseType:
@@ -45,7 +45,9 @@ class AutoResponseType:
 
             def wrapper(*args, **kwargs) -> Response:
                 return func(*args, **kwargs)
+
             return wrapper
+
         return register_func
 
     @classmethod
@@ -58,7 +60,9 @@ class AutoResponseType:
         try:
             return cls.type_map[type(args[0])](*args)
         except KeyError:
-            raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
+            raise TypeError(
+                f"Cannot find automatic handler for this type: {type(args[0])}"
+            )
 
 
 register_type = functools.partial(AutoResponseType.register_type)
@@ -71,15 +75,10 @@ def json_type(
     body: dict,
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return JSONResponse(body, status, headers, background=background)
 
 
 @register_type(str)
@@ -88,12 +87,7 @@ def text_type(
     body: str,
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return PlainTextResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return PlainTextResponse(body, status, headers, background=background)

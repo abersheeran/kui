@@ -9,6 +9,7 @@ pylint = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pytest = "*"
+black = "*"
 
 [packages]
 uvicorn = "*"
@@ -19,3 +20,6 @@ gunicorn = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

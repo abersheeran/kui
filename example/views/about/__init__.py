@@ -3,7 +3,6 @@ from index.config import logger
 
 
 class Middleware(MiddlewareMixin):
-
     async def process_request(self, request):
         logger.info("enter second process request")
 

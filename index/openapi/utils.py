@@ -18,6 +18,7 @@ def currying(func: typing.Callable) -> typing.Callable:
             f = partial(f, *args, **kwargs)
             return wrapper
         return f()
+
     return wrapper
 
 

@@ -17,8 +17,8 @@ from . import app
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt='%Y-%m-%d %H:%M:%S',
-    level=LOG_LEVELS[config.log_level]
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=LOG_LEVELS[config.log_level],
 )
 
 
@@ -33,16 +33,16 @@ def main():
     pass
 
 
-@main.command(help='use only uvicorn to deploy')
+@main.command(help="use only uvicorn to deploy")
 def serve():
     uvicorn.run(
         app,
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,
-        logger=logging.getLogger("index"),
+        # logger=logging.getLogger("index"),
         debug=config.DEBUG,
-        lifespan="on"
+        lifespan="on",
     )
 
 
@@ -101,7 +101,7 @@ def docker(workers, configuration):
 
 @main.command(help="check .py files in program")
 def check():
-    views_path = os.path.join(config.path, 'views/').replace("\\", "/")
+    views_path = os.path.join(config.path, "views/").replace("\\", "/")
     for root, dirs, files in os.walk(config.path):
         for file in files:
             if not file.endswith(".py"):
@@ -109,5 +109,5 @@ def check():
             abspath = os.path.join(root, file).replace("\\", "/")
             module = _import(abspath, nosleep=True)
             if abspath.startswith(views_path) and not abspath.endswith("__init__.py"):
-                if not(hasattr(module, 'HTTP') or hasattr(module, 'Socket')):
-                    print(f'- {module} must have HTTP or Socket')
+                if not (hasattr(module, "HTTP") or hasattr(module, "Socket")):
+                    print(f"- {module} must have HTTP or Socket")
