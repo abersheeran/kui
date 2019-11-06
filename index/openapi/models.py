@@ -1,5 +1,4 @@
 import os
-import copy
 import typing
 import asyncio
 from abc import abstractmethod, ABCMeta
@@ -31,13 +30,13 @@ class VerifyError(Exception):
     pass
 
 
-class FieldError(VerifyError):
+class FieldVerifyError(VerifyError):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
 
 
-class ModelFieldError(VerifyError):
+class ModelFieldVerifyError(FieldVerifyError):
     def __init__(self, message: typing.Dict[str, typing.Any]) -> None:
         super().__init__(message)
         self.message = message
@@ -61,7 +60,7 @@ class Field(metaclass=ABCMeta):
         if value is None:
             if self.allow_null:
                 return self.default
-            raise FieldError("Not allowed to be empty.")
+            raise FieldVerifyError("Not allowed to be empty.")
         return value
 
     @abstractmethod
@@ -87,7 +86,7 @@ class ChoiceField(Field, metaclass=ABCMeta):
     def check_choice(self, value: typing.Any) -> typing.Any:
         if self.choices and value in self.choices:
             return value
-        raise FieldError(f"value must be in {self.choices}")
+        raise FieldVerifyError(f"value must be in {self.choices}")
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
@@ -132,7 +131,7 @@ class FileField(Field):
         try:
             return await self.save(value)
         except FileExistsError:
-            raise FieldError(f'This file "{value.filename}" already exists.')
+            raise FieldVerifyError(f'This file "{value.filename}" already exists.')
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = {"description": self.description, "type": "string", "format": "binary"}
@@ -164,7 +163,7 @@ class IntField(ChoiceField):
         try:
             return int(value)
         except ValueError:
-            raise FieldError("Must be an integer.")
+            raise FieldVerifyError("Must be an integer.")
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
@@ -181,7 +180,7 @@ class FloatField(ChoiceField):
         try:
             return float(value)
         except ValueError:
-            raise FieldError("Must be an floating point number.")
+            raise FieldVerifyError("Must be an floating point number.")
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
@@ -238,7 +237,7 @@ class Model(metaclass=MatchFieldMeta):
         self.raw_data = raw_data
         self.description = description
         if default:
-            self.data = merge_mapping(raw_data, copy.deepcopy(default))
+            self.data = merge_mapping(raw_data, default)
         else:
             self.data = raw_data
 
@@ -246,11 +245,11 @@ class Model(metaclass=MatchFieldMeta):
         errors = {}
         for name, field in self.fields:
             try:
-                data = field.verify(self.raw_data.get(name))
+                data = field.verify(self.data.get(name))
                 if asyncio.iscoroutine(data):
                     data = await data
                 setattr(self, name, data)
-            except FieldError as e:
+            except FieldVerifyError as e:
                 errors[name] = e.message
         return errors
 
@@ -283,7 +282,7 @@ class ModelField(Field):
         model = self.model(value)()
         errors = await model.verify()
         if errors:
-            raise ModelFieldError(errors)
+            raise ModelFieldVerifyError(errors)
         return model
 
     def openapi(self) -> typing.Dict[str, typing.Any]:

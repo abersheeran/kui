@@ -1,3 +1,4 @@
+import copy
 import typing
 import inspect
 import functools
@@ -23,7 +24,8 @@ def currying(func: typing.Callable) -> typing.Callable:
 
 
 def merge_mapping(x: typing.Mapping, default: typing.Mapping) -> typing.Mapping:
-    """merge x to default"""
+    """merge x to default. return a *new* Mapping"""
+    default = copy.deepcopy(default)
     for key, value in x.items():
         if isinstance(default.get(key), typing.Mapping):
             if not isinstance(value, typing.Mapping):
