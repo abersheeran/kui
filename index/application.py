@@ -84,9 +84,9 @@ class Filepath:
                 continue
         # get response
         response = await get_response(request)
-        if not isinstance(resp, tuple):
-            resp = (resp,)
-        response = automatic(*resp)
+        if not isinstance(response, tuple):
+            response = (response,)
+        response = automatic(*response)
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:

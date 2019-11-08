@@ -84,9 +84,10 @@ class ChoiceField(Field, metaclass=ABCMeta):
             assert self.default in choices, "default value must be in choices"
 
     def check_choice(self, value: typing.Any) -> typing.Any:
-        if self.choices and value in self.choices:
-            return value
-        raise FieldVerifyError(f"value must be in {self.choices}")
+        if self.choices:
+            if value in self.choices:
+                return value
+            raise FieldVerifyError(f"value must be in {self.choices}")
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
@@ -205,7 +206,7 @@ class StrField(ChoiceField):
 
 
 class MatchFieldMeta(type):
-    def __new__(
+    def __init__(
         cls,
         name: str,
         bases: typing.Iterable[typing.Any],
@@ -220,7 +221,6 @@ class MatchFieldMeta(type):
                 if isinstance(value, (ListField, ModelField)):
                     cls._content_type = "application/json"
         cls.fields = fields
-        return super().__new__(cls, name, bases, namespace)
 
 
 class Model(metaclass=MatchFieldMeta):
@@ -239,9 +239,9 @@ class Model(metaclass=MatchFieldMeta):
         else:
             self.data = raw_data
 
-    async def verify(self) -> typing.Dict[str, str]:
+    async def clean(self) -> typing.Dict[str, str]:
         errors = {}
-        for name, field in self.fields:
+        for name, field in self.fields.items():
             try:
                 data = field.verify(self.data.get(name))
                 if asyncio.iscoroutine(data):
@@ -254,7 +254,7 @@ class Model(metaclass=MatchFieldMeta):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         required = []
         properties = []
-        for name, field in self.fields:
+        for name, field in self.fields.items():
             if not field.allow_null:
                 required.append(name)
             properties.append({name: field.openapi()})
@@ -278,7 +278,7 @@ class ModelField(Field):
 
     async def verify(self, value: typing.Any) -> typing.Any:
         model = self.model(value)()
-        errors = await model.verify()
+        errors = await model.clean()
         if errors:
             raise ModelFieldVerifyError(errors)
         return model

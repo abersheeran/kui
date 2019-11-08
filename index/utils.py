@@ -20,11 +20,10 @@ class Singleton(type):
 
 def _import_module(name: str) -> None:
     """
-    try importlib.import_module, nothing to do when ImportError be raised
+    try importlib.import_module, nothing to do when module not be found.
     """
     from .config import config
 
-    try:
+    if os.path.exists(os.path.join(config.path, name+".py")) or \
+            os.path.exists(os.path.join(config.path, name, "__init__.py")):
         importlib.import_module(name)
-    except ImportError:
-        pass

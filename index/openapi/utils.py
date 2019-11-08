@@ -7,16 +7,11 @@ import functools
 def currying(func: typing.Callable) -> typing.Callable:
     f = func
 
-    if inspect.ismethod(func):
-        partial = functools.partialmethod
-    else:
-        partial = functools.partial
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs) -> typing.Any:
         nonlocal f
         if args or kwargs:
-            f = partial(f, *args, **kwargs)
+            f = functools.partial(f, *args, **kwargs)
             return wrapper
         return f()
 

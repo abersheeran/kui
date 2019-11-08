@@ -41,24 +41,28 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
         else:
             handler = self.http_method_not_allowed
 
+        handler = currying(handler)
+
         sig = signature(handler)
         query = sig.parameters.get('query')
-        if query and isinstance(query.annotation, Model):
+        if query and issubclass(query.annotation, Model):
             _query = query.annotation(self.request.query_params)
-            query_error = await _query.verify()
+            query_error = await _query.clean()
             if query_error:
                 return {"error": {"query": query_error}}, 400
+            handler = handler(query=_query)
 
         body = sig.parameters.get('body')
-        if body and isinstance(body.annotation, Model):
+        if body and issubclass(body.annotation, Model):
             if body.annotation.content_type == "application/json":
                 _body_data = self.request.json()
             else:
                 _body_data = self.request.form()
             _body = body.annotation(_body_data)
-            body_error = await _body.verify()
+            body_error = await _body.clean()
             if body_error:
                 return {"error": {"body": body_error}}, 400
+            handler = handler(body=_body)
 
         return await handler()
 
