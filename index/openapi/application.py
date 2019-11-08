@@ -1,13 +1,12 @@
 import os
-import typing
 import importlib
 from inspect import signature
 
 from starlette.types import Scope, Receive, Send
-from starlette.endpoints import HTTPEndpoint, Request, Response
+from starlette.endpoints import Request, Response
 from starlette.exceptions import HTTPException
 
-from index.responses import JSONResponse, YAMLResponse
+from index.responses import PlainTextResponse, JSONResponse, YAMLResponse
 from index.config import config
 
 from .models import Model, Query
@@ -15,7 +14,7 @@ from .models import Model, Query
 
 def get_views():
     views_path = os.path.join(config.path, "views").replace("\\", "/")
-    for root, dirs, files in os.walk(views_path):
+    for root, _, files in os.walk(views_path):
         for file in files:
             if not file.endswith(".py"):
                 continue
@@ -32,7 +31,7 @@ def get_views():
                 yield path, module
 
 
-class OpenAPI(HTTPEndpoint):
+class OpenAPI:
     def __init__(
         self, title: str, description: str, version: str, *, media_type="yaml"
     ):
@@ -53,6 +52,14 @@ class OpenAPI(HTTPEndpoint):
         handler = getattr(self, handler_name, self.method_not_allowed)
         response = await handler(request)
         await response(scope, receive, send)
+
+    async def method_not_allowed(self, request: Request) -> Response:
+        # If we're running inside a starlette application then raise an
+        # exception, so that the configurable exception handler can deal with
+        # returning the response. For plain ASGI apps, just return the response.
+        if "app" in request.scope:
+            raise HTTPException(status_code=405)
+        return PlainTextResponse("Method Not Allowed", status_code=405)
 
     async def get(self, request: Request) -> Response:
         return await self.post(request)
@@ -93,7 +100,8 @@ class OpenAPI(HTTPEndpoint):
             if not paths[path]:
                 del paths[path]
 
-        if self.media_type == "yaml":
+        if self.media_type == "yaml" or request.query_params.get("type") == "yaml":
             return YAMLResponse(self.openapi)
-        elif self.media_type == "json":
+
+        if self.media_type == "json" or request.query_params.get("type") == "json":
             return JSONResponse(self.openapi)
