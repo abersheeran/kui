@@ -151,7 +151,7 @@ class BooleanField(Field):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "boolean",}
+            {"type": "boolean", }
         )
         return schema
 
@@ -168,7 +168,7 @@ class IntField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "integer",}
+            {"type": "integer", }
         )
         return schema
 
@@ -185,7 +185,7 @@ class FloatField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "number",}
+            {"type": "number", }
         )
         return schema
 
@@ -199,7 +199,7 @@ class StrField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "string",}
+            {"type": "string", }
         )
         return schema
 
@@ -212,7 +212,7 @@ class MatchFieldMeta(type):
         namespace: typing.Dict[str, typing.Any],
     ):
         fields = {}
-        for key, value in namespace:
+        for key, value in namespace.items():
             if isinstance(value, Field):
                 fields[key] = value
                 if isinstance(value, FileField):
@@ -220,11 +220,11 @@ class MatchFieldMeta(type):
                 if isinstance(value, (ListField, ModelField)):
                     cls._content_type = "application/json"
         cls.fields = fields
+        return super().__new__(cls, name, bases, namespace)
 
 
 class Model(metaclass=MatchFieldMeta):
     default_content_type = "application/json"
-    _content_type: str
     fields: typing.Dict[str, Field]
 
     def __init__(
@@ -232,10 +232,8 @@ class Model(metaclass=MatchFieldMeta):
         raw_data: typing.Dict[str, typing.Any],
         *,
         default: typing.Dict[str, typing.Any] = None,
-        description: str = "",
     ) -> None:
         self.raw_data = raw_data
-        self.description = description
         if default:
             self.data = merge_mapping(raw_data, default)
         else:

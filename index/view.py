@@ -1,6 +1,7 @@
 import json
 import typing
 import logging
+from inspect import signature
 
 from starlette import status
 from starlette.types import Message
@@ -8,8 +9,9 @@ from starlette.responses import Response
 from starlette.websockets import WebSocket
 from starlette.requests import Request
 
-from .responses import automatic
 from .concurrency import keepasync
+from .openapi.models import Model
+from .openapi.utils import currying
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +41,26 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
         else:
             handler = self.http_method_not_allowed
 
-        resp = await handler()
+        sig = signature(handler)
+        query = sig.parameters.get('query')
+        if query and isinstance(query.annotation, Model):
+            _query = query.annotation(self.request.query_params)
+            query_error = await _query.verify()
+            if query_error:
+                return {"error": {"query": query_error}}, 400
 
-        if not isinstance(resp, tuple):
-            resp = (resp,)
-        return automatic(*resp)
+        body = sig.parameters.get('body')
+        if body and isinstance(body.annotation, Model):
+            if body.annotation.content_type == "application/json":
+                _body_data = self.request.json()
+            else:
+                _body_data = self.request.form()
+            _body = body.annotation(_body_data)
+            body_error = await _body.verify()
+            if body_error:
+                return {"error": {"body": body_error}}, 400
+
+        return await handler()
 
     async def http_method_not_allowed(self) -> Response:
         logger.warning(

@@ -9,13 +9,13 @@ from .concurrency import keepasync
 
 class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):
 
-    ChildMiddlwares: typing.Iterable[typing.Callable] = ()
+    ChildMiddlewares: typing.Iterable[typing.Callable] = ()
 
     def __init__(self, get_response: AsyncCallable) -> None:
         self.get_response = self.mount_middleware(get_response)
 
     def mount_middleware(self, get_response: AsyncCallable) -> AsyncCallable:
-        for base_middleware in self.ChildMiddlwares:
+        for base_middleware in self.ChildMiddlewares:
             get_response = base_middleware(get_response)
         return get_response
 

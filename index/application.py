@@ -14,7 +14,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
-from .responses import FileResponse
+from .responses import FileResponse, automatic
 from .types import WSGIApp
 from .config import config
 
@@ -84,6 +84,9 @@ class Filepath:
                 continue
         # get response
         response = await get_response(request)
+        if not isinstance(resp, tuple):
+            resp = (resp,)
+        response = automatic(*resp)
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -142,7 +145,7 @@ class Filepath:
         for path_prefix, app in self.apps.items():
             if path.startswith(path_prefix):
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix) :]
+                subscope["path"] = path[len(path_prefix):]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     await callapp(app, subscope, receive, subsend)
