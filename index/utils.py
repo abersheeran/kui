@@ -24,6 +24,7 @@ def _import_module(name: str) -> None:
     """
     from .config import config
 
-    if os.path.exists(os.path.join(config.path, name+".py")) or \
-            os.path.exists(os.path.join(config.path, name, "__init__.py")):
+    if os.path.exists(os.path.join(config.path, name + ".py")) or os.path.exists(
+        os.path.join(config.path, name, "__init__.py")
+    ):
         importlib.import_module(name)

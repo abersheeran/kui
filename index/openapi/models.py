@@ -10,17 +10,6 @@ from index.config import config
 from .utils import currying, merge_mapping
 
 
-__all__ = [
-    "Model",
-    "IntField",
-    "FloatField",
-    "StrField",
-    "BooleanField",
-    "FileField",
-    "ModelField",
-    "ListField",
-]
-
 EMPTY_VALUE = ("", {}, [], None, ())
 
 ALLOWS_TYPE = ("array", "boolean", "integer", "number", "object", "string")
@@ -76,6 +65,49 @@ class Field(metaclass=ABCMeta):
         return schema
 
 
+class MatchFieldMeta(type):
+    def __init__(
+        cls,
+        name: str,
+        bases: typing.Iterable[typing.Any],
+        namespace: typing.Dict[str, typing.Any],
+    ):
+        fields = {}
+        for key, value in namespace.items():
+            if isinstance(value, Field):
+                fields[key] = value
+        cls.fields = fields
+
+
+class BaseModel(metaclass=MatchFieldMeta):
+    fields: typing.Dict[str, Field]
+
+    def __init__(
+        self,
+        raw_data: typing.Dict[str, typing.Any],
+        *,
+        default: typing.Dict[str, typing.Any] = None,
+    ) -> None:
+        if default:
+            self.raw_data = merge_mapping(raw_data, default)
+        else:
+            self.raw_data = raw_data
+        self.data: typing.Dict[str, typing.Any] = {}
+
+    async def clean(self) -> typing.Dict[str, str]:
+        errors = {}
+        for name, field in self.fields.items():
+            try:
+                data = field.verify(self.raw_data.get(name))
+                if asyncio.iscoroutine(data):
+                    data = await data
+                self.data[name] = data
+                setattr(self, name, data)
+            except FieldVerifyError as e:
+                errors[name] = e.message
+        return errors
+
+
 class ChoiceField(Field, metaclass=ABCMeta):
     def __init__(self, *, choices: typing.Iterable[str] = (), **kwargs):
         super().__init__(**kwargs)
@@ -84,19 +116,20 @@ class ChoiceField(Field, metaclass=ABCMeta):
             assert self.default in choices, "default value must be in choices"
 
     def check_choice(self, value: typing.Any) -> typing.Any:
-        if self.choices:
-            if value in self.choices:
-                return value
+        if self.choices and value not in self.choices:
             raise FieldVerifyError(f"value must be in {self.choices}")
+        return value
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
         pass
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
-        schema = {"description": self.description, "": list(self.choices)}
+        schema = {"description": self.description}
         if self.default not in EMPTY_VALUE:
             schema["default"] = self.default
+        if self.choices:
+            schema["enum"] = list(self.choices)
         return schema
 
 
@@ -152,7 +185,7 @@ class BooleanField(Field):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "boolean", }
+            {"type": "boolean",}
         )
         return schema
 
@@ -169,7 +202,7 @@ class IntField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "integer", }
+            {"type": "integer",}
         )
         return schema
 
@@ -186,7 +219,7 @@ class FloatField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "number", }
+            {"type": "number",}
         )
         return schema
 
@@ -200,71 +233,50 @@ class StrField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "string", }
+            {"type": "string",}
         )
         return schema
 
 
-class MatchFieldMeta(type):
-    def __init__(
-        cls,
-        name: str,
-        bases: typing.Iterable[typing.Any],
-        namespace: typing.Dict[str, typing.Any],
-    ):
-        fields = {}
-        for key, value in namespace.items():
-            if isinstance(value, Field):
-                fields[key] = value
-                if isinstance(value, FileField):
-                    cls._content_type = "multipart/form-data"
-                if isinstance(value, (ListField, ModelField)):
-                    cls._content_type = "application/json"
-        cls.fields = fields
+class Query(BaseModel):
+    @classmethod
+    def openapi(cls) -> typing.Dict[str, typing.Any]:
+        result = []
+        for name, field in cls.fields.items():
+            schema = field.openapi()
+            description = schema.pop("description")
+            result.append(
+                {
+                    "in": "query",
+                    "name": name,
+                    "schema": schema,
+                    "description": description,
+                    "required": not field.allow_null,
+                }
+            )
+        return result
 
 
-class Model(metaclass=MatchFieldMeta):
+class Model(BaseModel):
     default_content_type = "application/json"
-    fields: typing.Dict[str, Field]
 
-    def __init__(
-        self,
-        raw_data: typing.Dict[str, typing.Any],
-        *,
-        default: typing.Dict[str, typing.Any] = None,
-    ) -> None:
-        self.raw_data = raw_data
-        if default:
-            self.data = merge_mapping(raw_data, default)
-        else:
-            self.data = raw_data
-
-    async def clean(self) -> typing.Dict[str, str]:
-        errors = {}
-        for name, field in self.fields.items():
-            try:
-                data = field.verify(self.data.get(name))
-                if asyncio.iscoroutine(data):
-                    data = await data
-                setattr(self, name, data)
-            except FieldVerifyError as e:
-                errors[name] = e.message
-        return errors
-
-    def openapi(self) -> typing.Dict[str, typing.Any]:
+    @classmethod
+    def openapi(cls) -> typing.Dict[str, typing.Any]:
         required = []
         properties = []
-        for name, field in self.fields.items():
+        for name, field in cls.fields.items():
             if not field.allow_null:
                 required.append(name)
             properties.append({name: field.openapi()})
         return {"type": "object", "required": required, "properties": properties}
 
-    @property
     @classmethod
-    def content_type(cls) -> str:
-        if hasattr(cls, "_content_type"):
-            return cls._content_type
+    def get_content_type(cls) -> str:
+        for name, field in cls.fields.items():
+            if isinstance(field, FileField):
+                return "multipart/form-data"
+            if isinstance(field, (ListField, ModelField)):
+                return "application/json"
         return cls.default_content_type
 
 

@@ -7,8 +7,10 @@ from starlette.types import Scope, Receive, Send
 from starlette.endpoints import HTTPEndpoint, Request, Response
 from starlette.exceptions import HTTPException
 
-from index.responses import JSONResponse
+from index.responses import JSONResponse, YAMLResponse
 from index.config import config
+
+from .models import Model, Query
 
 
 def get_views():
@@ -23,26 +25,75 @@ def get_views():
             relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
             module_name = relpath[:-3].replace("/", ".")
             module = importlib.import_module(module_name)
+            path = relpath[len("views") : -3]
+            if path.endswith("index"):
+                path = path[: -len("index")]
             if abspath.startswith(views_path):
-                yield module_name.replace(".", "/").replace("views", ""), module
+                yield path, module
 
 
 class OpenAPI(HTTPEndpoint):
-    def __init__(self, scope: Scope, receive: Receive, send: Send) -> None:
+    def __init__(
+        self, title: str, description: str, version: str, *, media_type="yaml"
+    ):
+        """
+        media_type: yaml or json
+        """
+        assert media_type in ("yaml", "json"), "media_type must in 'yaml' or 'json'"
+
+        info = {"title": title, "description": description, "version": version}
+        self.openapi = {"openapi": "3.0.0", "info": info, "paths": {}}
+        self.media_type = media_type
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             raise HTTPException(404)
-        super().__init__(scope, receive, send)
+        request = Request(scope, receive, send)
+        handler_name = "get" if request.method == "HEAD" else request.method.lower()
+        handler = getattr(self, handler_name, self.method_not_allowed)
+        response = await handler(request)
+        await response(scope, receive, send)
 
-    def get(self, request: Request) -> Response:
-        return self.post(request)
+    async def get(self, request: Request) -> Response:
+        return await self.post(request)
 
-    def post(self, request: Request) -> Response:
+    async def post(self, request: Request) -> Response:
+        paths = self.openapi["paths"]
         for path, view in get_views():
             viewclass = view.HTTP()
+            paths[path] = {}
             for method in viewclass.allowed_methods():
                 if method == "OPTIONS":
                     continue
                 method = method.lower()
                 sig = signature(getattr(viewclass, method))
-                print(path, method, sig)
-        return Response("")
+                doc = getattr(viewclass, method).__doc__
+                if isinstance(doc, str):
+                    doc = doc.strip()
+                    paths[path][method] = {
+                        "summary": doc.splitlines()[0],
+                        "description": "\n".join(doc.splitlines()[1:]).strip(),
+                    }
+
+                query = sig.parameters.get("query")
+                if query and issubclass(query.annotation, Query):
+                    paths[path][method]["parameters"] = query.annotation.openapi()
+
+                body = sig.parameters.get("body")
+                if body and issubclass(body.annotation, Model):
+                    paths[path][method]["requestBody"] = {
+                        "required": True,
+                        "content": {
+                            body.annotation.get_content_type(): {
+                                "schema": body.annotation.openapi()
+                            }
+                        },
+                    }
+
+            if not paths[path]:
+                del paths[path]
+
+        if self.media_type == "yaml":
+            return YAMLResponse(self.openapi)
+        elif self.media_type == "json":
+            return JSONResponse(self.openapi)

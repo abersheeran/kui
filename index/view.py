@@ -10,7 +10,7 @@ from starlette.websockets import WebSocket
 from starlette.requests import Request
 
 from .concurrency import keepasync
-from .openapi.models import Model
+from .openapi.models import Model, Query
 from .openapi.utils import currying
 
 logger = logging.getLogger(__name__)
@@ -44,20 +44,20 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
         handler = currying(handler)
 
         sig = signature(handler)
-        query = sig.parameters.get('query')
-        if query and issubclass(query.annotation, Model):
+        query = sig.parameters.get("query")
+        if query and issubclass(query.annotation, Query):
             _query = query.annotation(self.request.query_params)
             query_error = await _query.clean()
             if query_error:
                 return {"error": {"query": query_error}}, 400
             handler = handler(query=_query)
 
-        body = sig.parameters.get('body')
+        body = sig.parameters.get("body")
         if body and issubclass(body.annotation, Model):
-            if body.annotation.content_type == "application/json":
-                _body_data = self.request.json()
+            if body.annotation.get_content_type() == "application/json":
+                _body_data = await self.request.json()
             else:
-                _body_data = self.request.form()
+                _body_data = await self.request.form()
             _body = body.annotation(_body_data)
             body_error = await _body.clean()
             if body_error:

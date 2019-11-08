@@ -145,7 +145,7 @@ class Filepath:
         for path_prefix, app in self.apps.items():
             if path.startswith(path_prefix):
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix):]
+                subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     await callapp(app, subscope, receive, subsend)

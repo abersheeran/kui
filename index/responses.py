@@ -4,6 +4,7 @@ Maybe more repsonse type will be done in the future
 import typing
 import functools
 
+import yaml
 from starlette.background import BackgroundTask
 from starlette.responses import (
     Response,
@@ -32,6 +33,13 @@ __all__ = [
 
 
 TemplateResponse = Jinja2Templates(directory="templates").TemplateResponse
+
+
+class YAMLResponse(Response):
+    media_type = "text/yaml"
+
+    def render(self, content: typing.Any) -> bytes:
+        return yaml.dump(content, indent=2).encode("utf8")
 
 
 class AutoResponseType:
