@@ -77,6 +77,7 @@ class MatchFieldMeta(type):
             if isinstance(value, Field):
                 fields[key] = value
         cls.fields = fields
+        super().__init__(name, bases, namespace)
 
 
 class BaseModel(metaclass=MatchFieldMeta):
@@ -272,7 +273,7 @@ class Model(BaseModel):
 
     @classmethod
     def get_content_type(cls) -> str:
-        for name, field in cls.fields.items():
+        for _, field in cls.fields.items():
             if isinstance(field, FileField):
                 return "multipart/form-data"
             if isinstance(field, (ListField, ModelField)):
