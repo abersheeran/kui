@@ -11,6 +11,8 @@ class Hello(models.Query):
 
 
 class Message(models.Model):
+    """your message"""
+
     name = models.StrField(description="your name")
     text = models.StrField(description="what are you want to say?")
 

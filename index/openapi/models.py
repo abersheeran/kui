@@ -264,11 +264,11 @@ class Model(BaseModel):
     @classmethod
     def openapi(cls) -> typing.Dict[str, typing.Any]:
         required = []
-        properties = []
+        properties = {}
         for name, field in cls.fields.items():
             if not field.allow_null:
                 required.append(name)
-            properties.append({name: field.openapi()})
+            properties[name] = field.openapi()
         return {"type": "object", "required": required, "properties": properties}
 
     @classmethod

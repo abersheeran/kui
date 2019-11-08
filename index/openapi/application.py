@@ -96,6 +96,9 @@ class OpenAPI:
                             }
                         },
                     }
+                    description = body.annotation.__doc__
+                    if description:
+                        paths[path][method]["requestBody"]["description"] = description
 
             if not paths[path]:
                 del paths[path]
