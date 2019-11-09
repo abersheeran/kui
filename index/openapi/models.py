@@ -54,7 +54,11 @@ class Field(metaclass=ABCMeta):
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
-        pass
+        """Verify and parse data into Python objects"""
+
+    @abstractmethod
+    async def json(self, value: typing.Any) -> typing.Any:
+        """parse data from Python objects"""
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = {
@@ -125,6 +129,10 @@ class ChoiceField(Field, metaclass=ABCMeta):
     async def verify(self, value: typing.Any) -> typing.Any:
         pass
 
+    @abstractmethod
+    async def json(self, value: typing.Any) -> typing.Any:
+        pass
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = {"description": self.description}
         if self.default not in EMPTY_VALUE:
@@ -183,10 +191,13 @@ class BooleanField(Field):
         value = self.check_null(value)
         return bool(value)
 
+    def json(self, value: typing.Any) -> typing.Any:
+        return bool(value)
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "boolean",}
+            {"type": "boolean", }
         )
         return schema
 
@@ -200,10 +211,13 @@ class IntField(ChoiceField):
         except ValueError:
             raise FieldVerifyError("Must be an integer.")
 
+    def json(self, value: typing.Any) -> typing.Any:
+        return int(value)
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "integer",}
+            {"type": "integer", }
         )
         return schema
 
@@ -217,10 +231,13 @@ class FloatField(ChoiceField):
         except ValueError:
             raise FieldVerifyError("Must be an floating point number.")
 
+    def json(self, value: typing.Any) -> typing.Any:
+        return float(value)
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "number",}
+            {"type": "number", }
         )
         return schema
 
@@ -231,10 +248,13 @@ class StrField(ChoiceField):
         value = self.check_choice(value)
         return str(value)
 
+    def json(self, value: typing.Any) -> typing.Any:
+        return str(value)
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "string",}
+            {"type": "string", }
         )
         return schema
 
@@ -296,6 +316,10 @@ class ModelField(Field):
             raise ModelFieldVerifyError(errors)
         return model
 
+    def json(self, value: typing.Mapping[str, typing.Any]) -> typing.Any:
+        # TODO
+        pass
+
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(self.model.openapi())
@@ -318,6 +342,10 @@ class ListField(Field):
                 data = await data
             result.append(data)
         return result
+
+    def json(self, value: typing.Mapping[str, typing.Any]) -> typing.Any:
+        # TODO
+        pass
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()

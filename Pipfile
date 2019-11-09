@@ -10,6 +10,7 @@ mkdocs = "*"
 mkdocs-material = "*"
 pytest = "*"
 black = "*"
+pytest-asyncio = "*"
 
 [packages]
 uvicorn = "*"

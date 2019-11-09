@@ -12,12 +12,16 @@ def complicating(func: typing.Callable) -> AsyncCallable:
     """
     always return a coroutine function
     """
-    if not (inspect.isfunction(func) or inspect.ismethod(func)):
-        if inspect.iscoroutinefunction(func.__call__):
-            return func.__call__
-
     if asyncio.iscoroutinefunction(func):
         return func
+
+    if not (inspect.isfunction(func) or inspect.ismethod(func)):
+        # callable object
+        if inspect.iscoroutinefunction(func.__call__):
+            return func.__call__
+        # class that has `__await__` method
+        if inspect.isclass(func) and hasattr(func, "__await__"):
+            return func
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs) -> typing.Any:
