@@ -343,9 +343,8 @@ class ListField(Field):
             result.append(data)
         return result
 
-    def json(self, value: typing.Mapping[str, typing.Any]) -> typing.Any:
-        # TODO
-        pass
+    def json(self, value: typing.Iterable) -> typing.List:
+        return [self.field.json(item) for item in value]
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()

@@ -30,6 +30,7 @@ REQUIRED = [
     "jinja2",
     "watchdog",
     "python-multipart",
+    "pyyaml",
 ]
 
 # What packages are optional?
