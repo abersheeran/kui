@@ -25,6 +25,7 @@ __all__ = [
     "HTMLResponse",
     "PlainTextResponse",
     "JSONResponse",
+    "YAMLResponse",
     "RedirectResponse",
     "StreamingResponse",
     "FileResponse",

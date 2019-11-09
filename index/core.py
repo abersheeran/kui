@@ -10,7 +10,7 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from .config import config
 from .autoreload import MonitorFile
-from .application import Index, favicon
+from .applications import Index, favicon
 
 logger = logging.getLogger(__name__)
 
