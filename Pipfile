@@ -8,6 +8,9 @@ autopep8 = "*"
 pylint = "*"
 mkdocs = "*"
 mkdocs-material = "*"
+pytest = "*"
+black = "*"
+pytest-asyncio = "*"
 
 [packages]
 uvicorn = "*"
@@ -18,3 +21,6 @@ gunicorn = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

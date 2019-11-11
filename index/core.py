@@ -10,7 +10,7 @@ from starlette.middleware.gzip import GZipMiddleware
 
 from .config import config
 from .autoreload import MonitorFile
-from .application import Index, favicon
+from .applications import Index, favicon
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +19,14 @@ sys.path.insert(0, config.path)
 app = Index(debug=config.DEBUG)
 
 app.mount("/favicon.ico", favicon)
-app.mount("/static", StaticFiles(
-    directory=os.path.join(config.path, 'static'),
-    check_dir=False,
-))
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(config.path, "static"), check_dir=False,),
+)
 
 
 # middleware
-app.add_middleware(
-    GZipMiddleware,
-    minimum_size=1024
-)
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_ALLOW_ORIGINS,
@@ -44,27 +41,24 @@ app.add_middleware(
 if config.FORCE_SSL:
     app.add_middleware(HTTPSRedirectMiddleware)
 
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=config.ALLOWED_HOSTS
-)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
 
 if config.AUTORELOAD:
     monitor: MonitorFile = None
 
-    @app.on_event('startup')
+    @app.on_event("startup")
     async def check_on_startup() -> None:
         # monitor file event
         global monitor
         monitor = MonitorFile(config.path)
 
-    @app.on_event('shutdown')
+    @app.on_event("shutdown")
     async def clear_check_on_shutdown() -> None:
         global monitor
         monitor.stop()
 
 
-@app.on_event('startup')
+@app.on_event("startup")
 async def create_directories() -> None:
     """
     create directories for static & template

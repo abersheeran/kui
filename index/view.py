@@ -8,16 +8,24 @@ from starlette.responses import Response
 from starlette.websockets import WebSocket
 from starlette.requests import Request
 
-from .responses import automatic
 from .concurrency import keepasync
+from .openapi.functions import partial, ParseError
 
 logger = logging.getLogger(__name__)
 
-HTTP_METHOD_NAMES = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']
+HTTP_METHOD_NAMES = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
 
 
 class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
-
     async def __call__(self, request: Request) -> Response:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
@@ -25,29 +33,34 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
         self.request = request
 
         if self.request.method.lower() in HTTP_METHOD_NAMES:
-            handler = getattr(self, self.request.method.lower(), self.http_method_not_allowed)
+            handler = getattr(
+                self, self.request.method.lower(), self.http_method_not_allowed
+            )
         else:
             handler = self.http_method_not_allowed
 
-        resp = await handler()
+        try:
+            handler = await partial(handler, request)
+        except ParseError as e:
+            return e.error, 400
 
-        if not isinstance(resp, tuple):
-            resp = (resp,)
-        return automatic(*resp)
+        resp = await handler()
+        return resp
 
     async def http_method_not_allowed(self) -> Response:
-        logger.warning(f'Method Not Allowed ({self.request.method}): {self.request.url.path}')
-        return Response(status_code=405, headers={
-            "Allow": ', '.join(self.allowed_methods()),
-            "Content-Length": "0"
-        })
+        logger.warning(
+            f"Method Not Allowed ({self.request.method}): {self.request.url.path}"
+        )
+        return Response(
+            status_code=405,
+            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"},
+        )
 
     async def options(self) -> Response:
         """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(headers={
-            "Allow": ', '.join(self.allowed_methods()),
-            "Content-Length": "0"
-        })
+        return Response(
+            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"}
+        )
 
     def allowed_methods(self) -> typing.List[str]:
         return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(self, m)]

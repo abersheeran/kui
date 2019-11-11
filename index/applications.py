@@ -2,6 +2,7 @@ import os
 import copy
 import typing
 import importlib
+from inspect import signature
 
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
 from starlette.routing import Lifespan
@@ -13,7 +14,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
-from .responses import FileResponse
+from .responses import FileResponse, automatic
 from .types import WSGIApp
 from .config import config
 
@@ -22,8 +23,8 @@ async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
     """
     favicon.ico
     """
-    if scope['type'] == "http" and os.path.exists(os.path.normpath('favicon.ico')):
-        response = FileResponse('favicon.ico')
+    if scope["type"] == "http" and os.path.exists(os.path.normpath("favicon.ico")):
+        response = FileResponse("favicon.ico")
         await response(scope, receive, send)
         return
     raise HTTPException(404)
@@ -49,18 +50,19 @@ def get_pathlist(uri: str) -> typing.List[str]:
         raise HTTPException(404)
 
     pathlist = filepath.split("/")
-    pathlist.insert(0, 'views')
+    pathlist.insert(0, "views")
 
     return pathlist
 
 
 class Filepath:
-
     def __init__(self) -> None:
         self.apps = {}
         self.lifespan = Lifespan()
 
     def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
+        assert route.startswith("/"), "prefix must be start with '/'"
+        assert not route.endswith("/"), "prefix can't end with '/'"
         self.apps.update({route: app})
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -82,6 +84,9 @@ class Filepath:
                 continue
         # get response
         response = await get_response(request)
+        if not isinstance(response, tuple):
+            response = (response,)
+        response = automatic(*response)
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -119,13 +124,14 @@ class Filepath:
             app: typing.Union[ASGIApp, WSGIApp],
             scope: Scope,
             receive: Receive,
-            send: Send
+            send: Send,
         ) -> None:
-            try:
+            sig = signature(app)
+            if len(sig.parameters) == 3:
                 await app(scope, receive, send)
                 return
-            except TypeError:
-                if scope['type'] != "http":
+            elif len(sig.parameters) == 2:
+                if scope["type"] != "http":
                     raise HTTPException(404)
 
                 app = WSGIMiddleware(app)
@@ -139,7 +145,7 @@ class Filepath:
         for path_prefix, app in self.apps.items():
             if path.startswith(path_prefix):
                 subscope = copy.copy(scope)
-                subscope['path'] = path[len(path_prefix):]
+                subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     await callapp(app, subscope, receive, subsend)

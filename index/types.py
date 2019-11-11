@@ -10,7 +10,9 @@ AsyncCallable = typing.Callable[[typing.Any], typing.Awaitable]
 # WSGI: view PEP3333
 Environ = typing.MutableMapping[str, typing.Any]
 StartResponse = typing.Callable[[str, typing.Iterable[typing.Tuple[str, str]]], None]
-WSGIApp = typing.Callable[[Environ, StartResponse], typing.Iterable[typing.Union[str, bytes]]]
+WSGIApp = typing.Callable[
+    [Environ, StartResponse], typing.Iterable[typing.Union[str, bytes]]
+]
 
 
 def typeassert(func: typing.Callable) -> typing.Callable:
@@ -33,26 +35,27 @@ def typeassert(func: typing.Callable) -> typing.Callable:
         for name, value in bound_values.arguments.items():
             parameter = sig.parameters[name]
 
-            if parameter.annotation is parameter.empty \
-                    or parameter.annotation == typing.Any:
+            if (
+                parameter.annotation is parameter.empty
+                or parameter.annotation == typing.Any
+            ):
                 continue
             if value is parameter.default:
                 continue
             if not isinstance(value, parameter.annotation):
                 raise TypeError(
-                    f'Argument {name} must be {parameter.annotation} but got {type(value)}'
+                    f"Argument {name} must be {parameter.annotation} but got {type(value)}"
                 )
         # check return
         result = func(*args, **kwargs)
         if "return" in func.__annotations__:
-            return_type = func.__annotations__['return']
+            return_type = func.__annotations__["return"]
             if result is return_type:
                 pass
             elif not isinstance(result, return_type):
-                raise TypeError(
-                    f'Return must be {return_type} but got {type(result)}'
-                )
+                raise TypeError(f"Return must be {return_type} but got {type(result)}")
         return result
+
     return wrapper
 
 
@@ -81,8 +84,10 @@ def typeasserts(*ty_args, **ty_kwargs) -> typing.Callable:
                 if name in bound_types:
                     if not isinstance(value, bound_types[name]):
                         raise TypeError(
-                            f'Argument {name} must be {bound_types[name]} but got {type(value)}'
+                            f"Argument {name} must be {bound_types[name]} but got {type(value)}"
                         )
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorate

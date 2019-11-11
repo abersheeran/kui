@@ -4,6 +4,7 @@ Maybe more repsonse type will be done in the future
 import typing
 import functools
 
+import yaml
 from starlette.background import BackgroundTask
 from starlette.responses import (
     Response,
@@ -12,7 +13,7 @@ from starlette.responses import (
     JSONResponse,
     RedirectResponse,
     StreamingResponse,
-    FileResponse
+    FileResponse,
 )
 from starlette.templating import Jinja2Templates
 
@@ -24,6 +25,7 @@ __all__ = [
     "HTMLResponse",
     "PlainTextResponse",
     "JSONResponse",
+    "YAMLResponse",
     "RedirectResponse",
     "StreamingResponse",
     "FileResponse",
@@ -31,7 +33,14 @@ __all__ = [
 ]
 
 
-TemplateResponse = Jinja2Templates(directory='templates').TemplateResponse
+TemplateResponse = Jinja2Templates(directory="templates").TemplateResponse
+
+
+class YAMLResponse(Response):
+    media_type = "text/yaml"
+
+    def render(self, content: typing.Any) -> bytes:
+        return yaml.dump(content, indent=2).encode("utf8")
 
 
 class AutoResponseType:
@@ -45,7 +54,9 @@ class AutoResponseType:
 
             def wrapper(*args, **kwargs) -> Response:
                 return func(*args, **kwargs)
+
             return wrapper
+
         return register_func
 
     @classmethod
@@ -58,7 +69,9 @@ class AutoResponseType:
         try:
             return cls.type_map[type(args[0])](*args)
         except KeyError:
-            raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
+            raise TypeError(
+                f"Cannot find automatic handler for this type: {type(args[0])}"
+            )
 
 
 register_type = functools.partial(AutoResponseType.register_type)
@@ -71,15 +84,10 @@ def json_type(
     body: dict,
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return JSONResponse(body, status, headers, background=background)
 
 
 @register_type(str)
@@ -88,12 +96,7 @@ def text_type(
     body: str,
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return PlainTextResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return PlainTextResponse(body, status, headers, background=background)
