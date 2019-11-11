@@ -1,20 +1,33 @@
 from index.view import View
-from index.config import logger
 from index.responses import TemplateResponse
 from index.openapi import models
+from index.openapi.functions import bindresponse
 
 from utils import db
 
 
-class Hello(models.Query):
+class Hello(models.QueryModel):
     name = models.StrField(description="name")
 
 
-class Message(models.Model):
+class MessageForm(models.FormModel):
     """your message"""
 
     name = models.StrField(description="your name")
     text = models.StrField(description="what are you want to say?")
+
+
+class _MessageResponse(models.JsonRespModel):
+    """your message"""
+
+    name = models.StrField(description="your name")
+    text = models.StrField(description="what are you want to say?")
+
+
+class MessageResponse(models.JsonRespModel):
+    """message response"""
+
+    message = models.ModelField(_MessageResponse)
 
 
 class HTTP(View):
@@ -27,7 +40,8 @@ class HTTP(View):
             {"request": self.request, "db": db.some_db_settings, "name": query.name},
         )
 
-    async def post(self, body: Message):
+    @bindresponse(200, MessageResponse)
+    async def post(self, body: MessageForm):
         """
         echo your message
 

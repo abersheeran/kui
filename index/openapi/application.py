@@ -9,7 +9,7 @@ from starlette.exceptions import HTTPException
 from index.responses import PlainTextResponse, JSONResponse, YAMLResponse
 from index.config import config
 
-from .models import Model, Query
+from .models import QueryModel, FormModel
 
 
 def get_views():
@@ -83,11 +83,11 @@ class OpenAPI:
                     }
 
                 query = sig.parameters.get("query")
-                if query and issubclass(query.annotation, Query):
+                if query and issubclass(query.annotation, QueryModel):
                     paths[path][method]["parameters"] = query.annotation.openapi()
 
                 body = sig.parameters.get("body")
-                if body and issubclass(body.annotation, Model):
+                if body and issubclass(body.annotation, FormModel):
                     paths[path][method]["requestBody"] = {
                         "required": True,
                         "content": {
@@ -99,6 +99,21 @@ class OpenAPI:
                     description = body.annotation.__doc__
                     if description:
                         paths[path][method]["requestBody"]["description"] = description
+
+                try:
+                    resps = getattr(getattr(viewclass, method), "__resps__")
+                except AttributeError:
+                    continue
+                repsonses = paths[path][method]["responses"] = {}
+                for status, content in resps.items():
+                    repsonses[status] = {
+                        "content": {
+                            content["model"].get_content_type(): {
+                                "schema": content["model"].openapi()
+                            }
+                        },
+                        "description": content["description"],
+                    }
 
             if not paths[path]:
                 del paths[path]

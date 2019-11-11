@@ -10,8 +10,10 @@ async def test_complicating():
     class AsyncCall:
         async def __call__(self):
             pass
+
     await AsyncCall()()
-    assert complicating(AsyncCall) is AsyncCall.__call__
+    asyncfunc = AsyncCall()
+    assert complicating(asyncfunc) is asyncfunc
 
     class AsyncClass:
         def __await__(self):
@@ -19,6 +21,7 @@ async def test_complicating():
 
         async def dispatch(self):
             pass
+
     await AsyncClass()
     assert complicating(AsyncClass).__name__ == "AsyncClass"
 
@@ -27,11 +30,13 @@ async def test_complicating():
 
     async def async_func():
         pass
+
     await async_func()
     assert complicating(async_func) is async_func
 
     def func():
         """t"""
+
     await complicating(func)()
     assert asyncio.iscoroutinefunction(complicating(func))
     assert complicating(func).__name__ == func.__name__
@@ -40,9 +45,7 @@ async def test_complicating():
 
 @pytest.mark.asyncio
 async def test_keepasync():
-
     class Test(metaclass=keepasync("hello", "test")):
-
         def hello(self):
             pass
 
