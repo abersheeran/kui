@@ -1,7 +1,6 @@
 from index.view import View
 from index.responses import TemplateResponse
-from index.openapi import models
-from index.openapi.functions import bindresponse
+from index.openapi import models, bindresponse
 
 from utils import db
 
@@ -38,6 +37,6 @@ class HTTP(View):
         """
         echo your message
 
-        just echo your message, hello world.
+        just echo your message.
         """
         return {"message": body.data}, 200, {"server": "index.py"}
