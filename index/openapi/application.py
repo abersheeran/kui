@@ -1,5 +1,6 @@
 import os
 import importlib
+from copy import deepcopy
 from inspect import signature
 
 from starlette.types import Scope, Receive, Send
@@ -66,7 +67,13 @@ class OpenAPI:
         return HTMLResponse(DEFAULT_TEMPLATE)
 
     async def docs(self, request: Request) -> Response:
-        paths = self.openapi["paths"]
+        openapi = deepcopy(self.openapi)
+        openapi["servers"] = [{
+            "url": f"{request.url.scheme}://{request.url.netloc}",
+            "description": "Current server"
+        }]
+
+        paths = openapi["paths"]
         for path, view in get_views():
             viewclass = view.HTTP()
             paths[path] = {}
@@ -120,10 +127,10 @@ class OpenAPI:
                 del paths[path]
 
         if self.media_type == "yaml" or request.query_params.get("type") == "yaml":
-            return YAMLResponse(self.openapi)
+            return YAMLResponse(openapi)
 
         if self.media_type == "json" or request.query_params.get("type") == "json":
-            return JSONResponse(self.openapi)
+            return JSONResponse(openapi)
 
 
 DEFAULT_TEMPLATE = """
