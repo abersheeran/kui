@@ -71,7 +71,7 @@ class Field(metaclass=ABCMeta):
 
 class MatchFieldMeta(type):
     def __init__(
-        cls,
+        self,
         name: str,
         bases: typing.Iterable[typing.Any],
         namespace: typing.Dict[str, typing.Any],
@@ -80,7 +80,7 @@ class MatchFieldMeta(type):
         for key, value in namespace.items():
             if isinstance(value, Field):
                 fields[key] = value
-        cls.fields = fields
+        self.fields = fields
         super().__init__(name, bases, namespace)
 
 
@@ -177,7 +177,7 @@ class BooleanField(Field):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "boolean",}
+            {"type": "boolean", }
         )
         return schema
 
@@ -197,7 +197,7 @@ class IntField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "integer",}
+            {"type": "integer", }
         )
         return schema
 
@@ -217,7 +217,7 @@ class FloatField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "number",}
+            {"type": "number", }
         )
         return schema
 
@@ -234,7 +234,7 @@ class StrField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "string",}
+            {"type": "string", }
         )
         return schema
 
@@ -265,7 +265,9 @@ class ListField(Field):
         return schema
 
 
-class _InputModel(BaseModel):
+class Model(BaseModel):
+    content_type = "application/json"
+
     def __init__(
         self,
         raw_data: typing.Dict[str, typing.Any],
@@ -291,50 +293,6 @@ class _InputModel(BaseModel):
                 errors[name] = e.message
         return errors
 
-
-class QueryModel(_InputModel):
-    @classmethod
-    def openapi(cls) -> typing.Dict[str, typing.Any]:
-        result = []
-        for name, field in cls.fields.items():
-            schema = field.openapi()
-            description = schema.pop("description")
-            result.append(
-                {
-                    "in": "query",
-                    "name": name,
-                    "schema": schema,
-                    "description": description,
-                    "required": not field.allow_null,
-                }
-            )
-        return result
-
-
-class FormModel(_InputModel):
-    default_content_type = "application/json"
-
-    @classmethod
-    def openapi(cls) -> typing.Dict[str, typing.Any]:
-        required = []
-        properties = {}
-        for name, field in cls.fields.items():
-            if not field.allow_null:
-                required.append(name)
-            properties[name] = field.openapi()
-        return {"type": "object", "required": required, "properties": properties}
-
-    @classmethod
-    def get_content_type(cls) -> str:
-        for _, field in cls.fields.items():
-            if isinstance(field, FileField):
-                return "multipart/form-data"
-            if isinstance(field, (ListField, ModelField)):
-                return "application/json"
-        return cls.default_content_type
-
-
-class _OutputModel(BaseModel):
     @classmethod
     async def serialization(
         cls, value: typing.Dict[str, typing.Any]
@@ -348,32 +306,17 @@ class _OutputModel(BaseModel):
         return result
 
 
-class JsonRespModel(_OutputModel):
-    @classmethod
-    def openapi(cls) -> typing.Dict[str, typing.Any]:
-        return {
-            "type": "object",
-            "properties": {name: field.openapi() for name, field in cls.fields.items()},
-        }
-
-    @classmethod
-    def get_content_type(cls) -> str:
-        return "application/json"
-
-
 class ModelField(Field):
     def __init__(
         self, model: BaseModel, *, default: typing.Dict[str, typing.Any] = {}, **kwargs
     ):
         kwargs["default"] = None
         super().__init__(**kwargs)
-        if issubclass(model, _InputModel):
-            self.model = currying(model)(default=default)
-        elif issubclass(model, _OutputModel):
-            self.model = model
+        self.model = model
+        self.default_model_value = default
 
     async def verify(self, value: typing.Any) -> typing.Any:
-        model = self.model(value)()
+        model = self.model(value, default=self.default_model_value)
         errors = await model.clean()
         if errors:
             raise ModelFieldVerifyError(errors)
@@ -384,5 +327,12 @@ class ModelField(Field):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update(self.model.openapi())
+        schema.update(
+            {
+                "type": "object",
+                "properties": {
+                    name: field.openapi() for name, field in self.model.fields.items()
+                },
+            }
+        )
         return schema

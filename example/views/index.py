@@ -6,28 +6,21 @@ from index.openapi.functions import bindresponse
 from utils import db
 
 
-class Hello(models.QueryModel):
+class Hello(models.Model):
     name = models.StrField(description="name")
 
 
-class MessageForm(models.FormModel):
+class Message(models.Model):
     """your message"""
 
     name = models.StrField(description="your name")
     text = models.StrField(description="what are you want to say?")
 
 
-class _MessageResponse(models.JsonRespModel):
-    """your message"""
-
-    name = models.StrField(description="your name")
-    text = models.StrField(description="what are you want to say?")
-
-
-class MessageResponse(models.JsonRespModel):
+class MessageResponse(models.Model):
     """message response"""
 
-    message = models.ModelField(_MessageResponse)
+    message = models.ModelField(Message)
 
 
 class HTTP(View):
@@ -41,7 +34,7 @@ class HTTP(View):
         )
 
     @bindresponse(200, MessageResponse)
-    async def post(self, body: MessageForm):
+    async def post(self, body: Message):
         """
         echo your message
 

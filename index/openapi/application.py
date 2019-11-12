@@ -9,7 +9,8 @@ from starlette.exceptions import HTTPException
 from index.responses import PlainTextResponse, JSONResponse, YAMLResponse
 from index.config import config
 
-from .models import QueryModel, FormModel
+from .models import Model
+from .functions import Schema
 
 
 def get_views():
@@ -24,7 +25,7 @@ def get_views():
             relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
             module_name = relpath[:-3].replace("/", ".")
             module = importlib.import_module(module_name)
-            path = relpath[len("views") : -3]
+            path = relpath[len("views"): -3]
             if path.endswith("index"):
                 path = path[: -len("index")]
             if abspath.startswith(views_path):
@@ -83,16 +84,16 @@ class OpenAPI:
                     }
 
                 query = sig.parameters.get("query")
-                if query and issubclass(query.annotation, QueryModel):
-                    paths[path][method]["parameters"] = query.annotation.openapi()
+                if query and issubclass(query.annotation, Model):
+                    paths[path][method]["parameters"] = Schema.in_query(query.annotation)
 
                 body = sig.parameters.get("body")
-                if body and issubclass(body.annotation, FormModel):
+                if body and issubclass(body.annotation, Model):
                     paths[path][method]["requestBody"] = {
                         "required": True,
                         "content": {
-                            body.annotation.get_content_type(): {
-                                "schema": body.annotation.openapi()
+                            body.annotation.content_type: {
+                                "schema": Schema.request_body(body.annotation)
                             }
                         },
                     }
@@ -108,8 +109,8 @@ class OpenAPI:
                 for status, content in resps.items():
                     repsonses[status] = {
                         "content": {
-                            content["model"].get_content_type(): {
-                                "schema": content["model"].openapi()
+                            content["model"].content_type: {
+                                "schema": Schema.response(content["model"])
                             }
                         },
                         "description": content["description"],
