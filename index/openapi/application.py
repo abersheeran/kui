@@ -6,7 +6,12 @@ from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
 from starlette.exceptions import HTTPException
 
-from index.responses import PlainTextResponse, JSONResponse, YAMLResponse
+from index.responses import (
+    PlainTextResponse,
+    JSONResponse,
+    YAMLResponse,
+    HTMLResponse,
+)
 from index.config import config
 
 from .models import Model
@@ -46,26 +51,21 @@ class OpenAPI:
         self.media_type = media_type
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
+        if scope["type"] != "http" or scope["path"] not in ("/", "/get"):
             raise HTTPException(404)
         request = Request(scope, receive, send)
-        handler_name = "get" if request.method == "HEAD" else request.method.lower()
-        handler = getattr(self, handler_name, self.method_not_allowed)
+
+        if scope["path"] == "/get":
+            handler = getattr(self, "docs")
+        elif scope["path"] == "/":
+            handler = getattr(self, "template")
         response = await handler(request)
         await response(scope, receive, send)
 
-    async def method_not_allowed(self, request: Request) -> Response:
-        # If we're running inside a starlette application then raise an
-        # exception, so that the configurable exception handler can deal with
-        # returning the response. For plain ASGI apps, just return the response.
-        if "app" in request.scope:
-            raise HTTPException(status_code=405)
-        return PlainTextResponse("Method Not Allowed", status_code=405)
+    async def template(self, request: Request) -> Response:
+        return HTMLResponse(DEFAULT_TEMPLATE)
 
-    async def get(self, request: Request) -> Response:
-        return await self.post(request)
-
-    async def post(self, request: Request) -> Response:
+    async def docs(self, request: Request) -> Response:
         paths = self.openapi["paths"]
         for path, view in get_views():
             viewclass = view.HTTP()
@@ -124,3 +124,28 @@ class OpenAPI:
 
         if self.media_type == "json" or request.query_params.get("type") == "json":
             return JSONResponse(self.openapi)
+
+
+DEFAULT_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpenAPI power by Index.py</title>
+    <!-- needed for adaptive design -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <redoc spec-url='get'></redoc>
+    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
+  </body>
+</html>
+"""

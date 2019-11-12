@@ -144,7 +144,7 @@ class Filepath:
         # Call into a submounted app, if one exists.
         for path_prefix, app in self.apps.items():
             if path.startswith(path_prefix):
-                subscope = copy.copy(scope)
+                subscope = copy.deepcopy(scope)
                 subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
