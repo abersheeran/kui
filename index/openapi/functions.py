@@ -70,7 +70,6 @@ def bindresponse(
 
 
 class Schema:
-
     @staticmethod
     def parameters(model: Model, position: str) -> typing.Dict[str, typing.Any]:
         """
@@ -120,12 +119,16 @@ class Schema:
             "required": [
                 name for name, field in model.fields.items() if not field.allow_null
             ],
-            "properties": {name: field.openapi() for name, field in model.fields.items()},
+            "properties": {
+                name: field.openapi() for name, field in model.fields.items()
+            },
         }
 
     @staticmethod
     def response(model: Model) -> typing.Dict[str, typing.Any]:
         return {
             "type": "object",
-            "properties": {name: field.openapi() for name, field in model.fields.items()},
+            "properties": {
+                name: field.openapi() for name, field in model.fields.items()
+            },
         }

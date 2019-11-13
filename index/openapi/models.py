@@ -92,7 +92,7 @@ class ChoiceField(Field, metaclass=ABCMeta):
     def __init__(self, *, choices: typing.Iterable[str] = (), **kwargs):
         super().__init__(**kwargs)
         self.choices = choices
-        if choices:
+        if choices and self.default is not None:
             assert self.default in choices, "default value must be in choices"
 
     def check_choice(self, value: typing.Any) -> typing.Any:
@@ -177,7 +177,7 @@ class BooleanField(Field):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "boolean", }
+            {"type": "boolean",}
         )
         return schema
 
@@ -197,7 +197,7 @@ class IntField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "integer", }
+            {"type": "integer",}
         )
         return schema
 
@@ -217,7 +217,7 @@ class FloatField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "number", }
+            {"type": "number",}
         )
         return schema
 
@@ -234,7 +234,7 @@ class StrField(ChoiceField):
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
         schema.update(
-            {"type": "string", }
+            {"type": "string",}
         )
         return schema
 

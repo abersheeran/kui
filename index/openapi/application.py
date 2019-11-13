@@ -8,7 +8,6 @@ from starlette.endpoints import Request, Response
 from starlette.exceptions import HTTPException
 
 from index.responses import (
-    PlainTextResponse,
     JSONResponse,
     YAMLResponse,
     HTMLResponse,
@@ -31,7 +30,7 @@ def get_views():
             relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
             module_name = relpath[:-3].replace("/", ".")
             module = importlib.import_module(module_name)
-            path = relpath[len("views"): -3]
+            path = relpath[len("views") : -3]
             if path.endswith("index"):
                 path = path[: -len("index")]
             if abspath.startswith(views_path):
@@ -68,10 +67,12 @@ class OpenAPI:
 
     async def docs(self, request: Request) -> Response:
         openapi = deepcopy(self.openapi)
-        openapi["servers"] = [{
-            "url": f"{request.url.scheme}://{request.url.netloc}",
-            "description": "Current server"
-        }]
+        openapi["servers"] = [
+            {
+                "url": f"{request.url.scheme}://{request.url.netloc}",
+                "description": "Current server",
+            }
+        ]
 
         paths = openapi["paths"]
         for path, view in get_views():
@@ -81,18 +82,25 @@ class OpenAPI:
                 if method == "OPTIONS":
                     continue
                 method = method.lower()
+
                 sig = signature(getattr(viewclass, method))
+                paths[path][method] = {}
+
                 doc = getattr(viewclass, method).__doc__
                 if isinstance(doc, str):
                     doc = doc.strip()
-                    paths[path][method] = {
-                        "summary": doc.splitlines()[0],
-                        "description": "\n".join(doc.splitlines()[1:]).strip(),
-                    }
+                    paths[path][method].update(
+                        {
+                            "summary": doc.splitlines()[0],
+                            "description": "\n".join(doc.splitlines()[1:]).strip(),
+                        }
+                    )
 
                 query = sig.parameters.get("query")
                 if query and issubclass(query.annotation, Model):
-                    paths[path][method]["parameters"] = Schema.in_query(query.annotation)
+                    paths[path][method]["parameters"] = Schema.in_query(
+                        query.annotation
+                    )
 
                 body = sig.parameters.get("body")
                 if body and issubclass(body.annotation, Model):
@@ -111,17 +119,21 @@ class OpenAPI:
                 try:
                     resps = getattr(getattr(viewclass, method), "__resps__")
                 except AttributeError:
-                    continue
-                repsonses = paths[path][method]["responses"] = {}
-                for status, content in resps.items():
-                    repsonses[status] = {
-                        "content": {
-                            content["model"].content_type: {
-                                "schema": Schema.response(content["model"])
-                            }
-                        },
-                        "description": content["description"],
-                    }
+                    pass
+                else:
+                    repsonses = paths[path][method]["responses"] = {}
+                    for status, content in resps.items():
+                        repsonses[status] = {
+                            "content": {
+                                content["model"].content_type: {
+                                    "schema": Schema.response(content["model"])
+                                }
+                            },
+                            "description": content["description"],
+                        }
+
+                if not paths[path][method]:
+                    del paths[path][method]
 
             if not paths[path]:
                 del paths[path]
