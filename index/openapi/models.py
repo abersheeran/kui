@@ -1,4 +1,5 @@
 import os
+import copy
 import typing
 import asyncio
 from abc import abstractmethod, ABCMeta
@@ -7,7 +8,7 @@ from aiofiles import open as asyncopen
 from starlette.datastructures import UploadFile
 from index.config import config
 
-from .utils import currying, merge_mapping
+from .utils import merge_mapping
 
 
 EMPTY_VALUE = ("", {}, [], None, ())
@@ -47,8 +48,11 @@ class Field(metaclass=ABCMeta):
 
     def check_null(self, value: typing.Any) -> typing.Any:
         if value is None:
-            if self.allow_null:
-                return self.default
+            if callable(self.default):
+                value = self.default()
+            value = copy.deepcopy(self.default)
+
+        if value in EMPTY_VALUE and not self.allow_null:
             raise FieldVerifyError("Not allowed to be empty.")
         return value
 
@@ -109,9 +113,7 @@ class ChoiceField(Field, metaclass=ABCMeta):
         pass
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
-        schema = {"description": self.description}
-        if self.default not in EMPTY_VALUE:
-            schema["default"] = self.default
+        schema = super().openapi()
         if self.choices:
             schema["enum"] = list(self.choices)
         return schema
@@ -240,15 +242,18 @@ class StrField(ChoiceField):
 
 
 class ListField(Field):
-    def __init__(
-        self, field: Field, *, default: typing.List[typing.Any] = [], **kwargs
-    ):
-        kwargs["default"] = default
+    def __init__(self, field: Field, **kwargs):
+        if "default" not in kwargs:
+            kwargs["default"] = []
+        assert isinstance(
+            kwargs["default"], list
+        ), "default in ListField must be `list`"
         super().__init__(**kwargs)
         self.field = field
 
     async def verify(self, value: typing.Iterable) -> typing.List[typing.Any]:
         result = []
+        value = self.check_null(value)
         for each in value:
             data = self.field.verify(each)
             if asyncio.iscoroutine(data):
