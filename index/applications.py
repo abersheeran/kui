@@ -1,11 +1,12 @@
 import os
 import copy
 import typing
+import asyncio
+import traceback
 import importlib
 from inspect import signature
 
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
-from starlette.routing import Lifespan
 from starlette.requests import Request
 from starlette.websockets import WebSocket, WebSocketClose
 from starlette.responses import RedirectResponse
@@ -28,6 +29,78 @@ async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
         await response(scope, receive, send)
         return
     raise HTTPException(404)
+
+
+class Lifespan:
+    def __init__(
+        self,
+        on_startup: typing.List[typing.Callable] = None,
+        on_shutdown: typing.List[typing.Callable] = None,
+    ) -> None:
+        self.on_startup = [] if on_startup is None else list(on_startup)
+        self.on_shutdown = [] if on_shutdown is None else list(on_shutdown)
+
+    def on_event(self, event_type: str) -> typing.Callable:
+        """Wrapper add_event_type"""
+
+        def add_event_handler(func: typing.Callable) -> typing.Callable:
+            self.add_event_handler(event_type, func)
+            return func
+
+        return add_event_handler
+
+    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
+        if event_type == "startup":
+            self.on_startup.append(func)
+        elif event_type == "shutdown":
+            self.on_shutdown.append(func)
+        else:
+            raise ValueError("event_type must be in ('startup', 'shutdown')")
+
+    async def startup(self) -> None:
+        """
+        Run any `.on_startup` event handlers.
+        """
+        for handler in self.on_startup:
+            if asyncio.iscoroutinefunction(handler):
+                await handler()
+            else:
+                handler()
+
+    async def shutdown(self) -> None:
+        """
+        Run any `.on_shutdown` event handlers.
+        """
+        for handler in self.on_shutdown:
+            if asyncio.iscoroutinefunction(handler):
+                await handler()
+            else:
+                handler()
+
+    async def lifespan(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        Handle ASGI lifespan messages, which allows us to manage application
+        startup and shutdown events.
+        """
+        message = await receive()
+        assert message["type"] == "lifespan.startup"
+
+        try:
+            await self.startup()
+        except BaseException:
+            msg = traceback.format_exc()
+            await send({"type": "lifespan.startup.failed", "message": msg})
+            raise
+
+        await send({"type": "lifespan.startup.complete"})
+        message = await receive()
+        assert message["type"] == "lifespan.shutdown"
+        await self.shutdown()
+        await send({"type": "lifespan.shutdown.complete"})
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        assert scope["type"] == "lifespan"
+        await self.lifespan(scope, receive, send)
 
 
 def get_pathlist(uri: str) -> typing.List[str]:
