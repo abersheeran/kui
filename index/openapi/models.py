@@ -37,7 +37,7 @@ class Field(metaclass=ABCMeta):
     def __init__(
         self,
         *,
-        description: str = "No description.",
+        description: str = "",
         example: typing.Any = None,
         allow_null: bool = False,
         default: typing.Any = None,
@@ -125,7 +125,7 @@ class FileField(Field):
         self,
         prefix: str,
         *,
-        description: str = "No description.",
+        description: str = "",
         allow_null: bool = False,
         save: typing.Callable[[UploadFile], typing.Awaitable[str]] = None,
     ):

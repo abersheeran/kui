@@ -124,13 +124,14 @@ class OpenAPI:
                     repsonses = paths[path][method]["responses"] = {}
                     for status, content in resps.items():
                         repsonses[status] = {
-                            "content": {
+                            "description": content["description"],
+                        }
+                        if content["model"] is not None:
+                            repsonses[status]["content"] = {
                                 content["model"].content_type: {
                                     "schema": Schema.response(content["model"])
                                 }
-                            },
-                            "description": content["description"],
-                        }
+                            }
 
                 if not paths[path][method]:
                     del paths[path][method]

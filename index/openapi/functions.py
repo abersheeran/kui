@@ -24,7 +24,7 @@ async def partial(
         _query = query.annotation(request.query_params)
         query_error = await _query.clean()
         if query_error:
-            raise ParseError({"query": query_error})
+            raise ParseError({"error": {"query": query_error}})
         handler = handler(query=_query)
 
     body = sig.parameters.get("body")
@@ -47,7 +47,7 @@ async def partial(
 
 
 def bindresponse(
-    status: int, response_model: Model, description: str = ""
+    status: int, response_model: Model = None, description: str = ""
 ) -> typing.Callable:
     """bind status => response model in http handler"""
 

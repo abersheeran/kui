@@ -33,6 +33,7 @@ class HTTP(View):
         )
 
     @bindresponse(200, MessageResponse)
+    @bindresponse(201, None)
     async def post(self, body: Message):
         """
         echo your message
