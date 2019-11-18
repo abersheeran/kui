@@ -1,4 +1,5 @@
 import os
+import re
 import copy
 import typing
 import asyncio
@@ -165,22 +166,23 @@ class FileField(Field):
 
 class BooleanField(Field):
     def __init__(self, *, default: typing.Any = None, **kwargs):
-        assert default in (True, False), "default in BooleanField must be bool"
+        assert default is None or default in (
+            True,
+            False,
+        ), "default in BooleanField must be bool"
         kwargs["default"] = default
         super().__init__(**kwargs)
 
     def verify(self, value: typing.Any) -> bool:
         value = self.check_null(value)
-        return bool(value)
+        return value != "0"
 
     def json(self, value: typing.Any) -> typing.Any:
         return bool(value)
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update(
-            {"type": "boolean",}
-        )
+        schema.update({"type": "boolean"})
         return schema
 
 
@@ -198,9 +200,7 @@ class IntField(ChoiceField):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update(
-            {"type": "integer",}
-        )
+        schema.update({"type": "integer"})
         return schema
 
 
@@ -218,9 +218,7 @@ class FloatField(ChoiceField):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update(
-            {"type": "number",}
-        )
+        schema.update({"type": "number"})
         return schema
 
 
@@ -235,9 +233,25 @@ class StrField(ChoiceField):
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
-        schema.update(
-            {"type": "string",}
-        )
+        schema.update({"type": "string"})
+        return schema
+
+
+class EmailField(StrField):
+    EMAIL_FORMAT = re.compile(r"(?P<name>\S+?)@(?P<domain>\S+?\.\S+?)")
+
+    def check_format(self, value: str) -> str:
+        if self.EMAIL_FORMAT.match(value) is None:
+            raise FieldVerifyError("Must be a string in email format.")
+        return value
+
+    def verify(self, value: typing.Any) -> str:
+        value = super().verify(value)
+        return self.check_format(value)
+
+    def openapi(self) -> typing.Dict[str, typing.Any]:
+        schema = super().openapi()
+        schema.update({"format": "email"})
         return schema
 
 
