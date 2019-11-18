@@ -29,7 +29,7 @@ async def partial(
 
     body = sig.parameters.get("body")
     if body and issubclass(body.annotation, Model):
-        if body.annotation.get_content_type() == "application/json":
+        if body.annotation.content_type == "application/json":
             try:
                 _body_data = await request.json()
             except json.decoder.JSONDecodeError:

@@ -155,31 +155,20 @@ def json_type(
     body: dict,
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
-```
+    return JSONResponse(body, status, headers, background=background)
 
-```python
+
+@register_type(bytes)
 @register_type(str)
-@typeassert
 def text_type(
-    body: str,
+    body: typing.Union[bytes, str],
     status: int = 200,
     headers: dict = None,
-    background: BackgroundTask = None
+    background: BackgroundTask = None,
 ) -> Response:
 
-    return PlainTextResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return PlainTextResponse(body, status, headers, background=background)
 ```

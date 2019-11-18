@@ -51,11 +51,7 @@ class AutoResponseType:
     def register_type(cls, type_: typing.Any) -> typing.Callable:
         def register_func(func: typing.Callable) -> typing.Callable:
             cls.type_map[type_] = func
-
-            def wrapper(*args, **kwargs) -> Response:
-                return func(*args, **kwargs)
-
-            return wrapper
+            return func
 
         return register_func
 
@@ -90,10 +86,10 @@ def json_type(
     return JSONResponse(body, status, headers, background=background)
 
 
+@register_type(bytes)
 @register_type(str)
-@typeassert
 def text_type(
-    body: str,
+    body: typing.Union[bytes, str],
     status: int = 200,
     headers: dict = None,
     background: BackgroundTask = None,
