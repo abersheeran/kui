@@ -17,7 +17,7 @@ Index.py 有以下一些特点。
 
 ## 安装
 
-Index.py 要求 Python 的版本至少是 3.6。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
+Index.py 要求 Python 的版本至少是 3.7。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
 
 安装 [pypi](https://pypi.org) 上的包
 
