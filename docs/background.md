@@ -2,7 +2,7 @@
 
 （此处称之为后续任务的原因——函数的执行时间点是在 HTTP 响应完成后。）
 
-基于 starlette 的 `background` 设计，index 提供了更简单可用的使用方法。
+基于 starlette 的 `background` 设计，Index 提供了更简单可用的使用方法。
 
 ```python
 from index.view import View
