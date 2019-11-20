@@ -10,14 +10,16 @@ from starlette.types import Scope, Receive, Send, Message, ASGIApp
 from starlette.requests import Request
 from starlette.websockets import WebSocket, WebSocketClose
 from starlette.responses import RedirectResponse
+from starlette.background import BackgroundTasks
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
-from .responses import FileResponse, automatic
 from .types import WSGIApp
 from .config import config
+from .responses import FileResponse, automatic
+from .background import background_tasks_var
 
 
 async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
@@ -148,19 +150,28 @@ class Filepath:
             get_response = module.HTTP()
         except AttributeError:
             raise HTTPException(404)
-        # call middleware
-        for deep in range(len(pathlist), 0, -1):
-            try:
-                module = importlib.import_module(".".join(pathlist[:deep]))
-                get_response = module.Middleware(get_response)
-            except AttributeError:
-                continue
-        # get response
-        response = await get_response(request)
-        if not isinstance(response, tuple):
-            response = (response,)
-        response = automatic(*response)
-        await response(scope, receive, send)
+
+        try:
+            # set background tasks contextvar
+            token = background_tasks_var.set(BackgroundTasks([]))
+
+            # call middleware
+            for deep in range(len(pathlist), 0, -1):
+                try:
+                    module = importlib.import_module(".".join(pathlist[:deep]))
+                    get_response = module.Middleware(get_response)
+                except AttributeError:
+                    continue
+            # get response
+            response = await get_response(request)
+            if not isinstance(response, tuple):
+                response = (response,)
+            response = automatic(*response)
+            # set background tasks
+            response.background = background_tasks_var.get(None)
+            await response(scope, receive, send)
+        finally:
+            background_tasks_var.reset(token)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)

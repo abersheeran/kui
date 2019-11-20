@@ -75,24 +75,11 @@ automatic = functools.partial(AutoResponseType.automatic)
 
 
 @register_type(dict)
-@typeassert
-def json_type(
-    body: dict,
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None,
-) -> Response:
-
-    return JSONResponse(body, status, headers, background=background)
+def json_type(body: dict, status: int = 200, headers: dict = None,) -> Response:
+    return JSONResponse(body, status, headers)
 
 
 @register_type(bytes)
 @register_type(str)
-def text_type(
-    body: typing.Union[bytes, str],
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None,
-) -> Response:
-
-    return PlainTextResponse(body, status, headers, background=background)
+def text_type(body: str, status: int = 200, headers: dict = None) -> Response:
+    return PlainTextResponse(body, status, headers)
