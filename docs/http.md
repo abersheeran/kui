@@ -95,6 +95,7 @@ class Middleware(MiddlewareMixin):
 * [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
 * [FileResponse](https://www.starlette.io/responses/#fileresponse)
 * [TemplateResponse](https://www.starlette.io/templates/#testing-template-responses)
+* YAMLResponse
 
 ### 自定义返回类型
 
@@ -104,30 +105,18 @@ class Middleware(MiddlewareMixin):
 
 以下是一个处理 `dict` 类型的返回值的例子。
 
-* 注意：你也可以不使用 `typeassert` 装饰器和 type hint，这并非强制的，但推荐使用，它能在编写/调试时让你更方便。
-
 ```python
-from index.types import typeassert
-from index.responses import register_type
-
-from starlette.background import BackgroundTask
+from index.responses import automatic
 
 
-@register_type(dict)
-@typeassert
-def json_type(
-    body: dict,
+@automatic.register(dict)
+def _automatic(
+    body: typing.Dict,
     status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None
+    headers: dict = None
 ) -> Response:
 
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return JSONResponse(body, status, headers)
 ```
 
 再接着看下面这个类
@@ -146,29 +135,18 @@ class HTTP(View):
 
 ### 内置的处理函数
 
-Index 内置了两个处理函数，它们的定义如下：
+Index 内置了两个处理函数用于处理三种类型：
 
 ```python
-@register_type(dict)
-@typeassert
-def json_type(
-    body: dict,
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None,
+@automatic.register(dict)
+def _automatic(body: typing.Dict, status: int = 200, headers: dict = None) -> Response:
+    return JSONResponse(body, status, headers)
+
+
+@automatic.register(str)
+@automatic.register(bytes)
+def _automatic(
+    body: typing.Union[str, bytes], status: int = 200, headers: dict = None
 ) -> Response:
-
-    return JSONResponse(body, status, headers, background=background)
-
-
-@register_type(bytes)
-@register_type(str)
-def text_type(
-    body: typing.Union[bytes, str],
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None,
-) -> Response:
-
-    return PlainTextResponse(body, status, headers, background=background)
+    return PlainTextResponse(body, status, headers)
 ```
