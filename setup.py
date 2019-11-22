@@ -30,6 +30,7 @@ REQUIRED = [
     "watchdog",
     "python-multipart",
     "pyyaml",
+    'contextvars ;python_version<"3.7"',
 ]
 
 # What packages are optional?

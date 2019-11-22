@@ -25,7 +25,18 @@ logging.basicConfig(
 def execute(command: str):
     click.echo("Execute command: ", nl=False)
     click.secho(command, fg="green")
-    os.system(command)
+
+    process = subprocess.Popen(command, shell=True)
+
+    def sigterm_handler(signo, frame):
+        process.terminate()
+        process.wait()
+
+    signal.signal(signal.SIGINT, sigterm_handler)
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
+    while process.poll() is None:
+        time.sleep(1)
 
 
 @click.group(help=f"Index.py {__version__}")
@@ -40,7 +51,6 @@ def serve():
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,
-        # logger=logging.getLogger("index"),
         debug=config.DEBUG,
         lifespan="on",
     )
@@ -73,32 +83,6 @@ def gunicorn(workers, daemon, configuration, method):
         execute("kill -HUP `cat .pid`")
 
 
-@main.command(help="run gunicorn in docker")
-@click.option("--workers", "-w", default=2)
-@click.option("--configuration", "-c")
-def docker(workers, configuration):
-    command = (
-        f"gunicorn -k uvicorn.workers.UvicornWorker"
-        f" --bind {config.HOST}:{config.PORT}"
-        f" --chdir {config.path}"
-        f" --log-level {config.LOG_LEVEL}"
-        f" -w {workers}"
-        f"{' -c ' + configuration if configuration else ''}"
-        f" index:app"
-    )
-    process = subprocess.Popen(command, shell=True)
-
-    def sigterm_handler(signo, frame):
-        process.terminate()
-        process.wait()
-        sys.exit(0)
-
-    signal.signal(signal.SIGTERM, sigterm_handler)
-
-    while process.poll() is None:
-        time.sleep(3.1)
-
-
 @main.command(help="check .py files in program")
 def check():
     views_path = os.path.join(config.path, "views/").replace("\\", "/")
@@ -108,6 +92,3 @@ def check():
                 continue
             abspath = os.path.join(root, file).replace("\\", "/")
             module = _import(abspath, nosleep=True)
-            if abspath.startswith(views_path) and not abspath.endswith("__init__.py"):
-                if not (hasattr(module, "HTTP") or hasattr(module, "Socket")):
-                    print(f"- {module} must have HTTP or Socket")

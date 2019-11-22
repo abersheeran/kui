@@ -41,21 +41,11 @@ Index 内置了一些命令方便使用。**注意：它们都必须在项目根
 
     这一般在你更改了配置之后使用，因为 Index 内置了真正的热重载能力，如果只是更新代码，你并不需要重启服务。
 
-### docker
-
-* `index-cli docker`
-
-    使用 `index-cli gunicorn start` 命令运行在 docker 中，会导致容器销毁时，无法优雅的停止 gunicorn (无法接收到 SIGTERM 信号)，所以有了此命令。
-
-    它除了 `--daemon` 参数，其他参数与 `index-cli gunicorn start` 相同。
-
 ### check
 
 * `index-cli check`
 
     这能遍历你项目里的所有 `.py` 文件，来检查其中是不是出现了不允许的 `import` 方法。至于原因，可以看看[ Python 的热重载](https://abersheeran.com/articles/Python-Reload/)。
-
-    并且它会检查 `views` 中的所有 `.py` 是否拥有 `HTTP`（用于处理 HTTP 请求） 或者 `Socket`（用于处理 WebSocket 请求），并在控制台展示所有无处理能力的文件。**不建议把没有处理功能的文件放在 views 里**。
 
 ## 自定义命令
 
