@@ -5,10 +5,8 @@ import functools
 
 from starlette.concurrency import run_in_threadpool
 
-from .types import AsyncCallable
 
-
-def complicating(func: typing.Callable) -> AsyncCallable:
+def complicating(func: typing.Callable) -> typing.Callable:
     """
     always return a coroutine function
     """

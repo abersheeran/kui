@@ -1,6 +1,3 @@
-"""
-Maybe more repsonse type will be done in the future
-"""
 import typing
 import functools
 

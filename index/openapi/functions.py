@@ -1,7 +1,6 @@
 import json
 import typing
 from inspect import signature
-from functools import wraps
 
 from starlette.requests import Request
 
@@ -60,11 +59,7 @@ def bindresponse(
 
         getattr(func, "__resps__")[status]["description"] = description
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        return wrapper
+        return func
 
     return decorator
 

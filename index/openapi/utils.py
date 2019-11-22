@@ -1,6 +1,5 @@
 import copy
 import typing
-import inspect
 import functools
 
 

@@ -105,44 +105,97 @@ class Lifespan:
         await self.lifespan(scope, receive, send)
 
 
-def get_pathlist(uri: str) -> typing.List[str]:
-    if uri.endswith("/index"):
-        return RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
-
-    if uri.endswith("/"):
-        uri += "index"
-
-    filepath = uri[1:].strip(".")
-    # Google SEO
-    if not config.ALLOW_UNDERLINE:
-        if "_" in uri:
-            return RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
-        filepath = filepath.replace("-", "_")
-
-    # judge python file
-    abspath = os.path.join(config.path, "views", filepath + ".py")
-    if not os.path.exists(abspath):
-        raise HTTPException(404)
-
-    pathlist = filepath.split("/")
-    pathlist.insert(0, "views")
-
-    return pathlist
-
-
-class Filepath:
-    def __init__(self) -> None:
+class Mount:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
         self.apps = {}
-        self.lifespan = Lifespan()
 
-    def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
+    def append(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
         assert route.startswith("/"), "prefix must be start with '/'"
         assert not route.endswith("/"), "prefix can't end with '/'"
         self.apps.update({route: app})
 
+    class DontFoundRoute(Exception):
+        pass
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        assert scope["type"] in ("http", "websocket", "lifespan")
+
+        async def subsend(message: Message) -> None:
+            if message["type"] == "http.response.start" and message["status"] == 404:
+                raise self.DontFoundRoute()
+            return await send(message)
+
+        async def callapp(
+            app: typing.Union[ASGIApp, WSGIApp],
+            scope: Scope,
+            receive: Receive,
+            send: Send,
+        ) -> None:
+            sig = signature(app)
+            if len(sig.parameters) == 3:
+                await app(scope, receive, send)
+                return
+
+            if len(sig.parameters) == 2:
+                if scope["type"] != "http":
+                    raise self.DontFoundRoute()
+
+                app = WSGIMiddleware(app)
+                await app(scope, receive, send)
+                return
+
+        if scope["type"] in ("http", "websocket"):
+            path = scope["path"]
+            root_path = scope.get("root_path", "")
+
+            # Call into a submounted app, if one exists.
+            for path_prefix, app in self.apps.items():
+                if path.startswith(path_prefix):
+                    subscope = copy.deepcopy(scope)
+                    subscope["path"] = path[len(path_prefix) :]
+                    subscope["root_path"] = root_path + path_prefix
+                    try:
+                        await callapp(app, subscope, receive, subsend)
+                        return
+                    except self.DontFoundRoute:
+                        pass
+
+        await self.app(scope, receive, send)
+
+
+class Filepath:
+    def __init__(self) -> None:
+        self.lifespan = Lifespan()
+
+    @staticmethod
+    def get_pathlist(uri: str) -> typing.List[str]:
+        if uri.endswith("/index"):
+            return RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
+
+        if uri.endswith("/"):
+            uri += "index"
+
+        filepath = uri[1:].strip(".")
+        # Google SEO
+        if not config.ALLOW_UNDERLINE:
+            if "_" in uri:
+                return RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
+            filepath = filepath.replace("-", "_")
+
+        # judge python file
+        abspath = os.path.join(config.path, "views", filepath + ".py")
+        if not os.path.exists(abspath):
+            raise HTTPException(404)
+
+        pathlist = filepath.split("/")
+        pathlist.insert(0, "views")
+
+        return pathlist
+
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = Request(scope, receive)
-        pathlist = get_pathlist(request.url.path)
+        pathlist = self.get_pathlist(request.url.path)
         # find http handler
         module_path = ".".join(pathlist)
         module = importlib.import_module(module_path)
@@ -176,7 +229,7 @@ class Filepath:
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)
         try:
-            pathlist = get_pathlist(websocket.url.path)
+            pathlist = self.get_pathlist(websocket.url.path)
             # find websocket handler
             module_path = ".".join(pathlist)
             module = importlib.import_module(module_path)
@@ -193,59 +246,15 @@ class Filepath:
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        assert scope["type"] in ("http", "websocket", "lifespan")
-
-        if scope["type"] == "lifespan":
-            await self.lifespan(scope, receive, send)
-            return
-
-        async def subsend(message: Message) -> None:
-            if message["type"] == "http.response.start" and message["status"] == 404:
-                raise HTTPException(404)
-            return await send(message)
-
-        async def callapp(
-            app: typing.Union[ASGIApp, WSGIApp],
-            scope: Scope,
-            receive: Receive,
-            send: Send,
-        ) -> None:
-            sig = signature(app)
-            if len(sig.parameters) == 3:
-                await app(scope, receive, send)
-                return
-            elif len(sig.parameters) == 2:
-                if scope["type"] != "http":
-                    raise HTTPException(404)
-
-                app = WSGIMiddleware(app)
-                await app(scope, receive, send)
-                return
-
-        path = scope["path"]
-        root_path = scope.get("root_path", "")
-
-        # Call into a submounted app, if one exists.
-        for path_prefix, app in self.apps.items():
-            if path.startswith(path_prefix):
-                subscope = copy.deepcopy(scope)
-                subscope["path"] = path[len(path_prefix) :]
-                subscope["root_path"] = root_path + path_prefix
-                try:
-                    await callapp(app, subscope, receive, subsend)
-                    return
-                except HTTPException as exception:
-                    if exception.status_code != 404:
-                        raise exception
-
         await getattr(self, scope["type"])(scope, receive, send)
 
 
 class Index:
     def __init__(self, debug: bool = False) -> None:
         self._debug = debug
-        self.router = Filepath()
-        self.exception_middleware = ExceptionMiddleware(self.router, debug=debug)
+        self.app = Filepath()
+        self.childapps = Mount(self.app)
+        self.exception_middleware = ExceptionMiddleware(self.childapps, debug=debug)
         self.error_middleware = ServerErrorMiddleware(
             self.exception_middleware, debug=debug
         )
@@ -278,10 +287,10 @@ class Index:
             )
 
     def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
-        self.router.lifespan.add_event_handler(event_type, func)
+        self.app.lifespan.add_event_handler(event_type, func)
 
     def on_event(self, event_type: str) -> typing.Callable:
-        return self.router.lifespan.on_event(event_type)
+        return self.app.lifespan.on_event(event_type)
 
     def exception_handler(
         self, exc_class_or_status_code: typing.Union[int, typing.Type[Exception]]
@@ -304,7 +313,7 @@ class Index:
         return decorator
 
     def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
-        self.router.mount(route, app)
+        self.childapps.append(route, app)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
