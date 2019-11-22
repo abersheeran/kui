@@ -43,14 +43,14 @@ def _import(abspath: str, nosleep: bool = False):
 
     return: module
     """
-    if not nosleep:
+    if not nosleep:  # when VSCode formats code, a temporary file will be created.
         time.sleep(1.3)
         if not os.path.exists(abspath):
             return
     relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
     # check import
     for error_line_num, error_sentence in check(abspath):
-        e = ImportTypeError(f"{relpath} line {error_line_num}", error_sentence)
+        e = ImportTypeError(f"{relpath}.py line {error_line_num}", error_sentence)
         logger.warning(f"Check import type error in {e.position}: '{e.sentence}'")
     # loading
     if relpath.endswith("/__init__"):
