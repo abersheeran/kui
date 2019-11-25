@@ -39,7 +39,13 @@ def get_views():
 
 class OpenAPI:
     def __init__(
-        self, title: str, description: str, version: str, *, media_type="yaml"
+        self,
+        title: str,
+        description: str,
+        version: str,
+        *,
+        template: str = "",
+        media_type="yaml",
     ):
         """
         media_type: yaml or json
@@ -48,6 +54,7 @@ class OpenAPI:
 
         info = {"title": title, "description": description, "version": version}
         self.openapi = {"openapi": "3.0.0", "info": info, "paths": {}}
+        self.html_template = template
         self.media_type = media_type
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -63,6 +70,8 @@ class OpenAPI:
         await response(scope, receive, send)
 
     async def template(self, request: Request) -> Response:
+        if self.html_template:
+            return HTMLResponse(self.html_template)
         return HTMLResponse(DEFAULT_TEMPLATE)
 
     async def docs(self, request: Request) -> Response:
@@ -76,6 +85,8 @@ class OpenAPI:
 
         paths = openapi["paths"]
         for path, view in get_views():
+            if not hasattr(view, "HTTP"):
+                continue
             viewclass = view.HTTP()
             paths[path] = {}
             for method in viewclass.allowed_methods():

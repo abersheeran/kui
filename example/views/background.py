@@ -9,9 +9,6 @@ def only_print(message: str) -> None:
 
 class HTTP(View):
     async def get(self):
-        """
-        welcome page
-        """
         only_print("world")
         print("hello")
         return ""
