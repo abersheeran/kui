@@ -1,2 +1,2 @@
 from .application import OpenAPI
-from .functions import bindresponse
+from .functions import describe

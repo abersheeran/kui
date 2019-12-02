@@ -18,6 +18,8 @@ async def partial(
 ) -> typing.Optional[typing.Any]:
     handler = currying(handler)
     sig = signature(handler)
+
+    # try to get query model and parse
     query = sig.parameters.get("query")
     if query and issubclass(query.annotation, Model):
         _query = query.annotation(request.query_params)
@@ -26,6 +28,7 @@ async def partial(
             raise ParseError({"error": {"query": query_error}})
         handler = handler(query=_query)
 
+    # try to get body model and parse
     body = sig.parameters.get("body")
     if body and issubclass(body.annotation, Model):
         if body.annotation.content_type == "application/json":
@@ -45,7 +48,7 @@ async def partial(
     return handler
 
 
-def bindresponse(
+def describe(
     status: int, response_model: Model = None, description: str = ""
 ) -> typing.Callable:
     """bind status => response model in http handler"""
@@ -64,7 +67,7 @@ def bindresponse(
     return decorator
 
 
-class Schema:
+class SchemaFromModel:
     @staticmethod
     def parameters(model: Model, position: str) -> typing.Dict[str, typing.Any]:
         """
@@ -91,21 +94,21 @@ class Schema:
             )
         return result
 
-    @staticmethod
-    def in_path(model: Model) -> typing.Dict[str, typing.Any]:
-        return Schema.parameters(model, "path")
+    @classmethod
+    def in_path(cls, model: Model) -> typing.Dict[str, typing.Any]:
+        return cls.parameters(model, "path")
 
-    @staticmethod
-    def in_query(model: Model) -> typing.Dict[str, typing.Any]:
-        return Schema.parameters(model, "query")
+    @classmethod
+    def in_query(cls, model: Model) -> typing.Dict[str, typing.Any]:
+        return cls.parameters(model, "query")
 
-    @staticmethod
-    def in_header(model: Model) -> typing.Dict[str, typing.Any]:
-        return Schema.parameters(model, "header")
+    @classmethod
+    def in_header(cls, model: Model) -> typing.Dict[str, typing.Any]:
+        return cls.parameters(model, "header")
 
-    @staticmethod
-    def in_cookie(model: Model) -> typing.Dict[str, typing.Any]:
-        return Schema.parameters(model, "cookie")
+    @classmethod
+    def in_cookie(cls, model: Model) -> typing.Dict[str, typing.Any]:
+        return cls.parameters(model, "cookie")
 
     @staticmethod
     def request_body(model: Model) -> typing.Dict[str, typing.Any]:

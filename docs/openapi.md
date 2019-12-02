@@ -74,7 +74,7 @@ class HTTP(View):
 
 ```python
 from index.view import View
-from index.openapi import models, bindresponse
+from index.openapi import models, describe
 
 
 class Message(models.Model):
@@ -92,7 +92,7 @@ class MessageResponse(models.Model):
 
 class HTTP(View):
 
-    @bindresponse(200, MessageResponse)
+    @describe(200, MessageResponse)
     async def post(self, body: Message):
         """
         echo your message

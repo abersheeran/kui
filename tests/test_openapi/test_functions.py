@@ -1,10 +1,10 @@
-from index.openapi.functions import bindresponse
+from index.openapi.functions import describe
 
 
-def test_bindresponse():
+def test_describe():
     class HTTP:
-        @bindresponse(200, "ok")
-        @bindresponse(400, "bad request")
+        @describe(200, "ok")
+        @describe(400, "bad request")
         async def get(self):
             pass
 

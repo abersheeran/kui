@@ -1,6 +1,6 @@
 from index.view import View
 from index.responses import TemplateResponse
-from index.openapi import models, bindresponse
+from index.openapi import models, describe
 
 from utils import db
 
@@ -32,8 +32,8 @@ class HTTP(View):
             {"request": self.request, "db": db.some_db_settings, "name": query.name},
         )
 
-    @bindresponse(200, MessageResponse)
-    @bindresponse(201, None)
+    @describe(200, MessageResponse)
+    @describe(201, None)
     async def post(self, body: Message):
         """
         echo your message

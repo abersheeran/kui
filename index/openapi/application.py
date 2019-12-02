@@ -15,7 +15,7 @@ from index.responses import (
 from index.config import config
 
 from .models import Model
-from .functions import Schema
+from .functions import SchemaFromModel
 
 
 def get_views():
@@ -109,7 +109,7 @@ class OpenAPI:
 
                 query = sig.parameters.get("query")
                 if query and issubclass(query.annotation, Model):
-                    paths[path][method]["parameters"] = Schema.in_query(
+                    paths[path][method]["parameters"] = SchemaFromModel.in_query(
                         query.annotation
                     )
 
@@ -119,7 +119,7 @@ class OpenAPI:
                         "required": True,
                         "content": {
                             body.annotation.content_type: {
-                                "schema": Schema.request_body(body.annotation)
+                                "schema": SchemaFromModel.request_body(body.annotation)
                             }
                         },
                     }
@@ -140,7 +140,7 @@ class OpenAPI:
                         if content["model"] is not None:
                             repsonses[status]["content"] = {
                                 content["model"].content_type: {
-                                    "schema": Schema.response(content["model"])
+                                    "schema": SchemaFromModel.response(content["model"])
                                 }
                             }
 
