@@ -94,8 +94,28 @@ class Middleware(MiddlewareMixin):
 * [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
 * [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
 * [FileResponse](https://www.starlette.io/responses/#fileresponse)
-* [TemplateResponse](https://www.starlette.io/templates/#testing-template-responses)
+* TemplateResponse
 * YAMLResponse
+
+### TemplateResponse
+
+Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
+
+```python
+from index.view import View
+from index.responses import TemplateResponse
+
+
+class HTTP(View):
+    def get(self):
+        return TemplateResponse("chat.html", {"request": self.request})
+```
+
+### YAMLResponse
+
+由于 YAML 与 JSON 的等价性，YAMLResponse 与 JSONResponse 的使用方法相同。
+
+唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
 ### 自定义返回类型
 
