@@ -1,5 +1,6 @@
 import json
 import typing
+import functools
 from inspect import signature
 
 from starlette.requests import Request
@@ -16,7 +17,7 @@ class ParseError(Exception):
 async def partial(
     handler: typing.Callable, request: Request
 ) -> typing.Optional[typing.Any]:
-    handler = currying(handler)
+
     sig = signature(handler)
 
     # try to get query model and parse
@@ -26,7 +27,7 @@ async def partial(
         query_error = await _query.clean()
         if query_error:
             raise ParseError({"error": {"query": query_error}})
-        handler = handler(query=_query)
+        handler = functools.partial(handler, query=_query)
 
     # try to get body model and parse
     body = sig.parameters.get("body")
@@ -44,7 +45,7 @@ async def partial(
         body_error = await _body.clean()
         if body_error:
             raise ParseError({"error": {"body": body_error}})
-        handler = handler(body=_body)
+        handler = functools.partial(handler, body=_body)
     return handler
 
 

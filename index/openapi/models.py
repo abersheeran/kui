@@ -60,6 +60,7 @@ class Field(metaclass=ABCMeta):
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
         """Verify and parse data into Python objects"""
+        return self.check_null(value)
 
     @abstractmethod
     async def json(self, value: typing.Any) -> typing.Any:
@@ -74,7 +75,7 @@ class Field(metaclass=ABCMeta):
         return schema
 
 
-class MatchFieldMeta(type):
+class ModelMeta(type):
     def __init__(
         self,
         name: str,
@@ -89,7 +90,7 @@ class MatchFieldMeta(type):
         super().__init__(name, bases, namespace)
 
 
-class BaseModel(metaclass=MatchFieldMeta):
+class BaseModel(metaclass=ModelMeta):
     fields: typing.Dict[str, Field]
 
 
@@ -107,11 +108,9 @@ class ChoiceField(Field, metaclass=ABCMeta):
 
     @abstractmethod
     async def verify(self, value: typing.Any) -> typing.Any:
-        pass
-
-    @abstractmethod
-    async def json(self, value: typing.Any) -> typing.Any:
-        pass
+        value = super().verify(value)
+        value = self.check_choice(value)
+        return value
 
     def openapi(self) -> typing.Dict[str, typing.Any]:
         schema = super().openapi()
@@ -174,8 +173,8 @@ class BooleanField(Field):
         super().__init__(**kwargs)
 
     def verify(self, value: typing.Any) -> bool:
-        value = self.check_null(value)
-        return value != "0"
+        value = super().verify(value)
+        return bool(value)
 
     def json(self, value: typing.Any) -> typing.Any:
         return bool(value)
@@ -188,8 +187,7 @@ class BooleanField(Field):
 
 class IntField(ChoiceField):
     def verify(self, value: typing.Any) -> int:
-        value = self.check_null(value)
-        value = self.check_choice(value)
+        value = super().verify(value)
         try:
             return int(value)
         except ValueError:
@@ -206,8 +204,7 @@ class IntField(ChoiceField):
 
 class FloatField(ChoiceField):
     def verify(self, value: typing.Any) -> float:
-        value = self.check_null(value)
-        value = self.check_choice(value)
+        value = super().verify(value)
         try:
             return float(value)
         except ValueError:
@@ -224,8 +221,7 @@ class FloatField(ChoiceField):
 
 class StrField(ChoiceField):
     def verify(self, value: typing.Any) -> str:
-        value = self.check_null(value)
-        value = self.check_choice(value)
+        value = super().verify(value)
         return str(value)
 
     def json(self, value: typing.Any) -> typing.Any:
