@@ -1,7 +1,6 @@
 import typing
 
 from index.responses import (
-    register_type,
+    automatic,
     Response,
 )
-from index.types import typeassert

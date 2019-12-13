@@ -3,7 +3,6 @@ from index.config import logger
 
 
 class ExampleChildMiddleware(MiddlewareMixin):
-
     async def process_request(self, request):
         logger.info("example base middleware request")
 
@@ -14,7 +13,7 @@ class ExampleChildMiddleware(MiddlewareMixin):
 
 class Middleware(MiddlewareMixin):
 
-    ChildMiddlwares = (ExampleChildMiddleware, )
+    ChildMiddlwares = (ExampleChildMiddleware,)
 
     async def process_request(self, request):
         logger.info("enter first process request")

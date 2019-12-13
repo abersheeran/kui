@@ -4,9 +4,8 @@ from index.utils import Singleton
 
 
 class HTTP(View):
-
     def get(self):
-        return TemplateResponse('chat.html', {"request": self.request})
+        return TemplateResponse("chat.html", {"request": self.request})
 
 
 try:

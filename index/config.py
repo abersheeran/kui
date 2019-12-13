@@ -5,9 +5,7 @@ import logging
 
 from .utils import Singleton
 
-__all__ = [
-    "Config"
-]
+__all__ = ["Config"]
 
 LOG_LEVELS = {
     "critical": logging.CRITICAL,
@@ -26,7 +24,6 @@ class ConfigError(Exception):
 
 
 class UpperDict:
-
     def __init__(self, data: dict):
         self.__dict = dict()
         for key in data.keys():
@@ -37,7 +34,7 @@ class UpperDict:
         result = ["{"]
 
         def append(line):
-            result.append(" "*indent + line)
+            result.append(" " * indent + line)
 
         for key, value in self.__dict.items():
             if isinstance(value, UpperDict):
@@ -86,7 +83,9 @@ class UpperDict:
             #     raise KeyError()
             return value
         except KeyError:
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
 
     def get(self, key: str, default=None) -> typing.Any:
         try:
@@ -99,7 +98,7 @@ def _import_environ() -> typing.Dict:
     result = {}
     for key in filter(
         lambda x: x.startswith("INDEX_") and x[6:].upper() in ("DEBUG", "ENV"),
-        os.environ.keys()
+        os.environ.keys(),
     ):
         if key.upper() == "DEBUG":
             result[key[6:]] = os.environ.get(key) in ("on", "True")
@@ -109,7 +108,6 @@ def _import_environ() -> typing.Dict:
 
 
 class Config(UpperDict, metaclass=Singleton):
-
     def __init__(self) -> None:
         super().__init__({})
         self.setdefault()
@@ -141,14 +139,14 @@ class Config(UpperDict, metaclass=Singleton):
         self["debug"] = False
         self["host"] = "127.0.0.1"
         self["port"] = 4190
-        self['log_level'] = "info"
-        self['autoreload'] = True
+        self["log_level"] = "info"
+        self["autoreload"] = True
         # url
-        self['allow_underline'] = False
+        self["allow_underline"] = False
         # middleware
-        self['force_ssl'] = False
-        self['allowed_hosts'] = ["*"]
-        self['cors_allow_origins'] = ()
+        self["force_ssl"] = False
+        self["allowed_hosts"] = ["*"]
+        self["cors_allow_origins"] = ()
         self["cors_allow_methods"] = ("GET",)
         self["cors_allow_headers"] = ()
         self["cors_allow_credentials"] = False
@@ -161,7 +159,7 @@ class Config(UpperDict, metaclass=Singleton):
             self[key] = data[key]
 
     def get(self, key, default=None) -> typing.Any:
-        env = super().get(self['env'], {})
+        env = super().get(self["env"], {})
         value = env.get(key, None)
         if value is None:
             value = super().get(key, default)

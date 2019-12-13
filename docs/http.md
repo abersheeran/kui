@@ -50,7 +50,7 @@
 
 ### 子中间件
 
-很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `ChildMiddlwares` 属性，可以为中间件指定子中间件。
+很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `ChildMiddlwares` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
 
 **注意：子中间件的执行顺序是从右到左。**
 
@@ -94,7 +94,28 @@ class Middleware(MiddlewareMixin):
 * [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
 * [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
 * [FileResponse](https://www.starlette.io/responses/#fileresponse)
-* [TemplateResponse](https://www.starlette.io/templates/#testing-template-responses)
+* TemplateResponse
+* YAMLResponse
+
+### TemplateResponse
+
+Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
+
+```python
+from index.view import View
+from index.responses import TemplateResponse
+
+
+class HTTP(View):
+    def get(self):
+        return TemplateResponse("chat.html", {"request": self.request})
+```
+
+### YAMLResponse
+
+由于 YAML 与 JSON 的等价性，YAMLResponse 与 JSONResponse 的使用方法相同。
+
+唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
 ### 自定义返回类型
 
@@ -104,30 +125,18 @@ class Middleware(MiddlewareMixin):
 
 以下是一个处理 `dict` 类型的返回值的例子。
 
-* 注意：你也可以不使用 `typeassert` 装饰器和 type hint，这并非强制的，但推荐使用，它能在编写/调试时让你更方便。
-
 ```python
-from index.types import typeassert
-from index.responses import register_type
-
-from starlette.background import BackgroundTask
+from index.responses import automatic
 
 
-@register_type(dict)
-@typeassert
-def json_type(
-    body: dict,
+@automatic.register(dict)
+def _automatic(
+    body: typing.Dict,
     status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None
+    headers: dict = None
 ) -> Response:
 
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return JSONResponse(body, status, headers)
 ```
 
 再接着看下面这个类
@@ -146,40 +155,18 @@ class HTTP(View):
 
 ### 内置的处理函数
 
-Index 内置了两个处理函数，它们的定义如下：
+Index 内置了两个处理函数用于处理三种类型：
 
 ```python
-@register_type(dict)
-@typeassert
-def json_type(
-    body: dict,
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None
+@automatic.register(dict)
+def _automatic(body: typing.Dict, status: int = 200, headers: dict = None) -> Response:
+    return JSONResponse(body, status, headers)
+
+
+@automatic.register(str)
+@automatic.register(bytes)
+def _automatic(
+    body: typing.Union[str, bytes], status: int = 200, headers: dict = None
 ) -> Response:
-
-    return JSONResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
-```
-
-```python
-@register_type(str)
-@typeassert
-def text_type(
-    body: str,
-    status: int = 200,
-    headers: dict = None,
-    background: BackgroundTask = None
-) -> Response:
-
-    return PlainTextResponse(
-        body,
-        status,
-        headers,
-        background=background
-    )
+    return PlainTextResponse(body, status, headers)
 ```

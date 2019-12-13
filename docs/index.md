@@ -1,23 +1,10 @@
 尽管我从没使用过PHP编写过任何程序，但我很喜欢它使用文件系统映射到 URI 的设计和它的热重载。
 
-Index.py 有以下一些特点。
-
-* 真正的热重载
-* 无需手动绑定路由
-* HTTP & Websocket 支持
-* 任意层级中间件
-* 加载时自动异步定义
-* Windows/Linux 多平台
-* uvloop/IOCP 优化
-* CORS 可配置化
-* 自动 gzip 压缩
-* 零配置部署
-
 那么，从安装开始吧。
 
 ## 安装
 
-Index.py 要求 Python 的版本至少是 3.6。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
+Index.py 要求 Python 的版本至少是 3.7。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
 
 安装 [pypi](https://pypi.org) 上的包
 

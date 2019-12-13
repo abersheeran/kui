@@ -32,7 +32,6 @@ def check(filepath: str) -> typing.Iterable[typing.Tuple[int, str]]:
 
 
 class ImportTypeError(Exception):
-
     def __init__(self, position: str, sentence: str):
         self.position = position
         self.sentence = sentence
@@ -44,18 +43,18 @@ def _import(abspath: str, nosleep: bool = False):
 
     return: module
     """
-    if not nosleep:
+    if not nosleep:  # when VSCode formats code, a temporary file will be created.
         time.sleep(1.3)
         if not os.path.exists(abspath):
             return
     relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
     # check import
     for error_line_num, error_sentence in check(abspath):
-        e = ImportTypeError(f"{relpath} line {error_line_num}", error_sentence)
+        e = ImportTypeError(f"{relpath}.py line {error_line_num}", error_sentence)
         logger.warning(f"Check import type error in {e.position}: '{e.sentence}'")
     # loading
     if relpath.endswith("/__init__"):
-        relpath = relpath[:-len("/__init__")]
+        relpath = relpath[: -len("/__init__")]
     return importlib.import_module(relpath.replace("/", "."))
 
 
@@ -69,7 +68,6 @@ def _reload(abspath: str) -> None:
 
 
 class MonitorFileEventHandler(FileSystemEventHandler):
-
     def dispatch(self, event: FileSystemEvent):
         if not event.src_path.endswith(".py"):
             return
@@ -77,11 +75,11 @@ class MonitorFileEventHandler(FileSystemEventHandler):
 
     def on_modified(self, event: FileSystemEvent):
         logger.debug(f"reloading {event.src_path}")
-        threading.Thread(target=_reload, args=(event.src_path, ), daemon=True).start()
+        threading.Thread(target=_reload, args=(event.src_path,), daemon=True).start()
 
     def on_created(self, event: FileSystemEvent):
         logger.debug(f"loading {event.src_path}")
-        threading.Thread(target=_import, args=(event.src_path, ), daemon=True).start()
+        threading.Thread(target=_import, args=(event.src_path,), daemon=True).start()
 
 
 class MonitorFile:

@@ -17,6 +17,8 @@ nav:
   - Mount: 'mount.md'
   - Lifespan: 'event.md'
   - Command: 'command.md'
+  - Background: 'background.md'
+  - OpenAPI ᴮᴱᵀᴬ: 'openapi.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:

@@ -4,10 +4,12 @@ url = "https://mirrors.aliyun.com/pypi/simple/"
 verify_ssl = true
 
 [dev-packages]
-autopep8 = "*"
 pylint = "*"
 mkdocs = "*"
 mkdocs-material = "*"
+pytest = "*"
+black = "*"
+pytest-asyncio = "*"
 
 [packages]
 uvicorn = "*"
@@ -19,3 +21,6 @@ requests = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

@@ -1,8 +1,13 @@
 # index.py
 
-An easy-to-use asynchronous web framework based on ASGI. Support hot overload (real).
+一个基于 ASGI 协议 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
 
-- [Index.py Document](https://abersheeran.github.io/index.py/)
+- 非常简单的部署
+- 支持真正的热重载
+- 无需手动绑定路由 (文件系统映射URI)
+- 更好用的挂载 ASGI/WSGI 应用
+- 更好用的 background tasks
+- 以及 starlette 框架的一切功能
 
 ## Install
 
@@ -10,17 +15,13 @@ An easy-to-use asynchronous web framework based on ASGI. Support hot overload (r
 pip install -U index.py
 ```
 
-Or get the latest version on Github
+或者直接从 Github 上安装最新版本（不稳定）
 
 ```bash
 pip install -U git+https://github.com/abersheeran/index.py
 ```
 
-## Quick use
-
-Make a folder that name is `views` and create `index.py` in it.
-
-Write the following in `index.py`
+## Hello world
 
 ```python
 from index.view import View
@@ -31,9 +32,3 @@ class HTTP(View):
     def get(self):
         return "hello world"
 ```
-
-Execute the command `index-cli serve` in the same directory as `views`.
-
-And then, try to change the content in `index.py`, refresh your browser, the page content will be changed.
-
-Index.py can automatically update your Python file changes to the server, manage your index.py service, maybe you only need ftp.
