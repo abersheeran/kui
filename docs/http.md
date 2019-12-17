@@ -4,31 +4,31 @@
 
 但较为特殊的是名为 `index.py` 的文件，它能够处理以 `/` 作为最后一个字符的 URI。
 
-**注意**：由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/#allow_underline) 为真去关闭此功能。
+!!! tip
+    由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/#allow_underline) 为真去关闭此功能。
 
-* 一些例子：
-
-    文件相对路径|文件能处理的URI
-    ---|---
-    views/index.py|/
-    views/about.py|/about
-    views/api/create_article.py|/api/create-article
-    views/article/index.py|/article/
+一些例子|文件相对路径|文件能处理的URI
+---|---|---
+|views/index.py|/
+|views/about.py|/about
+|views/api/create_article.py|/api/create-article
+|views/article/index.py|/article/
 
 `HTTP` 的类应从 `index.view.View` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
 
-1. get
-2. post
-3. put
-4. patch
-5. delete
-6. head
-7. options
-8. trace
+- get
+- post
+- put
+- patch
+- delete
+- head
+- options
+- trace
 
-这些函数不接受任何参数，但可以使用 `self.request` 去获取此次请求的一些信息，它是一个 `starlette.requests.Request` 对象。详细的属性或方法请查看 [starlette 文档](https://www.starlette.io/requests/#request)。
+这些函数默认不接受任何参数，但可以使用 `self.request` 去获取此次请求的一些信息，它是一个 `starlette.requests.Request` 对象。详细的属性或方法请查看 [starlette 文档](https://www.starlette.io/requests/#request)。
 
-**注意：这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们。**
+!!! notice
+    注意：这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们。
 
 ## 编写中间件
 
@@ -46,13 +46,15 @@
 
     此方法在请求被正常处理、已经返回响应对象后调用，它必须返回一个可用的响应对象（一般来说直接返回 `response` 即可）。
 
-**注意：以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们。**
+!!! notice
+    以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们。
 
 ### 子中间件
 
 很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `ChildMiddlwares` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
 
-**注意：子中间件的执行顺序是从右到左。**
+!!! notice
+    子中间件的执行顺序是从右到左。
 
 ```python
 from index.middleware import MiddlewareMixin

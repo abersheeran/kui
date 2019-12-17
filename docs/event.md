@@ -40,4 +40,5 @@ app.add_event_handler('startup', open_database_connection_pool)
 app.add_event_handler('shutdown', close_database_connection_pool)
 ```
 
-* **注意：`startup` 与 `shutdown` 两种类型的函数均可以注册任意个，不需要把所有功能写进一个函数里（尽量保证函数功能单一）。**
+!!! tip
+    `startup` 与 `shutdown` 两种类型的函数均可以注册任意个，不需要把所有功能写进一个函数里（尽量保证函数功能单一）。

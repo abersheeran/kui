@@ -20,7 +20,8 @@ Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射�
 
     这个函数在一个 websocket 即将被关闭时调用，你必须在其中显式的调用 `await websocket.close(code=close_code)` 用以关闭 websocket 连接。
 
-**注意：这三个函数必须都以 `async def` 的方式被定义为异步函数**
+!!! notice
+    这三个函数必须都以 `async def` 的方式被定义为异步函数
 
 ### WebSocket 对象
 

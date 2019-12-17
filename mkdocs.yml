@@ -19,8 +19,11 @@ nav:
   - Lifespan: 'event.md'
   - Command: 'command.md'
   - Background: 'background.md'
-  - OpenAPI ᴮᴱᵀᴬ: 'openapi.md'
+  - OpenAPI: 'openapi.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:
       guess_lang: false
+  - admonition
+  - codehilite
+  - extra
