@@ -26,3 +26,7 @@ class Test(TestView):
         resp = self.client.post(data={"name": "Aber", "text": "message"})
         assert resp.status_code == 200
 ```
+
+## 执行测试
+
+在项目根目录下执行 `index-cli test` 即可运行所有测试。
