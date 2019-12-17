@@ -30,6 +30,7 @@ REQUIRED = [
     "watchdog",
     "python-multipart",
     "pyyaml",
+    "pydantic",
     'contextvars ;python_version<"3.7"',
 ]
 
