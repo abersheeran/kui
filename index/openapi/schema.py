@@ -8,13 +8,22 @@ def _remove_info(schema: Dict[str, Any]) -> Dict[str, Any]:
     schema = deepcopy(schema)
 
     if schema.get("definitions") is not None:
-        for _name, _property in schema["properties"].items():
-            if "$ref" in _property:
-                define_schema = schema
-                for key in _property["$ref"][2:].split("/"):
-                    define_schema = define_schema[key]
-                schema["properties"][_name] = define_schema
+        def replace(mapping: Dict[str, Any]) -> None:
+            for _name in mapping.keys():
+                if _name == "$ref":
+                    define_schema = schema
+                    for key in mapping["$ref"][2:].split("/"):
+                        define_schema = define_schema[key]
+                    break
+                elif isinstance(mapping[_name], dict):
+                    replace(mapping[_name])
+            else:
+                return
+            # replace ref and del it
+            mapping.update(define_schema)
+            del mapping["$ref"]
 
+        replace(schema["properties"])
         del schema["definitions"]
 
     return schema
