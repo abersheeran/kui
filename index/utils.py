@@ -47,7 +47,8 @@ def get_views() -> Iterator[Tuple[ModuleType, str]]:
 
             module = importlib.import_module(relpath.replace("/", ".")[:-3])
 
-            uri = "/" + os.path.relpath(abspath, views_path)[:-3]
+            uri = relpath[len("views"):-3]
+
             if uri.endswith("/index"):
                 uri = uri[:-5]
 
