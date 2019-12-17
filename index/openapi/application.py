@@ -13,28 +13,10 @@ from index.responses import (
     HTMLResponse,
 )
 from index.config import config
+from index.utils import get_views
 
 from .models import Model
-from .functions import SchemaFromModel
-
-
-def get_views():
-    views_path = os.path.join(config.path, "views").replace("\\", "/")
-    for root, _, files in os.walk(views_path):
-        for file in files:
-            if not file.endswith(".py"):
-                continue
-            if file == "__init__.py":
-                continue
-            abspath = os.path.join(root, file)
-            relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
-            module_name = relpath[:-3].replace("/", ".")
-            module = importlib.import_module(module_name)
-            path = relpath[len("views") : -3]
-            if path.endswith("index"):
-                path = path[: -len("index")]
-            if abspath.startswith(views_path):
-                yield path, module
+from .schema import schema_parameters, schema_request_body, schema_response
 
 
 class OpenAPI:
@@ -66,6 +48,8 @@ class OpenAPI:
             handler = getattr(self, "docs")
         elif scope["path"] == "/":
             handler = getattr(self, "template")
+        else:
+            raise HTTPException(404)
         response = await handler(request)
         await response(scope, receive, send)
 
@@ -84,10 +68,10 @@ class OpenAPI:
         ]
 
         paths = openapi["paths"]
-        for path, view in get_views():
+        for view, path in get_views():
             if not hasattr(view, "HTTP"):
                 continue
-            viewclass = view.HTTP()
+            viewclass = view.HTTP
             paths[path] = {}
             for method in viewclass.allowed_methods():
                 if method == "OPTIONS":
@@ -107,25 +91,28 @@ class OpenAPI:
                         }
                     )
 
-                query = sig.parameters.get("query")
-                if query and issubclass(query.annotation, Model):
-                    paths[path][method]["parameters"] = SchemaFromModel.in_query(
-                        query.annotation
-                    )
+                paths[path][method]["parameters"] = schema_parameters(
+                    None,
+                    sig.parameters.get("query").annotation
+                    if sig.parameters.get("query")
+                    else None,
+                    sig.parameters.get("header").annotation
+                    if sig.parameters.get("header")
+                    else None,
+                    sig.parameters.get("cookie").annotation
+                    if sig.parameters.get("cookie")
+                    else None,
+                )
+                if not paths[path][method]["parameters"]:
+                    del paths[path][method]["parameters"]
 
-                body = sig.parameters.get("body")
-                if body and issubclass(body.annotation, Model):
-                    paths[path][method]["requestBody"] = {
-                        "required": True,
-                        "content": {
-                            body.annotation.content_type: {
-                                "schema": SchemaFromModel.request_body(body.annotation)
-                            }
-                        },
-                    }
-                    description = body.annotation.__doc__
-                    if description:
-                        paths[path][method]["requestBody"]["description"] = description
+                paths[path][method]["requestBody"] = schema_request_body(
+                    sig.parameters.get("body").annotation
+                    if sig.parameters.get("body")
+                    else None
+                )
+                if not paths[path][method]["requestBody"]:
+                    del paths[path][method]["requestBody"]
 
                 try:
                     resps = getattr(getattr(viewclass, method), "__resps__")
@@ -138,11 +125,9 @@ class OpenAPI:
                             "description": content["description"],
                         }
                         if content["model"] is not None:
-                            repsonses[status]["content"] = {
-                                content["model"].content_type: {
-                                    "schema": SchemaFromModel.response(content["model"])
-                                }
-                            }
+                            repsonses[status]["content"] = schema_response(
+                                content["model"]
+                            )
 
                 if not paths[path][method]:
                     del paths[path][method]
@@ -150,10 +135,12 @@ class OpenAPI:
             if not paths[path]:
                 del paths[path]
 
-        if self.media_type == "yaml" or request.query_params.get("type") == "yaml":
+        media_type = request.query_params.get("type") or self.media_type
+
+        if media_type == "yaml":
             return YAMLResponse(openapi)
 
-        if self.media_type == "json" or request.query_params.get("type") == "json":
+        if media_type == "json":
             return JSONResponse(openapi)
 
 

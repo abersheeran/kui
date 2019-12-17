@@ -7,6 +7,7 @@ from starlette.types import Message
 from starlette.responses import Response
 from starlette.websockets import WebSocket
 from starlette.requests import Request
+from pydantic import ValidationError
 
 from .concurrency import keepasync
 from .openapi.functions import partial, ParseError
@@ -41,8 +42,8 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
 
         try:
             handler = await partial(handler, request)
-        except ParseError as e:
-            return e.error, 400
+        except ValidationError as e:
+            return {"error": e.json()}, 400
 
         resp = await handler()
         return resp
@@ -62,8 +63,9 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
             headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"}
         )
 
-    def allowed_methods(self) -> typing.List[str]:
-        return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(self, m)]
+    @classmethod
+    def allowed_methods(cls) -> typing.List[str]:
+        return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)]
 
 
 class SocketView:

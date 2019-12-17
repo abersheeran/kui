@@ -6,7 +6,6 @@ from inspect import signature
 from starlette.requests import Request
 
 from .models import Model
-from .utils import currying
 
 
 class ParseError(Exception):
@@ -23,28 +22,17 @@ async def partial(
     # try to get query model and parse
     query = sig.parameters.get("query")
     if query and issubclass(query.annotation, Model):
-        _query = query.annotation(request.query_params)
-        query_error = await _query.clean()
-        if query_error:
-            raise ParseError({"error": {"query": query_error}})
+        _query = query.annotation(**request.query_params)
         handler = functools.partial(handler, query=_query)
 
     # try to get body model and parse
     body = sig.parameters.get("body")
     if body and issubclass(body.annotation, Model):
-        if body.annotation.content_type == "application/json":
-            try:
-                _body_data = await request.json()
-            except json.decoder.JSONDecodeError:
-                raise ParseError(
-                    {"error": {"body": "You must submit a valid JSON string."}}
-                )
-        else:
+        try:
+            _body_data = await request.json()
+        except json.decoder.JSONDecodeError:
             _body_data = await request.form()
-        _body = body.annotation(_body_data)
-        body_error = await _body.clean()
-        if body_error:
-            raise ParseError({"error": {"body": body_error}})
+        _body = body.annotation(**_body_data)
         handler = functools.partial(handler, body=_body)
     return handler
 
@@ -110,24 +98,3 @@ class SchemaFromModel:
     @classmethod
     def in_cookie(cls, model: Model) -> typing.Dict[str, typing.Any]:
         return cls.parameters(model, "cookie")
-
-    @staticmethod
-    def request_body(model: Model) -> typing.Dict[str, typing.Any]:
-        return {
-            "type": "object",
-            "required": [
-                name for name, field in model.fields.items() if not field.allow_null
-            ],
-            "properties": {
-                name: field.openapi() for name, field in model.fields.items()
-            },
-        }
-
-    @staticmethod
-    def response(model: Model) -> typing.Dict[str, typing.Any]:
-        return {
-            "type": "object",
-            "properties": {
-                name: field.openapi() for name, field in model.fields.items()
-            },
-        }

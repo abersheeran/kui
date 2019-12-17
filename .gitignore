@@ -94,5 +94,8 @@ ENV/
 # VSCode
 .vscode/
 
+# PyCharm
+.idea/
+
 # mkdocs
 site/

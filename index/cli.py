@@ -3,6 +3,7 @@ import sys
 import time
 import signal
 import logging
+import traceback
 import subprocess
 from multiprocessing import cpu_count
 
@@ -12,6 +13,7 @@ import uvicorn
 from .config import LOG_LEVELS, config
 from .autoreload import _import
 from .__version__ import __version__
+from .utils import get_views
 
 from . import app
 
@@ -83,9 +85,21 @@ def gunicorn(workers, daemon, configuration, method):
         execute("kill -HUP `cat .pid`")
 
 
+@main.command(help="run test in views")
+def test():
+    for view, path in get_views():
+        if not hasattr(view, "Test"):
+            continue
+
+        for func in view.Test(app, path).all_test:
+            try:
+                func()
+            except:
+                traceback.print_exc()
+
+
 @main.command(help="check .py files in program")
 def check():
-    views_path = os.path.join(config.path, "views/").replace("\\", "/")
     for root, dirs, files in os.walk(config.path):
         for file in files:
             if not file.endswith(".py"):

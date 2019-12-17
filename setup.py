@@ -100,43 +100,6 @@ class UploadCommand(Command):
         sys.exit()
 
 
-class DocsCommand(Command):
-    """Support setup.py docs."""
-
-    description = "Build and publish the package'docs."
-    user_options = []
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print("\033[1m{0}\033[0m".format(s), flush=True)
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        self.status("Removing previous builds…")
-        rmtree(os.path.join(here, "site"), ignore_errors=True)
-
-        self.status("Building site by mkdocs")
-        os.system("pipenv run mkdocs build")
-
-        self.status("Uploading the package'docs to gh-pages")
-        os.chdir(os.path.join(here, "site"))
-        os.system("git init")
-        os.system("git remote add origin " + URL)
-        os.system("git checkout -B gh-pages")
-        os.system("git add .")
-        os.system('git commit -m "auto build by mkdocs"')
-        os.system("git push --set-upstream  origin gh-pages -f")
-
-        self.status("Removing builds…")
-        rmtree(os.path.join(here, "site"), ignore_errors=True)
-
-
 # Where the magic happens:
 setup(
     name="index.py",
@@ -169,5 +132,5 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
     # $ setup.py publish support.
-    cmdclass={"upload": UploadCommand, "docs": DocsCommand,},
+    cmdclass={"upload": UploadCommand},
 )

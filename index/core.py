@@ -3,6 +3,8 @@ import sys
 import logging
 
 from starlette.staticfiles import StaticFiles
+from starlette.middleware.errors import ServerErrorMiddleware
+from starlette.exceptions import ExceptionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -41,7 +43,9 @@ app.add_middleware(
 if config.FORCE_SSL:
     app.add_middleware(HTTPSRedirectMiddleware)
 
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
+app.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS + ["testserver"]
+)
 
 if config.AUTORELOAD:
     monitor: MonitorFile = None

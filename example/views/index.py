@@ -1,4 +1,5 @@
 from index.view import View
+from index.test import TestView
 from index.responses import TemplateResponse
 from index.openapi import models, describe
 
@@ -6,20 +7,20 @@ from utils import db
 
 
 class Hello(models.Model):
-    name = models.StrField(description="name")
+    name: str = models.Field("Aber", description="your name")
 
 
 class Message(models.Model):
     """your message"""
 
-    name = models.StrField(description="your name")
-    text = models.StrField(description="what are you want to say?")
+    name: str = models.Field(..., description="your name")
+    text: str = models.Field(..., description="what are you want to say?")
 
 
 class MessageResponse(models.Model):
     """message response"""
 
-    message = models.ModelField(Message)
+    message: Message
 
 
 class HTTP(View):
@@ -40,4 +41,18 @@ class HTTP(View):
 
         just echo your message.
         """
-        return {"message": body.data}, 200, {"server": "index.py"}
+        return {"message": body.dict()}, 200, {"server": "index.py"}
+
+
+class Test(TestView):
+    def test_get(self):
+        resp = self.client.get()
+        assert resp.status_code == 200
+        resp = self.client.get(params={"name": "darling"})
+        assert resp.status_code == 200
+
+    def test_post(self):
+        resp = self.client.post()
+        assert resp.status_code == 400
+        resp = self.client.post(data={"name": "Aber", "text": "message"})
+        assert resp.status_code == 200

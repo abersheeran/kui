@@ -18,6 +18,7 @@ aiofiles = "*"
 watchdog = "*"
 gunicorn = "*"
 requests = "*"
+pydantic = "*"
 
 [requires]
 python_version = "3"
