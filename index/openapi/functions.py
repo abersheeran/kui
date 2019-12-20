@@ -19,11 +19,21 @@ async def partial(
 
     sig = signature(handler)
 
-    # try to get query model and parse
+    # try to get parameters model and parse
     query = sig.parameters.get("query")
     if query and issubclass(query.annotation, Model):
         _query = query.annotation(**request.query_params)
         handler = functools.partial(handler, query=_query)
+
+    header = sig.parameters.get("header")
+    if header and issubclass(header.annotation, Model):
+        _header = header.annotation(**request.headers)
+        handler = functools.partial(handler, query=_header)
+
+    cookie = sig.parameters.get("cookie")
+    if cookie and issubclass(cookie.annotation, Model):
+        _cookie = cookie.annotation(**request.cookies)
+        handler = functools.partial(handler, cookie=_cookie)
 
     # try to get body model and parse
     body = sig.parameters.get("body")
@@ -54,47 +64,3 @@ def describe(
         return func
 
     return decorator
-
-
-class SchemaFromModel:
-    @staticmethod
-    def parameters(model: Model, position: str) -> typing.Dict[str, typing.Any]:
-        """
-        create openapi parameters docs from model.
-
-        enum: "path", "query", "header", "cookie"
-
-        https://swagger.io/docs/specification/describing-parameters/
-        """
-        assert position in ("path", "query", "header", "cookie")
-
-        result = []
-        for name, field in model.fields.items():
-            schema = field.openapi()
-            description = schema.pop("description")
-            result.append(
-                {
-                    "in": position,
-                    "name": name,
-                    "schema": schema,
-                    "description": description,
-                    "required": not field.allow_null,
-                }
-            )
-        return result
-
-    @classmethod
-    def in_path(cls, model: Model) -> typing.Dict[str, typing.Any]:
-        return cls.parameters(model, "path")
-
-    @classmethod
-    def in_query(cls, model: Model) -> typing.Dict[str, typing.Any]:
-        return cls.parameters(model, "query")
-
-    @classmethod
-    def in_header(cls, model: Model) -> typing.Dict[str, typing.Any]:
-        return cls.parameters(model, "header")
-
-    @classmethod
-    def in_cookie(cls, model: Model) -> typing.Dict[str, typing.Any]:
-        return cls.parameters(model, "cookie")

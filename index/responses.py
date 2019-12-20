@@ -2,6 +2,7 @@ import typing
 import functools
 
 import yaml
+import jinja2
 from starlette.responses import (
     Response,
     HTMLResponse,
@@ -11,7 +12,7 @@ from starlette.responses import (
     StreamingResponse,
     FileResponse,
 )
-from starlette.templating import Jinja2Templates
+from starlette.templating import Jinja2Templates as _Jinja2Templates
 
 __all__ = [
     "automatic",
@@ -25,6 +26,13 @@ __all__ = [
     "FileResponse",
     "TemplateResponse",
 ]
+
+
+class Jinja2Templates(_Jinja2Templates):
+    def get_env(self, directory: str) -> jinja2.Environment:
+        loader = jinja2.FileSystemLoader(directory)
+        env = jinja2.Environment(loader=loader, autoescape=True)
+        return env
 
 
 TemplateResponse = Jinja2Templates(directory="templates").TemplateResponse
