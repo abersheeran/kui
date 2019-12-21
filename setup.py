@@ -25,12 +25,13 @@ REQUIRED = [
     "gunicorn",
     "uvicorn",
     "starlette",
-    "aiofiles",
-    "jinja2",
-    "watchdog",
-    "python-multipart",
-    "pyyaml",
-    "pydantic",
+    "requests",  # test client
+    "aiofiles",  # file response
+    "jinja2",  # template
+    "watchdog",  # autoreload
+    "python-multipart",  # form parse
+    "pyyaml",  # yaml response
+    "pydantic",  # openapi
     'contextvars ;python_version<"3.7"',
 ]
 

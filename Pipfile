@@ -12,13 +12,6 @@ black = "*"
 pytest-asyncio = "*"
 
 [packages]
-uvicorn = "*"
-starlette = "*"
-aiofiles = "*"
-watchdog = "*"
-gunicorn = "*"
-requests = "*"
-pydantic = "*"
 
 [requires]
 python_version = "3"
