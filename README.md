@@ -1,5 +1,7 @@
 # index.py
 
+![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)
+
 一个基于 ASGI 协议 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
 
 - 非常简单的部署
