@@ -9,7 +9,8 @@
 - 无需手动绑定路由 (文件系统映射URI)
 - 更好用的挂载 ASGI/WSGI 应用
 - 更好用的 background tasks
-- 以及 starlette 框架的一切功能
+
+PHP 对我而言，只有两个优点——URI-文件系统映射和热重载。Index.py 是对这两个特性在 Python 里实现的一个探索。
 
 ## Install
 
