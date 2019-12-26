@@ -43,7 +43,7 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
         try:
             handler = await partial(handler, request)
         except ValidationError as e:
-            return {"error": e.json()}, 400
+            return {"error": e.errors()}, 400
 
         resp = await handler()
         return resp
