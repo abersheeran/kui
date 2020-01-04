@@ -27,6 +27,9 @@ HTTP_METHOD_NAMES = [
 
 
 class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
+    def __init__(self) -> None:
+        self.request: typing.Optional[Request] = None
+
     async def __call__(self, request: Request) -> Response:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
