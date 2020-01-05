@@ -23,21 +23,23 @@ class Socket(SocketView, metaclass=Singleton):
         for user in users:
             await user.send_json(message)
 
-    async def on_connect(self, websocket):
+    async def on_connect(self):
         """Override to handle an incoming websocket connection"""
-        await websocket.accept()
-        await self.broadcast({"from": "system", "message": f"欢迎{websocket.client}入场"})
-        users.append(websocket)
+        await self.websocket.accept()
+        await self.broadcast({"from": "system", "message": f"欢迎{self.websocket.client}入场"})
+        users.append(self.websocket)
 
-    async def on_receive(self, websocket, data):
+    async def on_receive(self, data):
         """Override to handle an incoming websocket message"""
-        await self.broadcast({"from": websocket.client, "message": data})
+        await self.broadcast({"from": self.websocket.client, "message": data})
 
-    async def on_disconnect(self, websocket, close_code):
+    async def on_disconnect(self, close_code):
         """Override to handle a disconnecting websocket"""
-        users.remove(websocket)
-        await websocket.close(code=close_code)
-        await self.broadcast({"from": "system", "message": f"欢送{websocket.client}离场"})
+        users.remove(self.websocket)
+        await self.websocket.close(code=close_code)
+        await self.broadcast(
+            {"from": "system", "message": f"欢送{self.websocket.client}离场"}
+        )
 
 
 class Test(TestView):

@@ -27,14 +27,16 @@ HTTP_METHOD_NAMES = [
 
 
 class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
-    def __init__(self) -> None:
-        self.request: typing.Optional[Request] = None
+    def __init__(self, request: Request) -> None:
+        self.request = request
 
-    async def __call__(self, request: Request) -> Response:
+    def __await__(self):
+        return self.__call__().__await__()
+
+    async def __call__(self) -> typing.Union[Response, typing.Tuple]:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
-        self.request = request
 
         if self.request.method.lower() in HTTP_METHOD_NAMES:
             handler = getattr(
@@ -44,7 +46,7 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
             handler = self.http_method_not_allowed
 
         try:
-            handler = await partial(handler, request)
+            handler = await partial(handler, self.request)
         except ValidationError as e:
             return {"error": e.errors()}, 400
 
@@ -73,19 +75,25 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
 
 class SocketView:
 
-    encoding = None  # May be "text", "bytes", or "json".
+    encoding: typing.Optional[str] = None  # May be "text", "bytes", or "json".
 
-    async def __call__(self, websocket: WebSocket) -> None:
-        await self.on_connect(websocket)
+    def __init__(self, websocket: WebSocket) -> None:
+        self.websocket = websocket
+
+    def __await__(self):
+        return self.__call__().__await__()
+
+    async def __call__(self) -> None:
+        await self.on_connect()
 
         close_code = status.WS_1000_NORMAL_CLOSURE
 
         try:
             while True:
-                message = await websocket.receive()
+                message = await self.websocket.receive()
                 if message["type"] == "websocket.receive":
-                    data = await self.decode(websocket, message)
-                    await self.on_receive(websocket, data)
+                    data = await self.decode(message)
+                    await self.on_receive(data)
                 elif message["type"] == "websocket.disconnect":
                     close_code = int(message.get("code", status.WS_1000_NORMAL_CLOSURE))
                     break
@@ -93,19 +101,19 @@ class SocketView:
             close_code = status.WS_1011_INTERNAL_ERROR
             raise exc from None
         finally:
-            await self.on_disconnect(websocket, close_code)
+            await self.on_disconnect(close_code)
 
-    async def decode(self, websocket: WebSocket, message: Message) -> typing.Any:
+    async def decode(self, message: Message) -> typing.Any:
 
         if self.encoding == "text":
             if "text" not in message:
-                await websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
                 raise RuntimeError("Expected text websocket messages, but got bytes")
             return message["text"]
 
         if self.encoding == "bytes":
             if "bytes" not in message:
-                await websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
                 raise RuntimeError("Expected bytes websocket messages, but got text")
             return message["bytes"]
 
@@ -118,7 +126,7 @@ class SocketView:
             try:
                 return json.loads(text)
             except json.decoder.JSONDecodeError:
-                await websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
                 raise RuntimeError("Malformed JSON data received.")
 
         assert (
@@ -126,13 +134,13 @@ class SocketView:
         ), f"Unsupported 'encoding' attribute {self.encoding}"
         return message["text"] if message.get("text") else message["bytes"]
 
-    async def on_connect(self, websocket: WebSocket) -> None:
+    async def on_connect(self) -> None:
         """Override to handle an incoming websocket connection"""
-        await websocket.accept()
+        await self.websocket.accept()
 
-    async def on_receive(self, websocket: WebSocket, data: typing.Any) -> None:
+    async def on_receive(self, data: typing.Any) -> None:
         """Override to handle an incoming websocket message"""
 
-    async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
+    async def on_disconnect(self, close_code: int) -> None:
         """Override to handle a disconnecting websocket"""
-        await websocket.close(code=close_code)
+        await self.websocket.close(code=close_code)

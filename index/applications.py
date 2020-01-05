@@ -7,7 +7,7 @@ import importlib
 from inspect import signature
 
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket, WebSocketClose
 from starlette.responses import RedirectResponse
 from starlette.background import BackgroundTasks
@@ -108,7 +108,7 @@ class Lifespan:
 class Mount:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
-        self.apps = {}
+        self.apps: typing.Dict[str, typing.Union[ASGIApp, WSGIApp]] = {}
 
     def append(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
         assert route.startswith("/"), "prefix must be start with '/'"
@@ -170,18 +170,11 @@ class Filepath:
 
     @staticmethod
     def get_pathlist(uri: str) -> typing.List[str]:
-        if uri.endswith("/index"):
-            return RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
-
         if uri.endswith("/"):
             uri += "index"
 
         filepath = uri[1:].strip(".")
-        # Google SEO
-        if not config.ALLOW_UNDERLINE:
-            if "_" in uri:
-                return RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
-            filepath = filepath.replace("-", "_")
+        filepath = filepath.replace("-", "_")
 
         # judge python file
         abspath = os.path.join(config.path, "views", filepath + ".py")
@@ -199,54 +192,55 @@ class Filepath:
         # find http handler
         module_path = ".".join(pathlist)
         module = importlib.import_module(module_path)
-        try:
-            get_response = module.HTTP()
-        except AttributeError:
+
+        if not hasattr(module, "HTTP"):
             raise HTTPException(404)
+        get_response = module.HTTP
 
         try:
             # set background tasks contextvar
-            token = background_tasks_var.set(BackgroundTasks([]))
+            token = background_tasks_var.set(BackgroundTasks())
 
             # call middleware
             for deep in range(len(pathlist), 0, -1):
-                try:
-                    module = importlib.import_module(".".join(pathlist[:deep]))
-                    get_response = module.Middleware(get_response)
-                except AttributeError:
+                module = importlib.import_module(".".join(pathlist[:deep]))
+                if not hasattr(module, "Middleware"):
                     continue
+                get_response = module.Middleware(get_response)
+
             # get response
             response = await get_response(request)
             if not isinstance(response, tuple):
                 response = (response,)
             response = automatic(*response)
             # set background tasks
-            response.background = background_tasks_var.get(None)
+            response.background = background_tasks_var.get()
             await response(scope, receive, send)
         finally:
             background_tasks_var.reset(token)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)
-        try:
-            pathlist = self.get_pathlist(websocket.url.path)
-            # find websocket handler
-            module_path = ".".join(pathlist)
-            module = importlib.import_module(module_path)
-            try:
-                handler = module.Socket()
-            except AttributeError:
-                raise HTTPException(404)
-        except HTTPException as exception:
-            if exception.status_code == 404:
-                websocket_close = WebSocketClose()
-                await websocket_close(receive, send)
-                return
-            raise exception
+        pathlist = self.get_pathlist(websocket.url.path)
+        # find websocket handler
+        module_path = ".".join(pathlist)
+        module = importlib.import_module(module_path)
+        if not hasattr(module, "Socket"):
+            raise HTTPException(404)
+        handler = module.Socket
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        await getattr(self, scope["type"])(scope, receive, send)
+        uri = HTTPConnection(scope).url.path
+
+        if uri.endswith("/index"):
+            response = RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
+        elif not config.ALLOW_UNDERLINE and "_" in uri:  # Google SEO
+            response = RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
+        else:
+            response = getattr(self, scope["type"])
+
+        await response(scope, receive, send)
 
 
 class Index:

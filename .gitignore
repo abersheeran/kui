@@ -91,6 +91,9 @@ ENV/
 *.npy
 *.pkl
 
+# mypy
+.mypy_cache/
+
 # VSCode
 .vscode/
 

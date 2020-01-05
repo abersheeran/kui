@@ -34,7 +34,7 @@ def complicating(func: typing.Callable) -> typing.Callable:
     return wrapper
 
 
-def keepasync(*args):
+def keepasync(*args) -> type:
     """
     Ensure that the specified method must be an asynchronous function
 

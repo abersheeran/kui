@@ -1,14 +1,14 @@
 [[source]]
 name = "pypi"
-url = "https://mirrors.aliyun.com/pypi/simple/"
+url = "https://pypi-mirror.abersheeran.com/simple/"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
+mypy = "*"
+black = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pytest = "*"
-black = "*"
 pytest-asyncio = "*"
 
 [packages]
