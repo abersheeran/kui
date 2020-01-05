@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b4971145a5dab8105082e9c9fcbc514f96e17517c45c31139395c839318595b3"
+            "sha256": "b35144b56ef7422d162c6cd4e4e6486c0a823f9ca56cea4eb8d1c1ceb24eb6ce"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -10,7 +10,7 @@
         "sources": [
             {
                 "name": "pypi",
-                "url": "https://mirrors.aliyun.com/pypi/simple/",
+                "url": "https://pypi-mirror.abersheeran.com/simple/",
                 "verify_ssl": true
             }
         ]
