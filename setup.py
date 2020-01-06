@@ -11,65 +11,42 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
-# Package meta-data.
-NAME = "index"
-DESCRIPTION = "An easy-to-use asynchronous web framework based on ASGI."
-URL = "https://github.com/abersheeran/index.py"
-EMAIL = "abersheeran@qq.com"
-AUTHOR = "Aber Sheeran"
-REQUIRES_PYTHON = ">=3.6.0"
-VERSION = None
-
-# What packages are required for this module to be executed?
-REQUIRED = [
-    "gunicorn",
-    "uvicorn",
-    "starlette",
-    "requests",  # test client
-    "aiofiles",  # file response
-    "jinja2",  # template
-    "watchdog",  # autoreload
-    "python-multipart",  # form parse
-    "pyyaml",  # yaml response
-    "pydantic",  # openapi
-    'contextvars ;python_version<"3.7"',
-]
-
-# What packages are optional?
-EXTRAS = {
-    # 'fancy feature': ['django'],
-}
-
-# The rest you shouldn't have to touch too much :)
-# ------------------------------------------------
-# Except, perhaps the License and Trove Classifiers!
-# If you do change the License, remember to change the Trove Classifier for that!
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# Import the README and use it as the long-description.
-# Note: this will only work if 'README.md' is present in your MANIFEST.in file!
-try:
-    with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
-        long_description = "\n" + f.read()
-except FileNotFoundError:
-    long_description = DESCRIPTION
 
-# Load the package's __version__.py module as a dictionary.
-about = {}
-if not VERSION:
-    project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
-    with open(os.path.join(here, project_slug, "__version__.py")) as f:
-        exec(f.read(), about)
-else:
-    about["__version__"] = VERSION
+def get_version() -> str:
+    """
+    Return version.
+    """
+    from index.__version__ import __version__
+
+    return __version__
+
+
+def get_long_description():
+    """
+    Return the README.
+    """
+    return open("README.md", "r", encoding="utf8").read()
+
+
+def get_packages(package):
+    """
+    Return root package and all sub-packages.
+    """
+    return [
+        dirpath
+        for dirpath, dirnames, filenames in os.walk(package)
+        if os.path.exists(os.path.join(dirpath, "__init__.py"))
+    ]
 
 
 class UploadCommand(Command):
     """Support setup.py upload."""
 
     description = "Build and publish the package."
-    user_options = []
+    user_options: list = []
 
     @staticmethod
     def status(s):
@@ -83,20 +60,18 @@ class UploadCommand(Command):
         pass
 
     def run(self):
-        try:
-            self.status("Removing previous builds…")
-            rmtree(os.path.join(here, "dist"))
-        except OSError:
-            pass
+        # self.status("Removing previous builds…")
+        # rmtree(os.path.join(here, "dist"), ignore_errors=True)
+        # rmtree(os.path.join(here, "build"), ignore_errors=True)
 
-        self.status("Building Source and Wheel (universal) distribution…")
-        os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
+        # self.status("Building Source and Wheel (universal) distribution…")
+        # os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
 
-        self.status("Uploading the package to PyPI via Twine…")
-        os.system("twine upload dist/*")
+        # self.status("Uploading the package to PyPI via Twine…")
+        # os.system("twine upload dist/*")
 
         self.status("Pushing git tags…")
-        os.system("git tag v{0}".format(about["__version__"]))
+        os.system("git tag v{0}".format(get_version()))
         os.system("git push --tags")
 
         sys.exit()
@@ -105,24 +80,29 @@ class UploadCommand(Command):
 # Where the magic happens:
 setup(
     name="index.py",
-    version=about["__version__"],
-    description=DESCRIPTION,
-    long_description=long_description,
+    version=get_version(),
+    description="An easy-to-use asynchronous web framework based on ASGI.",
+    long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    author=AUTHOR,
-    author_email=EMAIL,
-    python_requires=REQUIRES_PYTHON,
-    url=URL,
-    packages=find_packages(
-        include=["index", "index.openapi"],
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"],
-    ),
-    # If your package is a single module, use this instead of 'packages':
-    # py_modules=['mypackage'],
+    author="Aber Sheeran",
+    author_email="abersheeran@qq.com",
+    python_requires=">=3.6.0",
+    url="https://github.com/abersheeran/index.py",
+    packages=get_packages("index"),
     entry_points={"console_scripts": ["index-cli=index.cli:main"],},
-    install_requires=REQUIRED,
-    extras_require=EXTRAS,
-    include_package_data=True,
+    install_requires=[
+        "gunicorn",
+        "uvicorn",
+        "starlette",
+        "requests",  # test client
+        "aiofiles",  # file response
+        "jinja2",  # template
+        "watchdog",  # autoreload
+        "python-multipart",  # form parse
+        "pyyaml",  # yaml response
+        "pydantic",  # openapi
+        'contextvars ;python_version<"3.7"',
+    ],
     license="Apache 2.0",
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
