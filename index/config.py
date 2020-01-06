@@ -135,7 +135,7 @@ class Config(UpperDict, metaclass=Singleton):
     def setdefault(self) -> None:
         """set default value"""
 
-        self["env"] = "dev"
+        self["env"] = "pro"
         self["debug"] = False
         self["host"] = "127.0.0.1"
         self["port"] = 4190
