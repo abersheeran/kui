@@ -95,15 +95,14 @@ class UpperDict:
 
 
 def _import_environ() -> typing.Dict:
-    result = {}
-    for key in filter(
-        lambda x: x.startswith("INDEX_") and x[6:].upper() in ("DEBUG", "ENV"),
-        os.environ.keys(),
-    ):
-        if key.upper() == "DEBUG":
-            result[key[6:]] = os.environ.get(key) in ("on", "True")
-        else:
-            result[key[6:]] = os.environ.get(key)
+    result: typing.Dict[str, typing.Any] = {}
+
+    if os.environ.get("INDEX_DEBUG"):
+        result["debug"] = os.environ.get("INDEX_DEBUG") in ("on", "True")
+
+    if os.environ.get("INDEX_ENV"):
+        result["env"] = os.environ.get("INDEX_ENV")
+
     return result
 
 
@@ -135,7 +134,7 @@ class Config(UpperDict, metaclass=Singleton):
     def setdefault(self) -> None:
         """set default value"""
 
-        self["env"] = "pro"
+        self["env"] = "dev"
         self["debug"] = False
         self["host"] = "127.0.0.1"
         self["port"] = 4190

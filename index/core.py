@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from typing import Optional
 
 from starlette.staticfiles import StaticFiles
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -48,7 +49,7 @@ app.add_middleware(
 )
 
 if config.AUTORELOAD:
-    monitor: MonitorFile = None
+    monitor: Optional[MonitorFile] = None
 
     @app.on_event("startup")
     async def check_on_startup() -> None:
@@ -59,7 +60,8 @@ if config.AUTORELOAD:
     @app.on_event("shutdown")
     async def clear_check_on_shutdown() -> None:
         global monitor
-        monitor.stop()
+        if monitor is not None:
+            monitor.stop()
 
 
 @app.on_event("startup")

@@ -1,13 +1,11 @@
-import typing
+from typing import MutableMapping, Any, Tuple, Union, Awaitable, Callable, Iterable
 
 from starlette.requests import Request
 from starlette.responses import Response
 
 # WSGI: view PEP3333
-Environ = typing.MutableMapping[str, typing.Any]
-StartResponse = typing.Callable[[str, typing.Iterable[typing.Tuple[str, str]]], None]
-WSGIApp = typing.Callable[
-    [Environ, StartResponse], typing.Iterable[typing.Union[str, bytes]]
-]
+Environ = MutableMapping[str, Any]
+StartResponse = Callable[[str, Iterable[Tuple[str, str]]], None]
+WSGIApp = Callable[[Environ, StartResponse], Iterable[Union[str, bytes]]]
 
-HTTPFunc = typing.Callable[[Request], Response]
+HTTPFunc = Callable[[Request], Awaitable[Union[Response, Tuple]]]

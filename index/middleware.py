@@ -26,9 +26,10 @@ class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")
         if response is None:
             response = await self.get_response(request)
 
-        if not isinstance(response, tuple):
-            response = (response,)
-        response = automatic(*response)
+        if isinstance(response, tuple):
+            response = automatic(*response)
+        else:
+            response = automatic(response)
 
         response = await self.process_response(request, response)
 

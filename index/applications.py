@@ -210,9 +210,11 @@ class Filepath:
 
             # get response
             response = await get_response(request)
-            if not isinstance(response, tuple):
-                response = (response,)
-            response = automatic(*response)
+            if isinstance(response, tuple):
+                response = automatic(*response)
+            else:
+                response = automatic(response)
+
             # set background tasks
             response.background = background_tasks_var.get()
             await response(scope, receive, send)
@@ -231,7 +233,10 @@ class Filepath:
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        uri = HTTPConnection(scope).url.path
+        if scope["type"] in ("http", "websocket"):
+            uri = HTTPConnection(scope).url.path
+        else:
+            uri = ""
 
         if uri.endswith("/index"):
             response = RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
