@@ -12,7 +12,11 @@
 from index import app
 
 from otherprogram import app as otherprogram_app
+from anotherprogram import app as anotherprogram_app
 
-# mount any application like flask/django/responder
-app.mount("/hello", otherprogram_app)
+# mount any wsgi application like flask/django
+app.mount("/hello", otherprogram_app, "wsgi")
+
+# mount any asgi application like starlette/responder
+app.mount("/hello", anotherprogram_app, "asgi")
 ```

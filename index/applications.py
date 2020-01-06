@@ -108,12 +108,17 @@ class Lifespan:
 class Mount:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
-        self.apps: typing.Dict[str, typing.Union[ASGIApp, WSGIApp]] = {}
+        self.apps: typing.Dict[
+            str, typing.Tuple[typing.Union[ASGIApp, WSGIApp], str]
+        ] = {}
 
-    def append(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
+    def append(
+        self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
+    ) -> None:
+        assert app_type in ("asgi", "wsgi")
         assert route.startswith("/"), "prefix must be start with '/'"
         assert not route.endswith("/"), "prefix can't end with '/'"
-        self.apps.update({route: app})
+        self.apps.update({route: (app, app_type)})
 
     class DontFoundRoute(Exception):
         pass
@@ -127,22 +132,20 @@ class Mount:
             return await send(message)
 
         async def callapp(
-            app: typing.Union[ASGIApp, WSGIApp],
+            app: typing.Tuple[typing.Union[ASGIApp, WSGIApp], str],
             scope: Scope,
             receive: Receive,
             send: Send,
         ) -> None:
-            sig = signature(app)
-            if len(sig.parameters) == 3:
-                await app(scope, receive, send)
+            if app[1] == "asgi":
+                await app[0](scope, receive, send)
                 return
-
-            if len(sig.parameters) == 2:
+            elif app[1] == "wsgi":
                 if scope["type"] != "http":
                     raise self.DontFoundRoute()
 
-                app = WSGIMiddleware(app)
-                await app(scope, receive, send)
+                wsgi_app = WSGIMiddleware(app[0])
+                await wsgi_app(scope, receive, send)
                 return
 
         if scope["type"] in ("http", "websocket"):
@@ -215,10 +218,9 @@ class Filepath:
             else:
                 response = automatic(response)
 
-            # set background tasks
-            response.background = background_tasks_var.get()
             await response(scope, receive, send)
         finally:
+            await background_tasks_var.get()()
             background_tasks_var.reset(token)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -311,8 +313,8 @@ class Index:
 
         return decorator
 
-    def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp]) -> None:
-        self.childapps.append(route, app)
+    def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str) -> None:
+        self.childapps.append(route, app, app_type)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

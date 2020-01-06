@@ -21,10 +21,11 @@ sys.path.insert(0, config.path)
 
 app = Index(debug=config.DEBUG)
 
-app.mount("/favicon.ico", favicon)
+app.mount("/favicon.ico", favicon, "asgi")
 app.mount(
     "/static",
     StaticFiles(directory=os.path.join(config.path, "static"), check_dir=False,),
+    "asgi",
 )
 
 
