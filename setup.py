@@ -15,13 +15,15 @@ from setuptools import find_packages, setup, Command
 here = os.path.abspath(os.path.dirname(__file__))
 
 
-def get_version() -> str:
+def get_version(package) -> str:
     """
     Return version.
     """
-    from index.__version__ import __version__
+    __: dict = {}
+    with open(os.path.join(here, package, "__version__.py")) as f:
+        exec(f.read(), __)
 
-    return __version__
+    return __["__version__"]
 
 
 def get_long_description():
@@ -71,7 +73,7 @@ class UploadCommand(Command):
         # os.system("twine upload dist/*")
 
         self.status("Pushing git tags…")
-        os.system("git tag v{0}".format(get_version()))
+        os.system("git tag v{0}".format(get_version("index")))
         os.system("git push --tags")
 
         sys.exit()
@@ -80,7 +82,7 @@ class UploadCommand(Command):
 # Where the magic happens:
 setup(
     name="index.py",
-    version=get_version(),
+    version=get_version("index"),
     description="An easy-to-use asynchronous web framework based on ASGI.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
