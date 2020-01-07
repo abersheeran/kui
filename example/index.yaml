@@ -1,0 +1,19 @@
+# overwrite default value to this program
+log_level: "info"
+allow_underline: true,
+allowed_hosts: ["localhost"]
+cors_allow_origins: ["*"]
+cors_allow_methods: ["GET"]
+cors_allow_credentials: false
+
+# use in development
+dev:
+    "host": "0.0.0.0"
+    "debug": true
+
+# use in production
+pro:
+    "host": "127.0.0.1"
+    "port": "41900"
+    "log_level": "warning"
+    "autoreload": false

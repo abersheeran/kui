@@ -14,6 +14,7 @@ from index.openapi.application import OpenAPI
 app.mount(
     "/openapi",
     OpenAPI("index.py example", "just a example, power by index.py", "0.1.0"),
+    "asgi"
 )
 ```
 

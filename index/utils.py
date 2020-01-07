@@ -1,9 +1,7 @@
 import os
-import copy
-import functools
 import importlib
 from types import ModuleType
-from typing import Tuple, Dict, Mapping, Any, Iterator, Callable
+from typing import Tuple, Dict, Any, Iterator, Callable, Optional
 
 
 class Singleton(type):
@@ -19,7 +17,7 @@ class Singleton(type):
         return cls.instance
 
 
-def _import_module(name: str) -> ModuleType:
+def _import_module(name: str) -> Optional[ModuleType]:
     """
     try importlib.import_module, nothing to do when module not be found.
     """
@@ -28,10 +26,14 @@ def _import_module(name: str) -> ModuleType:
     if os.path.exists(os.path.join(config.path, name + ".py")) or os.path.exists(
         os.path.join(config.path, name, "__init__.py")
     ):
-        importlib.import_module(name)
+        return importlib.import_module(name)
+    return None  # nothing to do when module not be found
 
 
 def get_views() -> Iterator[Tuple[ModuleType, str]]:
+    """
+    return all (Module, uri)
+    """
     from .config import config
 
     views_path = os.path.join(config.path, "views")
@@ -47,38 +49,9 @@ def get_views() -> Iterator[Tuple[ModuleType, str]]:
 
             module = importlib.import_module(relpath.replace("/", ".")[:-3])
 
-            uri = relpath[len("views"):-3]
+            uri = relpath[len("views") : -3]
 
             if uri.endswith("/index"):
                 uri = uri[:-5]
 
             yield module, uri
-
-
-def currying(func: Callable) -> Callable:
-    f = func
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> typing.Any:
-        nonlocal f
-        if args or kwargs:
-            f = functools.partial(f, *args, **kwargs)
-            return wrapper
-        return f()
-
-    return wrapper
-
-
-def merge_mapping(x: Mapping, default: Mapping) -> Mapping:
-    """merge x to default. return a *new* Mapping"""
-    default = copy.deepcopy(default)
-    for key, value in x.items():
-        if isinstance(default.get(key), typing.Mapping):
-            if not isinstance(value, typing.Mapping):
-                raise ValueError(
-                    f"{key} in default is a mapping, but {key} in x is not mapping."
-                )
-            merge_mapping(value, default[key])
-            continue
-        default[key] = x[key]
-    return default

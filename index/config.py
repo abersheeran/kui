@@ -2,6 +2,9 @@ import os
 import json
 import typing
 import logging
+import warnings
+
+import yaml
 
 from .utils import Singleton
 
@@ -23,9 +26,14 @@ class ConfigError(Exception):
     pass
 
 
+class ConfigFileError(ConfigError):
+    pass
+
+
 class UpperDict:
     def __init__(self, data: dict):
-        self.__dict = dict()
+        self.__dict: typing.Dict[str, typing.Any] = dict()
+
         for key in data.keys():
             self[key] = data[key]
 
@@ -58,7 +66,7 @@ class UpperDict:
         if isinstance(value, dict):
             if key in self.__dict.keys():
                 for k, v in value.items():
-                    self.__dict[key][k] = v
+                    self.__dict[key][k.upper()] = v
             else:
                 self.__dict[key] = UpperDict(value)
         else:
@@ -71,16 +79,11 @@ class UpperDict:
     def __getitem__(self, key: str) -> typing.Any:
         return self.__dict[key.upper()]
 
-    def __setattr__(self, name: str, value: typing.Any) -> None:
-        if name == f"_UpperDict__dict":
-            return super().__setattr__(name, value)
-        raise ConfigError("Modifying the attribute value of Config is not allowed.")
-
     def __getattr__(self, name: str) -> typing.Any:
         try:
-            value = self.get(name)
-            # if value is None:
-            #     raise KeyError()
+            value = self.get(name, ...)
+            if value is ...:
+                raise KeyError()
             return value
         except KeyError:
             raise AttributeError(
@@ -89,7 +92,7 @@ class UpperDict:
 
     def get(self, key: str, default=None) -> typing.Any:
         try:
-            return self.__dict[key.upper()]
+            return self[key]
         except KeyError:
             return default
 
@@ -110,8 +113,8 @@ class Config(UpperDict, metaclass=Singleton):
     def __init__(self) -> None:
         super().__init__({})
         self.setdefault()
-        # read config from `config.json`
-        self.import_from_file(os.path.join(self.path, "config.json"))
+        # read config from file
+        self.import_from_file()
         # read config from environ
         self.update(_import_environ())
 
@@ -120,16 +123,33 @@ class Config(UpperDict, metaclass=Singleton):
         """return os.getcwd()"""
         return os.getcwd()
 
-    def import_from_file(self, jsonfile: str) -> None:
-        try:
-            with open(jsonfile, "r") as file:
-                data = json.load(file)
-            if not isinstance(data, dict):
-                raise ConfigError(f"config must be a dictionary.")
+    def import_from_file(self) -> None:
+        filename = None
 
-            self.update(data)
-        except FileNotFoundError:
-            pass
+        for _filename in ["config.json", "index.json", "index.yaml", "index.yml"]:
+            if os.path.exists(os.path.normpath(_filename)):
+                if filename is not None:
+                    raise ConfigFileError(
+                        f"`{filename}` and `{_filename}` cannot be used at the same project."
+                    )
+                filename = _filename
+                # TODO clear in 0.8
+                if filename == "config.json":
+                    warnings.warn("Please use `index.json` or` index.yaml`, `config.json` will be deprecated in 0.8.")
+
+        if filename is None:
+            return
+
+        with open(filename, "rb") as file:
+            if filename.endswith(".json"):
+                data = json.load(file)
+            elif filename.endswith(".yaml") or filename.endswith(".yml"):
+                data = yaml.safe_load(file)
+
+        if not isinstance(data, dict):
+            raise ConfigError(f"config must be a dictionary.")
+
+        self.update(data)
 
     def setdefault(self) -> None:
         """set default value"""
@@ -156,6 +176,17 @@ class Config(UpperDict, metaclass=Singleton):
     def update(self, data: dict) -> None:
         for key in data.keys():
             self[key] = data[key]
+
+    def __setattr__(self, name: str, value: typing.Any) -> None:
+        if name == f"_UpperDict__dict":
+            return super().__setattr__(name, value)
+        raise ConfigError("Modifying the attribute value of Config is not allowed.")
+
+    def __delattr__(self, name: str) -> None:
+        raise ConfigError("Modifying the attribute value of Config is not allowed.")
+
+    def __delitem__(self, key: str) -> None:
+        raise ConfigError("Modifying the attribute value of Config is not allowed.")
 
     def get(self, key, default=None) -> typing.Any:
         env = super().get(self["env"], {})

@@ -2,10 +2,10 @@ Index.py 内置的配置类 `index.config.Config` 是一个单例类，你可以
 
 所有配置都是大小写无关的，但推荐在程序中使用大写。
 
-在 Index 启动时，它将自动从环境变量与项目根目录下 config.json 里读取配置。
+在 Index 启动时，它将自动从环境变量与项目根目录下 index.yaml / index.config 里读取配置。
 
 !!! notice
-    在 Index 运行之后更改 config.json 或者环境变量并不会触发 Index 的热更新，你只能通过重启来使用新配置启动 Index。
+    在 Index 运行之后更改配置文件或者环境变量并不会触发 Index 的热更新，你只能通过重启来使用新配置启动 Index。
 
 ## 环境变量
 
@@ -20,36 +20,28 @@ Index 在启动时将从环境变量里读取 `INDEX_DEBUG` 和 `INDEX_ENV` 两�
 
 ## 配置文件
 
-在你的项目根目录下的 config.json 文件，将会在 Index 启动时被读取。
-
 下面是一个配置样例：
 
-```json
-{
-    "log_level": "info",
-    "allow_underline": true,
-    "allowed_hosts": [
-        "localhost"
-    ],
-    "cors_settings": {
-        "allow_origins": [
-            "*"
-        ],
-        "allow_methods": [
-            "GET"
-        ],
-        "allow_credentials": false
-    },
-    "dev": {
-        "host": "0.0.0.0",
-        "debug": true
-    },
-    "pro": {
-        "host": "127.0.0.1",
-        "port": "41900",
-        "log_level": "warning"
-    }
-}
+```yaml
+# overwrite default value to this program
+log_level: "info"
+allow_underline: true,
+allowed_hosts: ["localhost"]
+cors_allow_origins: ["*"]
+cors_allow_methods: ["GET"]
+cors_allow_credentials: false
+
+# use in development
+dev:
+    "host": "0.0.0.0"
+    "debug": true
+
+# use in production
+pro:
+    "host": "127.0.0.1"
+    "port": "41900"
+    "log_level": "warning"
+    "autoreload": false
 ```
 
 ## 所有可用的配置
@@ -192,30 +184,26 @@ log_level   | logging
 
 看下面这个配置文件
 
-```json
-{
-    "log_level": "info",
-    "allow_underline": true,
-    "allowed_hosts": [
-        "localhost"
-    ],
-    "cors_allow_origins": [
-        "*"
-    ],
-    "cors_allow_methods": [
-        "GET"
-    ],
-    "cors_allow_credentials": false,
-    "dev": {
-        "host": "0.0.0.0",
-        "debug": true
-    },
-    "pro": {
-        "host": "127.0.0.1",
-        "port": "41900",
-        "log_level": "warning"
-    }
-}
+```yaml
+# overwrite default value to this program
+log_level: "info"
+allow_underline: true,
+allowed_hosts: ["localhost"]
+cors_allow_origins: ["*"]
+cors_allow_methods: ["GET"]
+cors_allow_credentials: false
+
+# use in development
+dev:
+    "host": "0.0.0.0"
+    "debug": true
+
+# use in production
+pro:
+    "host": "127.0.0.1"
+    "port": "41900"
+    "log_level": "warning"
+    "autoreload": false
 ```
 
 当 `ENV` 的值为 `"dev"` 时，`Config().DEBUG` 会为 `True`。
