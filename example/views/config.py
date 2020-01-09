@@ -10,4 +10,4 @@ class HTTP(View):
 
 class Test(TestView):
     def test_config(self):
-        print(self.client.get().text)
+        assert self.client.get().status_code == 200

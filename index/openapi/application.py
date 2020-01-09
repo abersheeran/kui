@@ -13,7 +13,7 @@ from index.responses import (
     HTMLResponse,
 )
 from index.config import config
-from index.utils import get_views
+from index.applications import Filepath
 
 from .models import Model
 from .schema import schema_parameters, schema_request_body, schema_response
@@ -67,8 +67,8 @@ class OpenAPI:
             }
         ]
 
-        paths = openapi["paths"]
-        for view, path in get_views():
+        paths: dict = openapi["paths"]
+        for view, path in Filepath.get_views():
             if not hasattr(view, "HTTP"):
                 continue
             viewclass = view.HTTP
@@ -137,11 +137,9 @@ class OpenAPI:
 
         media_type = request.query_params.get("type") or self.media_type
 
-        if media_type == "yaml":
-            return YAMLResponse(openapi)
-
         if media_type == "json":
             return JSONResponse(openapi)
+        return YAMLResponse(openapi)
 
 
 DEFAULT_TEMPLATE = """

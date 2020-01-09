@@ -1,6 +1,5 @@
 # overwrite default value to this program
 log_level: "info"
-allow_underline: true,
 allowed_hosts: ["localhost"]
 cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]

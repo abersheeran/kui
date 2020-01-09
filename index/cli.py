@@ -10,10 +10,10 @@ from multiprocessing import cpu_count
 import click
 import uvicorn
 
-from .config import LOG_LEVELS, config
+from .applications import Filepath
+from .config import LOG_LEVELS, config, logger
 from .autoreload import _import
 from .__version__ import __version__
-from .utils import get_views
 
 from . import app
 
@@ -86,16 +86,32 @@ def gunicorn(workers, daemon, configuration, method):
 
 
 @main.command(help="run test in views")
-def test():
-    for view, path in get_views():
-        if not hasattr(view, "Test"):
-            continue
+@click.option("--env", default="test")
+@click.argument("uri", default="--all")
+def test(env, uri):
+    # change config env
+    config["env"] = env
+    # define custom printf
+    printf = lambda *args, **kwargs: click.secho(*args, **kwargs)
 
-        for func in view.Test(app, path).all_test:
+    def test_path(view, _uri):
+        printf(f"{_uri}", fg="blue")
+        for func in view.Test(app, _uri).all_test:
+            printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
+                printf("√", fg="green")
             except:
+                printf("×", fg="red")
                 traceback.print_exc()
+
+    if uri == "--all":
+        for view, _uri in Filepath.get_views():
+            if not hasattr(view, "Test"):
+                continue
+            test_path(view, _uri)
+    else:
+        test_path(Filepath.get_view(uri), uri)
 
 
 @main.command(help="check .py files in program")

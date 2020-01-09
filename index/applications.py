@@ -4,6 +4,7 @@ import typing
 import asyncio
 import traceback
 import importlib
+from types import ModuleType
 from inspect import signature
 
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
@@ -171,8 +172,13 @@ class Filepath:
     def __init__(self) -> None:
         self.lifespan = Lifespan()
 
-    @staticmethod
-    def get_pathlist(uri: str) -> typing.List[str]:
+    @classmethod
+    def get_path(cls, uri: str) -> typing.Optional[str]:
+        """
+        translate uri to module path
+
+        if file not found, return None
+        """
         if uri.endswith("/"):
             uri += "index"
 
@@ -182,12 +188,50 @@ class Filepath:
         # judge python file
         abspath = os.path.join(config.path, "views", filepath + ".py")
         if not os.path.exists(abspath):
-            raise HTTPException(404)
+            return None
 
         pathlist = filepath.split("/")
         pathlist.insert(0, "views")
+        return ".".join(pathlist)
 
-        return pathlist
+    @classmethod
+    def get_views(cls) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
+        """
+        return all (Module, uri)
+        """
+        views_path = os.path.join(config.path, "views")
+
+        for root, _, files in os.walk(views_path):
+            for file in files:
+                if not file.endswith(".py"):
+                    continue
+                if file == "__init__.py":
+                    continue
+                abspath = os.path.join(root, file)
+                relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
+
+                module = importlib.import_module(relpath.replace("/", ".")[:-3])
+
+                uri = relpath[len("views") : -3]
+
+                if uri.endswith("/index"):
+                    uri = uri[:-5]
+
+                yield module, uri
+
+    @classmethod
+    def get_view(cls, uri: str) -> ModuleType:
+        path = cls.get_path(uri)
+        if path is None:
+            raise ModuleNotFoundError(uri)
+        return importlib.import_module(path)
+
+    @classmethod
+    def get_pathlist(cls, uri: str) -> typing.List[str]:
+        path = cls.get_path(uri)
+        if path is None:
+            raise HTTPException(404)
+        return path.split(".")
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = Request(scope, receive)
@@ -236,18 +280,23 @@ class Filepath:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] in ("http", "websocket"):
-            uri = HTTPConnection(scope).url.path
-        else:
-            uri = ""
+            http_info = HTTPConnection(scope)
+            uri = http_info.url.path
+            if uri.endswith("/index"):
+                response = RedirectResponse(
+                    http_info.url.replace(path=f'{uri[:-len("/index")]}'),
+                    status_code=301,
+                )
+            elif not config.ALLOW_UNDERLINE and "_" in uri:  # Google SEO
+                response = RedirectResponse(
+                    http_info.url.replace(path=f'{uri.replace("_", "-")}'),
+                    status_code=301,
+                )
 
-        if uri.endswith("/index"):
-            response = RedirectResponse(f'/{uri[:-len("/index")]}', status_code=301)
-        elif not config.ALLOW_UNDERLINE and "_" in uri:  # Google SEO
-            response = RedirectResponse(f'/{uri.replace("_", "-")}', status_code=301)
-        else:
-            response = getattr(self, scope["type"])
-
-        await response(scope, receive, send)
+        try:
+            await response(scope, receive, send)
+        except NameError:
+            await getattr(self, scope["type"])(scope, receive, send)
 
 
 class Index:
@@ -313,7 +362,9 @@ class Index:
 
         return decorator
 
-    def mount(self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str) -> None:
+    def mount(
+        self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
+    ) -> None:
         self.childapps.append(route, app, app_type)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
