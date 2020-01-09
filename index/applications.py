@@ -133,7 +133,7 @@ class Mount:
             return await send(message)
 
         async def callapp(
-            app: typing.Tuple[typing.Union[ASGIApp, WSGIApp], str],
+            app: typing.Tuple[typing.Callable, str],
             scope: Scope,
             receive: Receive,
             send: Send,
@@ -246,9 +246,10 @@ class Filepath:
         module_path = ".".join(pathlist)
         module = importlib.import_module(module_path)
 
-        if not hasattr(module, "HTTP"):
+        try:
+            get_response = getattr(module, "HTTP")
+        except AttributeError:
             raise HTTPException(404)
-        get_response = module.HTTP
 
         try:
             # set background tasks contextvar
@@ -259,7 +260,7 @@ class Filepath:
                 module = importlib.import_module(".".join(pathlist[:deep]))
                 if not hasattr(module, "Middleware"):
                     continue
-                get_response = module.Middleware(get_response)
+                get_response = getattr(module, "Middleware")(get_response)
 
             # get response
             response = await get_response(request)
@@ -279,9 +280,10 @@ class Filepath:
         # find websocket handler
         module_path = ".".join(pathlist)
         module = importlib.import_module(module_path)
-        if not hasattr(module, "Socket"):
+        try:
+            handler = getattr(module, "Socket")
+        except AttributeError:
             raise HTTPException(404)
-        handler = module.Socket
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
