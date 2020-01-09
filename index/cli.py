@@ -95,7 +95,6 @@ def test(env, uri):
     printf = lambda *args, **kwargs: click.secho(*args, **kwargs)
 
     def test_path(view, _uri):
-        printf(f"{_uri}", fg="blue")
         for func in view.Test(app, _uri).all_test:
             printf(f" - {func.__name__} ", nl=False)
             try:
@@ -107,10 +106,13 @@ def test(env, uri):
 
     if uri == "--all":
         for view, _uri in Filepath.get_views():
+            printf(f"{_uri}", fg="blue")
             if not hasattr(view, "Test"):
+                printf(f" - No test.", fg="yellow")
                 continue
             test_path(view, _uri)
     else:
+        printf(f"{_uri}", fg="blue")
         test_path(Filepath.get_view(uri), uri)
 
 

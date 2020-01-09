@@ -1,3 +1,5 @@
+from asyncio import sleep
+
 from index.view import View
 from index.test import TestView
 from index.background import after_response
@@ -12,6 +14,7 @@ def only_print(message: str) -> None:
 class HTTP(View):
     async def get(self):
         only_print("world")
+        await sleep(1.5)
         logger.debug("hello")
         return ""
 

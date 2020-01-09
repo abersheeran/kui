@@ -202,6 +202,12 @@ class Filepath:
         views_path = os.path.join(config.path, "views")
 
         for root, _, files in os.walk(views_path):
+            try:
+                files.remove("index.py")
+                files.insert(0, "index.py")
+            except ValueError:  # file not exists
+                pass
+
             for file in files:
                 if not file.endswith(".py"):
                     continue
