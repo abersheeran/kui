@@ -112,7 +112,7 @@ def test(env, uri):
                 continue
             test_path(view, _uri)
     else:
-        printf(f"{_uri}", fg="blue")
+        printf(f"{uri}", fg="blue")
         test_path(Filepath.get_view(uri), uri)
 
 
