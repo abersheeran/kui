@@ -44,6 +44,14 @@ Index 内置了一些命令方便使用。
 
     这一般在你更改了配置之后使用，因为 Index 内置了真正的热重载能力，如果只是更新代码，你并不需要重启服务。
 
+### test
+
+* `index-cli test`
+
+    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。
+
+    你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试。
+
 ### check
 
 * `index-cli check`
