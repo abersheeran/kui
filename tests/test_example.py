@@ -10,9 +10,9 @@ example = os.path.join(
 def test_example():
     os.chdir(example)
     sys.path.insert(0, example)
-    from index.cli import get_views, app
+    from index.cli import Filepath, app
 
-    for view, path in get_views():
+    for view, path in Filepath.get_views():
         if not hasattr(view, "Test"):
             continue
 
