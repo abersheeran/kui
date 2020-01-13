@@ -15,7 +15,6 @@ from .config import LOG_LEVELS, config, logger
 from .autoreload import _import
 from .__version__ import __version__
 
-from . import app
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
@@ -42,12 +41,20 @@ def execute(command: str):
 
 
 @click.group(help=f"Index.py {__version__}")
-def main():
-    pass
+@click.option("--env", default=config.ENV, help="set config.ENV")
+@click.option("--debug/--no-debug", default=config.DEBUG, help="set config.DEBUG")
+def main(env, debug):
+    # change config
+    config["env"] = env
+    config["debug"] = debug
+    # set index logger level
+    logger.setLevel(LOG_LEVELS[config.log_level])
 
 
 @main.command(help="use only uvicorn to deploy")
 def serve():
+    from . import app
+
     uvicorn.run(
         app,
         host=config.HOST,
@@ -86,11 +93,11 @@ def gunicorn(workers, daemon, configuration, method):
 
 
 @main.command(help="run test in views")
-@click.option("--env", default="test")
 @click.argument("uri", default="--all")
-def test(env, uri):
-    # change config env
-    config["env"] = env
+def test(uri):
+    # import app
+    from . import app
+
     # define custom printf
     printf = lambda *args, **kwargs: click.secho(*args, **kwargs)
 

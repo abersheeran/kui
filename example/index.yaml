@@ -7,7 +7,7 @@ cors_allow_credentials: false
 
 # use in development
 dev:
-    "host": "0.0.0.0"
+    "host": "localhost"
     "debug": true
 
 # use in production
@@ -15,4 +15,8 @@ pro:
     "host": "127.0.0.1"
     "port": "41900"
     "log_level": "warning"
-    "autoreload": false
+    "hotreload": false
+
+# use in test
+test:
+    log_level: "debug"

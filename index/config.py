@@ -159,7 +159,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self["log_level"] = "info"
-        self["autoreload"] = True
+        self["hotreload"] = True
         # url
         self["allow_underline"] = False
         # middleware
@@ -197,4 +197,3 @@ class Config(UpperDict, metaclass=Singleton):
 
 
 config = Config()
-logger.setLevel(LOG_LEVELS[Config().log_level])

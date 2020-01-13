@@ -41,7 +41,7 @@ pro:
     "host": "127.0.0.1"
     "port": "41900"
     "log_level": "warning"
-    "autoreload": false
+    "hotreload": false
 ```
 
 ## 所有可用的配置
@@ -112,11 +112,11 @@ log_level   | logging
 
 `force_ssl` 允许 HTTP/WS 强制跳转到 HTTPS/WSS。
 
-### AUTORELOAD
+### HOTRELOAD
 
 **默认值:** `True`
 
-`autoreload` 为真时，将允许 Index 提供真正的热重载功能。
+`hotreload` 为真时，将允许 Index 提供真正的热重载功能。
 
 ### ALLOW_UNDERLINE
 
@@ -203,7 +203,7 @@ pro:
     "host": "127.0.0.1"
     "port": "41900"
     "log_level": "warning"
-    "autoreload": false
+    "hotreload": false
 ```
 
 当 `ENV` 的值为 `"dev"` 时，`Config().DEBUG` 会为 `True`。

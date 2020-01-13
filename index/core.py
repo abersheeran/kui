@@ -49,7 +49,7 @@ app.add_middleware(
     TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS + ["testserver"]
 )
 
-if config.AUTORELOAD:
+if config.HOTRELOAD:
     monitor: Optional[MonitorFile] = None
 
     @app.on_event("startup")

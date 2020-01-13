@@ -271,8 +271,9 @@ class Filepath:
 
             await response(scope, receive, send)
         finally:
-            await background_tasks_var.get()()
+            run_background_tasks = background_tasks_var.get()
             background_tasks_var.reset(token)
+            await run_background_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)

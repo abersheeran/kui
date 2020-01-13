@@ -5,13 +5,28 @@ Index 内置了一些命令方便使用。
 !!! notice
     它们都必须在项目根目录下执行
 
-### serve
+### index-cli
+
+`index-cli` 是 `index` 内置的根命令，所有其余命令均为 `index-cli` 的子命令。
+
+`index-cli` 有两个选项——`--env` 与 `--debug / --no-debug`。当你并不想设置，或者无法设置环境变量时，可以使用这两个选项指定 [ENV](/config/#env) 与 [DEBUG](/config/#debug) 配置。在命令中显式的设置这两个配置，可以覆盖环境变量或者配置文件中的值。
+
+以下为一些例子：
+
+```bash
+# 设置环境为 pro 并关闭 debug
+index-cli --env "pro" --no-debug serve
+# 设置环境为 test
+index-cli --env "test" test
+```
+
+### index-cli serve
 
 * `index-cli serve`
 
     能启动一个单进程服务，在安装了 uvloop 的环境下使用 uvloop。否则在 Windows 上它使用 [IOCP](https://docs.python.org/3/library/asyncio-policy.html#asyncio.WindowsProactorEventLoopPolicy)，其他系统上使用 [Selector](https://docs.python.org/3/library/asyncio-policy.html#asyncio.DefaultEventLoopPolicy)。
 
-### gunicorn
+### index-cli gunicorn
 
 * `index-cli gunicorn start`
 
@@ -44,7 +59,7 @@ Index 内置了一些命令方便使用。
 
     这一般在你更改了配置之后使用，因为 Index 内置了真正的热重载能力，如果只是更新代码，你并不需要重启服务。
 
-### test
+### index-cli test
 
 * `index-cli test`
 
@@ -52,7 +67,7 @@ Index 内置了一些命令方便使用。
 
     你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试。
 
-### check
+### index-cli check
 
 * `index-cli check`
 
