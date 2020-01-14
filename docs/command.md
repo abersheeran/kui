@@ -63,9 +63,9 @@ index-cli --env "test" test
 
 * `index-cli test`
 
-    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。
+    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。执行的详细日志以及错误将被写在项目下 `index.test.log` 文件里。
 
-    你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试。
+    你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试，使用 `index-cli test URI.funcname` 执行指定 URI 下某个指定的测试函数。
 
 ### index-cli check
 
