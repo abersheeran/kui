@@ -104,7 +104,7 @@ def test(path: str):
         run test and print message
         """
         for func in filter(
-            lambda funcname: name == funcname if name else True,
+            lambda func: name == func.__name__ if name else True,
             view.Test(app, uri).all_test,
         ):
             # write to log file
