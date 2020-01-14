@@ -1,10 +1,14 @@
 import typing
 from functools import partial
 
-from starlette.testclient import TestClient
+from starlette.testclient import TestClient as _TestClient
 from starlette.types import ASGIApp
 
-from .view import HTTP_METHOD_NAMES
+from .values import HTTP_METHOD_NAMES
+
+
+class TestClient(_TestClient):
+    pass
 
 
 class TestView:

@@ -2,7 +2,7 @@ from asyncio import sleep
 
 from index.view import View
 from index.test import TestView
-from index.background import after_response
+from index.background import after_response, finished_response
 from index.config import logger
 
 
@@ -14,7 +14,7 @@ def only_print(message: str) -> None:
 class HTTP(View):
     async def get(self):
         only_print("world")
-        await sleep(1.5)
+        raise ValueError()
         logger.debug("hello")
         return ""
 

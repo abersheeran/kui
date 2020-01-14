@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Callable
+from typing import Any, List, Dict, Callable, Optional
 
 from .models import Model
 
@@ -8,6 +8,7 @@ def _remove_info(schema: Dict[str, Any]) -> Dict[str, Any]:
     schema = deepcopy(schema)
 
     if schema.get("definitions") is not None:
+
         def replace(mapping: Dict[str, Any]) -> None:
             for _name in mapping.keys():
                 if _name == "$ref":
@@ -32,7 +33,7 @@ def _remove_info(schema: Dict[str, Any]) -> Dict[str, Any]:
 def schema_parameters(
     path: Model = None, query: Model = None, header: Model = None, cookie: Model = None,
 ) -> List[Dict[str, Any]]:
-    def schema_parameter(m: Model, position: str) -> List[Dict[str, Any]]:
+    def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
         """
         position: "path", "query", "header", "cookie"
         """
@@ -63,9 +64,9 @@ def schema_parameters(
     )
 
 
-def schema_request_body(body: Model = None) -> Dict[str, Any]:
+def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
     if body is None:
-        return
+        return None
 
     return {
         "required": True,

@@ -26,7 +26,9 @@ class Socket(SocketView, metaclass=Singleton):
     async def on_connect(self):
         """Override to handle an incoming websocket connection"""
         await self.websocket.accept()
-        await self.broadcast({"from": "system", "message": f"欢迎{self.websocket.client}入场"})
+        await self.broadcast(
+            {"from": "system", "message": f"欢迎{self.websocket.client}入场"}
+        )
         users.append(self.websocket)
 
     async def on_receive(self, data):

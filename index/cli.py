@@ -5,22 +5,13 @@ import signal
 import logging
 import traceback
 import subprocess
+from typing import Optional
 from multiprocessing import cpu_count
 
 import click
-import uvicorn
 
-from .applications import Filepath
 from .config import LOG_LEVELS, config, logger
-from .autoreload import _import
 from .__version__ import __version__
-
-
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=LOG_LEVELS[config.log_level],
-)
 
 
 def execute(command: str):
@@ -53,6 +44,8 @@ def main(env, debug):
 
 @main.command(help="use only uvicorn to deploy")
 def serve():
+    import uvicorn
+
     from . import app
 
     uvicorn.run(
@@ -93,16 +86,30 @@ def gunicorn(workers, daemon, configuration, method):
 
 
 @main.command(help="run test in views")
-@click.argument("uri", default="--all")
-def test(uri):
+@click.argument("path", default="--all")
+def test(path: str):
     # import app
     from . import app
+    from .test import TestClient
+    from .applications import Filepath
 
-    # define custom printf
-    printf = lambda *args, **kwargs: click.secho(*args, **kwargs)
+    logging.basicConfig(
+        format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n  Message: %(message)s',
+        level=LOG_LEVELS[config.log_level],
+    )
+    logger.setLevel(logging.DEBUG)
 
-    def test_path(view, _uri):
-        for func in view.Test(app, _uri).all_test:
+    def run_test(view, uri: str, name: Optional[str] = None):
+        """
+        run test and print message
+        """
+        for func in filter(
+            lambda funcname: name == funcname if name else True,
+            view.Test(app, uri).all_test,
+        ):
+            # write to log file
+            print("\n\n" + "=" * 24 + f"{uri} - {func.__name__}")
+
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
@@ -111,20 +118,48 @@ def test(uri):
                 printf("×", fg="red")
                 traceback.print_exc()
 
-    if uri == "--all":
-        for view, _uri in Filepath.get_views():
-            printf(f"{_uri}", fg="blue")
-            if not hasattr(view, "Test"):
-                printf(f" - No test.", fg="yellow")
-                continue
-            test_path(view, _uri)
-    else:
-        printf(f"{uri}", fg="blue")
-        test_path(Filepath.get_view(uri), uri)
+    with open(os.path.join(config.path, "index.test.log"), "w+") as logfile:
+        # hack sys.stdout/stderr to log file
+        setattr(sys.stdout, "_write_", sys.stdout.write)
+        setattr(sys.stderr, "_write_", sys.stderr.write)
+
+        def st():
+            setattr(sys.stdout, "write", logfile.write)
+            setattr(sys.stderr, "write", logfile.write)
+
+        def se():
+            setattr(sys.stdout, "write", sys.stdout._write_)
+            setattr(sys.stderr, "write", sys.stderr._write_)
+
+        def printf(message, **kwargs) -> None:
+            se()
+            click.secho(message, **kwargs)
+            st()
+
+        printf("Start test :)")
+        with TestClient(app) as _:
+            if path == "--all":
+                for view, uri in Filepath.get_views():
+                    printf(uri, fg="blue")
+                    if not hasattr(view, "Test"):
+                        printf(f" - No test. ?", fg="yellow")
+                        continue
+                    run_test(view, uri)
+            else:
+                printf(f"{path}", fg="blue")
+                run_test(
+                    Filepath.get_view(path.split(".")[0]),  # module
+                    path.split(".")[0],  # uri
+                    path.split(".")[1] if len(path.split(".")) == 2 else None,
+                )
+
+            print("\n")
 
 
 @main.command(help="check .py files in program")
 def check():
+    from .autoreload import _import
+
     for root, dirs, files in os.walk(config.path):
         for file in files:
             if not file.endswith(".py"):

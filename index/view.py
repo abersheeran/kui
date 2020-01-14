@@ -11,19 +11,9 @@ from pydantic import ValidationError
 
 from .concurrency import keepasync
 from .openapi.functions import partial, ParseError
+from .values import HTTP_METHOD_NAMES
 
 logger = logging.getLogger(__name__)
-
-HTTP_METHOD_NAMES = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options",
-    "trace",
-]
 
 
 class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):

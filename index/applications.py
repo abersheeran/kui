@@ -11,7 +11,6 @@ from starlette.types import Scope, Receive, Send, Message, ASGIApp
 from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket, WebSocketClose
 from starlette.responses import RedirectResponse
-from starlette.background import BackgroundTasks
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
@@ -20,7 +19,11 @@ from starlette.exceptions import HTTPException, ExceptionMiddleware
 from .types import WSGIApp
 from .config import config
 from .responses import FileResponse, automatic
-from .background import background_tasks_var
+from .background import (
+    BackgroundTasks,
+    after_response_tasks_var,
+    finished_response_tasks_var,
+)
 
 
 async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
@@ -253,8 +256,10 @@ class Filepath:
 
         try:
             # set background tasks contextvar
-            token = background_tasks_var.set(BackgroundTasks())
-
+            after_response_tasks_token = after_response_tasks_var.set(BackgroundTasks())
+            finished_response_tasks_token = finished_response_tasks_var.set(
+                BackgroundTasks()
+            )
             # call middleware
             for deep in range(len(pathlist), 0, -1):
                 module = importlib.import_module(".".join(pathlist[:deep]))
@@ -268,12 +273,14 @@ class Filepath:
                 response = automatic(*response)
             else:
                 response = automatic(response)
-
+            response.background = after_response_tasks_var.get()
             await response(scope, receive, send)
         finally:
-            run_background_tasks = background_tasks_var.get()
-            background_tasks_var.reset(token)
-            await run_background_tasks()
+            after_response_tasks_var.reset(after_response_tasks_token)
+
+            run_finished_response_tasks = finished_response_tasks_var.get()
+            finished_response_tasks_var.reset(finished_response_tasks_token)
+            await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)

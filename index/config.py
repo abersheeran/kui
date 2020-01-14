@@ -135,7 +135,9 @@ class Config(UpperDict, metaclass=Singleton):
                 filename = _filename
                 # TODO clear in 0.8
                 if filename == "config.json":
-                    warnings.warn("Please use `index.json` or` index.yaml`, `config.json` will be deprecated in 0.8.")
+                    warnings.warn(
+                        "Please use `index.json` or` index.yaml`, `config.json` will be deprecated in 0.8."
+                    )
 
         if filename is None:
             return
