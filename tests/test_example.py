@@ -11,7 +11,7 @@ def test_example():
     os.chdir(example)
     sys.path.insert(0, example)
     from index import app
-    from index.cli import Filepath
+    from index.applications import Filepath
 
     for view, path in Filepath.get_views():
         if not hasattr(view, "Test"):
