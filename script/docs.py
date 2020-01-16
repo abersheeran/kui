@@ -3,9 +3,7 @@ from shutil import rmtree
 
 here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-rmtree(os.path.join(here, "site"), ignore_errors=True)
-
-os.system("pipenv run mkdocs build")
+os.system("poetry run mkdocs build")
 
 os.chdir(os.path.join(here, "site"))
 os.system("echo index-py.abersheeran.com > CNAME")  # Custom domain name
