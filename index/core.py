@@ -55,3 +55,20 @@ async def create_directories() -> None:
     os.makedirs(os.path.join(config.path, "views"), exist_ok=True)
     os.makedirs(os.path.join(config.path, "static"), exist_ok=True)
     os.makedirs(os.path.join(config.path, "templates"), exist_ok=True)
+
+
+@app.on_event("shutdown")
+async def clear_directories() -> None:
+    """
+    if no files exist in the directory, delete them
+    """
+
+    def rmdir(dirpath: str) -> None:
+        try:
+            os.rmdir(dirpath)
+        except OSError:
+            pass
+
+    rmdir(os.path.join(config.path, "views"))
+    rmdir(os.path.join(config.path, "static"))
+    rmdir(os.path.join(config.path, "templates"))

@@ -170,18 +170,14 @@ class Mount:
 
 
 class Filepath:
-    __split_cache__: typing.Dict[str, typing.Any] = {}
-
     def __init__(self) -> None:
         self.lifespan = Lifespan()
 
     @classmethod
     def split_uri(cls, uri: str) -> typing.List[str]:
-        try:
-            return cls.__split_cache__[uri]
-        except KeyError:
-            pass  # no cache
-
+        """
+        convert uri to file string corresponding to index.py
+        """
         if uri.endswith("/"):
             uri += "index"
 
@@ -234,9 +230,6 @@ class Filepath:
                     uri = uri[:-5]
 
                 module = cls.get_view(uri)
-
-                if not (hasattr(module, "HTTP") or hasattr(module, "Socket")):
-                    continue
 
                 yield module, uri
 

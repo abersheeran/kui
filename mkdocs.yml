@@ -16,6 +16,7 @@ nav:
   - WebSocket: 'websocket.md'
   - Test: 'test.md'
   - Mount: 'mount.md'
+  - Exception: 'exception.md'
   - Lifespan: 'event.md'
   - Command: 'command.md'
   - Background: 'background.md'

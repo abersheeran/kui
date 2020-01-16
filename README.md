@@ -4,6 +4,8 @@
 
 一个基于 ASGI 协议的高性能 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
 
+你也可以直接查看 [Example](https://github.com/abersheeran/index.py/tree/master/example) 来学习如何使用（文档偶尔会滞后一到两天，但 example 被纳入了自动化测试，所以会始终保持最新版）
+
 - 非常简单的部署
 - 支持真正的热重载
 - 无需手动绑定路由 (文件系统映射URI)
