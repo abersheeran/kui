@@ -123,9 +123,9 @@ def test(throw: bool, path: str):
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
-                printf("√", fg="green")
+                printf("OK", fg="green")
             except:
-                printf("×", fg="red")
+                printf("XX", fg="red")
                 if throw:
                     se()  # enable print to sys.stderr/stdout
                     traceback.print_exc()

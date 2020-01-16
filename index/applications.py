@@ -326,10 +326,11 @@ class Filepath:
                 )
 
         try:
-            await response(scope, receive, send)
-        except NameError:
+            response
+        except UnboundLocalError:
             await getattr(self, scope["type"])(scope, receive, send)
-
+        else:
+            await response(scope, receive, send)
 
 class Index:
     def __init__(self, debug: bool = False) -> None:
