@@ -86,8 +86,14 @@ def gunicorn(workers, daemon, configuration, method):
 
 
 @main.command(help="run test in views")
+@click.option(
+    "--throw",
+    default=False,
+    is_flag=True,
+    help="If there is an exception, throw it directly.",
+)
 @click.argument("path", default="--all")
-def test(path: str):
+def test(throw: bool, path: str):
     # import app
     from . import app
     from .test import TestClient
@@ -99,10 +105,14 @@ def test(path: str):
     )
     logger.setLevel(logging.DEBUG)
 
+    has_exception = False
+
     def run_test(view, uri: str, name: Optional[str] = None):
         """
         run test and print message
         """
+        nonlocal has_exception
+
         for func in filter(
             lambda func: name == func.__name__ if name else True,
             view.Test(app, uri).all_test,
@@ -116,7 +126,13 @@ def test(path: str):
                 printf("√", fg="green")
             except:
                 printf("×", fg="red")
-                traceback.print_exc()
+                if throw:
+                    se()  # enable print to sys.stderr/stdout
+                    traceback.print_exc()
+                    st()
+                else:
+                    traceback.print_exc()
+                has_exception = True
 
     with open(os.path.join(config.path, "index.test.log"), "w+") as logfile:
         # hack sys.stdout/stderr to log file
@@ -124,10 +140,14 @@ def test(path: str):
         setattr(sys.stderr, "_write_", sys.stderr.write)
 
         def st():
+            sys.stdout.flush()
+            sys.stderr.flush()
             setattr(sys.stdout, "write", logfile.write)
             setattr(sys.stderr, "write", logfile.write)
 
         def se():
+            sys.stdout.flush()
+            sys.stderr.flush()
             setattr(sys.stdout, "write", sys.stdout._write_)
             setattr(sys.stderr, "write", sys.stderr._write_)
 
@@ -154,6 +174,11 @@ def test(path: str):
                 )
 
             print("\n")
+
+    if has_exception:
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
 
 @main.command(help="check .py files in program")

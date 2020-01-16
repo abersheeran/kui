@@ -9,16 +9,4 @@ example = os.path.join(
 
 def test_example():
     os.chdir(example)
-    sys.path.insert(0, example)
-    from index import app
-    from index.applications import Filepath
-
-    for view, path in Filepath.get_views():
-        if not hasattr(view, "Test"):
-            continue
-
-        for func in view.Test(app, path).all_test:
-            try:
-                func()
-            except:
-                traceback.print_exc()
+    assert os.system("index-cli test --throw") == 0

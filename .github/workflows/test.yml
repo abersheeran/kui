@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   Linux-Test:
-    
+
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -23,11 +23,11 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest pytest-asyncio
+        poetry install
         pytest
 
   Windows-Test:
-    
+
     runs-on: windows-latest
     strategy:
       max-parallel: 4
@@ -46,11 +46,11 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest pytest-asyncio
+        poetry install
         pytest
-  
+
   MacOS-Test:
-    
+
     runs-on: macos-latest
     strategy:
       max-parallel: 4
@@ -69,5 +69,5 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest pytest-asyncio
+        poetry install
         pytest
