@@ -70,10 +70,6 @@ class UpperDict:
             else:
                 self.__dict[key] = UpperDict(value)
         else:
-            if key == "DEBUG":
-                value = bool(value)
-            elif key == "PORT":
-                value = int(value)
             self.__dict[key] = value
 
     def __getitem__(self, key: str) -> typing.Any:
@@ -189,6 +185,19 @@ class Config(UpperDict, metaclass=Singleton):
 
     def __delitem__(self, key: str) -> None:
         raise ConfigError("Modifying the attribute value of Config is not allowed.")
+
+    def __setitem__(self, key: str, value: typing.Any) -> None:
+        key = key.upper()
+
+        if key == "DEBUG":
+            value = bool(value)
+        elif key == "PORT":
+            value = int(value)
+        elif key == "ALLOWED_HOSTS":
+            value = list(value)
+            value.append("testserver")
+
+        super().__setitem__(key, value)
 
     def get(self, key, default=None) -> typing.Any:
         env = super().get(self["env"], {})

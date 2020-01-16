@@ -1,10 +1,15 @@
 from copy import deepcopy
 from typing import Any, List, Dict, Callable, Optional
 
+from pydantic.schema import schema
+
 from .models import Model
 
 
-def _remove_info(schema: Dict[str, Any]) -> Dict[str, Any]:
+def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    replace $ref
+    """
     schema = deepcopy(schema)
 
     if schema.get("definitions") is not None:
@@ -30,31 +35,33 @@ def _remove_info(schema: Dict[str, Any]) -> Dict[str, Any]:
     return schema
 
 
+def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
+    """
+    position: "path", "query", "header", "cookie"
+    """
+    result = []
+
+    if m is not None:
+        _schemas = replace_definitions(m.schema())
+        properties: Dict[str, Any] = _schemas["properties"]
+        _schemas["required"] = _schemas.get("required") or []
+
+        for name, schema in properties.items():
+            result.append(
+                {
+                    "in": position,
+                    "name": name,
+                    "description": schema.pop("description"),
+                    "required": name in _schemas.get("required"),  # type: ignore
+                    "schema": schema,
+                }
+            )
+    return result
+
+
 def schema_parameters(
     path: Model = None, query: Model = None, header: Model = None, cookie: Model = None,
 ) -> List[Dict[str, Any]]:
-    def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
-        """
-        position: "path", "query", "header", "cookie"
-        """
-        result = []
-
-        if m:
-            _schemas = _remove_info(m.schema())
-            properties: Dict[str, Any] = _schemas["properties"]
-            _schemas["required"] = _schemas.get("required") or []
-
-            for name, schema in properties.items():
-                result.append(
-                    {
-                        "in": position,
-                        "name": name,
-                        "description": schema.pop("description"),
-                        "required": name in _schemas.get("required"),
-                        "schema": schema,
-                    }
-                )
-        return result
 
     return (
         schema_parameter(path, "path")
@@ -70,9 +77,9 @@ def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
 
     return {
         "required": True,
-        "content": {"application/json": {"schema": _remove_info(body.schema())}},
+        "content": {"application/json": {"schema": replace_definitions(body.schema())}},
     }
 
 
 def schema_response(model: Model) -> Dict[str, Any]:
-    return {"application/json": {"schema": _remove_info(model.schema())}}
+    return {"application/json": {"schema": replace_definitions(model.schema())}}

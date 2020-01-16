@@ -43,6 +43,9 @@ class HTTP(View):
         """
         return {"message": body.dict()}, 200, {"server": "index.py"}
 
+    async def put(self):
+        return ["h",] * 10
+
 
 class Test(TestView):
     def test_get(self):
@@ -56,3 +59,7 @@ class Test(TestView):
         assert resp.status_code == 400
         resp = self.client.post(data={"name": "Aber", "text": "message"})
         assert resp.status_code == 200
+
+    def test_list_response(self):
+        resp = self.client.put()
+        assert resp.json() == ["h",] * 10

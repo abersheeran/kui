@@ -14,7 +14,6 @@ def only_print(message: str) -> None:
 class HTTP(View):
     async def get(self):
         only_print("world")
-        raise ValueError()
         logger.debug("hello")
         return ""
 
@@ -26,9 +25,10 @@ class Test(TestView):
         assert resp.content == b""
 
     def test_websocket_dontfound(self) -> None:
-        from starlette.exceptions import HTTPException
+        from starlette.testclient import WebSocketDisconnect
 
         try:
             self.client.websocket_connect()
-        except HTTPException as exc:
-            assert exc.status_code == 404
+            assert False, "websocket must disconnect"
+        except WebSocketDisconnect:
+            pass

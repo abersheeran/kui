@@ -39,27 +39,8 @@ class OpenAPI:
         self.html_template = template
         self.media_type = media_type
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or scope["path"] not in ("/", "/get"):
-            raise HTTPException(404)
-        request = Request(scope, receive, send)
-
-        if scope["path"] == "/get":
-            handler = getattr(self, "docs")
-        elif scope["path"] == "/":
-            handler = getattr(self, "template")
-        else:
-            raise HTTPException(404)
-        response = await handler(request)
-        await response(scope, receive, send)
-
-    async def template(self, request: Request) -> Response:
-        if self.html_template:
-            return HTMLResponse(self.html_template)
-        return HTMLResponse(DEFAULT_TEMPLATE)
-
-    async def docs(self, request: Request) -> Response:
-        openapi = deepcopy(self.openapi)
+    def create_docs(self, request: Request) -> dict:
+        openapi: dict = deepcopy(self.openapi)
         openapi["servers"] = [
             {
                 "url": f"{request.url.scheme}://{request.url.netloc}",
@@ -67,11 +48,11 @@ class OpenAPI:
             }
         ]
 
-        paths: dict = openapi["paths"]
+        paths: dict = openapi["paths"]  # type: ignore
         for view, path in Filepath.get_views():
             if not hasattr(view, "HTTP"):
                 continue
-            viewclass = view.HTTP
+            viewclass = getattr(view, "HTTP")
             paths[path] = {}
             for method in viewclass.allowed_methods():
                 if method == "OPTIONS":
@@ -93,13 +74,13 @@ class OpenAPI:
 
                 paths[path][method]["parameters"] = schema_parameters(
                     None,
-                    sig.parameters.get("query").annotation
+                    sig.parameters.get("query").annotation  # type: ignore
                     if sig.parameters.get("query")
                     else None,
-                    sig.parameters.get("header").annotation
+                    sig.parameters.get("header").annotation  # type: ignore
                     if sig.parameters.get("header")
                     else None,
-                    sig.parameters.get("cookie").annotation
+                    sig.parameters.get("cookie").annotation  # type: ignore
                     if sig.parameters.get("cookie")
                     else None,
                 )
@@ -107,7 +88,7 @@ class OpenAPI:
                     del paths[path][method]["parameters"]
 
                 paths[path][method]["requestBody"] = schema_request_body(
-                    sig.parameters.get("body").annotation
+                    sig.parameters.get("body").annotation  # type: ignore
                     if sig.parameters.get("body")
                     else None
                 )
@@ -135,6 +116,29 @@ class OpenAPI:
             if not paths[path]:
                 del paths[path]
 
+        return openapi
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["path"] not in ("/", "/get"):
+            raise HTTPException(404)
+        request = Request(scope, receive, send)
+
+        if scope["path"] == "/get":
+            handler = getattr(self, "docs")
+        elif scope["path"] == "/":
+            handler = getattr(self, "template")
+        else:
+            raise HTTPException(404)
+        response = await handler(request)
+        await response(scope, receive, send)
+
+    async def template(self, request: Request) -> Response:
+        if self.html_template:
+            return HTMLResponse(self.html_template)
+        return HTMLResponse(DEFAULT_TEMPLATE)
+
+    async def docs(self, request: Request) -> Response:
+        openapi = self.create_docs(request)
         media_type = request.query_params.get("type") or self.media_type
 
         if media_type == "json":
@@ -150,7 +154,6 @@ DEFAULT_TEMPLATE = """
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
 
     <style>
       body {

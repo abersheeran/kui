@@ -16,7 +16,7 @@ from .values import HTTP_METHOD_NAMES
 logger = logging.getLogger(__name__)
 
 
-class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):
+class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
     def __init__(self, request: Request) -> None:
         self.request = request
 

@@ -21,10 +21,12 @@ def _import_module(name: str) -> Optional[ModuleType]:
     """
     try importlib.import_module, nothing to do when module not be found.
     """
-    from .config import config
+    from .config import config, logger
 
     if os.path.exists(os.path.join(config.path, name + ".py")) or os.path.exists(
         os.path.join(config.path, name, "__init__.py")
     ):
+        logger.debug(f"Importing {name}")
         return importlib.import_module(name)
+    logger.debug(f"Dont found module {name}")
     return None  # nothing to do when module not be found

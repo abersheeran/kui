@@ -28,7 +28,7 @@ async def partial(
     header = sig.parameters.get("header")
     if header and issubclass(header.annotation, Model):
         _header = header.annotation(**request.headers)
-        handler = functools.partial(handler, query=_header)
+        handler = functools.partial(handler, header=_header)
 
     cookie = sig.parameters.get("cookie")
     if cookie and issubclass(cookie.annotation, Model):
@@ -48,7 +48,7 @@ async def partial(
 
 
 def describe(
-    status: int, response_model: Model = None, description: str = ""
+    status: int, response_model: typing.Any = None, description: str = ""
 ) -> typing.Callable:
     """bind status => response model in http handler"""
 

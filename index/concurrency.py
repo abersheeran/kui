@@ -6,13 +6,13 @@ import functools
 from starlette.concurrency import run_in_threadpool
 
 
-def complicating(func: typing.Callable) -> typing.Callable:
+def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable]:
     """
-    always return a coroutine function
+    always return a awaitable callable object
     """
     _func = func
     while hasattr(_func, "__wrapped__"):
-        _func = _func.__wrapped__
+        _func = _func.__wrapped__  # type: ignore
 
     if asyncio.iscoroutinefunction(_func):
         return func
@@ -24,7 +24,7 @@ def complicating(func: typing.Callable) -> typing.Callable:
                 return func
         else:
             # callable object
-            if inspect.iscoroutinefunction(_func.__call__):
+            if inspect.iscoroutinefunction(_func.__call__):  # type: ignore
                 return func
 
     @functools.wraps(func)

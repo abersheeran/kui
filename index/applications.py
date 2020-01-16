@@ -1,4 +1,5 @@
 import os
+import sys
 import copy
 import typing
 import asyncio
@@ -10,10 +11,13 @@ from inspect import signature
 from starlette.types import Scope, Receive, Send, Message, ASGIApp
 from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket, WebSocketClose
+from starlette.routing import NoMatchFound
 from starlette.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .types import WSGIApp
@@ -38,13 +42,9 @@ async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
 
 
 class Lifespan:
-    def __init__(
-        self,
-        on_startup: typing.List[typing.Callable] = None,
-        on_shutdown: typing.List[typing.Callable] = None,
-    ) -> None:
-        self.on_startup = [] if on_startup is None else list(on_startup)
-        self.on_shutdown = [] if on_shutdown is None else list(on_shutdown)
+    def __init__(self) -> None:
+        self.on_startup: typing.Dict[str, typing.Callable] = {}
+        self.on_shutdown: typing.Dict[str, typing.Callable] = {}
 
     def on_event(self, event_type: str) -> typing.Callable:
         """Wrapper add_event_type"""
@@ -57,9 +57,9 @@ class Lifespan:
 
     def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
         if event_type == "startup":
-            self.on_startup.append(func)
+            self.on_startup[func.__qualname__] = func
         elif event_type == "shutdown":
-            self.on_shutdown.append(func)
+            self.on_shutdown[func.__qualname__] = func
         else:
             raise ValueError("event_type must be in ('startup', 'shutdown')")
 
@@ -67,7 +67,7 @@ class Lifespan:
         """
         Run any `.on_startup` event handlers.
         """
-        for handler in self.on_startup:
+        for handler in self.on_startup.values():
             if asyncio.iscoroutinefunction(handler):
                 await handler()
             else:
@@ -77,7 +77,7 @@ class Lifespan:
         """
         Run any `.on_shutdown` event handlers.
         """
-        for handler in self.on_shutdown:
+        for handler in self.on_shutdown.values():
             if asyncio.iscoroutinefunction(handler):
                 await handler()
             else:
@@ -120,19 +120,17 @@ class Mount:
         self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
     ) -> None:
         assert app_type in ("asgi", "wsgi")
-        assert route.startswith("/"), "prefix must be start with '/'"
-        assert not route.endswith("/"), "prefix can't end with '/'"
+        if route != "":  # allow use "" to mount app
+            assert route.startswith("/"), "prefix must be start with '/'"
+            assert not route.endswith("/"), "prefix can't end with '/'"
         self.apps.update({route: (app, app_type)})
-
-    class DontFoundRoute(Exception):
-        pass
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         assert scope["type"] in ("http", "websocket", "lifespan")
 
         async def subsend(message: Message) -> None:
             if message["type"] == "http.response.start" and message["status"] == 404:
-                raise self.DontFoundRoute()
+                raise NoMatchFound()
             return await send(message)
 
         async def callapp(
@@ -146,7 +144,7 @@ class Mount:
                 return
             elif app[1] == "wsgi":
                 if scope["type"] != "http":
-                    raise self.DontFoundRoute()
+                    raise NoMatchFound()
 
                 wsgi_app = WSGIMiddleware(app[0])
                 await wsgi_app(scope, receive, send)
@@ -165,37 +163,49 @@ class Mount:
                     try:
                         await callapp(app, subscope, receive, subsend)
                         return
-                    except self.DontFoundRoute:
+                    except NoMatchFound:
                         pass
 
         await self.app(scope, receive, send)
 
 
 class Filepath:
+    __split_cache__: typing.Dict[str, typing.Any] = {}
+
     def __init__(self) -> None:
         self.lifespan = Lifespan()
 
     @classmethod
-    def get_path(cls, uri: str) -> typing.Optional[str]:
-        """
-        translate uri to module path
+    def split_uri(cls, uri: str) -> typing.List[str]:
+        try:
+            return cls.__split_cache__[uri]
+        except KeyError:
+            pass  # no cache
 
-        if file not found, return None
-        """
         if uri.endswith("/"):
             uri += "index"
 
         filepath = uri[1:].strip(".")
         filepath = filepath.replace("-", "_")
 
-        # judge python file
-        abspath = os.path.join(config.path, "views", filepath + ".py")
-        if not os.path.exists(abspath):
-            return None
-
         pathlist = filepath.split("/")
         pathlist.insert(0, "views")
-        return ".".join(pathlist)
+        return pathlist
+
+    @classmethod
+    def get_path(
+        cls, uri: str
+    ) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
+        """
+        translate uri to module name and file abspath
+
+        if file not found, return None
+        """
+        pathlist = cls.split_uri(uri)
+        abspath = os.path.join(config.path, *pathlist) + ".py"
+        if not os.path.exists(abspath):
+            return None, None
+        return ".".join(pathlist), abspath
 
     @classmethod
     def get_views(cls) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
@@ -219,35 +229,38 @@ class Filepath:
                 abspath = os.path.join(root, file)
                 relpath = os.path.relpath(abspath, config.path).replace("\\", "/")
 
-                module = importlib.import_module(relpath.replace("/", ".")[:-3])
-
                 uri = relpath[len("views") : -3]
-
                 if uri.endswith("/index"):
                     uri = uri[:-5]
+
+                module = cls.get_view(uri)
+
+                if not (hasattr(module, "HTTP") or hasattr(module, "Socket")):
+                    continue
 
                 yield module, uri
 
     @classmethod
     def get_view(cls, uri: str) -> ModuleType:
-        path = cls.get_path(uri)
-        if path is None:
+        module_name, filepath = cls.get_path(uri)
+        if module_name is None or filepath is None:
             raise ModuleNotFoundError(uri)
-        return importlib.import_module(path)
-
-    @classmethod
-    def get_pathlist(cls, uri: str) -> typing.List[str]:
-        path = cls.get_path(uri)
-        if path is None:
-            raise HTTPException(404)
-        return path.split(".")
+        # # Not thread-safe, temporarily commented
+        # spec = importlib.util.spec_from_file_location(module_name, filepath)
+        # module = importlib.util.module_from_spec(spec)
+        # sys.modules[module_name] = module
+        # spec.loader.exec_module(module)  # type: ignore
+        # return module
+        return importlib.import_module(module_name)
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = Request(scope, receive)
-        pathlist = self.get_pathlist(request.url.path)
-        # find http handler
-        module_path = ".".join(pathlist)
-        module = importlib.import_module(module_path)
+        pathlist = self.split_uri(request.url.path)
+
+        try:
+            module = self.get_view(request.url.path)
+        except ModuleNotFoundError:
+            raise HTTPException(404)
 
         try:
             get_response = getattr(module, "HTTP")
@@ -284,14 +297,24 @@ class Filepath:
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)
-        pathlist = self.get_pathlist(websocket.url.path)
-        # find websocket handler
-        module_path = ".".join(pathlist)
-        module = importlib.import_module(module_path)
+
         try:
-            handler = getattr(module, "Socket")
-        except AttributeError:
-            raise HTTPException(404)
+            try:
+                module = self.get_view(websocket.url.path)
+            except ModuleNotFoundError:
+                raise HTTPException(404)
+
+            try:
+                handler = getattr(module, "Socket")
+            except AttributeError:
+                raise HTTPException(404)
+        except HTTPException as exc:
+            if exc.status_code == 404:
+                # websocket 404, but no defined. only close.
+                await WebSocketClose()(scope, receive, send)
+                return
+            raise exc
+
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -324,16 +347,16 @@ class Index:
         self.error_middleware = ServerErrorMiddleware(
             self.exception_middleware, debug=debug
         )
-
-    @property
-    def debug(self) -> bool:
-        return self._debug
-
-    @debug.setter
-    def debug(self, value: bool) -> None:
-        self._debug = value
-        self.exception_middleware.debug = value
-        self.error_middleware.debug = value
+        self.asgiapp: ASGIApp = CORSMiddleware(
+            self.error_middleware,
+            allow_origins=config.CORS_ALLOW_ORIGINS,
+            allow_methods=config.CORS_ALLOW_METHODS,
+            allow_headers=config.CORS_ALLOW_HEADERS,
+            allow_credentials=config.CORS_ALLOW_CREDENTIALS,
+            allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
+            expose_headers=config.CORS_EXPOSE_HEADERS,
+            max_age=config.CORS_MAX_AGE,
+        )
 
     def add_middleware(self, middleware_class: type, **kwargs: typing.Any) -> None:
         self.error_middleware.app = middleware_class(
@@ -352,12 +375,6 @@ class Index:
                 exc_class_or_status_code, handler
             )
 
-    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
-        self.app.lifespan.add_event_handler(event_type, func)
-
-    def on_event(self, event_type: str) -> typing.Callable:
-        return self.app.lifespan.on_event(event_type)
-
     def exception_handler(
         self, exc_class_or_status_code: typing.Union[int, typing.Type[Exception]]
     ) -> typing.Callable:
@@ -367,16 +384,11 @@ class Index:
 
         return decorator
 
-    def middleware(self, middleware_type: str) -> typing.Callable:
-        assert (
-            middleware_type == "http"
-        ), 'Currently only middleware("http") is supported.'
+    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
+        self.app.lifespan.add_event_handler(event_type, func)
 
-        def decorator(func: typing.Callable) -> typing.Callable:
-            self.add_middleware(BaseHTTPMiddleware, dispatch=func)
-            return func
-
-        return decorator
+    def on_event(self, event_type: str) -> typing.Callable:
+        return self.app.lifespan.on_event(event_type)
 
     def mount(
         self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
@@ -385,4 +397,4 @@ class Index:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
-        await self.error_middleware(scope, receive, send)
+        await self.asgiapp(scope, receive, send)

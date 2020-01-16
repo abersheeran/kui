@@ -5,12 +5,13 @@ verify_ssl = true
 
 [dev-packages]
 mypy = "*"
+pylint = "*"
 black = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pytest = "*"
 pytest-asyncio = "*"
-pylint = "*"
+django = "*"  # to test mount
 
 [packages]
 

@@ -8,7 +8,7 @@ from .responses import automatic
 from .types import HTTPFunc
 
 
-class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):
+class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):  # type: ignore
 
     ChildMiddlewares: typing.Iterable[typing.Callable] = ()
 
