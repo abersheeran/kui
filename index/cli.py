@@ -123,9 +123,9 @@ def test(throw: bool, path: str):
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
-                printf("√", fg="green")
+                printf("(^_^)", fg="green")
             except:
-                printf("✗", fg="red")
+                printf('(=_=)"', fg="red")
                 if throw:
                     se()  # enable print to sys.stderr/stdout
                     traceback.print_exc()
@@ -156,13 +156,13 @@ def test(throw: bool, path: str):
             click.secho(message, **kwargs)
             st()
 
-        printf("Start test :)")
+        printf("Start test (^-^)")
         with TestClient(app) as _:
             if path == "--all":
                 for view, uri in Filepath.get_views():
                     printf(uri, fg="blue")
                     if not hasattr(view, "Test"):
-                        printf(f" - No test. ?", fg="yellow")
+                        printf(f" - No test. (@_@)", fg="yellow")
                         continue
                     run_test(view, uri)
             else:
