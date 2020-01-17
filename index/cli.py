@@ -123,7 +123,7 @@ def test(throw: bool, path: str):
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
-                printf("✔", fg="green")
+                printf("√", fg="green")
             except:
                 printf("✗", fg="red")
                 if throw:
