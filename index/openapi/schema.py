@@ -1,7 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Callable, Optional
-
-from pydantic.schema import schema
+from typing import Any, List, Dict, Callable, Optional, Iterable, Mapping
 
 from .models import Model
 
@@ -21,8 +19,13 @@ def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
                     for key in mapping["$ref"][2:].split("/"):
                         define_schema = define_schema[key]
                     break
-                elif isinstance(mapping[_name], dict):
+                elif isinstance(mapping[_name], Mapping):
                     replace(mapping[_name])
+                elif isinstance(mapping[_name], Iterable) and not isinstance(
+                    mapping[_name], str
+                ):
+                    for value in mapping[_name]:
+                        replace(value)
             else:
                 return
             # replace ref and del it

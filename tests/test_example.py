@@ -9,4 +9,4 @@ example = os.path.join(
 
 def test_example():
     os.chdir(example)
-    assert os.system("index-cli test --throw") == 0
+    assert os.system(f"{sys.executable} -m index test --throw") == 0
