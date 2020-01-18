@@ -67,6 +67,8 @@ index-cli --env "test" test
 
     你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试，使用 `index-cli test URI.funcname` 执行指定 URI 下某个指定的测试函数。
 
+    默认情况下，此命令会重定向所有向 stdout/stderr 输出的数据到项目根目录下的 `index.test.log` 中。但可以使用 `--throw` 选项迫使测试过程中抛出的异常的 `traceback` 输出到 stdout/stderr 里。
+
 ### index-cli check
 
 * `index-cli check`
