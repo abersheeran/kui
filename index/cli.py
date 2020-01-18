@@ -10,6 +10,7 @@ from multiprocessing import cpu_count
 
 import click
 
+from .utils import _import_module
 from .config import LOG_LEVELS, config, logger
 from .__version__ import __version__
 
@@ -40,6 +41,12 @@ def main(env, debug):
     config["debug"] = debug
     # set index logger level
     logger.setLevel(LOG_LEVELS[config.log_level])
+    # import all module
+    _import_module("mounts")
+    _import_module("commands")
+    _import_module("events")
+    _import_module("responses")
+    _import_module("exceptions")
 
 
 @main.command(help="use only uvicorn to deploy")
