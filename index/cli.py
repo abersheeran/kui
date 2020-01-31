@@ -19,7 +19,7 @@ def execute(command: str):
     click.echo("Execute command: ", nl=False)
     click.secho(command, fg="green")
 
-    process = subprocess.Popen(command, shell=True)
+    process = subprocess.Popen(command)
 
     def sigterm_handler(signo, frame):
         process.terminate()
