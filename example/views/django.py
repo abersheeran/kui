@@ -9,6 +9,17 @@ class Test(TestView):
         assert resp.status_code == 404
 
     def test_django_admin(self):
-        with TestClient(app) as client:
-            resp = client.get("/django/admin/")
-            assert resp.status_code == 200
+        client = TestClient(app)
+        resp = client.get("/django/admin/")
+        assert resp.status_code == 200
+
+    def test_wsgi_websocket(self):
+        from starlette.websockets import WebSocketDisconnect
+
+        client = TestClient(app)
+        try:
+            resp = client.websocket_connect("/django/")
+        except WebSocketDisconnect as e:
+            assert e.code == 1001
+        else:
+            assert False, "Must be raise WebSocketDisconnect"

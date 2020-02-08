@@ -2,7 +2,6 @@ import os
 import json
 import typing
 import logging
-import warnings
 
 import yaml
 
@@ -122,18 +121,13 @@ class Config(UpperDict, metaclass=Singleton):
     def import_from_file(self) -> None:
         filename = None
 
-        for _filename in ["config.json", "index.json", "index.yaml", "index.yml"]:
+        for _filename in ["index.json", "index.yaml", "index.yml"]:
             if os.path.exists(os.path.normpath(_filename)):
                 if filename is not None:
                     raise ConfigFileError(
                         f"`{filename}` and `{_filename}` cannot be used at the same project."
                     )
                 filename = _filename
-                # TODO clear in 0.8
-                if filename == "config.json":
-                    warnings.warn(
-                        "Please use `index.json` or` index.yaml`, `config.json` will be deprecated in 0.8."
-                    )
 
         if filename is None:
             return

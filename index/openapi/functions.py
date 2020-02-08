@@ -8,11 +8,6 @@ from starlette.requests import Request
 from .models import Model
 
 
-class ParseError(Exception):
-    def __init__(self, error: typing.Any) -> None:
-        self.error = error
-
-
 async def partial(
     handler: typing.Callable, request: Request
 ) -> typing.Optional[typing.Any]:

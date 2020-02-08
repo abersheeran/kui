@@ -76,7 +76,7 @@ class HTTP(View):
 
 ## 绑定响应
 
-为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。
+为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串。
 
 !!! notice
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。
@@ -106,14 +106,29 @@ class MessageResponse(models.Model):
 
 
 class HTTP(View):
+    @describe(
+        200,
+        """
+        image/png:
+            schema:
+                type: string
+                format: binary
+        """,
+    )
+    @describe(
+        403,
+        """text/plain:
+            schema:
+                type: string
+            example:
+                pong
+        """,
+    )
     async def get(self, query: Hello):
         """
         welcome page
         """
-        return TemplateResponse(
-            "home.html",
-            {"request": self.request, "name": query.name},
-        )
+        ...
 
     @describe(200, MessageResponse)
     @describe(201, None)

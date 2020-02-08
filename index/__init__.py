@@ -1,4 +1,3 @@
-from .config import Config
-from .core import app
-
+from .config import config
+from .core import create_app
 from . import openapi

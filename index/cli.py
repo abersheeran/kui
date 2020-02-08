@@ -2,16 +2,16 @@ import os
 import sys
 import time
 import signal
-import logging
-import traceback
 import subprocess
-from typing import Optional
 from multiprocessing import cpu_count
 
 import click
+import uvicorn
 
-from .utils import _import_module
 from .config import LOG_LEVELS, config, logger
+from .applications import Index
+from .test import cmd_test
+from .autoreload import cmd_check
 from .__version__ import __version__
 
 
@@ -41,22 +41,12 @@ def main(env, debug):
     config["debug"] = debug
     # set index logger level
     logger.setLevel(LOG_LEVELS[config.log_level])
-    # import all module
-    _import_module("mounts")
-    _import_module("commands")
-    _import_module("events")
-    _import_module("responses")
-    _import_module("exceptions")
 
 
 @main.command(help="use only uvicorn to deploy")
 def serve():
-    import uvicorn
-
-    from . import app
-
     uvicorn.run(
-        app,
+        Index(),
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,
@@ -92,109 +82,5 @@ def gunicorn(workers, daemon, configuration, method):
         execute("kill -HUP `cat .pid`")
 
 
-@main.command(help="run test in views")
-@click.option(
-    "--throw",
-    default=False,
-    is_flag=True,
-    help="If there is an exception, throw it directly.",
-)
-@click.argument("path", default="--all")
-def test(throw: bool, path: str):
-    # import app
-    from . import app
-    from .test import TestClient
-    from .applications import Filepath
-
-    logging.basicConfig(
-        format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n  Message: %(message)s',
-        level=LOG_LEVELS[config.log_level],
-    )
-    logger.setLevel(logging.DEBUG)
-
-    has_exception = False
-
-    def run_test(view, uri: str, name: Optional[str] = None):
-        """
-        run test and print message
-        """
-        nonlocal has_exception
-
-        for func in filter(
-            lambda func: name == func.__name__ if name else True,
-            view.Test(app, uri).all_test,
-        ):
-            # write to log file
-            print("\n\n" + "=" * 24 + f"{uri} - {func.__name__}")
-
-            printf(f" - {func.__name__} ", nl=False)
-            try:
-                func()
-                printf("(^_^)", fg="green")
-            except:
-                printf('(=_=)"', fg="red")
-                if throw:
-                    se()  # enable print to sys.stderr/stdout
-                    traceback.print_exc()
-                    st()
-                else:
-                    traceback.print_exc()
-                has_exception = True
-
-    with open(os.path.join(config.path, "index.test.log"), "w+") as logfile:
-        # hack sys.stdout/stderr to log file
-        setattr(sys.stdout, "_write_", sys.stdout.write)
-        setattr(sys.stderr, "_write_", sys.stderr.write)
-
-        def st():
-            sys.stdout.flush()
-            sys.stderr.flush()
-            setattr(sys.stdout, "write", logfile.write)
-            setattr(sys.stderr, "write", logfile.write)
-
-        def se():
-            sys.stdout.flush()
-            sys.stderr.flush()
-            setattr(sys.stdout, "write", sys.stdout._write_)
-            setattr(sys.stderr, "write", sys.stderr._write_)
-
-        def printf(message, **kwargs) -> None:
-            se()
-            click.secho(message, **kwargs)
-            st()
-
-        printf("Start test (^-^)")
-        with TestClient(app) as _:
-            if path == "--all":
-                for view, uri in Filepath.get_views():
-                    printf(uri, fg="blue")
-                    if not hasattr(view, "Test"):
-                        printf(f" - No test. (@_@)", fg="yellow")
-                        continue
-                    run_test(view, uri)
-            else:
-                printf(f"{path}", fg="blue")
-                run_test(
-                    Filepath.get_view(path.split(".")[0]),  # module
-                    path.split(".")[0],  # uri
-                    path.split(".")[1] if len(path.split(".")) == 2 else None,
-                )
-
-            print("\n")
-
-    if has_exception:
-        sys.exit(1)
-    else:
-        sys.exit(0)
-
-
-@main.command(help="check .py files in program")
-def check():
-    from .autoreload import _import
-
-    for root, dirs, files in os.walk(config.path):
-        for file in files:
-            if not file.endswith(".py"):
-                continue
-            abspath = os.path.join(root, file).replace("\\", "/")
-            module = _import(abspath, nosleep=True)
+main.command(name="test", help="run test")(cmd_test)
+main.command(name="check", help="check .py file in program")(cmd_check)

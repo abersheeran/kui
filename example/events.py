@@ -1,5 +1,3 @@
-import asyncio
-
 from index import app
 from index.config import logger
 

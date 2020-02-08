@@ -1,19 +1,17 @@
 import os
-import sys
 import copy
 import typing
 import asyncio
 import traceback
 import importlib
 from types import ModuleType
-from inspect import signature
 
-from starlette.types import Scope, Receive, Send, Message, ASGIApp
-from starlette.requests import HTTPConnection, Request
+from starlette.types import Scope, Receive, Send, ASGIApp
+from starlette.status import WS_1001_GOING_AWAY
+from starlette.requests import URL, Request
 from starlette.websockets import WebSocket, WebSocketClose
 from starlette.routing import NoMatchFound
 from starlette.responses import RedirectResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.wsgi import WSGIMiddleware
 from starlette.middleware.cors import CORSMiddleware
@@ -21,6 +19,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .types import WSGIApp
+from .utils import Singleton
 from .config import config
 from .responses import FileResponse, automatic
 from .background import (
@@ -28,17 +27,6 @@ from .background import (
     after_response_tasks_var,
     finished_response_tasks_var,
 )
-
-
-async def favicon(scope: Scope, receive: Receive, send: Send) -> None:
-    """
-    favicon.ico
-    """
-    if scope["type"] == "http" and os.path.exists(os.path.normpath("favicon.ico")):
-        response = FileResponse("favicon.ico")
-        await response(scope, receive, send)
-        return
-    raise HTTPException(404)
 
 
 class Lifespan:
@@ -112,9 +100,7 @@ class Lifespan:
 class Mount:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
-        self.apps: typing.Dict[
-            str, typing.Tuple[typing.Union[ASGIApp, WSGIApp], str]
-        ] = {}
+        self.apps: typing.Dict[str, ASGIApp] = {}
 
     def append(
         self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
@@ -123,32 +109,12 @@ class Mount:
         if route != "":  # allow use "" to mount app
             assert route.startswith("/"), "prefix must be start with '/'"
             assert not route.endswith("/"), "prefix can't end with '/'"
-        self.apps.update({route: (app, app_type)})
+        if app_type == "wsgi":
+            app = WSGIMiddleware(app)
+        self.apps.update({route: app})  # type: ignore
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         assert scope["type"] in ("http", "websocket", "lifespan")
-
-        async def subsend(message: Message) -> None:
-            if message["type"] == "http.response.start" and message["status"] == 404:
-                raise NoMatchFound()
-            return await send(message)
-
-        async def callapp(
-            app: typing.Tuple[typing.Callable, str],
-            scope: Scope,
-            receive: Receive,
-            send: Send,
-        ) -> None:
-            if app[1] == "asgi":
-                await app[0](scope, receive, send)
-                return
-            elif app[1] == "wsgi":
-                if scope["type"] != "http":
-                    raise NoMatchFound()
-
-                wsgi_app = WSGIMiddleware(app[0])
-                await wsgi_app(scope, receive, send)
-                return
 
         if scope["type"] in ("http", "websocket"):
             path = scope["path"]
@@ -156,15 +122,16 @@ class Mount:
 
             # Call into a submounted app, if one exists.
             for path_prefix, app in self.apps.items():
-                if path.startswith(path_prefix):
-                    subscope = copy.deepcopy(scope)
-                    subscope["path"] = path[len(path_prefix) :]
-                    subscope["root_path"] = root_path + path_prefix
-                    try:
-                        await callapp(app, subscope, receive, subsend)
-                        return
-                    except NoMatchFound:
-                        pass
+                if not path.startswith(path_prefix + "/"):
+                    continue
+                if isinstance(app, WSGIMiddleware):
+                    if scope["type"] != "http":
+                        continue
+                subscope = copy.deepcopy(scope)
+                subscope["path"] = path[len(path_prefix) :]
+                subscope["root_path"] = root_path + path_prefix
+                await app(subscope, receive, send)
+                return
 
         await self.app(scope, receive, send)
 
@@ -292,54 +259,48 @@ class Filepath:
         websocket = WebSocket(scope, receive=receive, send=send)
 
         try:
-            try:
-                module = self.get_view(websocket.url.path)
-            except ModuleNotFoundError:
-                raise HTTPException(404)
+            module = self.get_view(websocket.url.path)
+        except ModuleNotFoundError:
+            await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
+            return
 
-            try:
-                handler = getattr(module, "Socket")
-            except AttributeError:
-                raise HTTPException(404)
-        except HTTPException as exc:
-            if exc.status_code == 404:
-                # websocket 404, but no defined. only close.
-                await WebSocketClose()(scope, receive, send)
-                return
-            raise exc
+        try:
+            handler = getattr(module, "Socket")
+        except AttributeError:
+            await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
+            return
 
         await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        handler = getattr(self, scope["type"])
+
         if scope["type"] in ("http", "websocket"):
-            http_info = HTTPConnection(scope)
-            uri = http_info.url.path
+            url = URL(scope=scope)
+            uri = url.path
             if uri.endswith("/index"):
-                response = RedirectResponse(
-                    http_info.url.replace(path=f'{uri[:-len("/index")]}'),
-                    status_code=301,
+                handler = RedirectResponse(
+                    url.replace(path=f'{uri[:-len("/index")]}'), status_code=301,
                 )
             elif not config.ALLOW_UNDERLINE and "_" in uri:  # Google SEO
-                response = RedirectResponse(
-                    http_info.url.replace(path=f'{uri.replace("_", "-")}'),
-                    status_code=301,
+                handler = RedirectResponse(
+                    url.replace(path=f'{uri.replace("_", "-")}'), status_code=301,
                 )
+            elif uri == "/favicon.ico":
+                handler = FileResponse("favicon.ico")
 
-        try:
-            response
-        except UnboundLocalError:
-            await getattr(self, scope["type"])(scope, receive, send)
-        else:
-            await response(scope, receive, send)
+        await handler(scope, receive, send)
 
-class Index:
-    def __init__(self, debug: bool = False) -> None:
-        self._debug = debug
+
+class Index(metaclass=Singleton):
+    def __init__(self) -> None:
         self.app = Filepath()
         self.childapps = Mount(self.app)
-        self.exception_middleware = ExceptionMiddleware(self.childapps, debug=debug)
+        self.exception_middleware = ExceptionMiddleware(
+            self.childapps, debug=config.DEBUG
+        )
         self.error_middleware = ServerErrorMiddleware(
-            self.exception_middleware, debug=debug
+            self.exception_middleware, debug=config.DEBUG
         )
         self.asgiapp: ASGIApp = CORSMiddleware(
             self.error_middleware,
@@ -351,6 +312,7 @@ class Index:
             expose_headers=config.CORS_EXPOSE_HEADERS,
             max_age=config.CORS_MAX_AGE,
         )
+        self.asgiapp = GZipMiddleware(self.asgiapp)
 
     def add_middleware(self, middleware_class: type, **kwargs: typing.Any) -> None:
         self.error_middleware.app = middleware_class(

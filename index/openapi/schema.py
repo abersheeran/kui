@@ -1,5 +1,7 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Callable, Optional, Iterable, Mapping
+from typing import Any, List, Dict, Callable, Optional, Iterable, Mapping, Union
+
+import yaml
 
 from .models import Model
 
@@ -84,5 +86,7 @@ def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
     }
 
 
-def schema_response(model: Model) -> Dict[str, Any]:
+def schema_response(model: Union[Model, str]) -> Dict[str, Any]:
+    if isinstance(model, str):
+        return yaml.safe_load(model.strip())
     return {"application/json": {"schema": replace_definitions(model.schema())}}

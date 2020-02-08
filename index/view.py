@@ -10,7 +10,7 @@ from starlette.requests import Request
 from pydantic import ValidationError
 
 from .concurrency import keepasync
-from .openapi.functions import partial, ParseError
+from .openapi.functions import partial
 from .values import HTTP_METHOD_NAMES
 
 logger = logging.getLogger(__name__)
@@ -38,10 +38,15 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
         try:
             handler = await partial(handler, self.request)
         except ValidationError as e:
-            return {"error": e.errors()}, 400
+            return await self.catch_validation_error(e)
 
-        resp = await handler()
-        return resp
+        return await handler()
+
+    async def catch_validation_error(
+        self, exception: ValidationError
+    ) -> typing.Union[Response, typing.Tuple]:
+
+        return {"error": exception.errors()}, 400
 
     async def http_method_not_allowed(self) -> Response:
         logger.warning(
