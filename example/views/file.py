@@ -1,4 +1,3 @@
-from os.path import basename
 from tempfile import TemporaryFile
 
 from indexpy.view import View
@@ -47,4 +46,3 @@ class Test(TestView):
         f = TemporaryFile()
         resp = self.client.post(files={"file": f})
         assert resp.status_code == 200
-        assert resp.text == basename(f.name), (resp.text, basename(f.name))
