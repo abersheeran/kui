@@ -1,3 +1,4 @@
+from os.path import basename
 from tempfile import TemporaryFile
 
 from indexpy.view import View
@@ -43,10 +44,7 @@ class HTTP(View):
 
 class Test(TestView):
     def test_post(self):
-
         f = TemporaryFile()
-        f.name = "temporary"
-
         resp = self.client.post(files={"file": f})
         assert resp.status_code == 200
-        assert resp.text == "temporary"
+        assert resp.text == basename(f.name), (resp.text, basename(f.name))
