@@ -15,10 +15,10 @@ def get_version(package) -> str:
 
 
 os.chdir(here)
-os.system(f"poetry version {get_version('index')}")
+os.system(f"poetry version {get_version('indexpy')}")
 os.system("git add pyproject.toml")
-os.system(f'git commit -m "{get_version("index")}"')
+os.system(f'git commit -m "{get_version("indexpy")}"')
 os.system("git push")
 os.system(f"poetry publish --build")
-os.system("git tag v{0}".format(get_version("index")))
+os.system("git tag v{0}".format(get_version("indexpy")))
 os.system("git push --tags")
