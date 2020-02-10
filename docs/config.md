@@ -112,11 +112,20 @@ log_level   | logging
 
 `force_ssl` 允许 HTTP/WS 强制跳转到 HTTPS/WSS。
 
+### AUTORELOAD
+
+**默认值:** `False`
+
+`autoreload` 为真时，使用 `index-cli serve` 或 `index-cli gunicorn start` 时，将会监听当前的项目修改，自动重启服务。
+
 ### HOTRELOAD
 
 **默认值:** `True`
 
 `hotreload` 为真时，将允许 Index 提供真正的热重载功能。
+
+!!! notice
+    当 `AUTORELOAD` 为真时，此选项无效。
 
 ### ALLOW_UNDERLINE
 

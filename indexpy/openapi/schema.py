@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Callable, Optional, Iterable, Mapping, Union
+from typing import Any, List, Dict, Optional, Iterable, Mapping, Union
 
 import yaml
 

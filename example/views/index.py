@@ -1,7 +1,7 @@
-from index.view import View
-from index.test import TestView
-from index.responses import TemplateResponse
-from index.openapi import models, describe
+from indexpy.view import View
+from indexpy.test import TestView
+from indexpy.responses import TemplateResponse
+from indexpy.openapi import models, describe
 
 from utils import db
 
@@ -24,6 +24,14 @@ class MessageResponse(models.Model):
 
 
 class HTTP(View):
+    @describe(
+        200,
+        """
+        text/html:
+            schema:
+                type: string
+        """,
+    )
     async def get(self, query: Hello):
         """
         welcome page

@@ -19,7 +19,6 @@ from starlette.middleware.gzip import GZipMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .types import WSGIApp
-from .utils import Singleton
 from .config import config
 from .responses import FileResponse, automatic
 from .background import (
@@ -287,13 +286,32 @@ class Filepath:
                     url.replace(path=f'{uri.replace("_", "-")}'), status_code=301,
                 )
             elif uri == "/favicon.ico":
-                handler = FileResponse("favicon.ico")
+                if os.path.exists(os.path.normpath("favicon.ico")):
+                    handler = FileResponse("favicon.ico")
 
         await handler(scope, receive, send)
 
 
-class Index(metaclass=Singleton):
-    def __init__(self) -> None:
+class IndexMeta(type):
+    def __init__(
+        cls,
+        name: str,
+        bases: typing.Tuple[type],
+        namespace: typing.Dict[str, typing.Any],
+    ) -> None:
+        cls.instances: typing.Dict[str, Index] = {}
+        super().__init__(name, bases, namespace)
+
+    def __call__(cls, *args, **kwargs) -> typing.Any:
+        name = kwargs.get("name", "__main__")
+        if name not in cls.instances:
+            cls.instances[name] = super().__call__(*args, **kwargs)
+        return cls.instances[name]
+
+
+class Index(metaclass=IndexMeta):
+    def __init__(self, *, name: str = "__main__") -> None:
+        self.name = name
         self.app = Filepath()
         self.childapps = Mount(self.app)
         self.exception_middleware = ExceptionMiddleware(
@@ -313,6 +331,16 @@ class Index(metaclass=Singleton):
             max_age=config.CORS_MAX_AGE,
         )
         self.asgiapp = GZipMiddleware(self.asgiapp)
+
+    @property
+    def debug(self) -> bool:
+        return config.DEBUG
+
+    @debug.setter
+    def debug(self, value: bool) -> None:
+        config["debug"] = value  # type: ignore
+        self.error_middleware.debug = value
+        self.exception_middleware.debug = value
 
     def add_middleware(self, middleware_class: type, **kwargs: typing.Any) -> None:
         self.error_middleware.app = middleware_class(

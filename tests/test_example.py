@@ -8,5 +8,5 @@ example = os.path.join(
 
 def test_example():
     os.chdir(example)
-    assert os.system(f"{sys.executable} -m index only-print") == 0
-    assert os.system(f"{sys.executable} -m index test --throw") == 0
+    assert os.system(f"{sys.executable} -m indexpy only-print") == 0
+    assert os.system(f"{sys.executable} -m indexpy test --throw") == 0

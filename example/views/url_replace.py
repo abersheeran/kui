@@ -1,6 +1,6 @@
-from index import Config
-from index.view import View
-from index.test import TestView
+from indexpy import Config
+from indexpy.view import View
+from indexpy.test import TestView
 
 
 class HTTP(View):

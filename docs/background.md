@@ -5,8 +5,8 @@
 参考 starlette 的 `background` 设计，Index 提供了更简单可用的使用方法。
 
 ```python
-from index.view import View
-from index.background import after_response
+from indexpy.view import View
+from indexpy.background import after_response
 
 
 @after_response

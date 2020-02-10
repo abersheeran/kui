@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from index.concurrency import complicating, keepasync
+from indexpy.concurrency import complicating, keepasync
 
 
 @pytest.mark.asyncio

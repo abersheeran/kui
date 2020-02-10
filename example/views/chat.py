@@ -1,7 +1,7 @@
-from index.view import View, SocketView
-from index.responses import TemplateResponse
-from index.utils import Singleton
-from index.test import TestView
+from indexpy.view import View, SocketView
+from indexpy.responses import TemplateResponse
+from indexpy.utils import Singleton
+from indexpy.test import TestView
 
 
 class HTTP(View):

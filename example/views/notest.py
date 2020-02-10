@@ -1,4 +1,4 @@
-from index.view import View
+from indexpy.view import View
 
 
 class HTTP(View):

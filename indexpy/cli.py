@@ -2,13 +2,16 @@ import os
 import sys
 import time
 import signal
+import logging
+import importlib
 import subprocess
 from multiprocessing import cpu_count
 
 import click
 import uvicorn
 
-from .config import LOG_LEVELS, config, logger
+from .utils import _import_module
+from .config import LOG_LEVELS, config
 from .applications import Index
 from .test import cmd_test
 from .autoreload import cmd_check
@@ -37,10 +40,13 @@ def execute(command: str):
 @click.option("--debug/--no-debug", default=config.DEBUG, help="set config.DEBUG")
 def main(env, debug):
     # change config
-    config["env"] = env
-    config["debug"] = debug
+    config["env"] = env  # type: ignore
+    Index().debug = debug
     # set index logger level
-    logger.setLevel(LOG_LEVELS[config.log_level])
+    logging.getLogger("index").setLevel(LOG_LEVELS[config.log_level])
+    # loading preset functions
+    importlib.import_module("indexpy.preset")
+    _import_module("main")
 
 
 @main.command(help="use only uvicorn to deploy")
@@ -51,7 +57,9 @@ def serve():
         port=config.PORT,
         log_level=config.LOG_LEVEL,
         debug=config.DEBUG,
+        interface="asgi3",
         lifespan="on",
+        reload=config.AUTORELOAD,
     )
 
 
@@ -72,6 +80,7 @@ def gunicorn(workers, daemon, configuration, method):
             f" --log-level {config.LOG_LEVEL}"
             f"{' -D --log-file log.index' if daemon else ''}"
             f" -w {workers}"
+            f" --reload {config.AUTORELOAD}"
             f"{' -c ' + configuration if configuration else ''}"
             f" index:app"
         )
@@ -84,3 +93,5 @@ def gunicorn(workers, daemon, configuration, method):
 
 main.command(name="test", help="run test")(cmd_test)
 main.command(name="check", help="check .py file in program")(cmd_check)
+
+_import_module("commands")

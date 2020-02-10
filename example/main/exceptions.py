@@ -1,6 +1,6 @@
-from index import app
-from index.types import Request, Response
-from index.responses import PlainTextResponse
+from indexpy import app
+from indexpy.types import Request, Response
+from indexpy.responses import PlainTextResponse
 from starlette.exceptions import HTTPException
 
 

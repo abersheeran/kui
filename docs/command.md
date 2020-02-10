@@ -86,7 +86,7 @@ Index 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令支
 在项目根目录下的 `commands.py` 里写入以下内容
 
 ```python
-from index.cli import main
+from indexpy.cli import main
 
 
 @main.command(help='Custom command')

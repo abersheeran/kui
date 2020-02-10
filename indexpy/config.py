@@ -18,9 +18,6 @@ LOG_LEVELS = {
 }
 
 
-logger: logging.Logger = logging.getLogger("index")
-
-
 class ConfigError(Exception):
     pass
 
@@ -152,6 +149,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["port"] = 4190
         self["log_level"] = "info"
         self["hotreload"] = True
+        self["autoreload"] = False
         # url
         self["allow_underline"] = False
         # middleware
@@ -195,8 +193,8 @@ class Config(UpperDict, metaclass=Singleton):
 
     def get(self, key, default=None) -> typing.Any:
         env = super().get(self["env"], {})
-        value = env.get(key, None)
-        if value is None:
+        value = env.get(key, ...)
+        if value is ...:
             value = super().get(key, default)
         return value
 

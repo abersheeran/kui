@@ -1,7 +1,7 @@
 import os
-from index import app
-from index.__version__ import __version__
-from index.openapi.application import OpenAPI
+from indexpy import app
+from indexpy.__version__ import __version__
+from indexpy.openapi.application import OpenAPI
 
 from wsgi_example import wsgi
 

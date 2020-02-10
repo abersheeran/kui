@@ -10,7 +10,7 @@ from requests import Response
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
 from starlette.types import ASGIApp
 
-from .config import config, logger, LOG_LEVELS
+from .config import config, LOG_LEVELS
 
 
 class TestClient:
@@ -86,13 +86,15 @@ class TestView:
 )
 @click.argument("path", default="--all")
 def cmd_test(throw: bool, path: str):
-    from .applications import Filepath
+    from .applications import Index, Filepath
+
+    app = Index()
 
     logging.basicConfig(
         format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n>: %(message)s',
         level=LOG_LEVELS[config.log_level],
     )
-    logger.setLevel(logging.DEBUG)
+    logging.getLogger("index").setLevel(logging.DEBUG)
 
     has_exception = False
 

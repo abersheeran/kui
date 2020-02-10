@@ -13,11 +13,11 @@ classifiers=[
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 packages = [
-    { include = "index" },
+    { include = "indexpy" },
 ]
 
 [tool.poetry.scripts]
-index-cli = "index.cli:main"
+index-cli = "indexpy.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.6"

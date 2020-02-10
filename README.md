@@ -29,7 +29,7 @@ pip install -U git+https://github.com/abersheeran/index.py
 ## Hello world
 
 ```python
-from index.view import View
+from indexpy.view import View
 
 
 class HTTP(View):

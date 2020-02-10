@@ -54,7 +54,7 @@ except NameError:
 将下面的代码写入 `index.py` 里。
 
 ```python
-from index.view import View
+from indexpy.view import View
 
 
 class HTTP(View):

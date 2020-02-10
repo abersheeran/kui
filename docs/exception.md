@@ -1,13 +1,13 @@
 对于一些故意抛出的异常或者特定的 HTTP 状态码，Index 提供了方法进行统一处理。
 
-在项目根目录创建一个名为 `exceptions.py` 的文件写入代码。
+在项目根目录创建一个名为 `main/exceptions.py` 的文件写入代码，并在 `main/__init__.py` 写入一行 `from . import exceptions`。
 
 以下为样例：
 
 ```python
-from index import app
-from index.types import Request, Response
-from index.responses import PlainTextResponse
+from indexpy import app
+from indexpy.types import Request, Response
+from indexpy.responses import PlainTextResponse
 from starlette.exceptions import HTTPException
 
 

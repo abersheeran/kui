@@ -69,6 +69,8 @@ def _reload(abspath: str) -> None:
 
 class MonitorFileEventHandler(FileSystemEventHandler):
     def dispatch(self, event: FileSystemEvent):
+        if not config.HOTRELOAD or config.AUTORELOAD:
+            return
         if not event.src_path.endswith(".py"):
             return
         return super().dispatch(event)

@@ -1,5 +1,4 @@
-from index import app
-from index.config import logger
+from indexpy import app, logger
 
 
 @app.on_event("startup")

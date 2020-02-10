@@ -2,10 +2,10 @@
 
 ## 使用 mount
 
-在项目根目录下建立 `mounts.py` 文件，在其中挂载其他 app。
+在项目根目录下建立 `main/mounts.py` 文件，在其中挂载其他 app。并在 `main/__init__.py` 写入一行 `from . import mounts`。
 
 ```python
-from index import app
+from indexpy import app
 
 from otherprogram import app as otherprogram_app
 from anotherprogram import app as anotherprogram_app

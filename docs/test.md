@@ -12,7 +12,7 @@ Test Client 的 HTTP 请求部分是基于 requests，保持了 requests 的所�
 ```python
 # example/views/index.py
 
-from index.test import TestView
+from indexpy.test import TestView
 ...
 
 

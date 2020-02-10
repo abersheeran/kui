@@ -1,5 +1,7 @@
+"""
+Load some preset functions into Index
+"""
 import os
-import sys
 from typing import Optional
 
 from starlette.staticfiles import StaticFiles
@@ -9,8 +11,6 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from .config import config
 from .autoreload import MonitorFile
 from .applications import Index
-
-sys.path.insert(0, config.path)
 
 app = Index()
 
@@ -25,20 +25,22 @@ if config.FORCE_SSL:
 
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
 
-if config.HOTRELOAD:
-    monitor: Optional[MonitorFile] = None
 
-    @app.on_event("startup")
-    def check_on_startup() -> None:
-        # monitor file event
-        global monitor
-        monitor = MonitorFile(config.path)
+monitor: Optional[MonitorFile] = None
 
-    @app.on_event("shutdown")
-    def clear_check_on_shutdown() -> None:
-        global monitor
-        if monitor is not None:
-            monitor.stop()
+
+@app.on_event("startup")
+def check_on_startup() -> None:
+    # monitor file event
+    global monitor
+    monitor = MonitorFile(config.path)
+
+
+@app.on_event("shutdown")
+def clear_check_on_shutdown() -> None:
+    global monitor
+    if monitor is not None:
+        monitor.stop()
 
 
 @app.on_event("startup")

@@ -1,5 +1,5 @@
-from index.openapi.functions import describe, partial
-from index.openapi.models import Model, Field
+from indexpy.openapi.functions import describe, partial
+from indexpy.openapi.models import Model, Field
 
 
 def test_describe():

@@ -1,7 +1,7 @@
 from typing import Union, List
 
-from index.openapi.schema import replace_definitions
-from index.openapi import models
+from indexpy.openapi.schema import replace_definitions
+from indexpy.openapi import models
 
 
 def test_schema_models():

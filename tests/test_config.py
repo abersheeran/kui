@@ -1,4 +1,4 @@
-from index.config import Config, ConfigError
+from indexpy.config import Config, ConfigError
 
 
 def test_config():

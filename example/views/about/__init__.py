@@ -1,5 +1,5 @@
-from index.middleware import MiddlewareMixin
-from index.config import logger
+from indexpy.middleware import MiddlewareMixin
+from indexpy import logger
 
 
 class Middleware(MiddlewareMixin):

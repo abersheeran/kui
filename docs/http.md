@@ -57,8 +57,8 @@
     子中间件的执行顺序是从右到左。
 
 ```python
-from index.middleware import MiddlewareMixin
-from index.config import logger
+from indexpy.middleware import MiddlewareMixin
+from indexpy.config import logger
 
 
 class ExampleChildMiddleware(MiddlewareMixin):
@@ -104,8 +104,8 @@ class Middleware(MiddlewareMixin):
 Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
 
 ```python
-from index.view import View
-from index.responses import TemplateResponse
+from indexpy.view import View
+from indexpy.responses import TemplateResponse
 
 
 class HTTP(View):
@@ -128,7 +128,7 @@ class HTTP(View):
 以下是一个处理 `dict` 类型的返回值的例子。
 
 ```python
-from index.responses import automatic
+from indexpy.responses import automatic
 
 
 @automatic.register(dict)
@@ -144,7 +144,7 @@ def _automatic(
 再接着看下面这个类
 
 ```python
-from index.view import View
+from indexpy.view import View
 
 
 class HTTP(View):

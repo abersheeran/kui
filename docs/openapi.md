@@ -5,11 +5,11 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 !!! tip
     如果你不想要查看生成的文档，那么这一步不是必须的。
 
-在 `mounts.py` 中写入如下内容，可将 `index.openapi.application.OpenAPI` 挂载进 index 中。
+将 `index.openapi.application.OpenAPI` 挂载进 index 中。
 
 ```python
-from index import app
-from index.openapi.application import OpenAPI
+from indexpy import app
+from indexpy.openapi.application import OpenAPI
 
 app.mount(
     "/openapi",
@@ -38,10 +38,10 @@ app.mount(
 当请求不满足编写的 Model 限制的条件时，Index 将直接返回 400 以及对应的错误信息，请求不会到达视图函数，但你可以在路径上的任意一个中间件中捕捉这类返回。
 
 ```python
-from index.view import View
-from index.test import TestView
-from index.responses import TemplateResponse
-from index.openapi import models, describe
+from indexpy.view import View
+from indexpy.test import TestView
+from indexpy.responses import TemplateResponse
+from indexpy.openapi import models, describe
 
 
 class Hello(models.Model):
@@ -82,10 +82,10 @@ class HTTP(View):
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。
 
 ```python
-from index.view import View
-from index.test import TestView
-from index.responses import TemplateResponse
-from index.openapi import models, describe
+from indexpy.view import View
+from indexpy.test import TestView
+from indexpy.responses import TemplateResponse
+from indexpy.openapi import models, describe
 
 
 class Hello(models.Model):

@@ -1,9 +1,7 @@
-from asyncio import sleep
-
-from index.view import View
-from index.test import TestView
-from index.background import after_response, finished_response
-from index.config import logger
+from indexpy.view import View
+from indexpy.test import TestView
+from indexpy.background import after_response, finished_response
+from indexpy import logger
 
 
 @after_response
