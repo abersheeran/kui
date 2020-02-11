@@ -40,7 +40,7 @@ def execute(command: str):
 @click.option("--debug/--no-debug", default=config.DEBUG, help="set config.DEBUG")
 def main(env, debug):
     # change config
-    config["env"] = env  # type: ignore
+    config["env"] = env
     Index().debug = debug
     # set index logger level
     logging.getLogger("index").setLevel(LOG_LEVELS[config.log_level])
@@ -52,11 +52,10 @@ def main(env, debug):
 @main.command(help="use only uvicorn to deploy")
 def serve():
     uvicorn.run(
-        Index(),
+        "indexpy:app",
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,
-        debug=config.DEBUG,
         interface="asgi3",
         lifespan="on",
         reload=config.AUTORELOAD,
