@@ -19,7 +19,7 @@ from .autoreload import cmd_check
 from .__version__ import __version__
 
 
-def execute(command: List[str]) -> None:
+def execute(command: List[str]) -> int:
     click.echo("Execute command: ", nl=False)
     click.secho(" ".join(command), fg="green")
 
@@ -34,6 +34,8 @@ def execute(command: List[str]) -> None:
 
     while process.poll() is None:
         time.sleep(1)
+
+    return process.poll()
 
 
 @click.group(help=f"Index.py {__version__}")
