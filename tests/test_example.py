@@ -23,6 +23,9 @@ def test_gunicorn():
     )
     time.sleep(3)  # wait application startup
     process.terminate()
-    while process.poll() is None or process.poll() < 0:
+    while process.poll() is None:
         time.sleep(1)
+    for _ in range(5):
+        if process.poll() < 0:
+            time.sleep(1)
     assert process.wait() == 0
