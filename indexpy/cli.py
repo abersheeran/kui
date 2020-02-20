@@ -79,7 +79,7 @@ def gunicorn(workers, daemon, configuration, method):
             f" --log-level {config.LOG_LEVEL}"
             f"{' -D --log-file log.index' if daemon else ''}"
             f" -w {workers}"
-            f" {'--reload ' if config.AUTORELOAD}"
+            f" {'--reload' if config.AUTORELOAD else ''}"
             f"{' -c ' + configuration if configuration else ''}"
             f" indexpy:app"
         )
