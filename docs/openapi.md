@@ -5,7 +5,7 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 !!! tip
     如果你不想要查看生成的文档，那么这一步不是必须的。
 
-将 `index.openapi.application.OpenAPI` 挂载进 index 中。
+将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。
 
 ```python
 from indexpy import app

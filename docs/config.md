@@ -1,4 +1,4 @@
-Index.py 内置的配置类 `index.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
+Index.py 内置的配置类 `indexpy.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
 
 所有配置都是大小写无关的，但推荐在程序中使用大写。
 

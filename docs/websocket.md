@@ -2,7 +2,7 @@
 
 Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射到 URI 的设计。
 
-稍有不同的是 Websocket 的处理类，需要从 `index.view.SocketView` 继承而来，类名必须是 `Socket`。
+稍有不同的是 Websocket 的处理类，需要从 `indexpy.view.SocketView` 继承而来，类名必须是 `Socket`。
 
 它有一个类属性：`encoding`，此属性有三个可用值——`"text"`、`"bytes"`、`"json"`，将决定接收到的 websocket 数据以何种编码被解析。
 

@@ -14,7 +14,7 @@
 |views/api/create_article.py|/api/create-article
 |views/article/index.py|/article/
 
-`HTTP` 的类应从 `index.view.View` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
+`HTTP` 的类应从 `indexpy.view.View` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
 
 - get
 - post
@@ -36,7 +36,7 @@
 
 譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/*` 的请求。
 
-`Middleware` 需要继承 `index.middleware.MiddlewareMixin`，有以下两个方法可以重写。
+`Middleware` 需要继承 `indexpy.middleware.MiddlewareMixin`，有以下两个方法可以重写。
 
 1. `process_request(request)`
 
