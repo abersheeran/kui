@@ -5,6 +5,7 @@ import signal
 import logging
 import importlib
 import subprocess
+from typing import List
 from multiprocessing import cpu_count
 
 import click
@@ -18,11 +19,11 @@ from .autoreload import cmd_check
 from .__version__ import __version__
 
 
-def execute(command: str):
+def execute(command: List[str]) -> None:
     click.echo("Execute command: ", nl=False)
-    click.secho(command, fg="green")
+    click.secho(" ".join(command), fg="green")
 
-    process = subprocess.Popen(command)
+    process = subprocess.Popen(" ".join(command), shell=True)
 
     def sigterm_handler(signo, frame):
         process.terminate()
@@ -71,23 +72,27 @@ def gunicorn(workers, daemon, configuration, method):
     if sys.platform in ("win32", "cygwin", "msys"):
         raise RuntimeError("gunicorn can't run on windows system.")
     if method == "start":
-        command = (
-            f"gunicorn -k uvicorn.workers.UvicornWorker"
-            f" --bind {config.HOST}:{config.PORT}"
-            f" --chdir {config.path}"
-            f" --pid {os.path.join(config.path, '.pid')}"
-            f" --log-level {config.LOG_LEVEL}"
-            f"{' -D --log-file log.index' if daemon else ''}"
-            f" -w {workers}"
-            f" {'--reload' if config.AUTORELOAD else ''}"
-            f"{' -c ' + configuration if configuration else ''}"
-            f" indexpy:app"
-        )
+        command = [
+            "gunicorn -k uvicorn.workers.UvicornWorker",
+            f"--bind {config.HOST}:{config.PORT}",
+            f"--chdir {config.path}",
+            f"--workers {workers}",
+            f"--pid {os.path.join(config.path, '.pid')}",
+            f"--log-level {config.LOG_LEVEL}",
+        ]
+        if daemon:
+            command.append("-D --log-file log.index")
+        if config.AUTORELOAD:
+            command.append("--reload")
+        if configuration:
+            command.append("-c " + configuration)
+        command.append("indexpy:app")
+
         execute(command)
     elif method == "stop":
-        execute("kill -TERM `cat .pid`")
+        execute(["kill -TERM", "`cat .pid`"])
     elif method == "reload":
-        execute("kill -HUP `cat .pid`")
+        execute(["kill -HUP", "`cat .pid`"])
 
 
 main.command(name="test", help="run test")(cmd_test)
