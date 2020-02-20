@@ -81,7 +81,7 @@ def gunicorn(workers, daemon, configuration, method):
             f" -w {workers}"
             f" --reload {config.AUTORELOAD}"
             f"{' -c ' + configuration if configuration else ''}"
-            f" index:app"
+            f" indexpy:app"
         )
         execute(command)
     elif method == "stop":
