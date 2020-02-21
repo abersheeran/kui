@@ -10,7 +10,7 @@ from indexpy.responses import (
     YAMLResponse,
     HTMLResponse,
 )
-from indexpy.applications import Filepath
+from indexpy.applications import IndexFile
 
 from .schema import schema_parameters, schema_request_body, schema_response
 
@@ -45,7 +45,7 @@ class OpenAPI:
         ]
 
         paths: dict = openapi["paths"]  # type: ignore
-        for view, path in Filepath.get_views():
+        for view, path in IndexFile.get_views():
             if not hasattr(view, "HTTP"):
                 continue
             viewclass = getattr(view, "HTTP")

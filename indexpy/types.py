@@ -1,4 +1,12 @@
-from typing import MutableMapping, Any, Tuple, Union, Awaitable, Callable, Iterable
+from typing import (
+    MutableMapping,
+    Any,
+    Tuple,
+    Union,
+    Awaitable,
+    Callable,
+    Iterable,
+)
 
 from starlette.requests import Request
 from starlette.responses import Response

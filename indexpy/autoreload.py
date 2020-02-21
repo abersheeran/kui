@@ -9,7 +9,7 @@ import importlib
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
 
-from .config import config
+from .config import here, Config
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def check(filepath: str) -> typing.Iterable[typing.Tuple[int, str]]:
     with open(filepath, encoding="UTF-8") as file:
         for index, line in enumerate(file.readlines()):
             for path in IMPORT_PATTERN.findall(line):
-                abspath = os.path.join(config.path, path.replace(".", "/")) + ".py"
+                abspath = os.path.join(here, path.replace(".", "/")) + ".py"
                 if os.path.isfile(abspath):
                     yield index, line.strip()
 
@@ -47,7 +47,7 @@ def _import(abspath: str, nosleep: bool = False):
         time.sleep(1.3)
         if not os.path.exists(abspath):
             return
-    relpath = os.path.relpath(abspath, config.path).replace("\\", "/")[:-3]
+    relpath = os.path.relpath(abspath, here).replace("\\", "/")[:-3]
     # check import
     for error_line_num, error_sentence in check(abspath):
         e = ImportTypeError(f"{relpath}.py line {error_line_num}", error_sentence)
@@ -69,6 +69,7 @@ def _reload(abspath: str) -> None:
 
 class MonitorFileEventHandler(FileSystemEventHandler):
     def dispatch(self, event: FileSystemEvent):
+        config = Config()
         if not config.HOTRELOAD or config.AUTORELOAD:
             return
         if not event.src_path.endswith(".py"):
@@ -98,7 +99,7 @@ class MonitorFile:
 
 
 def cmd_check():
-    for root, _, files in os.walk(config.path):
+    for root, _, files in os.walk(here):
         for file in files:
             if not file.endswith(".py"):
                 continue

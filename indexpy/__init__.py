@@ -1,13 +1,12 @@
 import sys
 import logging
 
-from .config import Config
 from .applications import Index
+from .config import here, Config
 
 app = Index()
-config = Config()
 logger = logging.getLogger("index")
 
-sys.path.insert(0, config.path)
+sys.path.insert(0, here)
 
 __all__ = ["logger", "Index", "Config"]

@@ -17,6 +17,8 @@ LOG_LEVELS = {
     "debug": logging.DEBUG,
 }
 
+here = os.getcwd()
+
 
 class ConfigError(Exception):
     pass
@@ -71,34 +73,18 @@ class UpperDict:
     def __getitem__(self, key: str) -> typing.Any:
         return self.__dict[key.upper()]
 
-    def __getattr__(self, name: str) -> typing.Any:
-        try:
-            value = self.get(name, ...)
-            if value is ...:
-                raise KeyError()
-            return value
-        except KeyError:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{name}'"
-            )
+    def __delitem__(self, key: str) -> None:
+        del self.__dict[key.upper()]
+
+    def update(self, data: dict) -> None:
+        for key in data.keys():
+            self[key] = data[key]
 
     def get(self, key: str, default=None) -> typing.Any:
         try:
             return self[key]
         except KeyError:
             return default
-
-
-def _import_environ() -> typing.Dict:
-    result: typing.Dict[str, typing.Any] = {}
-
-    if os.environ.get("INDEX_DEBUG"):
-        result["debug"] = os.environ.get("INDEX_DEBUG") in ("on", "True")
-
-    if os.environ.get("INDEX_ENV"):
-        result["env"] = os.environ.get("INDEX_ENV")
-
-    return result
 
 
 class Config(UpperDict, metaclass=Singleton):
@@ -108,12 +94,7 @@ class Config(UpperDict, metaclass=Singleton):
         # read config from file
         self.import_from_file()
         # read config from environ
-        self.update(_import_environ())
-
-    @property
-    def path(self) -> str:
-        """return os.getcwd()"""
-        return os.getcwd()
+        self.import_from_environ()
 
     def import_from_file(self) -> None:
         filename = None
@@ -140,6 +121,17 @@ class Config(UpperDict, metaclass=Singleton):
 
         self.update(data)
 
+    def import_from_environ(self) -> None:
+        result: typing.Dict[str, typing.Any] = {}
+
+        if os.environ.get("INDEX_DEBUG"):
+            result["debug"] = os.environ.get("INDEX_DEBUG") in ("on", "True")
+
+        if os.environ.get("INDEX_ENV"):
+            result["env"] = os.environ.get("INDEX_ENV")
+
+        self.update(result)
+
     def setdefault(self) -> None:
         """set default value"""
 
@@ -163,9 +155,16 @@ class Config(UpperDict, metaclass=Singleton):
         self["cors_expose_headers"] = ()
         self["cors_max_age"] = 600
 
-    def update(self, data: dict) -> None:
-        for key in data.keys():
-            self[key] = data[key]
+    def __getattr__(self, name: str) -> typing.Any:
+        try:
+            value = self.get(name, ...)
+            if value is ...:
+                raise KeyError()
+            return value
+        except KeyError:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
         if name == f"_UpperDict__dict":
@@ -197,6 +196,3 @@ class Config(UpperDict, metaclass=Singleton):
         if value is ...:
             value = super().get(key, default)
         return value
-
-
-config = Config()

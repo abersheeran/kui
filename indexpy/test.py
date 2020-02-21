@@ -10,7 +10,7 @@ from requests import Response
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
 from starlette.types import ASGIApp
 
-from .config import config, LOG_LEVELS
+from .config import here, LOG_LEVELS, Config
 
 
 class TestClient:
@@ -86,13 +86,13 @@ class TestView:
 )
 @click.argument("path", default="--all")
 def cmd_test(throw: bool, path: str):
-    from .applications import Index, Filepath
+    from .applications import Index, IndexFile
 
     app = Index()
 
     logging.basicConfig(
         format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n>: %(message)s',
-        level=LOG_LEVELS[config.log_level],
+        level=LOG_LEVELS[Config().log_level],
     )
     logging.getLogger("index").setLevel(logging.DEBUG)
 
@@ -120,9 +120,7 @@ def cmd_test(throw: bool, path: str):
                 traceback.print_exc()
                 has_exception = True
 
-    with open(
-        os.path.join(config.path, "index.test.log"), "w+", encoding="utf8"
-    ) as logfile:
+    with open(os.path.join(here, "index.test.log"), "w+", encoding="utf8") as logfile:
         # hack sys.stdout/stderr to log file
         stdout_write = sys.stdout.write
         stderr_write = sys.stderr.write
@@ -159,7 +157,7 @@ def cmd_test(throw: bool, path: str):
         try:
             with TestClient(app):
                 if path == "--all":
-                    for view, uri in Filepath.get_views():
+                    for view, uri in IndexFile.get_views():
                         if not hasattr(view, "Test"):
                             printf(uri, fg="blue", nl=False)
                             printf(f" No Test?", fg="yellow")
@@ -169,7 +167,7 @@ def cmd_test(throw: bool, path: str):
                 else:
                     printf(f"{path}", fg="blue")
                     run_test(
-                        Filepath.get_view(path.split(".")[0]),  # module
+                        IndexFile.get_view(path.split(".")[0]),  # module
                         path.split(".")[0],  # uri
                         path.split(".")[1] if len(path.split(".")) == 2 else None,
                     )
