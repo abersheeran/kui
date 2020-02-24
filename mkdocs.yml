@@ -12,6 +12,8 @@ repo_url: https://github.com/abersheeran/index.py
 edit_uri: "https://github.com/abersheeran/index.py/tree/master/docs/"
 
 nav:
+  - Index.py:
+    - 介绍: "index.md"
   - Get Start:
     - First Step: 'firststep/index.md'
     - Must know: 'firststep/mustknow.md'

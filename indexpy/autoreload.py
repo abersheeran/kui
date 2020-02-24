@@ -55,7 +55,10 @@ def _import(abspath: str, nosleep: bool = False):
     # loading
     if relpath.endswith("/__init__"):
         relpath = relpath[: -len("/__init__")]
-    return importlib.import_module(relpath.replace("/", "."))
+    try:
+        return importlib.import_module(relpath.replace("/", "."))
+    except SyntaxError:
+        logger.debug(f"load fail {abspath}")
 
 
 def _reload(abspath: str) -> None:
