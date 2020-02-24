@@ -74,12 +74,16 @@ class HTTP(View):
         return {"message": body.dict()}, 200, {"server": "index.py"}
 ```
 
+### 描述上传文件
+
+由于 [pydantic](https://pydantic-docs.helpmanual.io/usage/types/) 中没有上传文件类型，所以当需要描述文件上传的 model 时，需要使用 `indexpy.openapi.types.File` 来进行类型标注。
+
 ## 绑定响应
 
 为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串。
 
 !!! notice
-    此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。
+    此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
 
 ```python
 from indexpy.view import View

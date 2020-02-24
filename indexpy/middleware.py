@@ -10,13 +10,13 @@ from .types import HTTPFunc
 
 class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):  # type: ignore
 
-    ChildMiddlewares: typing.Iterable[typing.Callable] = ()
+    ChildMiddlewares: typing.Sequence[typing.Callable] = ()
 
     def __init__(self, get_response: HTTPFunc) -> None:
         self.get_response = self.mount_middleware(get_response)
 
     def mount_middleware(self, get_response: HTTPFunc) -> HTTPFunc:
-        for base_middleware in self.ChildMiddlewares:
+        for base_middleware in reversed(self.ChildMiddlewares):
             get_response = base_middleware(get_response)
         return get_response
 

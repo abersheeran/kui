@@ -2,25 +2,39 @@ site_name: Index.py
 site_description: 一个基于 ASGI 协议的异步 Web 框架.
 
 theme:
-    name: 'material'
-    language: 'zh'
+  name: 'material'
+  language: 'zh'
+  feature:
+    tabs: true
 
 repo_name: abersheeran/index.py
 repo_url: https://github.com/abersheeran/index.py
-edit_uri: ""
+edit_uri: "https://github.com/abersheeran/index.py/tree/master/docs/"
 
 nav:
-  - Get Start: 'index.md'
-  - Configuration: 'config.md'
-  - HTTP: 'http.md'
-  - WebSocket: 'websocket.md'
-  - Test: 'test.md'
-  - Mount: 'mount.md'
-  - Exception: 'exception.md'
-  - Lifespan: 'event.md'
-  - Command: 'command.md'
-  - Background: 'background.md'
-  - OpenAPI: 'openapi.md'
+  - Get Start:
+    - First Step: 'firststep/index.md'
+    - Must know: 'firststep/mustknow.md'
+  - Configuration:
+    - Configuration: 'config/index.md'
+    - Available value: 'config/list.md'
+  - HTTP:
+    - HTTP: 'http/http.md'
+    - Response: 'http/response.md'
+    - Middleware: 'http/middleware.md'
+    - OpenAPI: 'http/openapi.md'
+    - Exception: 'exception.md'
+    - Background: 'http/background.md'
+  - WebSocket:
+    - 'websocket.md'
+  - Lifespan:
+    - 'event.md'
+  - Test:
+    - 'test.md'
+  - Mount:
+    - 'mount.md'
+  - Command:
+    - 'command.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:

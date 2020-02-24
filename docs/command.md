@@ -33,14 +33,14 @@ index-cli --env "test" test
     通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。
 
         ❯ index-cli gunicorn --help
-        Usage: index-cli gunicorn [OPTIONS] METHOD
+        Usage: index-cli gunicorn [OPTIONS] [start|stop|reload] [APPLICATION]
 
         deploy by gunicorn
 
         Options:
         -w, --workers INTEGER
         -d, --daemon
-        -c, --configuration TEXT
+        -c, --configuration FILE
         --help                    Show this message and exit.
 
     你可以通过 `--workers` 选项指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。

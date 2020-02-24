@@ -3,6 +3,7 @@ from typing import Any, List, Dict, Optional, Iterable, Mapping, Union
 
 import yaml
 
+from .types import File
 from .models import Model
 
 
@@ -80,9 +81,18 @@ def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
     if body is None:
         return None
 
+    _schema = {"schema": replace_definitions(body.schema())}
+
+    for field in body.__fields__.values():
+        if field.type_ == File:
+            return {
+                "required": True,
+                "content": {"multipart/form-data": _schema},
+            }
+
     return {
         "required": True,
-        "content": {"application/json": {"schema": replace_definitions(body.schema())}},
+        "content": {"application/json": _schema},
     }
 
 

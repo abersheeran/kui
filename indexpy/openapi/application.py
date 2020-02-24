@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 from inspect import signature
 
@@ -131,6 +132,11 @@ class OpenAPI:
     async def template(self, request: Request) -> Response:
         if self.html_template:
             return HTMLResponse(self.html_template)
+
+        with open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "template.html")
+        ) as file:
+            DEFAULT_TEMPLATE = file.read()
         return HTMLResponse(DEFAULT_TEMPLATE)
 
     async def docs(self, request: Request) -> Response:
@@ -140,27 +146,3 @@ class OpenAPI:
         if media_type == "json":
             return JSONResponse(openapi)
         return YAMLResponse(openapi)
-
-
-DEFAULT_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>OpenAPI power by Index.py</title>
-    <!-- needed for adaptive design -->
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <redoc spec-url='get'></redoc>
-    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
-  </body>
-</html>
-"""
