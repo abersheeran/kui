@@ -6,7 +6,7 @@ from typing import Optional
 
 from starlette.staticfiles import StaticFiles
 
-from .config import here, Config
+from .config import here
 from .autoreload import MonitorFile
 from .applications import Index
 

@@ -55,15 +55,13 @@ def main(env, debug):
     Index().rebuild_app()
     # set index logger level
     logging.getLogger("index").setLevel(LOG_LEVELS[config.log_level])
-    # loading preset functions
-    importlib.import_module("indexpy.preset")
-    _import_module("main")
 
 
 @main.command(help="use only uvicorn to deploy")
-def serve():
+@click.argument("application", default="indexpy:app")
+def serve(application):
     uvicorn.run(
-        "indexpy:app",
+        application,
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL,

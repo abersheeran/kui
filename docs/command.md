@@ -24,13 +24,13 @@ index-cli --env "test" test
 
 * `index-cli serve`
 
-    能启动一个单进程服务，在安装了 uvloop 的环境下使用 uvloop。否则在 Windows 上它使用 [IOCP](https://docs.python.org/3/library/asyncio-policy.html#asyncio.WindowsProactorEventLoopPolicy)，其他系统上使用 [Selector](https://docs.python.org/3/library/asyncio-policy.html#asyncio.DefaultEventLoopPolicy)。
+    使用 uvicorn 启动 Index.py，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli serve main:app`。
 
 ### index-cli gunicorn
 
 * `index-cli gunicorn start`
 
-    通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。
+    通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。同样的，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli gunicorn start main:app`。
 
         ❯ index-cli gunicorn --help
         Usage: index-cli gunicorn [OPTIONS] [start|stop|reload] [APPLICATION]
@@ -63,7 +63,7 @@ index-cli --env "test" test
 
 * `index-cli test`
 
-    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。执行的详细日志以及错误将被写在项目下 `index.test.log` 文件里。
+    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。执行的详细日志以及错误将被写在项目下 `index.test.log` 文件里。如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli test -app main:app`。
 
     你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试，使用 `index-cli test URI.funcname` 执行指定 URI 下某个指定的测试函数。
 

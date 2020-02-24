@@ -25,16 +25,16 @@ nav:
     - Response: 'http/response.md'
     - Middleware: 'http/middleware.md'
     - OpenAPI: 'http/openapi.md'
-    - Exception: 'exception.md'
+    - Exception: 'http/exception.md'
     - Background: 'http/background.md'
   - WebSocket:
     - 'websocket.md'
   - Lifespan:
     - 'event.md'
-  - Test:
-    - 'test.md'
   - Mount:
     - 'mount.md'
+  - Test:
+    - 'test.md'
   - Command:
     - 'command.md'
 

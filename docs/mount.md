@@ -2,13 +2,13 @@
 
 ## 使用 mount
 
-在项目根目录下建立 `main/mounts.py` 文件，在其中挂载其他 app。并在 `main/__init__.py` 写入一行 `from . import mounts`。
-
 ```python
-from indexpy import app
+from indexpy import Index
 
 from otherprogram import app as otherprogram_app
 from anotherprogram import app as anotherprogram_app
+
+app = Index()
 
 # mount any wsgi application like flask/django
 app.mount("/hello", otherprogram_app, "wsgi")

@@ -8,8 +8,10 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。
 
 ```python
-from indexpy import app
+from indexpy import Index
 from indexpy.openapi.application import OpenAPI
+
+app = Index()
 
 app.mount(
     "/openapi",

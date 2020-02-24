@@ -9,8 +9,13 @@ example = os.path.join(
 def test_example():
     os.chdir(example)
     assert os.system(f"{sys.executable} -m indexpy only-print") == 0
-    assert os.system(f"{sys.executable} -m indexpy test --throw") == 0
+    assert os.system(f"{sys.executable} -m indexpy test -app main:app --throw") == 0
+    assert os.system(f"{sys.executable} -m indexpy test -app main:app / --throw") == 0
+    assert os.system(f"{sys.executable} -m indexpy test -app main:app /about/ --throw") == 0
+    assert os.system(f"{sys.executable} -m indexpy test -app main:app /.test_list_response --throw") == 0
 
+    assert os.path.exists(os.path.join(example, "index.test.log"))
+    os.remove(os.path.join(example, "index.test.log"))
     assert os.path.exists(os.path.join(example, "index.startup"))
     os.remove(os.path.join(example, "index.startup"))
     assert os.path.exists(os.path.join(example, "index.shutdown"))

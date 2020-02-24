@@ -7,6 +7,7 @@ import traceback
 import click
 import requests
 from requests import Response
+from uvicorn.importer import import_from_string
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
 from starlette.types import ASGIApp
 
@@ -84,11 +85,17 @@ class TestView:
     is_flag=True,
     help="If there is an exception, throw it directly.",
 )
+@click.option(
+    "-app",
+    "--application",
+    default="indexpy:app",
+    help="ASGI Application, like: main:app",
+)
 @click.argument("path", default="--all")
-def cmd_test(throw: bool, path: str):
-    from .applications import Index, IndexFile
+def cmd_test(throw: bool, application: str, path: str):
+    from .applications import IndexFile
 
-    app = Index()
+    app = import_from_string(application)
 
     logging.basicConfig(
         format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n>: %(message)s',

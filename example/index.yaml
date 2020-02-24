@@ -1,9 +1,10 @@
 # overwrite default value to this program
+port: 4918
 allowed_hosts: ["localhost"]
 cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
-port: 4191
+
 # use in development
 dev:
     "host": "localhost"

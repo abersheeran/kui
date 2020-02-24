@@ -5,13 +5,13 @@ Index 允许注册若干个事件处理程序，以处理在应用程序启动�
 
 ## 注册事件
 
-在项目根目录下建立 `main/events.py` 写入注册事件的代码，在 `main/__init__.py` 写入一行 `from . import events`。
-
 你可以用装饰器语法注册事件处理程序
 
 ```python
-from indexpy import app
+from indexpy import Index
 from indexpy.config import logger
+
+app = Index()
 
 
 @app.on_event("startup")
@@ -27,9 +27,6 @@ def logger_on_shutdown():
 或者像一个常规函数一样调用
 
 ```python
-from indexpy import app
-
-
 async def open_database_connection_pool():
     ...
 
