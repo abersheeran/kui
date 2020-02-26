@@ -131,6 +131,24 @@ class IndexFile:
         return ".".join(pathlist), abspath
 
     @classmethod
+    def get_uri(cls, filepath: str) -> typing.Optional[str]:
+        """
+        translate file abspath to uri
+        """
+        assert filepath.endswith(".py")
+
+        relpath = os.path.relpath(filepath, os.path.join(here, "views"))
+        if relpath.startswith("."):
+            return None
+
+        uri = relpath.replace("\\", "/")[:-3]
+
+        if uri.endswith("/index"):
+            uri = uri[:-5]
+
+        return uri
+
+    @classmethod
     def get_views(cls) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
         """
         return all (Module, uri)
@@ -150,21 +168,19 @@ class IndexFile:
                 if file == "__init__.py":
                     continue
                 abspath = os.path.join(root, file)
-                relpath = os.path.relpath(abspath, here).replace("\\", "/")
-
-                uri = relpath[len("views") : -3]
-                if uri.endswith("/index"):
-                    uri = uri[:-5]
-
+                uri = cls.get_uri(abspath)
+                if uri is None:
+                    continue
                 module = cls.get_view(uri)
-
+                if module is None:
+                    continue
                 yield module, uri
 
     @classmethod
-    def get_view(cls, uri: str) -> ModuleType:
+    def get_view(cls, uri: str) -> typing.Optional[ModuleType]:
         module_name, filepath = cls.get_path(uri)
         if module_name is None or filepath is None:
-            raise ModuleNotFoundError(uri)
+            return None
         # # Not thread-safe, temporarily commented
         # spec = importlib.util.spec_from_file_location(module_name, filepath)
         # module = importlib.util.module_from_spec(spec)
@@ -177,15 +193,11 @@ class IndexFile:
         request = Request(scope, receive)
         pathlist = self.split_uri(request.url.path)
 
-        try:
-            module = self.get_view(request.url.path)
-        except ModuleNotFoundError:
+        module = self.get_view(request.url.path)
+        if module is None or not hasattr(module, "HTTP"):
             raise HTTPException(404)
 
-        try:
-            get_response = getattr(module, "HTTP")
-        except AttributeError:
-            raise HTTPException(404)
+        get_response = getattr(module, "HTTP")
 
         try:
             # set background tasks contextvar
@@ -218,19 +230,12 @@ class IndexFile:
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = WebSocket(scope, receive=receive, send=send)
 
-        try:
-            module = self.get_view(websocket.url.path)
-        except ModuleNotFoundError:
+        module = self.get_view(websocket.url.path)
+        if module is None or not hasattr(module, "Socket"):
             await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
             return
 
-        try:
-            handler = getattr(module, "Socket")
-        except AttributeError:
-            await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
-            return
-
-        await handler(websocket)
+        await getattr(module, "Socket")(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
