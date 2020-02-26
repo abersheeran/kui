@@ -1,6 +1,5 @@
 import json
 import typing
-import logging
 
 from starlette import status
 from starlette.types import Message
@@ -11,12 +10,23 @@ from pydantic import ValidationError
 
 from .concurrency import keepasync
 from .openapi.functions import partial
-from .values import HTTP_METHOD_NAMES
 
-logger = logging.getLogger(__name__)
+HTTP_METHOD_NAMES = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
 
 
-class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
+ViewMeta = keepasync(*HTTP_METHOD_NAMES)
+
+
+class View(metaclass=ViewMeta):  # type: ignore
     def __init__(self, request: Request) -> None:
         self.request = request
 
@@ -49,9 +59,6 @@ class View(metaclass=keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
         return {"error": exception.errors()}, 400
 
     async def http_method_not_allowed(self) -> Response:
-        logger.warning(
-            f"Method Not Allowed ({self.request.method}): {self.request.url.path}"
-        )
         return Response(
             status_code=405,
             headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"},

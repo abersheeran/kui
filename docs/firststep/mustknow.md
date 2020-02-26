@@ -6,17 +6,10 @@ Index 借助 Python 的 `importlib.reload` 函数，提供了真正的热重载�
 
 传统的 Python Web 开发里，所谓热重载，做的最好的也只是将新进程渐步代替旧进程。而 Index 内置的热重载只在进程内更新代码，没有任何进程的新创建或者死亡。你需要做的，只是更新代码。
 
-由于 Python 的设计，在代码文件被更新前已经在处理的请求，依旧会使用旧代码处理；只有在代码文件更新后的请求，才使用新代码去处理。
+Index 自带的热更新功能并不会强制性的切断当前正在处理的请求，也不会等待请求完成后再更新代码。对于代码文件被更新前已经在处理的请求，依旧会使用旧代码处理；只有在代码文件更新后的请求，才使用新代码去处理。
 
-你最好不要定义可变的全局变量（如：list、dict 等），如果一定要定义，那么请按照下面的格式定义
+你最好不要定义可变的全局变量（如：list、dict 等），如果一定要定义，那么请使用 `indexpy.g` 这一全局变量存储它们。
 
-```python
-try:
-    users
-except NameError:
-    users = []
-```
+**不要直接从其他模块 import 对象**：假设 `utils.db` 模块里有一个对象为 `settings`，那么在其他模块中使用时，应使用 `from utils import db` 代替 `from utils.db import settings`，这是受限于 Python 的 reload 功能。
 
-也不要直接从其他模块 import 对象，假设 `utils.db` 模块里有一个对象为 `settings`，那么在其他模块中使用时，应使用 `from utils import db` 代替 `from utils.db import settings`，这同样是受限于 Python 的 reload 功能。
-
-违反以上两条规则，并不会影响代码的正常运行，但会在热重载时出现问题。除非你愿意每次更新代码，都重启 Index，否则还是遵守为妙。
+违反以上规则，并不会影响代码的正常运行，但会在热重载时出现问题。除非你愿意每次更新代码时都重启 Index，否则还是遵守为妙。

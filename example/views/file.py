@@ -46,3 +46,7 @@ class Test(TestView):
         f = TemporaryFile()
         resp = self.client.post(files={"file": f})
         assert resp.status_code == 200
+
+    def test_post_error(self):
+        resp = self.client.post(data={"file": "nothing"})
+        assert resp.status_code == 400

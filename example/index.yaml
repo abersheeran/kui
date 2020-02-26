@@ -9,7 +9,6 @@ cors_allow_credentials: false
 dev:
     "host": "localhost"
     "debug": true
-    log_level: "debug"
 
 # use in production
 pro:

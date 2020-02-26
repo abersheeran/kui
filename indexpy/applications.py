@@ -10,7 +10,6 @@ from starlette.types import Scope, Receive, Send, ASGIApp
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.requests import URL, Request
 from starlette.websockets import WebSocket, WebSocketClose
-from starlette.routing import NoMatchFound
 from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -108,7 +107,7 @@ class IndexFile:
         if uri.endswith("/"):
             uri += "index"
 
-        filepath = uri[1:].strip(".")
+        filepath = uri.strip("./")
         filepath = filepath.replace("-", "_")
 
         pathlist = filepath.split("/")
@@ -141,7 +140,7 @@ class IndexFile:
         if relpath.startswith("."):
             return None
 
-        uri = relpath.replace("\\", "/")[:-3]
+        uri = "/" + relpath.replace("\\", "/")[:-3]
 
         if uri.endswith("/index"):
             uri = uri[:-5]
@@ -162,11 +161,9 @@ class IndexFile:
             except ValueError:  # file not exists
                 pass
 
-            for file in files:
-                if not file.endswith(".py"):
-                    continue
-                if file == "__init__.py":
-                    continue
+            for file in filter(
+                lambda file: file.endswith(".py") and file != "__init__.py", files
+            ):
                 abspath = os.path.join(root, file)
                 uri = cls.get_uri(abspath)
                 if uri is None:
@@ -247,7 +244,7 @@ class IndexFile:
                 handler = RedirectResponse(
                     url.replace(path=f'{uri[:-len("/index")]}'), status_code=301,
                 )
-            elif not Config().ALLOW_UNDERLINE and "_" in uri:  # Google SEO
+            elif "_" in uri and not Config().ALLOW_UNDERLINE:  # Google SEO
                 handler = RedirectResponse(
                     url.replace(path=f'{uri.replace("_", "-")}'), status_code=301,
                 )
@@ -337,7 +334,7 @@ class Index(metaclass=IndexMeta):
 
     def add_middleware(self, middleware_class: type, **options: typing.Any) -> None:
         self.user_middlewares.insert(0, Middleware(middleware_class, **options))
-        self.asgiapp = self.build_app()
+        self.rebuild_app()
 
     def add_exception_handler(
         self,
@@ -345,7 +342,7 @@ class Index(metaclass=IndexMeta):
         handler: typing.Callable,
     ) -> None:
         self.exception_handlers[exc_class_or_status_code] = handler
-        self.asgiapp = self.build_app()
+        self.rebuild_app()
 
     def exception_handler(
         self, exc_class_or_status_code: typing.Union[int, typing.Type[Exception]]
@@ -371,7 +368,8 @@ class Index(metaclass=IndexMeta):
             assert not route.endswith("/"), "prefix can't end with '/'"
         if app_type == "wsgi":
             app = WSGIMiddleware(app)
-        self.mount_apps.update({route: app})  # type: ignore
+        app = typing.cast(ASGIApp, app)
+        self.mount_apps.update({route: app})
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] in ("http", "websocket"):

@@ -4,6 +4,11 @@ from indexpy.background import after_response, finished_response
 from indexpy import logger
 
 
+@finished_response
+def onlytest():
+    _ = ...
+
+
 @after_response
 def only_print(message: str) -> None:
     logger.debug(message)
@@ -13,6 +18,7 @@ class HTTP(View):
     async def get(self):
         only_print("world")
         logger.debug("hello")
+        onlytest()
         return ""
 
 

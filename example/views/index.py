@@ -56,15 +56,19 @@ class HTTP(View):
 
 
 class Test(TestView):
-    def test_get(self):
+    def test_get_0(self):
         resp = self.client.get()
         assert resp.status_code == 200
+
+    def test_get_1(self):
         resp = self.client.get(params={"name": "darling"})
         assert resp.status_code == 200
 
-    def test_post(self):
+    def test_post_0(self):
         resp = self.client.post()
         assert resp.status_code == 400
+
+    def test_post_1(self):
         resp = self.client.post(data={"name": "Aber", "text": "message"})
         assert resp.status_code == 200
 

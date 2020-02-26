@@ -1,6 +1,6 @@
+from indexpy import g
 from indexpy.view import View, SocketView
 from indexpy.responses import TemplateResponse
-from indexpy.utils import Singleton
 from indexpy.test import TestView
 
 
@@ -9,18 +9,16 @@ class HTTP(View):
         return TemplateResponse("chat.html", {"request": self.request})
 
 
-try:
-    users
-except NameError:
-    users = []
+if not hasattr(g, "users"):
+    g.users = []
 
 
-class Socket(SocketView, metaclass=Singleton):
+class Socket(SocketView):
 
     encoding = "text"
 
     async def broadcast(self, message):
-        for user in users:
+        for user in g.users:
             await user.send_json(message)
 
     async def on_connect(self):
@@ -29,7 +27,7 @@ class Socket(SocketView, metaclass=Singleton):
         await self.broadcast(
             {"from": "system", "message": f"欢迎{self.websocket.client}入场"}
         )
-        users.append(self.websocket)
+        g.users.append(self.websocket)
 
     async def on_receive(self, data):
         """Override to handle an incoming websocket message"""
@@ -37,7 +35,7 @@ class Socket(SocketView, metaclass=Singleton):
 
     async def on_disconnect(self, close_code):
         """Override to handle a disconnecting websocket"""
-        users.remove(self.websocket)
+        g.users.remove(self.websocket)
         await self.websocket.close(code=close_code)
         await self.broadcast(
             {"from": "system", "message": f"欢送{self.websocket.client}离场"}
@@ -45,6 +43,9 @@ class Socket(SocketView, metaclass=Singleton):
 
 
 class Test(TestView):
+    def test_get_html(self) -> None:
+        assert self.client.get().status_code == 200
+
     def test_chat(self) -> None:
 
         with self.client.websocket_connect() as ws:

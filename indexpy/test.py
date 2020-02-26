@@ -98,7 +98,7 @@ def cmd_test(throw: bool, application: str, path: str):
     app = import_from_string(application)
 
     logging.basicConfig(
-        format='[%(levelname)s] "%(pathname)s", line %(lineno)d, in %(funcName)s\n>: %(message)s',
+        format='[%(levelname)s] "%(pathname)s:%(lineno)d", in %(funcName)s\n>: %(message)s',
         level=LOG_LEVELS[Config().log_level],
     )
     logging.getLogger("index").setLevel(logging.DEBUG)

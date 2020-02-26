@@ -11,7 +11,7 @@ from multiprocessing import cpu_count
 import click
 import uvicorn
 
-from .utils import _import_module
+from .utils import import_module
 from .config import here, LOG_LEVELS, Config
 from .applications import Index
 from .test import cmd_test
@@ -112,4 +112,4 @@ def gunicorn(workers, daemon, configuration, method, application):
 main.command(name="test", help="run test")(cmd_test)
 main.command(name="check", help="check .py file in program")(cmd_check)
 
-_import_module("commands")
+import_module("commands")

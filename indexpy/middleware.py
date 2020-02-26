@@ -8,16 +8,19 @@ from .responses import automatic
 from .types import HTTPFunc
 
 
-class MiddlewareMixin(metaclass=keepasync("process_request", "process_response")):  # type: ignore
+MiddlewareMeta = keepasync("process_request", "process_response")
 
-    ChildMiddlewares: typing.Sequence[typing.Callable] = ()
+
+class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
+
+    mounts: typing.Sequence[typing.Callable] = ()
 
     def __init__(self, get_response: HTTPFunc) -> None:
         self.get_response = self.mount_middleware(get_response)
 
     def mount_middleware(self, get_response: HTTPFunc) -> HTTPFunc:
-        for base_middleware in reversed(self.ChildMiddlewares):
-            get_response = base_middleware(get_response)
+        for middleware in reversed(self.mounts):
+            get_response = middleware(get_response)
         return get_response
 
     async def __call__(self, request: Request) -> Response:

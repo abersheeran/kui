@@ -3,8 +3,8 @@ from indexpy.config import UpperDict, Config, ConfigError
 
 def test_config():
     assert Config() is Config()
-    assert Config().DEBUG is False
-    assert Config().PORT == 4190
+    assert isinstance(Config().DEBUG, bool)
+    assert isinstance(Config().PORT, int)
 
 
 def test_upper_dict():

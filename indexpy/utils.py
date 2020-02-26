@@ -1,4 +1,5 @@
 import os
+import threading
 import importlib
 from types import ModuleType
 from typing import Tuple, Dict, Any, Optional
@@ -17,7 +18,7 @@ class Singleton(type):
         return cls.instance
 
 
-def _import_module(name: str) -> Optional[ModuleType]:
+def import_module(name: str) -> Optional[ModuleType]:
     """
     try importlib.import_module, nothing to do when module not be found.
     """
@@ -26,3 +27,33 @@ def _import_module(name: str) -> Optional[ModuleType]:
     ):
         return importlib.import_module(name)
     return None  # nothing to do when module not be found
+
+
+class State(dict):
+    """
+    An object that can be used to store arbitrary state.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._lock = threading.Lock()
+
+    def __enter__(self):
+        self._lock.acquire()
+        return self
+
+    def __exit__(self, exc_type, value, traceback):
+        self._lock.release()
+
+    def __setattr__(self, name: Any, value: Any) -> None:
+        self[name] = value
+
+    def __getattr__(self, name: Any) -> Any:
+        try:
+            return self[name]
+        except KeyError:
+            message = "'{}' object has no attribute '{}'"
+            raise AttributeError(message.format(self.__class__.__name__, name))
+
+    def __delattr__(self, name: Any) -> None:
+        del self[name]

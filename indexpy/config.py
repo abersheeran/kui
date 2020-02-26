@@ -156,15 +156,12 @@ class Config(UpperDict, metaclass=Singleton):
         self["cors_max_age"] = 600
 
     def __getattr__(self, name: str) -> typing.Any:
-        try:
-            value = self.get(name, ...)
-            if value is ...:
-                raise KeyError()
-            return value
-        except KeyError:
+        value = self.get(name, ...)
+        if value is ...:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
+        return value
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
         if name == f"_UpperDict__dict":

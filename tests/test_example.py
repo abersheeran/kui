@@ -1,22 +1,33 @@
-import os
-import sys
+from click.testing import CliRunner
 
-example = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "example"
-)
+from indexpy.cli import main
 
 
 def test_example():
-    os.chdir(example)
-    assert os.system(f"{sys.executable} -m indexpy only-print") == 0
-    assert os.system(f"{sys.executable} -m indexpy test -app main:app --throw") == 0
-    assert os.system(f"{sys.executable} -m indexpy test -app main:app / --throw") == 0
-    assert os.system(f"{sys.executable} -m indexpy test -app main:app /about/ --throw") == 0
-    assert os.system(f"{sys.executable} -m indexpy test -app main:app /.test_list_response --throw") == 0
+    runner = CliRunner()
+    assert runner.invoke(main, ["only-print"]).output == "Custom command\n"
 
-    assert os.path.exists(os.path.join(example, "index.test.log"))
-    os.remove(os.path.join(example, "index.test.log"))
-    assert os.path.exists(os.path.join(example, "index.startup"))
-    os.remove(os.path.join(example, "index.startup"))
-    assert os.path.exists(os.path.join(example, "index.shutdown"))
-    os.remove(os.path.join(example, "index.shutdown"))
+
+def test_test():
+    runner = CliRunner()
+    assert (
+        runner.invoke(
+            main, ["test", "-app", "main:app", "--throw", "/.test_list_response"]
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            main, ["test", "-app", "main:app", "--throw", "/about/"]
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(main, ["test", "-app", "main:app", "--throw", "/"]).exit_code == 0
+    )
+    assert runner.invoke(main, ["test", "-app", "main:app", "--throw"]).exit_code == 0
+
+
+def test_check():
+    runner = CliRunner()
+    assert runner.invoke(main, ["check"]).exit_code == 0
