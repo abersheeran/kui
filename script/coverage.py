@@ -1,3 +1,4 @@
 import os
 
-os.system("coverage run -m pytest; coverage report --skip-covered")
+os.system("coverage run -m pytest")
+os.system("coverage report --skip-covered")
