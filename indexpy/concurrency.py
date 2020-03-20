@@ -10,6 +10,9 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
     """
     always return a awaitable callable object
     """
+    if asyncio.iscoroutinefunction(func):
+        return func
+
     _func = func
     while hasattr(_func, "__wrapped__"):
         _func = _func.__wrapped__  # type: ignore

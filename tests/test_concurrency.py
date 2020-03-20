@@ -6,7 +6,7 @@ from indexpy.concurrency import complicating, keepasync
 
 
 @pytest.mark.asyncio
-async def test_complicating():
+async def test_complicating_0():
     class AsyncCall:
         async def __call__(self):
             pass
@@ -15,6 +15,9 @@ async def test_complicating():
     asyncfunc = AsyncCall()
     assert complicating(asyncfunc) is asyncfunc
 
+
+@pytest.mark.asyncio
+async def test_complicating_1():
     class AsyncClass:
         def __await__(self):
             return self.dispatch().__await__()
@@ -28,12 +31,28 @@ async def test_complicating():
     await AsyncClass().dispatch()
     assert complicating(AsyncClass.dispatch) is AsyncClass.dispatch
 
+
+@pytest.mark.asyncio
+async def test_complicating_2():
     async def async_func():
         pass
 
     await async_func()
     assert complicating(async_func) is async_func
 
+
+@pytest.mark.asyncio
+async def test_complicating_3():
+    @asyncio.coroutine
+    def t():
+        pass
+
+    await t()
+    assert complicating(t) is t
+
+
+@pytest.mark.asyncio
+async def test_complicating_4():
     def func():
         """t"""
 
