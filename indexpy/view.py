@@ -28,12 +28,6 @@ ViewMeta = keepasync(*HTTP_METHOD_NAMES)
 
 
 class View(metaclass=ViewMeta):  # type: ignore
-    get: HTTPFunc
-    post: HTTPFunc
-    put: HTTPFunc
-    patch: HTTPFunc
-    delete: HTTPFunc
-
     def __init__(self, request: Request) -> None:
         self.request = request
 
