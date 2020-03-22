@@ -1,6 +1,7 @@
 import os
 from copy import deepcopy
 from inspect import signature
+from typing import List, Dict, Any, Type
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
@@ -12,6 +13,7 @@ from indexpy.responses import (
     HTMLResponse,
 )
 from indexpy.applications import IndexFile
+from indexpy.view import View
 
 from .schema import schema_parameters, schema_request_body, schema_response
 
@@ -23,6 +25,7 @@ class OpenAPI:
         description: str,
         version: str,
         *,
+        tags: Dict[str, Any] = {},
         template: str = "",
         media_type="yaml",
     ):
@@ -31,10 +34,109 @@ class OpenAPI:
         """
         assert media_type in ("yaml", "json"), "media_type must in 'yaml' or 'json'"
 
-        info = {"title": title, "description": description, "version": version}
-        self.openapi = {"openapi": "3.0.0", "info": info, "paths": {}}
         self.html_template = template
         self.media_type = media_type
+
+        info = {"title": title, "description": description, "version": version}
+        self.openapi = {
+            "openapi": "3.0.0",
+            "info": info,
+            "paths": {},
+            "tags": [
+                {"name": tag_name, "description": tag_info.get("description", "")}
+                for tag_name, tag_info in tags.items()
+            ],
+        }
+        self.path2tag: Dict[str, List[str]] = {}
+        for tag_name, tag_info in tags.items():
+            for path in tag_info["paths"]:
+                if path in self.path2tag:
+                    self.path2tag[path].append(tag_name)
+                else:
+                    self.path2tag[path] = [tag_name]
+
+    def _generate_paths(self) -> Dict[str, Any]:
+        result = {}
+        for view, path in IndexFile.get_views():
+            if not hasattr(view, "HTTP"):
+                continue
+            viewclass = getattr(view, "HTTP")
+            path_docs = self._generate_path(viewclass, path)
+            if path_docs:
+                result[path] = path_docs
+        return result
+
+    def _generate_path(self, viewclass: Type[View], path: str) -> Dict[str, Any]:
+        result = {}
+        for method in viewclass.allowed_methods():
+            if method == "OPTIONS":
+                continue
+            method = method.lower()
+            method_docs = self._generate_method(viewclass, path, method)
+            if method_docs:
+                result[method] = method_docs
+        return result
+
+    def _generate_method(
+        self, viewclass: Type[View], path: str, method: str
+    ) -> Dict[str, Any]:
+        sig = signature(getattr(viewclass, method))
+        result: Dict[str, Any] = {}
+
+        doc = getattr(viewclass, method).__doc__
+        if isinstance(doc, str):
+            doc = doc.strip()
+            result.update(
+                {
+                    "summary": doc.splitlines()[0],
+                    "description": "\n".join(doc.splitlines()[1:]).strip(),
+                }
+            )
+
+        result["parameters"] = schema_parameters(
+            None,
+            sig.parameters.get("query").annotation  # type: ignore
+            if sig.parameters.get("query")
+            else None,
+            sig.parameters.get("header").annotation  # type: ignore
+            if sig.parameters.get("header")
+            else None,
+            sig.parameters.get("cookie").annotation  # type: ignore
+            if sig.parameters.get("cookie")
+            else None,
+        )
+        if not result["parameters"]:
+            del result["parameters"]
+
+        result["requestBody"] = schema_request_body(
+            sig.parameters.get("body").annotation  # type: ignore
+            if sig.parameters.get("body")
+            else None
+        )
+        if not result["requestBody"]:
+            del result["requestBody"]
+
+        try:
+            resps = getattr(getattr(viewclass, method), "__resps__")
+        except AttributeError:
+            pass
+        else:
+            result["responses"] = {}
+            for status, content in resps.items():
+                result["responses"][status] = {
+                    "description": content["description"],
+                }
+                if content["model"] is not None:
+                    result["responses"][status]["content"] = schema_response(
+                        content["model"]
+                    )
+            if not result["responses"]:
+                del result["responses"]
+
+        if result and path in self.path2tag:  # has openapi docs, add tags
+            result["tags"] = self.path2tag[path]
+
+        return result
 
     def create_docs(self, request: Request) -> dict:
         openapi: dict = deepcopy(self.openapi)
@@ -44,74 +146,7 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-
-        paths: dict = openapi["paths"]  # type: ignore
-        for view, path in IndexFile.get_views():
-            if not hasattr(view, "HTTP"):
-                continue
-            viewclass = getattr(view, "HTTP")
-            paths[path] = {}
-            for method in viewclass.allowed_methods():
-                if method == "OPTIONS":
-                    continue
-                method = method.lower()
-
-                sig = signature(getattr(viewclass, method))
-                paths[path][method] = {}
-
-                doc = getattr(viewclass, method).__doc__
-                if isinstance(doc, str):
-                    doc = doc.strip()
-                    paths[path][method].update(
-                        {
-                            "summary": doc.splitlines()[0],
-                            "description": "\n".join(doc.splitlines()[1:]).strip(),
-                        }
-                    )
-
-                paths[path][method]["parameters"] = schema_parameters(
-                    None,
-                    sig.parameters.get("query").annotation  # type: ignore
-                    if sig.parameters.get("query")
-                    else None,
-                    sig.parameters.get("header").annotation  # type: ignore
-                    if sig.parameters.get("header")
-                    else None,
-                    sig.parameters.get("cookie").annotation  # type: ignore
-                    if sig.parameters.get("cookie")
-                    else None,
-                )
-                if not paths[path][method]["parameters"]:
-                    del paths[path][method]["parameters"]
-
-                paths[path][method]["requestBody"] = schema_request_body(
-                    sig.parameters.get("body").annotation  # type: ignore
-                    if sig.parameters.get("body")
-                    else None
-                )
-                if not paths[path][method]["requestBody"]:
-                    del paths[path][method]["requestBody"]
-
-                try:
-                    resps = getattr(getattr(viewclass, method), "__resps__")
-                except AttributeError:
-                    pass
-                else:
-                    repsonses = paths[path][method]["responses"] = {}
-                    for status, content in resps.items():
-                        repsonses[status] = {
-                            "description": content["description"],
-                        }
-                        if content["model"] is not None:
-                            repsonses[status]["content"] = schema_response(
-                                content["model"]
-                            )
-
-                if not paths[path][method]:
-                    del paths[path][method]
-
-            if not paths[path]:
-                del paths[path]
+        openapi["paths"] = self._generate_paths()
 
         return openapi
 

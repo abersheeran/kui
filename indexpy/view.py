@@ -8,6 +8,7 @@ from starlette.websockets import WebSocket
 from starlette.requests import Request
 from pydantic import ValidationError
 
+from .types import HTTPFunc
 from .concurrency import keepasync
 from .openapi.functions import partial
 
@@ -27,6 +28,12 @@ ViewMeta = keepasync(*HTTP_METHOD_NAMES)
 
 
 class View(metaclass=ViewMeta):  # type: ignore
+    get: HTTPFunc
+    post: HTTPFunc
+    put: HTTPFunc
+    patch: HTTPFunc
+    delete: HTTPFunc
+
     def __init__(self, request: Request) -> None:
         self.request = request
 
