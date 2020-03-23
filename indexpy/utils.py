@@ -1,4 +1,5 @@
 import os
+import asyncio
 import threading
 import importlib
 from types import ModuleType
@@ -36,14 +37,22 @@ class State(dict):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._lock = threading.Lock()
+        self.sync_lock = threading.Lock()
+        self.async_lock = asyncio.Lock()
 
     def __enter__(self):
-        self._lock.acquire()
+        self.sync_lock.acquire()
         return self
 
     def __exit__(self, exc_type, value, traceback):
-        self._lock.release()
+        self.sync_lock.release()
+
+    async def __aenter__(self):
+        await self.async_lock.acquire()
+        return self
+
+    async def __aexit__(self, exc_type, value, traceback):
+        self.async_lock.release()
 
     def __setattr__(self, name: Any, value: Any) -> None:
         self[name] = value
