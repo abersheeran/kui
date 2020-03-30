@@ -21,6 +21,7 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 
 from .types import WSGIApp
+from .utils import Singleton
 from .config import here, Config
 from .responses import FileResponse, automatic
 from .background import (
@@ -99,8 +100,11 @@ class Lifespan:
 
 
 class IndexFile:
-    @classmethod
-    def split_uri(cls, uri: str) -> typing.List[str]:
+    def __init__(self, module_name: str, basepath: str = here) -> None:
+        self.module_name = module_name
+        self.basepath = basepath
+
+    def split_uri(self, uri: str) -> typing.List[str]:
         """
         convert uri to file string corresponding to index.py
         """
@@ -111,32 +115,32 @@ class IndexFile:
         filepath = filepath.replace("-", "_")
 
         pathlist = filepath.split("/")
-        pathlist.insert(0, "views")
+        pathlist.insert(0, self.module_name)
         return pathlist
 
-    @classmethod
     def get_path(
-        cls, uri: str
+        self, uri: str
     ) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
         """
         translate uri to module name and file abspath
 
         if file not found, return None
         """
-        pathlist = cls.split_uri(uri)
-        abspath = os.path.join(here, *pathlist) + ".py"
+        pathlist = self.split_uri(uri)
+        abspath = os.path.join(self.basepath, *pathlist) + ".py"
         if not os.path.exists(abspath):
             return None, None
         return ".".join(pathlist), abspath
 
-    @classmethod
-    def get_uri(cls, filepath: str) -> typing.Optional[str]:
+    def get_uri(self, filepath: str) -> typing.Optional[str]:
         """
         translate file abspath to uri
         """
         assert filepath.endswith(".py")
 
-        relpath = os.path.relpath(filepath, os.path.join(here, "views"))
+        relpath = os.path.relpath(
+            filepath, os.path.join(self.basepath, self.module_name)
+        )
         if relpath.startswith("."):
             return None
 
@@ -147,12 +151,11 @@ class IndexFile:
 
         return uri
 
-    @classmethod
-    def get_views(cls) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
+    def get_views(self) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
         """
         return all (Module, uri)
         """
-        views_path = os.path.join(here, "views")
+        views_path = os.path.join(self.basepath, self.module_name)
 
         for root, _, files in os.walk(views_path):
             try:
@@ -165,17 +168,16 @@ class IndexFile:
                 lambda file: file.endswith(".py") and file != "__init__.py", files
             ):
                 abspath = os.path.join(root, file)
-                uri = cls.get_uri(abspath)
+                uri = self.get_uri(abspath)
                 if uri is None:
                     continue
-                module = cls.get_view(uri)
+                module = self.get_view(uri)
                 if module is None:
                     continue
                 yield module, uri
 
-    @classmethod
-    def get_view(cls, uri: str) -> typing.Optional[ModuleType]:
-        module_name, filepath = cls.get_path(uri)
+    def get_view(self, uri: str) -> typing.Optional[ModuleType]:
+        module_name, filepath = self.get_path(uri)
         if module_name is None or filepath is None:
             return None
         # # Not thread-safe, temporarily commented
@@ -255,27 +257,9 @@ class IndexFile:
         await handler(scope, receive, send)
 
 
-class IndexMeta(type):
-    def __init__(
-        cls,
-        name: str,
-        bases: typing.Tuple[type],
-        namespace: typing.Dict[str, typing.Any],
-    ) -> None:
-        cls.instances: typing.Dict[str, Index] = {}
-        super().__init__(name, bases, namespace)
-
-    def __call__(cls, *args, **kwargs) -> typing.Any:
-        name = kwargs.get("name", "__main__")
-        if name not in cls.instances:
-            cls.instances[name] = super().__call__(*args, **kwargs)
-        return cls.instances[name]
-
-
-class Index(metaclass=IndexMeta):
-    def __init__(self, *, name: str = "__main__") -> None:
-        self.name = name
-        self.indexfile = IndexFile()
+class Index(metaclass=Singleton):
+    def __init__(self) -> None:
+        self.indexfile = IndexFile("views")
         self.lifespan = Lifespan()
         self.mount_apps: typing.Dict[str, ASGIApp] = {}
         self.user_middlewares: typing.List[Middleware] = []

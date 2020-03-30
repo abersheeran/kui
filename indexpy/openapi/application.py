@@ -12,7 +12,7 @@ from indexpy.responses import (
     YAMLResponse,
     HTMLResponse,
 )
-from indexpy.applications import IndexFile
+from indexpy.applications import Index
 from indexpy.view import View
 
 from .schema import schema_parameters, schema_request_body, schema_response
@@ -57,7 +57,7 @@ class OpenAPI:
 
     def _generate_paths(self) -> Dict[str, Any]:
         result = {}
-        for view, path in IndexFile.get_views():
+        for view, path in Index().indexfile.get_views():
             if not hasattr(view, "HTTP"):
                 continue
             viewclass = getattr(view, "HTTP")

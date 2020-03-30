@@ -11,6 +11,7 @@ from uvicorn.importer import import_from_string
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
 from starlette.types import ASGIApp
 
+from .applications import Index
 from .config import here, LOG_LEVELS, Config
 
 
@@ -93,9 +94,8 @@ class TestView:
 )
 @click.argument("path", default="--all")
 def cmd_test(throw: bool, application: str, path: str):
-    from .applications import IndexFile
 
-    app = import_from_string(application)
+    app: Index = import_from_string(application)
 
     logging.basicConfig(
         format='[%(levelname)s] "%(pathname)s:%(lineno)d", in %(funcName)s\n>: %(message)s',
@@ -164,7 +164,7 @@ def cmd_test(throw: bool, application: str, path: str):
         try:
             with TestClient(app):
                 if path == "--all":
-                    for view, uri in IndexFile.get_views():
+                    for view, uri in app.indexfile.get_views():
                         if not hasattr(view, "Test"):
                             printf(uri, fg="blue", nl=False)
                             printf(f" No Test?", fg="yellow")
@@ -174,7 +174,7 @@ def cmd_test(throw: bool, application: str, path: str):
                 else:
                     printf(f"{path}", fg="blue")
                     run_test(
-                        IndexFile.get_view(path.split(".")[0]),  # module
+                        app.indexfile.get_view(path.split(".")[0]),  # module
                         path.split(".")[0],  # uri
                         path.split(".")[1] if len(path.split(".")) == 2 else None,
                     )

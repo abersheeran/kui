@@ -8,9 +8,7 @@ from starlette.websockets import WebSocket
 from starlette.requests import Request
 from pydantic import ValidationError
 
-from .types import HTTPFunc
 from .concurrency import keepasync
-from .openapi.functions import partial
 
 HTTP_METHOD_NAMES = [
     "get",
@@ -47,6 +45,8 @@ class View(metaclass=ViewMeta):  # type: ignore
             handler = self.http_method_not_allowed
 
         try:
+            from .openapi import partial
+
             handler = await partial(handler, self.request)
         except ValidationError as e:
             return await self.catch_validation_error(e)

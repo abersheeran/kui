@@ -84,7 +84,7 @@ def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
     _schema = {"schema": replace_definitions(body.schema())}
 
     for field in body.__fields__.values():
-        if field.type_ == File:
+        if issubclass(field.type_, File):
             return {
                 "required": True,
                 "content": {"multipart/form-data": _schema},
