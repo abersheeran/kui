@@ -33,9 +33,9 @@ async def partial(
     # try to get body model and parse
     body = sig.parameters.get("body")
     if body and issubclass(body.annotation, Model):
-        try:
+        if request.headers.get("Content-Type") == "application/json":
             _body_data = await request.json()
-        except json.decoder.JSONDecodeError:
+        else:
             _body_data = await request.form()
         _body = body.annotation(**_body_data)
         handler = functools.partial(handler, body=_body)

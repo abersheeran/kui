@@ -4,6 +4,7 @@ import typing
 import asyncio
 import traceback
 import importlib
+import warnings
 from types import ModuleType
 
 from starlette.types import Scope, Receive, Send, ASGIApp
@@ -100,7 +101,7 @@ class Lifespan:
 
 
 class IndexFile:
-    def __init__(self, module_name: str, basepath: str = here) -> None:
+    def __init__(self, module_name: str, basepath: str) -> None:
         self.module_name = module_name
         self.basepath = basepath
 
@@ -259,7 +260,7 @@ class IndexFile:
 
 class Index(metaclass=Singleton):
     def __init__(self) -> None:
-        self.indexfile = IndexFile("views")
+        self.indexfile = IndexFile("views", here)
         self.lifespan = Lifespan()
         self.mount_apps: typing.Dict[str, ASGIApp] = {}
         self.user_middlewares: typing.List[Middleware] = []
@@ -337,10 +338,26 @@ class Index(metaclass=Singleton):
 
         return decorator
 
+    def on_startup(self, func: typing.Callable) -> typing.Callable:
+        self.lifespan.add_event_handler("startup", func)
+        return func
+
+    def on_shutdown(self, func: typing.Callable) -> typing.Callable:
+        self.lifespan.add_event_handler("shutdown", func)
+        return func
+
     def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
+        # TODO delete this on 0.9
+        warnings.warn(
+            "`add_event_handler` has been deprecated, will be remove on 0.9, please use on_startup/on_shutdown."
+        )
         self.lifespan.add_event_handler(event_type, func)
 
     def on_event(self, event_type: str) -> typing.Callable:
+        # TODO delete this on 0.9
+        warnings.warn(
+            "`on_event` has been deprecated, will be remove on 0.9, please use on_startup/on_shutdown."
+        )
         return self.lifespan.on_event(event_type)
 
     def mount(

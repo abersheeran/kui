@@ -1,4 +1,4 @@
-## After response
+## After Response
 
 参考 starlette 的 `background` 设计，Index 提供了更简单可用的使用方法。
 
@@ -24,7 +24,7 @@ class HTTP(View):
 
 得益于 [contextvars](https://docs.python.org/zh-cn/3.7/library/contextvars.html)，你可以在整个 HTTP 请求的周期内的任何位置去调用函数，它们都将在响应成功完成后开始执行。
 
-## Finished response
+## Finished Response
 
 Index 提供了另一个装饰器 `finished_response`，它的使用与 `after_response` 完全相同。不同的是，`finished_response` 的执行时间节点在此次响应结束后（包括 `after_response` 任务执行完成），无论在此过程中是否引发了错误导致流程提前结束，`finished_response` 都将执行。
 

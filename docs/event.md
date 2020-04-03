@@ -1,11 +1,11 @@
 Index 允许注册若干个事件处理程序，以处理在应用程序启动之前或关闭时需要运行的代码。
 
-* `startup`: 启动之前运行的函数
-* `shutdown`: 关闭之前运行的函数
+* `on_startup`: Index 启动之前运行的函数
+* `on_shutdown`: Index 关闭之前运行的函数
 
 ## 注册事件
 
-你可以用装饰器语法注册事件处理程序
+你可以用装饰器语法注册事件处理程序：
 
 ```python
 from indexpy import Index
@@ -14,28 +14,16 @@ from indexpy.config import logger
 app = Index()
 
 
-@app.on_event("startup")
+@app.on_startup
 def logger_on_startup():
     logger.info("Called on startup")
 
 
-@app.on_event("shutdown")
+@app.on_shutdown
 def logger_on_shutdown():
     logger.info("Called on shutdown")
 ```
 
-或者像一个常规函数一样调用
+!!! notice
+    拥有相同 `__qualname__` 的函数将被最后一个所覆盖，所以不要在同一个文件内注册同名函数。
 
-```python
-async def open_database_connection_pool():
-    ...
-
-async def close_database_connection_pool():
-    ...
-
-app.add_event_handler('startup', open_database_connection_pool)
-app.add_event_handler('shutdown', close_database_connection_pool)
-```
-
-!!! tip
-    `startup` 与 `shutdown` 两种类型的函数均可以注册任意个，不需要把所有功能写进一个函数里（尽量保证函数功能单一）。

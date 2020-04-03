@@ -39,7 +39,7 @@ class ImportTypeError(Exception):
 
 def _import(abspath: str, nosleep: bool = False):
     """
-    import module in Config().path
+    import module in here
 
     return: module
     """
@@ -63,7 +63,7 @@ def _import(abspath: str, nosleep: bool = False):
 
 def _reload(abspath: str) -> None:
     """
-    reload module in Config().path
+    reload module in here
     """
     module = _import(abspath)
     if module is not None:

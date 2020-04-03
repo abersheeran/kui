@@ -22,21 +22,21 @@ app.mount(
 monitor: Optional[MonitorFile] = None
 
 
-@app.on_event("startup")
+@app.on_startup
 def check_on_startup() -> None:
     # monitor file event
     global monitor
     monitor = MonitorFile(here)
 
 
-@app.on_event("shutdown")
+@app.on_shutdown
 def clear_check_on_shutdown() -> None:
     global monitor
     if monitor is not None:
         monitor.stop()
 
 
-@app.on_event("startup")
+@app.on_startup
 def create_directories() -> None:
     """
     create directories for static & template
@@ -46,7 +46,7 @@ def create_directories() -> None:
     os.makedirs(os.path.join(here, "templates"), exist_ok=True)
 
 
-@app.on_event("shutdown")
+@app.on_shutdown
 def clear_directories() -> None:
     """
     if no files exist in the directory, delete them
