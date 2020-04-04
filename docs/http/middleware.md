@@ -19,7 +19,7 @@
 
 ### 子中间件
 
-很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `ChildMiddlwares` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
+很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `mounts` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
 
 !!! notice
     子中间件的执行顺序是从左到右。
@@ -30,23 +30,21 @@ from indexpy import logger
 
 
 class ExampleChildMiddleware(MiddlewareMixin):
-
     async def process_request(self, request):
-        logger.info("example base middleware request")
+        logger.debug("enter first process request")
 
     async def process_response(self, request, response):
-        logger.info("example base middleware response")
+        logger.debug("enter last process response")
         return response
 
 
 class Middleware(MiddlewareMixin):
-
-    ChildMiddlwares = (ExampleChildMiddleware, )
+    mounts = (ExampleChildMiddleware,)
 
     async def process_request(self, request):
-        logger.info("enter first process request")
+        logger.debug("example base middleware request")
 
     async def process_response(self, request, response):
-        logger.info("enter last process response")
+        logger.debug("example base middleware response")
         return response
 ```

@@ -242,16 +242,16 @@ class IndexFile:
 
         if scope["type"] in ("http", "websocket"):
             url = URL(scope=scope)
-            uri = url.path
-            if uri.endswith("/index"):
+            path = url.path
+            if path.endswith("/index"):
                 handler = RedirectResponse(
-                    url.replace(path=f'{uri[:-len("/index")]}'), status_code=301,
+                    url.replace(path=f'{path[:-len("/index")]}'), status_code=301,
                 )
-            elif "_" in uri and not Config().ALLOW_UNDERLINE:  # Google SEO
+            elif "_" in path and not Config().ALLOW_UNDERLINE:
                 handler = RedirectResponse(
-                    url.replace(path=f'{uri.replace("_", "-")}'), status_code=301,
+                    url.replace(path=f'{path.replace("_", "-")}'), status_code=301,
                 )
-            elif uri == "/favicon.ico":
+            elif path == "/favicon.ico":
                 if os.path.exists(os.path.normpath("favicon.ico")):
                     handler = FileResponse("favicon.ico")
 

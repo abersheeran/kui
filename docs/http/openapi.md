@@ -37,7 +37,6 @@ app.mount(
 一般来说，从 HTTP 请求中传递参数的位置有五个——`path`、`query`、`header`、`cookie`、`body`。但 Index 的设计中，并没有给路径参数(`path`)留下位置，故只有后四种可被 Index 处理。*(可以像使用 PHP 一样用 Nginx 把 query 参数转为 path 参数，但没必要)*
 
 如下例所示，只需要在视图函数中增加对应名称的参数即可使用更 Python 的方式去解析 HTTP 请求。
-当请求不满足编写的 Model 限制的条件时，Index 将直接返回 400 以及对应的错误信息，请求不会到达视图函数，但你可以在路径上的任意一个中间件中捕捉这类返回。
 
 ```python
 from indexpy.view import View
@@ -76,13 +75,30 @@ class HTTP(View):
         return {"message": body.dict()}, 200, {"server": "index.py"}
 ```
 
+### 自定义错误返回
+
+当请求不满足编写的 Model 限制的条件时，Index 将直接返回 400 以及对应的错误信息，请求不会到达视图函数。但你可以通过重写 View 类中的 `catch_validation_error` 函数来自定义处理解析错误。默认的定义如下
+
+```python
+async def catch_validation_error(
+    self, exception: ValidationError
+) -> typing.Union[Response, typing.Tuple]:
+    """
+    Used to handle request parsing errors
+    """
+    return {"error": exception.errors()}, 400
+```
+
 ### 描述上传文件
 
 由于 [pydantic](https://pydantic-docs.helpmanual.io/usage/types/) 中没有上传文件类型，所以当需要描述文件上传的 model 时，需要使用 `indexpy.openapi.types.File` 来进行类型标注。
 
+!!! notice
+    此类型不可以用于描述响应值
+
 ## 绑定响应
 
-为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串。
+为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串（当你不想返回一个 application/json 类型的响应时）。
 
 !!! notice
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
