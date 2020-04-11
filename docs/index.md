@@ -1,11 +1,7 @@
 # Index.py
 
-这是一个基于 ASGI 协议的异步 web 框架，由 [starlette](https://www.starlette.io/) 提供了大量的 ASGI 实现支持，灵感来自于 PHP。
+这是一个基于 ASGI 协议的异步 web 框架，感谢 PHP 带来的灵感。
 
-但 Index 并没有一味的模仿 PHP，做到任何 Python 文件都可以被访问执行——仅仅是某个文件夹下的路由才允许被访问。
+你可以使用它快速的构建需要的 web 服务（用来编写 API 最方便，但也可以使用模板），你不需要懂各种奇怪的路由注册方式就可以上手使用。
 
-同样的，热重载在 Python 中的使用也没有像 PHP 一样，因为 Index 想要更容易地支持更高的 QPS，所以热重载不得不受限于 `importlib.reload`，有了两条限制。
-
-Index.py 在最初是对 PHP 中文件系统映射路由与热重载在 Python 中实现的一个探索（已经探索够了），如今的目标是为了更方便快捷的开发 API（也许会变成 [FastAPI](https://fastapi.tiangolo.com/)，也许会超越它）。
-
-如果你对本框架后续发展有任何的想法，欢迎点击右上角的图标跳转至 Github 提 issue。
+如果你对本框架后续发展有任何的想法，欢迎访问 [Github](https://github.com/abersheeran/index.py) 提 issue。
