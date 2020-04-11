@@ -14,7 +14,6 @@ from starlette.websockets import WebSocket, WebSocketClose
 from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
-from starlette.middleware.wsgi import WSGIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -30,6 +29,7 @@ from .background import (
     after_response_tasks_var,
     finished_response_tasks_var,
 )
+from .wsgi import WSGIMiddleware
 
 
 class Lifespan:
