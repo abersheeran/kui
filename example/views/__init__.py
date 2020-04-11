@@ -1,6 +1,8 @@
 from indexpy.middleware import MiddlewareMixin
 from indexpy import logger
 
+import example
+
 
 class ExampleChildMiddleware(MiddlewareMixin):
     async def process_request(self, request):

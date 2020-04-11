@@ -63,13 +63,13 @@ class TestClient:
 
 
 class TestView:
-    def __init__(self, app: ASGIApp, uri: str) -> None:
-        self.client: TestClient = self.client if hasattr(
-            self, "client"
-        ) else TestClient(app, uri)
-
-        if not self.client.uri:
-            self.client.uri = uri
+    @property
+    def client(self) -> TestClient:
+        app = Index()
+        path = app.indexfile.get_path_from_module_name(self.__class__.__module__)
+        if path is None:
+            raise Exception("What's wrong with you?")
+        return TestClient(app, path)
 
     @property
     def all_test(self) -> typing.List[typing.Callable]:
@@ -112,17 +112,23 @@ def cmd_test(throw: bool, application: str, path: str):
         nonlocal has_exception
 
         for func in filter(
-            lambda func: name == func.__name__ if name else True,
-            view.Test(app, uri).all_test,
+            lambda func: name == func.__name__ if name else True, view.Test().all_test,
         ):
             # write to log file
-            print("\n\n" + "=" * 24 + f"{uri} - {func.__name__}")
+            print(
+                "\n\n"
+                + f"{uri} - {func.__name__}"
+                + " "
+                + "<" * (89 - len(f"{uri} - {func.__name__}"))
+            )
 
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
                 printf("PASS", fg="green")
             except:
+                import inspect
+
                 printf("ERROR", fg="red")
                 traceback.print_exc()
                 has_exception = True

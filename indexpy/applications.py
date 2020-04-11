@@ -105,37 +105,54 @@ class IndexFile:
         self.module_name = module_name
         self.basepath = basepath
 
-    def split_uri(self, uri: str) -> typing.List[str]:
+    def _split_path(self, path: str) -> typing.List[str]:
         """
-        convert uri to file string corresponding to index.py
+        convert url path to file string corresponding to index.py
         """
-        if uri.endswith("/"):
-            uri += "index"
+        if path.endswith("/"):
+            path += "index"
 
-        filepath = uri.strip("./")
+        filepath = path.strip("./")
         filepath = filepath.replace("-", "_")
 
         pathlist = filepath.split("/")
         pathlist.insert(0, self.module_name)
         return pathlist
 
-    def get_path(
-        self, uri: str
-    ) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
+    def get_filepath_from_path(self, path: str) -> str:
+        pathlist = self._split_path(path)
+        abspath = os.path.join(self.basepath, *pathlist) + ".py"
+        return abspath
+
+    def get_module_name_from_path(self, path: str) -> typing.Optional[str]:
         """
-        translate uri to module name and file abspath
+        translate url path to module name
 
         if file not found, return None
         """
-        pathlist = self.split_uri(uri)
-        abspath = os.path.join(self.basepath, *pathlist) + ".py"
+        pathlist = self._split_path(path)
+        abspath = self.get_filepath_from_path(path)
         if not os.path.exists(abspath):
-            return None, None
-        return ".".join(pathlist), abspath
+            return None
+        return ".".join(pathlist)
 
-    def get_uri(self, filepath: str) -> typing.Optional[str]:
+    def get_path_from_module_name(self, module_name: str) -> typing.Optional[str]:
         """
-        translate file abspath to uri
+        translate module name to url path
+
+        if module not in base module, return None
+        """
+        if not module_name.startswith(self.module_name):
+            return None
+
+        path = "/".join(module_name[len(self.module_name) :].split("."))
+        if path.endswith("/index"):
+            path = path[:-5]
+        return path
+
+    def get_path_from_filepath(self, filepath: str) -> typing.Optional[str]:
+        """
+        translate file abspath to url path
         """
         assert filepath.endswith(".py")
 
@@ -145,12 +162,22 @@ class IndexFile:
         if relpath.startswith("."):
             return None
 
-        uri = "/" + relpath.replace("\\", "/")[:-3]
+        path = "/" + relpath.replace("\\", "/")[:-3]
 
-        if uri.endswith("/index"):
-            uri = uri[:-5]
+        if path.endswith("/index"):
+            path = path[:-5]
 
-        return uri
+        return path
+
+    def get_view(self, path: str) -> typing.Optional[ModuleType]:
+        """
+        get module from url path
+        """
+        module_name = self.get_module_name_from_path(path)
+        if module_name is None:
+            return None
+
+        return importlib.import_module(module_name)
 
     def get_views(self) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
         """
@@ -169,29 +196,17 @@ class IndexFile:
                 lambda file: file.endswith(".py") and file != "__init__.py", files
             ):
                 abspath = os.path.join(root, file)
-                uri = self.get_uri(abspath)
-                if uri is None:
+                path = self.get_path_from_filepath(abspath)
+                if path is None:
                     continue
-                module = self.get_view(uri)
+                module = self.get_view(path)
                 if module is None:
                     continue
-                yield module, uri
-
-    def get_view(self, uri: str) -> typing.Optional[ModuleType]:
-        module_name, filepath = self.get_path(uri)
-        if module_name is None or filepath is None:
-            return None
-        # # Not thread-safe, temporarily commented
-        # spec = importlib.util.spec_from_file_location(module_name, filepath)
-        # module = importlib.util.module_from_spec(spec)
-        # sys.modules[module_name] = module
-        # spec.loader.exec_module(module)  # type: ignore
-        # return module
-        return importlib.import_module(module_name)
+                yield module, path
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = Request(scope, receive)
-        pathlist = self.split_uri(request.url.path)
+        pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
         if module is None or not hasattr(module, "HTTP"):

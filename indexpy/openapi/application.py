@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from inspect import signature
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
@@ -13,7 +13,6 @@ from indexpy.responses import (
     HTMLResponse,
 )
 from indexpy.applications import Index
-from indexpy.view import View
 
 from .schema import schema_parameters, schema_request_body, schema_response
 
@@ -66,9 +65,9 @@ class OpenAPI:
                 result[path] = path_docs
         return result
 
-    def _generate_path(self, viewclass: Type[View], path: str) -> Dict[str, Any]:
+    def _generate_path(self, viewclass: object, path: str) -> Dict[str, Any]:
         result = {}
-        for method in viewclass.allowed_methods():
+        for method in viewclass.allowed_methods():  # type: ignore
             if method == "OPTIONS":
                 continue
             method = method.lower()
@@ -78,7 +77,7 @@ class OpenAPI:
         return result
 
     def _generate_method(
-        self, viewclass: Type[View], path: str, method: str
+        self, viewclass: object, path: str, method: str
     ) -> Dict[str, Any]:
         sig = signature(getattr(viewclass, method))
         result: Dict[str, Any] = {}
