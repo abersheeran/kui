@@ -23,18 +23,21 @@ class Body:
         self.file.close()
 
     def read(self, size: int) -> bytes:
+        self.recv_event.set()
         data = self.file.read(size)
         while len(data) < size and self.has_more:
             data += self.file.read()
         return data
 
     def readline(self, limit: int = -1) -> bytes:
+        self.recv_event.set()
         data = self.file.readline(limit)
         while (not data or not data.endswith(b"\n")) and self.has_more:
             data += self.file.readline(limit - len(data))
         return data
 
     def readlines(self, hint: int = -1) -> typing.List[bytes]:
+        self.recv_event.set()
         data = self.file.readlines(hint)
         _hint = data.count(b"\n")
         while _hint < hint and self.has_more:
@@ -43,6 +46,7 @@ class Body:
         return data
 
     def __iter__(self) -> typing.Generator:
+        self.recv_event.set()
         while self.has_more:
             yield self.readline()
 
