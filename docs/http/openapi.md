@@ -32,6 +32,30 @@ app.mount(
 
 同样的，所有 Model 的 `__doc__` 也会被当作对应的描述安置在生成的文档中。
 
+### Tags
+
+OpenAPI 的 Tags 是一个有用的功能，在 Index 里，你可以通过如下方式来指定 URL 的 tags
+
+```python
+app.mount(
+    "/openapi",
+    OpenAPI(
+        "index.py example",
+        "just a example, power by index.py",
+        __version__,
+        tags={
+            "something": {
+                "description": "test over two tags in one path",
+                "paths": ["/about/", "/file", "/"],
+            },
+            "about": {"description": "about page", "paths": ["/about/", "/about/me"]},
+            "file": {"description": "get/upload file api", "paths": ["/file"]},
+        },
+    ),
+    "asgi",
+)
+```
+
 ## 解析请求
 
 一般来说，从 HTTP 请求中传递参数的位置有五个——`path`、`query`、`header`、`cookie`、`body`。但 Index 的设计中，并没有给路径参数(`path`)留下位置，故只有后四种可被 Index 处理。*(可以像使用 PHP 一样用 Nginx 把 query 参数转为 path 参数，但没必要)*
