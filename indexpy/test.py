@@ -9,7 +9,6 @@ import requests
 from requests import Response
 from uvicorn.importer import import_from_string
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
-from starlette.types import ASGIApp
 
 from .applications import Index
 from .config import here, LOG_LEVELS, Config
@@ -103,13 +102,13 @@ def cmd_test(throw: bool, application: str, path: str):
     )
     logging.getLogger("index").setLevel(logging.DEBUG)
 
-    has_exception = False
+    exceptions_count = 0
 
     def run_test(view, uri: str, name: typing.Optional[str] = None):
         """
         run test and print message
         """
-        nonlocal has_exception
+        nonlocal exceptions_count
 
         for func in filter(
             lambda func: name == func.__name__ if name else True, view.Test().all_test,
@@ -125,13 +124,11 @@ def cmd_test(throw: bool, application: str, path: str):
             printf(f" - {func.__name__} ", nl=False)
             try:
                 func()
-                printf("PASS", fg="green")
-            except:
-                import inspect
-
-                printf("ERROR", fg="red")
+                printf("PASSED", fg="green")
+            except Exception:
+                printf("ERROR!", fg="red")
                 traceback.print_exc()
-                has_exception = True
+                exceptions_count += 1
 
     with open(os.path.join(here, "index.test.log"), "w+", encoding="utf8") as logfile:
         # hack sys.stdout/stderr to log file
@@ -189,9 +186,11 @@ def cmd_test(throw: bool, application: str, path: str):
             printf("Error in events", fg="red")
             traceback.print_exc()
 
-        printf("End test.")
+        printf(f"End test. Error({exceptions_count}). ", nl=False)
 
-    if has_exception:
+    if exceptions_count:
+        printf("QAQ", fg="red")
         sys.exit(1)
     else:
+        printf("OwO", fg="green")
         sys.exit(0)

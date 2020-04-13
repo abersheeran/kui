@@ -1,9 +1,45 @@
 import sys
+import asyncio
+from tempfile import TemporaryFile
 
 import pytest
-
-from starlette.middleware.wsgi import WSGIMiddleware, build_environ
 from starlette.testclient import TestClient
+
+from indexpy.wsgi import WSGIMiddleware, Body, build_environ
+
+
+@pytest.mark.asyncio
+async def test_body():
+    recv_event = asyncio.Event()
+    body = Body(recv_event)
+    await body.write(
+        b"""This is a body test.
+Why do this?
+To prevent memory leaks.
+And cancel pre-reading.
+Newline.0
+Newline.1
+Newline.2
+Newline.3
+"""
+    )
+    body.feed_eof()
+    assert body.readline() == b"This is a body test.\n"
+    assert body.readline(6) == b"Why do"
+    assert body.readline(20) == b" this?\n"
+
+    assert body.readlines(2) == [
+        b"To prevent memory leaks.\n",
+        b"And cancel pre-reading.\n",
+    ]
+    for index, line in enumerate(body):
+        assert line == b"Newline." + str(index).encode("utf8") + b"\n"
+        if index == 1:
+            break
+    assert body.readlines() == [
+        b"Newline.2\n",
+        b"Newline.3\n",
+    ]
 
 
 def hello_world(environ, start_response):
@@ -62,6 +98,17 @@ def test_wsgi_post():
     assert response.text == '{"example": 123}'
 
 
+def test_wsgi_post_big_file():
+    app = WSGIMiddleware(echo_body)
+    client = TestClient(app)
+    file = TemporaryFile()
+    for num in range(10000):
+        file.write(str(num).encode("utf8"))
+    response = client.post("/", files={"file": file})
+    assert response.status_code == 200
+    assert response.content
+
+
 def test_wsgi_exception():
     # Note that we're testing the WSGI app directly here.
     # The HTTP protocol implementations would catch this error and return 500.
@@ -104,10 +151,8 @@ def test_build_environ():
         "client": ("134.56.78.4", 1453),
         "server": ("www.example.org", 443),
     }
-    body = b'{"example":"body"}'
-    environ = build_environ(scope, body)
-    stream = environ.pop("wsgi.input")
-    assert stream.read() == b'{"example":"body"}'
+    environ = build_environ(scope, Body(asyncio.Event()))
+    environ.pop("wsgi.input")
     assert environ == {
         "CONTENT_LENGTH": "18",
         "CONTENT_TYPE": "application/json",
