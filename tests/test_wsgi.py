@@ -2,17 +2,15 @@ import sys
 import asyncio
 from tempfile import TemporaryFile
 
-import pytest
 from starlette.testclient import TestClient
 
 from indexpy.wsgi import WSGIMiddleware, Body, build_environ
 
 
-@pytest.mark.asyncio
-async def test_body():
+def test_body():
     recv_event = asyncio.Event()
     body = Body(recv_event)
-    await body.write(
+    body.write(
         b"""This is a body test.
 Why do this?
 To prevent memory leaks.
@@ -102,7 +100,7 @@ def test_wsgi_post_big_file():
     app = WSGIMiddleware(echo_body)
     client = TestClient(app)
     file = TemporaryFile()
-    for num in range(10000):
+    for num in range(1000000):
         file.write(str(num).encode("utf8"))
     response = client.post("/", files={"file": file})
     assert response.status_code == 200

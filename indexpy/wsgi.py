@@ -1,78 +1,86 @@
-from __future__ import annotations
-import os
 import sys
+import time
 import typing
 import asyncio
-from tempfile import SpooledTemporaryFile
 
 from starlette.concurrency import run_in_threadpool
 from starlette.types import Message, Receive, Scope, Send
 
 
-def call_receive(func):
-    def contextmanager(self: Body, *args, **kwargs):
-        self.recv_event.set()
-        result = func(self, *args, **kwargs)
-        self.recv_event.clear()
-        return result
-
-    return contextmanager
-
-
 class Body:
     def __init__(self, recv_event: asyncio.Event) -> None:
-        self.file = SpooledTemporaryFile(1024 * 1024)
+        self.buffer = bytearray()
         self.recv_event = recv_event
         self._has_more = True
-        self.size = 0
 
     def feed_eof(self) -> None:
         self._has_more = False
 
     @property
     def has_more(self) -> bool:
-        if self._has_more or self.file.tell() < self.size:
+        if self._has_more or self.buffer:
             return True
         return False
 
-    def _write(self, data: bytes) -> None:
-        self.size += len(data)
-        current_position = self.file.tell()
-        self.file.seek(0, os.SEEK_END)
-        self.file.write(data)
-        self.file.flush()
-        self.file.seek(current_position)
+    def write(self, data: bytes) -> None:
+        self.buffer.extend(data)
 
-    async def write(self, data: bytes) -> None:
-        await run_in_threadpool(self._write, data)
+    def _read(self, size: int = 0) -> bytes:
+        """
+        read data
 
-    async def close(self) -> None:
-        await run_in_threadpool(self.file.close)
+        * Call _read to pre-read data into the buffer
+        * Call _read(size) to read data of specified length in buffer
+        * Call _read(negative) to read all data in buffer
+        """
+        while self._has_more and not self.buffer:
+            if not self.recv_event.is_set():
+                self.recv_event.set()
+            time.sleep(0.25)
 
-    @call_receive
+        if size < 0:
+            data = self.buffer[:]
+            del self.buffer[:]
+        else:
+            data = self.buffer[:size]
+            del self.buffer[:size]
+        return bytes(data)
+
     def read(self, size: int = -1) -> bytes:
-        data = self.file.read(size)
-        while (size == -1 or len(data) < size) and self.has_more:
-            data += self.file.read()
+        data = self._read(size)
+        while (len(data) < size or size == -1) and self.has_more:
+            data += self._read(size - len(data))
         return data
 
-    @call_receive
+    def _readline(self, limit: int) -> typing.Optional[bytes]:
+        index = self.buffer.find(b"\n")
+        if -1 < index:  # found b"\n"
+            if limit > -1:
+                return self._read(min(index + 1, limit))
+            return self._read(index + 1)
+
+        if -1 < limit < len(self.buffer):
+            return self._read(limit)
+
+        if self._has_more: # Not found b"\n", request more data
+            self.recv_event.set()
+        return None
+
     def readline(self, limit: int = -1) -> bytes:
-        data = self.file.readline(limit)
-        while (
-            (limit == -1 or len(data) < limit) and not data.endswith(b"\n")
-        ) and self.has_more:
-            data += self.file.readline(limit - len(data))
-        return data
+        data = self._readline(limit)
+        while (not data) and self.has_more:
+            data = self._readline(limit)
+        return data if data else bytes()
 
-    @call_receive
     def readlines(self, hint: int = -1) -> typing.List[bytes]:
-        data = self.file.readlines(hint)
-        while (hint == -1 or len(data) < hint) and self.has_more:
-            data += self.file.readlines(hint - len(data))
-        return data
+        if hint == -1:
+            raw_data = self.read(-1)
+            if raw_data[-1] == 10:  # 10 -> b"\n"
+                raw_data = raw_data[:-1]
+            bytelist = raw_data.split(b"\n")
+            return [line + b"\n" for line in bytelist]
+        return [self.readline() for _ in range(hint)]
 
-    @call_receive
     def __iter__(self) -> typing.Generator:
         while self.has_more:
             yield self.readline()
@@ -165,14 +173,14 @@ class WSGIResponder:
                 sender.cancel()  # pragma: no cover
             if receiver and not receiver.done():
                 receiver.cancel()  # pragma: no cover
-            await body.close()
 
     async def recevier(self, receive: Receive, body: Body) -> None:
         more_body = True
         while more_body:
             await self.recv_event.wait()
             message = await receive()
-            await body.write(message.get("body", b""))
+            self.recv_event.clear()
+            body.write(message.get("body", b""))
             more_body = message.get("more_body", False)
         body.feed_eof()
 
