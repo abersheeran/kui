@@ -2,6 +2,7 @@ import sys
 import asyncio
 from tempfile import TemporaryFile
 
+import pytest
 from starlette.testclient import TestClient
 
 from indexpy.wsgi import WSGIMiddleware, Body, build_environ
