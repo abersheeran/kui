@@ -28,52 +28,65 @@ index-cli --env "test" test
 
 ### index-cli gunicorn
 
-* `index-cli gunicorn start`
+#### `index-cli gunicorn start`
 
-    通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。同样的，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli gunicorn start main:app`。
+通过 [gunicorn](https://gunicorn.org/) 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `serve` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。同样的，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli gunicorn start main:app`。
 
-        ❯ index-cli gunicorn --help
-        Usage: index-cli gunicorn [OPTIONS] [start|stop|reload] [APPLICATION]
+```
+❯ index-cli gunicorn --help
+Usage: index-cli gunicorn [OPTIONS] [start|stop|reload] [APPLICATION]
 
-        deploy by gunicorn
+deploy by gunicorn
 
-        Options:
-        -w, --workers INTEGER
-        -d, --daemon
-        -c, --configuration FILE
-        --help                    Show this message and exit.
+Options:
+-w, --workers INTEGER
+-d, --daemon
+-c, --configuration FILE
+--help                    Show this message and exit.
+```
 
-    你可以通过 `--workers` 选项指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。
+你可以通过 `--workers` 选项指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。
 
-    如果开启了 `--daemon` 选项，Index 将在后台运行，主进程号会被写入项目根目录下的 `.pid` 中，运行日志则写入项目根目录下的 `log.index` 里。
+如果开启了 `--daemon` 选项，Index 将在后台运行，主进程号会被写入项目根目录下的 `.pid` 中，运行日志则写入项目根目录下的 `log.index` 里。
 
-    假如你需要编写更多的 gunicorn 配置，可以使用 `-c` 来指定一个 `.py` 作为配置文件。详见 [gunicorn 文档](http://docs.gunicorn.org/en/latest/configure.html#configuration-file)
+假如你需要编写更多的 gunicorn 配置，可以使用 `-c` 来指定一个 `.py` 作为配置文件。详见 [gunicorn 文档](http://docs.gunicorn.org/en/latest/configure.html#configuration-file)
 
-* `index-cli gunicorn stop`
+#### `index-cli gunicorn stop`
 
-    当你使用 `index-cli gunicorn start -d` 在后台启动了 Index 时，可以在项目根目录下执行此命令去停止 Index。
+当你使用 `index-cli gunicorn start -d` 在后台启动了 Index 时，可以在项目根目录下执行此命令去停止 Index。
 
-* `index-cli gunicorn reload`
+#### `index-cli gunicorn reload`
 
-    当你使用 `index-cli gunicorn start -d` 在后台启动了 Index 时，可以在项目根目录下执行此命令去重启 Index。
-
-    这一般在你更改了配置之后使用，因为 Index 内置了真正的热重载能力，如果只是更新代码，你并不需要重启服务。
+当你使用 `index-cli gunicorn start -d` 在后台启动了 Index 时，可以在项目根目录下执行此命令去重启 Index。
 
 ### index-cli test
 
-* `index-cli test`
+```
+❯ index-cli test --help
+Usage: index-cli test [OPTIONS] [PATH]
 
-    这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试。执行的详细日志以及错误将被写在项目下 `index.test.log` 文件里。如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli test -app main:app`。
+run test
 
-    你也可以使用 `index-cli test URI` 来运行某个 URI 路径的测试，使用 `index-cli test URI.funcname` 执行指定 URI 下某个指定的测试函数。
+Options:
+-app, --application TEXT  ASGI Application, like: main:app
+--args TEXT
+--help                    Show this message and exit.
+```
 
-    默认情况下，此命令会重定向所有向 stdout/stderr 输出的数据到项目根目录下的 `index.test.log` 中。但可以使用 `--throw` 选项迫使测试过程中抛出的异常的 `traceback` 输出到 stdout/stderr 里。
+这个命令用于运行测试，当直接使用 `index-cli test` 时，它将运行所有测试（由 pytest 提供支持）。你可以通过 `--args` 参数传递参数给 pytest，例如：`index-cli test --args "['-q',]"`。
+
+如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如：`index-cli test -app example:app`。
+
+有些时候，也许你并不想执行所有测试，通过 `index-cli test` 的 `PATH` 参数，你可以轻松指定需要执行的测试，以下是一些例子：
+
+* `index-cli test /`: 执行 URL 为 / 的测试
+* `index-cli test views/index.py`: 执行 views/index.py 文件中的测试(**与上一条命令等价**)
+* `index-cli test /::Test::test_get_0`: 指定一个测试函数
+* `index-cli test views/index.py::Test::test_get_0`: 指定一个测试函数(**与上一条命令等价**)
 
 ### index-cli check
 
-* `index-cli check`
-
-    这能遍历你项目里的所有 `.py` 文件，来检查其中是不是出现了不允许的 `import` 方法。至于原因，可以看看[ Python 的热重载](https://abersheeran.com/articles/Python-Reload/)。
+这能遍历你项目里的所有 `.py` 文件，来检查其中是不是出现了不允许的 `import` 方法。至于原因，可以看看[ Python 的热重载](https://abersheeran.com/articles/Python-Reload/)。
 
 ## 自定义命令
 

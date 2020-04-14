@@ -1,4 +1,4 @@
-Index 借助了 [starlette 的 Test Client](https://www.starlette.io/testclient/) 用以提供测试能力。
+Index 借助了 [starlette 的 Test Client](https://www.starlette.io/testclient/) 用以提供测试能力，并由 [Pytest](https://docs.pytest.org/en/latest/) 提供强力的测试支持。
 
 ## TestView
 
@@ -40,19 +40,4 @@ class Test(TestView):
         with self.client.websocket_connect() as ws:
             ws.send_text("hello")
             assert ws.receive_json()["message"] == "hello"
-```
-
-## 执行测试
-
-在项目根目录下执行 `index-cli test` 即可运行测试。更多参数请查看 [Command](/command/)
-
-## [Pytest](https://docs.pytest.org/en/latest/)
-
-为了更加方便的测试，Index 提供了对 Pytest 的支持。你只需要在项目根目录下的 `pytest.ini` 写入如下内容即可使用 `pytest` 直接进行测试。理所当然的，你可以使用任何 pytest 生态里的功能。
-
-```ini
-[pytest]
-python_files = views/*.py
-python_classes = Test
-python_functions = test_*
 ```

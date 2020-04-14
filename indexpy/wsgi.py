@@ -62,7 +62,7 @@ class Body:
         if -1 < limit < len(self.buffer):
             return self._read(limit)
 
-        if self._has_more: # Not found b"\n", request more data
+        if self._has_more:  # Not found b"\n", request more data
             self.recv_event.set()
         return None
 
@@ -132,7 +132,7 @@ def build_environ(scope: Scope, body: Body) -> dict:
 
 
 class WSGIMiddleware:
-    def __init__(self, app: typing.Callable, workers: int = 10) -> None:
+    def __init__(self, app: typing.Callable) -> None:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:

@@ -1,10 +1,10 @@
 import os
-import sys
+import ast
 import typing
-import logging
-import traceback
+import unittest
 
 import click
+import pytest
 import requests
 from requests import Response
 from uvicorn.importer import import_from_string
@@ -61,7 +61,7 @@ class TestClient:
         return self.__client.__exit__()
 
 
-class TestView:
+class TestView(unittest.TestCase):
     @property
     def client(self) -> TestClient:
         app = Index()
@@ -70,127 +70,41 @@ class TestView:
             raise Exception("What's wrong with you?")
         return TestClient(app, path)
 
-    @property
-    def all_test(self) -> typing.List[typing.Callable]:
-        return [
-            getattr(self, name)
-            for name in dir(self)
-            if name.startswith("test_") and callable(getattr(self, name))
-        ]
+
+class LiteralOption(click.Option):
+    def type_cast_value(self, ctx, value):
+        try:
+            return ast.literal_eval(value)
+        except:
+            raise click.BadParameter(value)
 
 
-@click.option(
-    "--throw",
-    default=False,
-    is_flag=True,
-    help="If there is an exception, throw it directly.",
-)
 @click.option(
     "-app",
     "--application",
     default="indexpy:app",
     help="ASGI Application, like: main:app",
 )
-@click.argument("path", default="--all")
-def cmd_test(throw: bool, application: str, path: str):
-
+@click.option("--args", cls=LiteralOption, default="[]")
+@click.argument("path", default="")
+def cmd_test(application: str, args: typing.List[str], path: str):
     app: Index = import_from_string(application)
+    pytest_args = [
+        f"--rootdir={os.getcwd()}",
+        "--override-ini=python_files=views/*.py",
+        "--override-ini=python_classes=Test",
+        "--override-ini=python_functions=test_*",
+    ]
+    pytest_args.extend(args)
+    if path:
+        if ".py" in path:
+            pytest_args.append(path)
+        elif "::" in path:
+            pathlist = path.split("::")
+            pathlist[0] = app.indexfile.get_filepath_from_path(pathlist[0])
+            pytest_args.append("::".join(pathlist))
+        else:
+            pytest_args.append(app.indexfile.get_filepath_from_path(path))
 
-    logging.basicConfig(
-        format='[%(levelname)s] "%(pathname)s:%(lineno)d", in %(funcName)s\n>: %(message)s',
-        level=LOG_LEVELS[Config().log_level],
-    )
-    logging.getLogger("index").setLevel(logging.DEBUG)
-
-    exceptions_count = 0
-
-    def run_test(view, uri: str, name: typing.Optional[str] = None):
-        """
-        run test and print message
-        """
-        nonlocal exceptions_count
-
-        for func in filter(
-            lambda func: name == func.__name__ if name else True, view.Test().all_test,
-        ):
-            # write to log file
-            print(
-                "\n\n"
-                + f"{uri} - {func.__name__}"
-                + " "
-                + "<" * (89 - len(f"{uri} - {func.__name__}"))
-            )
-
-            printf(f" - {func.__name__} ", nl=False)
-            try:
-                func()
-                printf("PASSED", fg="green")
-            except Exception:
-                printf("ERROR!", fg="red")
-                traceback.print_exc()
-                exceptions_count += 1
-
-    with open(os.path.join(here, "index.test.log"), "w+", encoding="utf8") as logfile:
-        # hack sys.stdout/stderr to log file
-        stdout_write = sys.stdout.write
-        stderr_write = sys.stderr.write
-
-        def st():
-            sys.stdout.flush()
-            sys.stderr.flush()
-            setattr(sys.stdout, "write", logfile.write)
-            setattr(sys.stderr, "write", logfile.write)
-
-        def se():
-            sys.stdout.flush()
-            sys.stderr.flush()
-            setattr(sys.stdout, "write", stdout_write)
-            setattr(sys.stderr, "write", stderr_write)
-
-        def printf(message, **kwargs) -> None:
-            se()
-            click.secho(message, **kwargs)
-            st()
-
-        print_traceback = traceback.print_exc
-
-        if throw:
-
-            def print_exc(limit=None, file=None, chain=True):
-                se()
-                print_traceback(limit, file, chain)
-                st()
-
-            traceback.print_exc = print_exc
-
-        printf(f"Start {'all' if path=='--all' else path} test (^-^)")
-        try:
-            with TestClient(app):
-                if path == "--all":
-                    for view, uri in app.indexfile.get_views():
-                        if not hasattr(view, "Test"):
-                            printf(uri, fg="blue", nl=False)
-                            printf(f" No Test?", fg="yellow")
-                            continue
-                        printf(uri, fg="blue")
-                        run_test(view, uri)
-                else:
-                    printf(f"{path}", fg="blue")
-                    run_test(
-                        app.indexfile.get_view(path.split(".")[0]),  # module
-                        path.split(".")[0],  # uri
-                        path.split(".")[1] if len(path.split(".")) == 2 else None,
-                    )
-                print("\n")
-        except:
-            printf("Error in events", fg="red")
-            traceback.print_exc()
-
-        printf(f"End test. Error({exceptions_count}). ", nl=False)
-
-    if exceptions_count:
-        printf("QAQ", fg="red")
-        sys.exit(1)
-    else:
-        printf("OwO", fg="green")
-        sys.exit(0)
+    with _TestClient(app):
+        pytest.main(pytest_args)
