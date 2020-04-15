@@ -54,7 +54,7 @@ def main(env, debug):
     config.import_from_environ()
     Index().rebuild_app()
     # set index logger level
-    logging.getLogger("index").setLevel(LOG_LEVELS[config.log_level])
+    logging.getLogger("indexpy").setLevel(LOG_LEVELS[config.log_level])
 
 
 @main.command(help="use only uvicorn to deploy")

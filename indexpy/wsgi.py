@@ -2,13 +2,9 @@ import sys
 import time
 import typing
 import asyncio
-import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from starlette.concurrency import run_in_threadpool
 from starlette.types import Message, Receive, Scope, Send
-
-logger = logging.getLogger(__name__)
 
 
 class Body:
@@ -38,8 +34,6 @@ class Body:
         * Call _read(negative) to read all data in buffer
         """
         while self._has_more and not self.buffer:
-            if self.recv_event.is_set():
-                logger.debug("Waiting body data...")
             self.recv_event.set()
             time.sleep(0.25)
 

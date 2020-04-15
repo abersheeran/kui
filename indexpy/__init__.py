@@ -9,7 +9,7 @@ from .config import here, Config
 __all__ = ["logger", "Index", "Config"]
 
 app = Index()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("indexpy")
 # global state
 g = State()
 
