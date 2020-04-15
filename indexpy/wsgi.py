@@ -181,6 +181,7 @@ class WSGIResponder:
                 sender.cancel()  # pragma: no cover
             if receiver and not receiver.done():
                 receiver.cancel()  # pragma: no cover
+            body.feed_eof()
 
     async def recevier(self, receive: Receive, body: Body) -> None:
         more_body = True
