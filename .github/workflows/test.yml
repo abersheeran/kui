@@ -23,7 +23,7 @@ jobs:
           poetry install
       - name: Test with pytest
         run: |
-          pytest
+          pytest -o log_cli=true -o log_cli_level=DEBUG
 
   Windows-Test:
     runs-on: windows-latest
@@ -45,7 +45,7 @@ jobs:
           poetry install
       - name: Test with pytest
         run: |
-          pytest
+          pytest -o log_cli=true -o log_cli_level=DEBUG
 
   MacOS-Test:
     runs-on: macos-latest
@@ -67,4 +67,4 @@ jobs:
           poetry install
       - name: Test with pytest
         run: |
-          pytest
+          pytest -o log_cli=true -o log_cli_level=DEBUG
