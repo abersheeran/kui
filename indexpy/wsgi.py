@@ -7,7 +7,7 @@ import logging
 from starlette.concurrency import run_in_threadpool
 from starlette.types import Message, Receive, Scope, Send
 
-logger = logging.getLogger("index.wsgi")
+logger = logging.getLogger(__name__)
 
 
 class Body:

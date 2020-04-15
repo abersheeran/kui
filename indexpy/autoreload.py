@@ -11,6 +11,7 @@ from watchdog.observers import Observer
 
 from .config import here, Config
 
+logging.getLogger("watchdog").setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 
