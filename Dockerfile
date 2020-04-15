@@ -1,4 +1,4 @@
-FROM python:3.7 as build
+FROM python:3.7 as setup
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ WORKDIR /app
 COPY . /app
 RUN rm -f pyproject.toml poetry.lock
 
-COPY --from=build /app/setup.py .
+COPY --from=setup /app/setup.py .
 
 # Install index.py in system
 RUN apk add --no-cache --virtual .build-deps gcc libc-dev make \
