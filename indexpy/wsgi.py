@@ -3,6 +3,7 @@ import time
 import typing
 import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from starlette.concurrency import run_in_threadpool
 from starlette.types import Message, Receive, Scope, Send
@@ -141,17 +142,21 @@ def build_environ(scope: Scope, body: Body) -> dict:
 class WSGIMiddleware:
     def __init__(self, app: typing.Callable) -> None:
         self.app = app
+        self.executor = ThreadPoolExecutor(thread_name_prefix="WSGI")
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         assert scope["type"] == "http"
-        responder = WSGIResponder(self.app, scope)
+        responder = WSGIResponder(self.app, scope, self.executor)
         await responder(receive, send)
 
 
 class WSGIResponder:
-    def __init__(self, app: typing.Callable, scope: Scope) -> None:
+    def __init__(
+        self, app: typing.Callable, scope: Scope, executor: ThreadPoolExecutor
+    ) -> None:
         self.app = app
         self.scope = scope
+        self.executor = executor
         self.recv_event = asyncio.Event()
         self.send_event = asyncio.Event()
         self.send_queue = []  # type: typing.List[typing.Optional[Message]]
@@ -167,7 +172,9 @@ class WSGIResponder:
         try:
             sender = self.loop.create_task(self.sender(send))
             receiver = self.loop.create_task(self.recevier(receive, body))
-            await run_in_threadpool(self.wsgi, environ, self.start_response)
+            await self.loop.run_in_executor(
+                self.executor, self.wsgi, environ, self.start_response
+            )
             self.send_queue.append(None)
             self.send_event.set()
             await asyncio.wait_for(sender, None)
