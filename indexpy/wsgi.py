@@ -37,8 +37,9 @@ class Body:
         * Call _read(negative) to read all data in buffer
         """
         while self._has_more and not self.buffer:
+            if self.recv_event.is_set():
+                logger.debug("Waiting body data...")
             self.recv_event.set()
-            logger.debug("Waiting body data...")
             time.sleep(0.25)
 
         if size < 0:
@@ -52,7 +53,6 @@ class Body:
     def read(self, size: int = -1) -> bytes:
         data = self._read(size)
         while (len(data) < size or size == -1) and self.has_more:
-            logger.debug("Waiting body data...")
             data += self._read(size - len(data))
         return data
 
@@ -73,15 +73,14 @@ class Body:
     def readline(self, limit: int = -1) -> bytes:
         data = self._readline(limit)
         while (not data) and self.has_more:
-            logger.debug("Waiting body data...")
             data = self._readline(limit)
         return data if data else bytes()
 
     def readlines(self, hint: int = -1) -> typing.List[bytes]:
         if hint == -1:
             while self._has_more:
-                logger.debug("Waiting body data...")
-                self.read(0)
+                self.recv_event.set()
+                time.sleep(0.25)
             raw_data = self.read(-1)
             if raw_data[-1] == 10:  # 10 -> b"\n"
                 raw_data = raw_data[:-1]
