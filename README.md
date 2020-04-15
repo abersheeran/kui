@@ -8,14 +8,15 @@
 
 你也可以直接查看 [Example](https://github.com/abersheeran/index.py/tree/master/example) 来学习如何使用（文档偶尔会滞后一到两天，但 example 被纳入了自动化测试，所以会始终保持最新版）
 
+- 无需手动绑定路由 (文件系统映射URI)
+- 自动解析请求 & 生成文档 (基于 pydantic)
+- 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
+- 现代化的测试组件 (基于 pytest 与 requests)
 - 非常简单的部署 (基于 uvicorn 与 gunicorn)
 - 支持真正的热重载
-- 无需手动绑定路由 (文件系统映射URI)
-- 挂载 ASGI/WSGI 应用
+- 挂载 ASGI/WSGI 应用 (比 Starlette 更节约内存)
 - 更好用的 background tasks
-- 模型化解析请求 & 自动生成文档 (基于 pydantic)
-
-PHP 对我而言，只有两个优点——URI-文件系统映射和热重载。Index.py 是对这两个特性在 Python 里实现的一个探索。
+- 可使用任何可用的 ASGI 生态
 
 ## Install
 
@@ -27,16 +28,4 @@ pip install -U index.py
 
 ```bash
 pip install -U git+https://github.com/abersheeran/index.py
-```
-
-## Hello world
-
-```python
-from indexpy.view import View
-
-
-class HTTP(View):
-
-    def get(self):
-        return "hello world"
 ```
