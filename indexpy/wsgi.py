@@ -37,8 +37,7 @@ class Body:
         * Call _read(negative) to read all data in buffer
         """
         while self._has_more and not self.buffer:
-            if not self.recv_event.is_set():
-                self.recv_event.set()
+            self.recv_event.set()
             logger.debug("Waiting body data...")
             time.sleep(0.25)
 
