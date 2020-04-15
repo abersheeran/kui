@@ -2,6 +2,7 @@
 Load some preset functions into Index
 """
 import os
+import logging
 from typing import Optional
 
 from starlette.staticfiles import StaticFiles
@@ -9,6 +10,8 @@ from starlette.staticfiles import StaticFiles
 from .config import here
 from .autoreload import MonitorFile
 from .applications import Index
+
+logging.getLogger("multipart").setLevel(logging.INFO)
 
 app = Index()
 
