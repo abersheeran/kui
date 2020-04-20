@@ -54,6 +54,13 @@ def automatic(*args) -> Response:
     raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
 
 
+@automatic.register(type(None))
+def _none(ret: typing.Type[None]) -> typing.NoReturn:
+    raise TypeError(
+        "Get 'None'. Maybe you need to add a return statement to the function."
+    )
+
+
 @automatic.register(dict)
 def _json(body: typing.Dict, status: int = 200, headers: dict = None) -> Response:
     return JSONResponse(body, status, headers)

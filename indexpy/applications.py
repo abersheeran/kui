@@ -4,7 +4,6 @@ import typing
 import asyncio
 import traceback
 import importlib
-import warnings
 from types import ModuleType
 
 from starlette.types import Scope, Receive, Send, ASGIApp
@@ -23,7 +22,7 @@ from starlette.exceptions import HTTPException, ExceptionMiddleware
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
-from .responses import FileResponse, automatic
+from .responses import FileResponse, TemplateResponse, automatic
 from .background import (
     BackgroundTasks,
     after_response_tasks_var,
@@ -101,9 +100,10 @@ class Lifespan:
 
 
 class IndexFile:
-    def __init__(self, module_name: str, basepath: str) -> None:
+    def __init__(self, module_name: str, basepath: str, try_html: bool = True) -> None:
         self.module_name = module_name
         self.basepath = basepath
+        self.try_html = try_html
 
     def _split_path(self, path: str) -> typing.List[str]:
         """
@@ -210,6 +210,14 @@ class IndexFile:
 
         module = self.get_view(request.url.path)
         if module is None or not hasattr(module, "HTTP"):
+            if self.try_html:
+                # only html, no middleware/background tasks or other anything
+                html_path = os.path.join(here, "templates", *pathlist) + ".html"
+                if os.path.exists(html_path):
+                    await TemplateResponse(
+                        os.path.join(*pathlist) + ".html", {"request": request}
+                    )(scope, receive, send)
+                    return
             raise HTTPException(404)
 
         get_response = getattr(module, "HTTP")
@@ -360,20 +368,6 @@ class Index(metaclass=Singleton):
     def on_shutdown(self, func: typing.Callable) -> typing.Callable:
         self.lifespan.add_event_handler("shutdown", func)
         return func
-
-    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
-        # TODO delete this on 0.9
-        warnings.warn(
-            "`add_event_handler` has been deprecated, will be remove on 0.9, please use on_startup/on_shutdown."
-        )
-        self.lifespan.add_event_handler(event_type, func)
-
-    def on_event(self, event_type: str) -> typing.Callable:
-        # TODO delete this on 0.9
-        warnings.warn(
-            "`on_event` has been deprecated, will be remove on 0.9, please use on_startup/on_shutdown."
-        )
-        return self.lifespan.on_event(event_type)
 
     def mount(
         self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
