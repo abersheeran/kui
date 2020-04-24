@@ -1,5 +1,3 @@
-import os
-
 from click.testing import CliRunner
 
 from indexpy.cli import main
