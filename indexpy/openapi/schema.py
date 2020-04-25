@@ -52,13 +52,13 @@ def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
         properties: Dict[str, Any] = _schemas["properties"]
         _schemas["required"] = _schemas.get("required") or []
 
-        for name, schema in properties.items():
+        for name, schema in properties.items():  # type: str, Dict[str, str]
             result.append(
                 {
                     "in": position,
                     "name": name,
-                    "description": schema.pop("description"),
-                    "required": name in _schemas.get("required"),  # type: ignore
+                    "description": schema.pop("description", ""),
+                    "required": name in _schemas["required"],  # type: ignore
                     "schema": schema,
                 }
             )

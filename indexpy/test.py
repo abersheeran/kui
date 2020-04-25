@@ -61,7 +61,7 @@ class TestClient:
         return self.__client.__exit__()
 
 
-class TestView(unittest.TestCase):
+class TestView:
     @property
     def client(self) -> TestClient:
         app = Index()

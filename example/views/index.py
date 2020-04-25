@@ -7,7 +7,7 @@ from utils import db
 
 
 class Hello(models.Model):
-    name: str = models.Field("Aber", description="your name")
+    name: str = "Aber"
 
 
 class Message(models.Model):
