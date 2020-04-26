@@ -309,7 +309,6 @@ class Index(metaclass=Singleton):
                 exception_handlers[key] = value
 
         middlewares = [
-            Middleware(GZipMiddleware),
             Middleware(
                 CORSMiddleware,
                 allow_origins=config.CORS_ALLOW_ORIGINS,
