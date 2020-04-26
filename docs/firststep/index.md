@@ -1,7 +1,3 @@
-尽管我从没使用过PHP编写过任何程序，但我很喜欢它使用文件系统映射到 URI 的设计和它的热重载。
-
-那么，从安装开始吧。
-
 ## 安装
 
 Index.py 要求 Python 的版本至少是 3.6。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
@@ -18,11 +14,9 @@ pip install -U index.py
 pip install -U git+https://github.com/abersheeran/index.py
 ```
 
-## 第一步
+## 你好
 
-约定一个目录为项目的根目录，在其中创建名为 `views` 的文件夹，在其中创建 `index.py` 文件。
-
-将下面的代码写入 `index.py` 里。
+约定一个目录为项目的根目录，在其中创建 `views/index.py` 文件，将下面的代码写入该文件里。
 
 ```python
 from indexpy.view import View
@@ -31,13 +25,35 @@ from indexpy.view import View
 class HTTP(View):
 
     def get(self):
-        return "hello world"
+        return "你好~"
 ```
 
 在项目的根目录下，执行命令 `index-cli serve`。
 
-访问 [http://localhost:4190](http://localhost:4190) 吧！
+访问 [`http://localhost:4190`](http://localhost:4190) 吧！
 
-## 部署 Index
+## 响应 html
 
-借助 uvicorn 的高性能（CPython 里性能最好的 ASGI Server），你不需要额外的程序用于部署。`index-cli serve` 或 `index-cli gunicorn` 启动的服务足够用于任何单机就能解决的场景。
+在项目根目录下的 `templates` 文件夹里创建一个 `hi.html` 并写入任意的 html 内容。
+
+访问 [`http://localhost:4190/hi`](http://localhost:4190/hi) 就能看到页面。
+
+## 静态文件
+
+对于 Javascript、CSS、Image 等静态文件，放到项目根目录下的 `static` 里，就可以通过 `http://localhost:4190/static/文件名` 访问了。
+
+## 返回 JSON
+
+最常见的接口返回类型就是 JSON，那么让我们对第一步创建的 `index.py` 做一点修改：
+
+```python
+from indexpy.view import View
+
+
+class HTTP(View):
+
+    def get(self):
+        return {"key": "value"}
+```
+
+试着重新访问 [`http://localhost:4190`](http://localhost:4190)，如果不出意外，你就能看到 `{"key": "value"}`。

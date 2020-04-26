@@ -24,7 +24,7 @@ index-cli --env "test" test
 
 * `index-cli serve`
 
-    使用 uvicorn 启动 Index.py，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli serve main:app`。
+    使用 uvicorn 启动 Index，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli serve main:app`。
 
 ### index-cli gunicorn
 

@@ -7,19 +7,17 @@ theme:
   feature:
     tabs: true
 
-repo_name: abersheeran/index.py
+repo_name: index.py
 repo_url: https://github.com/abersheeran/index.py
 edit_uri: "https://github.com/abersheeran/index.py/tree/master/docs/"
 
 nav:
-  - Index.py:
-    - 介绍: "index.md"
-  - Get Start:
-    - First Step: 'firststep/index.md'
-    - Must know: 'firststep/mustknow.md'
-  - Configuration:
-    - Configuration: 'config/index.md'
-    - Available value: 'config/list.md'
+  - 介绍: "index.md"
+  - 简单使用:
+    - 第一步: 'firststep/index.md'
+  - 配置:
+    - 配置介绍: 'config/index.md'
+    - 配置列表: 'config/list.md'
   - HTTP:
     - HTTP: 'http/http.md'
     - Response: 'http/response.md'
@@ -37,6 +35,8 @@ nav:
     - 'test.md'
   - Command:
     - 'command.md'
+  - 额外知识:
+    - 热重载的注意事项: 'knowledge/hotreload.md'
 
 markdown_extensions:
   - markdown.extensions.codehilite:

@@ -1,8 +1,8 @@
-Index.py 内置的配置类 `indexpy.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
+Index 内置的配置类 `indexpy.config.Config` 是一个单例类，你可以在任何地方使用 `Config()`，它们都将返回同一个对象。
 
-所有配置都是大小写无关的，但推荐在程序中使用大写。
+所有配置都是大小写无关的，`Config().KEY` 等价于 `Config().Key` 和 `Config().key`。
 
-在 Index 启动时，它将自动从环境变量与项目根目录下 index.yaml / index.config 里读取配置。
+在 Index 启动时，它将自动从环境变量与项目根目录下 index.yaml / index.yml / index.json 里读取配置。
 
 !!! notice
     在 Index 运行之后更改配置文件或者环境变量并不会触发 Index 的热更新，你只能通过重启来使用新配置启动 Index。

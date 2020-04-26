@@ -30,7 +30,7 @@ class Test(TestView):
         assert resp.status_code == 200
 ```
 
-而 Test Client 的 websocket 请求部分，就像在 index.py 中使用 websocket 一样，同样有三对发送/接收数据的函数。
+而 Test Client 的 websocket 请求部分，就像在 Index 中使用 websocket 一样，同样有三对发送/接收数据的函数。
 
 你只需要使用 `self.client.websocket_connect()` 即可连接并测试。
 
