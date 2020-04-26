@@ -25,16 +25,11 @@ nav:
     - OpenAPI: 'http/openapi.md'
     - Exception: 'http/exception.md'
     - Background: 'http/background.md'
-  - WebSocket:
-    - 'websocket.md'
-  - Lifespan:
-    - 'event.md'
-  - Mount:
-    - 'mount.md'
-  - Test:
-    - 'test.md'
-  - Command:
-    - 'command.md'
+  - WebSocket: 'websocket.md'
+  - Lifespan: 'event.md'
+  - Mount: 'mount.md'
+  - Test: 'test.md'
+  - Command: 'command.md'
   - 额外知识:
     - 热重载的注意事项: 'knowledge/hotreload.md'
 
