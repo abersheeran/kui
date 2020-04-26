@@ -6,7 +6,6 @@ jobs:
   Linux-Test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
         python-version: [3.6, 3.7, 3.8]
 
@@ -28,7 +27,6 @@ jobs:
   Windows-Test:
     runs-on: windows-latest
     strategy:
-      max-parallel: 4
       matrix:
         python-version: [3.6, 3.7, 3.8]
 
@@ -50,7 +48,6 @@ jobs:
   MacOS-Test:
     runs-on: macos-latest
     strategy:
-      max-parallel: 4
       matrix:
         python-version: [3.6, 3.7, 3.8]
 
