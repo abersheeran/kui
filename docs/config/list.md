@@ -66,13 +66,13 @@ log_level   | logging
 
 ### AUTORELOAD
 
-**默认值:** `False`
+**默认值:** `True`
 
 `autoreload` 为真时，使用 `index-cli serve` 或 `index-cli gunicorn start` 时，将会监听当前的项目修改，自动重启服务。
 
 ### HOTRELOAD
 
-**默认值:** `True`
+**默认值:** `False`
 
 `hotreload` 为真时，将允许 Index 提供真正的热重载功能。
 
