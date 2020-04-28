@@ -6,7 +6,7 @@ import traceback
 import importlib
 from types import ModuleType
 
-from starlette.types import Scope, Receive, Send, ASGIApp
+from starlette.types import Scope, Receive, Send, ASGIApp, Message
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.requests import URL, Request
 from starlette.websockets import WebSocket, WebSocketClose
@@ -14,10 +14,10 @@ from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
+from starlette.routing import NoMatchFound
 
 from .types import WSGIApp
 from .utils import Singleton
@@ -385,6 +385,20 @@ class Index(metaclass=Singleton):
         if scope["type"] in ("http", "websocket"):
             path = scope["path"]
             root_path = scope.get("root_path", "")
+            has_received = False
+
+            async def subreceive() -> Message:
+                nonlocal has_received
+                has_received = True
+                return await receive()
+
+            async def subsend(message: Message) -> None:
+                if (
+                    message["type"] == "http.response.start"
+                    and message["status"] == 404
+                ):
+                    raise NoMatchFound()
+                await send(message)
 
             # Call into a submounted app, if one exists.
             for path_prefix, app in self.mount_apps.items():
@@ -396,8 +410,12 @@ class Index(metaclass=Singleton):
                 subscope = copy.deepcopy(scope)
                 subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
-                await app(subscope, receive, send)
-                return
+                try:
+                    await app(subscope, subreceive, subsend)
+                    return
+                except NoMatchFound:
+                    if has_received:  # has call received
+                        raise HTTPException(404)
 
             await self.indexfile(scope, receive, send)
 

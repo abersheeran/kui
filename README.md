@@ -14,7 +14,7 @@
 - 现代化的测试组件 (基于 pytest 与 requests)
 - 非常简单的部署 (基于 uvicorn 与 gunicorn)
 - 支持真正的热重载
-- 挂载 ASGI/WSGI 应用
+- 挂载 ASGI/WSGI 应用 (比 starlette 更易用)
 - 更好用的 background tasks
 - 可使用任何可用的 ASGI 生态
 
