@@ -46,7 +46,6 @@ def create_directories() -> None:
     """
     os.makedirs(os.path.join(here, "views"), exist_ok=True)
     os.makedirs(os.path.join(here, "static"), exist_ok=True)
-    os.makedirs(os.path.join(here, "templates"), exist_ok=True)
 
 
 @app.on_shutdown
@@ -63,4 +62,3 @@ def clear_directories() -> None:
 
     rmdir(os.path.join(here, "views"))
     rmdir(os.path.join(here, "static"))
-    rmdir(os.path.join(here, "templates"))

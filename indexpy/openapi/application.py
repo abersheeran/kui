@@ -12,7 +12,7 @@ from indexpy.responses import (
     YAMLResponse,
     HTMLResponse,
 )
-from indexpy.applications import Index
+from indexpy.applications import Index, IndexFile
 
 from .schema import schema_parameters, schema_request_body, schema_response
 
@@ -56,13 +56,17 @@ class OpenAPI:
 
     def _generate_paths(self) -> Dict[str, Any]:
         result = {}
-        for view, path in Index().indexfile.get_views():
-            if not hasattr(view, "HTTP"):
-                continue
-            viewclass = getattr(view, "HTTP")
-            path_docs = self._generate_path(viewclass, path)
-            if path_docs:
-                result[path] = path_docs
+        for app in reversed(
+            [Index().indexfile]
+            + [app for _, app in Index().mount_apps if isinstance(app, IndexFile)]
+        ):
+            for view, path in app.get_views():
+                if not hasattr(view, "HTTP"):
+                    continue
+                viewclass = getattr(view, "HTTP")
+                path_docs = self._generate_path(viewclass, path)
+                if path_docs:
+                    result[path] = path_docs
         return result
 
     def _generate_path(self, viewclass: object, path: str) -> Dict[str, Any]:

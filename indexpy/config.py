@@ -142,6 +142,8 @@ class Config(UpperDict, metaclass=Singleton):
         self["log_level"] = "info"
         self["hotreload"] = False
         self["autoreload"] = True
+        # template
+        self["templates"] = ("templates",)
         # url
         self["allow_underline"] = False
         # middleware

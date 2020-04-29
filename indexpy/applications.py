@@ -100,7 +100,7 @@ class Lifespan:
 
 
 class IndexFile:
-    def __init__(self, module_name: str, basepath: str, try_html: bool = True) -> None:
+    def __init__(self, module_name: str, basepath: str, try_html: bool = False) -> None:
         self.module_name = module_name
         self.basepath = basepath
         self.try_html = try_html
@@ -209,17 +209,18 @@ class IndexFile:
         pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
-        if module is None or not hasattr(module, "HTTP"):
+        if not hasattr(module, "HTTP"):
             if self.try_html:
                 pathlist = pathlist[1:]  # delete module_name from pathlist
-                # only html, no middleware/background tasks or other anything
-                html_path = os.path.join(here, "templates", *pathlist) + ".html"
-                if os.path.exists(html_path):
+                try:
+                    # only html, no middleware/background tasks or other anything
                     await TemplateResponse(
                         os.path.join(*pathlist) + ".html", {"request": request}
                     )(scope, receive, send)
                     return
-            raise HTTPException(404)
+                except LookupError:
+                    pass
+            raise NoMatchFound()
 
         get_response = getattr(module, "HTTP")
 
@@ -255,9 +256,8 @@ class IndexFile:
         websocket = WebSocket(scope, receive=receive, send=send)
 
         module = self.get_view(websocket.url.path)
-        if module is None or not hasattr(module, "Socket"):
-            await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
-            return
+        if not hasattr(module, "Socket"):
+            raise NoMatchFound()
 
         await getattr(module, "Socket")(websocket)
 
@@ -284,9 +284,9 @@ class IndexFile:
 
 class Index(metaclass=Singleton):
     def __init__(self) -> None:
-        self.indexfile = IndexFile("views", here)
+        self.indexfile = IndexFile("views", here, True)
         self.lifespan = Lifespan()
-        self.mount_apps: typing.Dict[str, ASGIApp] = {}
+        self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = []
         self.user_middlewares: typing.List[Middleware] = []
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable
@@ -379,7 +379,7 @@ class Index(metaclass=Singleton):
         if app_type == "wsgi":
             app = WSGIMiddleware(app)
         app = typing.cast(ASGIApp, app)
-        self.mount_apps.update({route: app})
+        self.mount_apps.append((route, app))
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] in ("http", "websocket"):
@@ -401,7 +401,7 @@ class Index(metaclass=Singleton):
                 await send(message)
 
             # Call into a submounted app, if one exists.
-            for path_prefix, app in self.mount_apps.items():
+            for path_prefix, app in self.mount_apps:
                 if not path.startswith(path_prefix + "/"):
                     continue
                 if isinstance(app, WSGIMiddleware):
@@ -417,7 +417,12 @@ class Index(metaclass=Singleton):
                     if has_received:  # has call received
                         raise HTTPException(404)
 
-            await self.indexfile(scope, receive, send)
+            try:
+                await self.indexfile(scope, receive, send)
+            except NoMatchFound:
+                if scope["type"] == "http":
+                    raise HTTPException(404)
+                await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
 
         elif scope["type"] == "lifespan":
             await self.lifespan(scope, receive, send)

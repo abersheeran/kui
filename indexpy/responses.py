@@ -12,7 +12,14 @@ from starlette.responses import (
     StreamingResponse,
     FileResponse,
 )
-from starlette.templating import Jinja2Templates as _Jinja2Templates
+from starlette.templating import (
+    Jinja2Templates as _Jinja2Templates,
+    BackgroundTask,
+    _TemplateResponse,
+)
+
+from .utils import Singleton
+from .config import Config
 
 __all__ = [
     "automatic",
@@ -28,14 +35,27 @@ __all__ = [
 ]
 
 
-class Jinja2Templates(_Jinja2Templates):
+class Jinja2Templates(_Jinja2Templates, metaclass=Singleton):
+    def __init__(self) -> None:
+        self.env = self.get_env(Config().TEMPLATES)
+
     def get_env(self, directory: str) -> jinja2.Environment:
         loader = jinja2.FileSystemLoader(directory)
         env = jinja2.Environment(loader=loader, autoescape=True)
         return env
 
 
-TemplateResponse = Jinja2Templates(directory="templates").TemplateResponse
+def TemplateResponse(
+    name: str,
+    context: dict,
+    status_code: int = 200,
+    headers: dict = None,
+    media_type: str = None,
+    background: BackgroundTask = None,
+) -> _TemplateResponse:
+    return Jinja2Templates().TemplateResponse(
+        name, context, status_code, headers, media_type, background
+    )
 
 
 class YAMLResponse(Response):
