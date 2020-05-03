@@ -1,5 +1,13 @@
 [[package]]
 category = "main"
+description = "Convert WSGI app to ASGI app."
+name = "a2wsgi"
+optional = false
+python-versions = ">=3.6,<4.0"
+version = "0.2.0"
+
+[[package]]
+category = "main"
 description = "File support for asyncio."
 name = "aiofiles"
 optional = false
@@ -813,10 +821,14 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "409f3c6d39cc7a752eacd256b93c60eeb59314976fb679e24ff184dc1c9da0a3"
+content-hash = "e52c833909b889e55ca5ceb5d38254e38235b298389e717e18c3cf95471747c4"
 python-versions = "^3.6"
 
 [metadata.files]
+a2wsgi = [
+    {file = "a2wsgi-0.2.0-py3-none-any.whl", hash = "sha256:96dba6d2a8a559de33f8c2f3db51b3a5fd8f387f6e95153a9cf1f34c52c0177d"},
+    {file = "a2wsgi-0.2.0.tar.gz", hash = "sha256:7455c98ba51f9bd1194ae3841df955fa33933cc828ed6c0a76adc6cb9155273e"},
+]
 aiofiles = [
     {file = "aiofiles-0.5.0-py3-none-any.whl", hash = "sha256:377fdf7815cc611870c59cbd07b68b180841d2a2b79812d8c218be02448c2acb"},
     {file = "aiofiles-0.5.0.tar.gz", hash = "sha256:98e6bcfd1b50f97db4980e182ddd509b7cc35909e903a8fe50d8849e02d815af"},

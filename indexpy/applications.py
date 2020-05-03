@@ -6,6 +6,7 @@ import traceback
 import importlib
 from types import ModuleType
 
+from a2wsgi import WSGIMiddleware
 from starlette.types import Scope, Receive, Send, ASGIApp, Message
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.requests import URL, Request
@@ -28,7 +29,6 @@ from .background import (
     after_response_tasks_var,
     finished_response_tasks_var,
 )
-from .wsgi import WSGIMiddleware
 
 
 class Lifespan:

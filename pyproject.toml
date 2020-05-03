@@ -21,6 +21,7 @@ index-cli = "indexpy.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.6"
+a2wsgi = "^0.2.0"
 gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
 starlette = "^0.13.1"
