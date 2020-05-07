@@ -36,15 +36,6 @@ class Lifespan:
         self.on_startup: typing.Dict[str, typing.Callable] = {}
         self.on_shutdown: typing.Dict[str, typing.Callable] = {}
 
-    def on_event(self, event_type: str) -> typing.Callable:
-        """Wrapper add_event_type"""
-
-        def add_event_handler(func: typing.Callable) -> typing.Callable:
-            self.add_event_handler(event_type, func)
-            return func
-
-        return add_event_handler
-
     def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
         if event_type == "startup":
             self.on_startup[func.__qualname__] = func

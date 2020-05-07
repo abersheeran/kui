@@ -1,4 +1,5 @@
 import asyncio
+from functools import wraps
 
 import pytest
 
@@ -43,6 +44,22 @@ async def test_complicating_2():
 
 @pytest.mark.asyncio
 async def test_complicating_3():
+    def d(func):
+        @wraps(func)
+        def f(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return f
+
+    @d
+    async def t():
+        pass
+
+    assert complicating(t) is t
+
+
+@pytest.mark.asyncio
+async def test_complicating_4():
     @asyncio.coroutine
     def t():
         pass
@@ -52,7 +69,7 @@ async def test_complicating_3():
 
 
 @pytest.mark.asyncio
-async def test_complicating_4():
+async def test_complicating_5():
     def func():
         """t"""
 
