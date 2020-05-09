@@ -13,7 +13,11 @@ import uvicorn
 from .utils import import_module
 from .config import here, LOG_LEVELS, Config
 from .applications import Index
-from .test import cmd_test
+try:
+    from .test import cmd_test
+except ImportError as e:
+    def cmd_test(): # type: ignore
+        raise e
 from .autoreload import cmd_check
 from .__version__ import __version__
 

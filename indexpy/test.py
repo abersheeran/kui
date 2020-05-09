@@ -4,15 +4,11 @@ import sys
 import typing
 
 import click
+import pytest
 import requests
 from requests import Response
 from uvicorn.importer import import_from_string
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
-
-try:
-    import pytest
-except ImportError:
-    pytest = None
 
 from .applications import Index
 from .config import here, LOG_LEVELS, Config
@@ -92,7 +88,6 @@ class LiteralOption(click.Option):
 @click.option("--args", cls=LiteralOption, default="[]")
 @click.argument("path", default="")
 def cmd_test(application: str, args: typing.List[str], path: str):
-    assert pytest, "Must install pytest to use test"
     app: Index = import_from_string(application)
     pytest_args = [
         f"--rootdir={os.getcwd()}",

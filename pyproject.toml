@@ -21,24 +21,22 @@ index-cli = "indexpy.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-a2wsgi = "^0.3.1"
+starlette = "^0.13.1"
 gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
-starlette = "^0.13.1"
-requests = "^2.23.0"
+a2wsgi = "^0.3.1"
 aiofiles = "^0.5.0"
 jinja2 = "^2.10.3"
 python-multipart = "^0.0.5"
 pyyaml = "^5.3"
 pydantic = "^1.5"
+watchdog = "^0.10.2"
 contextvars = { version="^2.4", python= "~3.6" }
+requests = { version="^2.23.0", optional=true }
 pytest = { version="^5.4.1", optional=true }
-watchdog = { version="^0.10.2", optional=true }
 
 [tool.poetry.extras]
-test = ["pytest"]
-hotreload = ["watchdog"]
-full = ["pytest", "watchdog"]
+test = ["pytest", "requests"]
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"
