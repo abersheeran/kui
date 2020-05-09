@@ -63,24 +63,25 @@ app.mount(
 如下例所示，只需要在视图函数中增加对应名称的参数即可使用更 Python 的方式去解析 HTTP 请求。
 
 ```python
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.responses import TemplateResponse
-from indexpy.openapi import models, describe
+from indexpy.http.responses import TemplateResponse
+from indexpy.openapi import describe
+from pydantic import BaseModel
 
 
-class Hello(models.Model):
+class Hello(BaseModel):
     name: str = models.Field("Aber", description="your name")
 
 
-class Message(models.Model):
+class Message(BaseModel):
     """your message"""
 
     name: str = models.Field(..., description="your name")
     text: str = models.Field(..., description="what are you want to say?")
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     async def get(self, query: Hello):
         """
         welcome page
@@ -128,30 +129,31 @@ async def catch_validation_error(
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
 
 ```python
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.responses import TemplateResponse
-from indexpy.openapi import models, describe
+from indexpy.http.responses import TemplateResponse
+from indexpy.openapi import describe
+from pydantic import BaseModel
 
 
-class Hello(models.Model):
+class Hello(BaseModel):
     name: str = models.Field("Aber", description="your name")
 
 
-class Message(models.Model):
+class Message(BaseModel):
     """your message"""
 
     name: str = models.Field(..., description="your name")
     text: str = models.Field(..., description="what are you want to say?")
 
 
-class MessageResponse(models.Model):
+class MessageResponse(BaseModel):
     """message response"""
 
     message: Message
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     @describe(
         200,
         """

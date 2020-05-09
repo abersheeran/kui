@@ -1,11 +1,8 @@
 import typing
 
-from starlette.requests import Request
-from starlette.responses import Response
-
-from .concurrency import keepasync
-from .responses import automatic
-from .types import HTTPFunc
+from ..concurrency import keepasync
+from .responses import Response, automatic
+from .request import Request
 
 
 MiddlewareMeta = keepasync("process_request", "process_response")
@@ -15,10 +12,10 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
 
     mounts: typing.Sequence[typing.Callable] = ()
 
-    def __init__(self, get_response: HTTPFunc) -> None:
+    def __init__(self, get_response: typing.Callable) -> None:
         self.get_response = self.mount_middleware(get_response)
 
-    def mount_middleware(self, get_response: HTTPFunc) -> HTTPFunc:
+    def mount_middleware(self, get_response: typing.Callable) -> typing.Callable:
         for middleware in reversed(self.mounts):
             get_response = middleware(get_response)
         return get_response

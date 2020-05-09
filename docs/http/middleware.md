@@ -4,7 +4,7 @@
 
 譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/*` 的请求。
 
-`Middleware` 需要继承 `indexpy.middleware.MiddlewareMixin`，有以下两个方法可以重写。
+`Middleware` 需要继承 `indexpy.http.MiddlewareMixin`，有以下两个方法可以重写。
 
 1. `process_request(request)`
 
@@ -25,16 +25,16 @@
     子中间件的执行顺序是从左到右。
 
 ```python
-from indexpy.middleware import MiddlewareMixin
-from indexpy import logger
+from indexpy.http import MiddlewareMixin
+
 
 
 class ExampleChildMiddleware(MiddlewareMixin):
     async def process_request(self, request):
-        logger.debug("enter first process request")
+        print("enter first process request")
 
     async def process_response(self, request, response):
-        logger.debug("enter last process response")
+        print("enter last process response")
         return response
 
 
@@ -42,9 +42,9 @@ class Middleware(MiddlewareMixin):
     mounts = (ExampleChildMiddleware,)
 
     async def process_request(self, request):
-        logger.debug("example base middleware request")
+        print("example base middleware request")
 
     async def process_response(self, request, response):
-        logger.debug("example base middleware response")
+        print("example base middleware response")
         return response
 ```

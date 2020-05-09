@@ -3,78 +3,8 @@ import typing
 
 from starlette import status
 from starlette.types import Message
-from starlette.responses import Response
-from starlette.websockets import WebSocket
-from starlette.requests import Request
-from pydantic import ValidationError
 
-from .concurrency import keepasync
-from .openapi import partial
-
-HTTP_METHOD_NAMES = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options",
-    "trace",
-]
-
-
-ViewMeta = keepasync(*HTTP_METHOD_NAMES)
-
-
-class View(metaclass=ViewMeta):  # type: ignore
-    def __init__(self, request: Request) -> None:
-        self.request = request
-
-    def __await__(self):
-        return self.__call__().__await__()
-
-    async def __call__(self) -> typing.Union[Response, typing.Tuple]:
-        # Try to dispatch to the right method; if a method doesn't exist,
-        # defer to the error handler. Also defer to the error handler if the
-        # request method isn't on the approved list.
-
-        if self.request.method.lower() in HTTP_METHOD_NAMES:
-            handler = getattr(
-                self, self.request.method.lower(), self.http_method_not_allowed
-            )
-        else:
-            handler = self.http_method_not_allowed
-
-        try:
-            handler = await partial(handler, self.request)
-        except ValidationError as e:
-            return await self.catch_validation_error(e)
-
-        return await handler()
-
-    async def catch_validation_error(
-        self, exception: ValidationError
-    ) -> typing.Union[Response, typing.Tuple]:
-        """
-        Used to handle request parsing errors
-        """
-        return {"error": exception.errors()}, 400
-
-    async def http_method_not_allowed(self) -> Response:
-        return Response(
-            status_code=405,
-            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"},
-        )
-
-    async def options(self) -> Response:
-        """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(
-            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"}
-        )
-
-    @classmethod
-    def allowed_methods(cls) -> typing.List[str]:
-        return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)]
+from .request import WebSocket
 
 
 class SocketView:

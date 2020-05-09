@@ -13,13 +13,12 @@ from starlette.responses import (
     FileResponse,
 )
 from starlette.templating import (
-    Jinja2Templates as _Jinja2Templates,
     BackgroundTask,
     _TemplateResponse,
 )
 
-from .utils import Singleton
-from .config import Config
+from ..utils import Singleton
+from ..config import Config
 
 __all__ = [
     "automatic",
@@ -35,14 +34,41 @@ __all__ = [
 ]
 
 
-class Jinja2Templates(_Jinja2Templates, metaclass=Singleton):
+class Jinja2Templates(metaclass=Singleton):
     def __init__(self) -> None:
-        self.env = self.get_env(Config().TEMPLATES)
+        self.loader = jinja2.FileSystemLoader(Config().TEMPLATES)
 
-    def get_env(self, directory: str) -> jinja2.Environment:
-        loader = jinja2.FileSystemLoader(directory)
-        env = jinja2.Environment(loader=loader, autoescape=True)
-        return env
+    @property
+    def env(self) -> jinja2.Environment:  # type: ignore
+        if not hasattr(self, "_env"):
+            self._env = jinja2.Environment(loader=self.loader, autoescape=True)
+        return self._env
+
+    @env.setter  # type: ignore
+    def set_env(self, value: jinja2.Environment) -> None:
+        self._env = value
+
+    def get_template(self, name: str) -> jinja2.Template:
+        return self.env.get_template(name)
+
+    def TemplateResponse(
+        self,
+        name: str,
+        context: dict,
+        status_code: int = 200,
+        headers: dict = None,
+        media_type: str = None,
+        background: BackgroundTask = None,
+    ) -> _TemplateResponse:
+        template = self.get_template(name)
+        return _TemplateResponse(
+            template,
+            context,
+            status_code=status_code,
+            headers=headers,
+            media_type=media_type,
+            background=background,
+        )
 
 
 def TemplateResponse(
@@ -81,6 +107,8 @@ def _none(ret: typing.Type[None]) -> typing.NoReturn:
     )
 
 
+@automatic.register(tuple)
+@automatic.register(list)
 @automatic.register(dict)
 def _json(body: typing.Dict, status: int = 200, headers: dict = None) -> Response:
     return JSONResponse(body, status, headers)

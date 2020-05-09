@@ -7,12 +7,12 @@ from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
 from starlette.exceptions import HTTPException
 
-from indexpy.responses import (
+from ..http.responses import (
     JSONResponse,
     YAMLResponse,
     HTMLResponse,
 )
-from indexpy.applications import Index, IndexFile
+from ..applications import Index, IndexFile
 
 from .schema import schema_parameters, schema_request_body, schema_response
 

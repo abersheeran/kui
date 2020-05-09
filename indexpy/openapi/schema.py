@@ -2,9 +2,9 @@ from copy import deepcopy
 from typing import Any, List, Dict, Optional, Iterable, Mapping, Union
 
 import yaml
+from pydantic import BaseModel
 
 from .types import File
-from .models import Model
 
 
 def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
@@ -41,7 +41,7 @@ def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
     return schema
 
 
-def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
+def schema_parameter(m: Optional[BaseModel], position: str) -> List[Dict[str, Any]]:
     """
     position: "path", "query", "header", "cookie"
     """
@@ -66,7 +66,10 @@ def schema_parameter(m: Optional[Model], position: str) -> List[Dict[str, Any]]:
 
 
 def schema_parameters(
-    path: Model = None, query: Model = None, header: Model = None, cookie: Model = None,
+    path: BaseModel = None,
+    query: BaseModel = None,
+    header: BaseModel = None,
+    cookie: BaseModel = None,
 ) -> List[Dict[str, Any]]:
 
     return (
@@ -77,7 +80,7 @@ def schema_parameters(
     )
 
 
-def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
+def schema_request_body(body: BaseModel = None) -> Optional[Dict[str, Any]]:
     if body is None:
         return None
 
@@ -96,7 +99,7 @@ def schema_request_body(body: Model = None) -> Optional[Dict[str, Any]]:
     }
 
 
-def schema_response(model: Union[Model, str]) -> Dict[str, Any]:
+def schema_response(model: Union[BaseModel, str]) -> Dict[str, Any]:
     if isinstance(model, str):
         return yaml.safe_load(model.strip())
     return {"application/json": {"schema": replace_definitions(model.schema())}}

@@ -1,16 +1,17 @@
 from tempfile import TemporaryFile
 
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.openapi import models, describe
+from indexpy.openapi import describe
 from indexpy.openapi.types import File
+from pydantic import BaseModel
 
 
-class MultipartForm(models.Model):
+class MultipartForm(BaseModel):
     file: File
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     @describe(
         200,
         """

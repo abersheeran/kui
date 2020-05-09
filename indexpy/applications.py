@@ -9,8 +9,9 @@ from types import ModuleType
 from a2wsgi import WSGIMiddleware
 from starlette.types import Scope, Receive, Send, ASGIApp, Message
 from starlette.status import WS_1001_GOING_AWAY
-from starlette.requests import URL, Request
-from starlette.websockets import WebSocket, WebSocketClose
+from starlette.requests import URL
+from starlette.websockets import WebSocketClose
+from starlette.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -23,18 +24,30 @@ from starlette.routing import NoMatchFound
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
-from .responses import FileResponse, TemplateResponse, automatic
-from .background import (
+from .http.request import Request
+from .http.responses import FileResponse, TemplateResponse, automatic, Jinja2Templates
+from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
     finished_response_tasks_var,
 )
+from .websocket.request import WebSocket
+from .preset import (
+    check_on_startup,
+    clear_check_on_shutdown,
+    create_directories,
+    clear_directories,
+)
 
 
 class Lifespan:
-    def __init__(self) -> None:
-        self.on_startup: typing.Dict[str, typing.Callable] = {}
-        self.on_shutdown: typing.Dict[str, typing.Callable] = {}
+    def __init__(
+        self,
+        on_startup: typing.Dict[str, typing.Callable] = None,
+        on_shutdown: typing.Dict[str, typing.Callable] = None,
+    ) -> None:
+        self.on_startup: typing.Dict[str, typing.Callable] = on_startup or {}
+        self.on_shutdown: typing.Dict[str, typing.Callable] = on_shutdown or {}
 
     def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
         if event_type == "startup":
@@ -91,6 +104,9 @@ class Lifespan:
 
 
 class IndexFile:
+    HTTPClass = Request
+    WSClass = WebSocket
+
     def __init__(self, module_name: str, basepath: str, try_html: bool = False) -> None:
         self.module_name = module_name
         self.basepath = basepath
@@ -196,7 +212,7 @@ class IndexFile:
                 yield module, path
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
-        request = Request(scope, receive)
+        request = self.HTTPClass(scope, receive)
         pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
@@ -244,7 +260,7 @@ class IndexFile:
             await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        websocket = WebSocket(scope, receive=receive, send=send)
+        websocket = self.WSClass(scope, receive=receive, send=send)
 
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
@@ -276,8 +292,21 @@ class IndexFile:
 class Index(metaclass=Singleton):
     def __init__(self) -> None:
         self.indexfile = IndexFile("views", here, True)
-        self.lifespan = Lifespan()
-        self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = []
+        self.lifespan = Lifespan(
+            on_startup={
+                check_on_startup.__qualname__: check_on_startup,
+                clear_check_on_shutdown.__qualname__: clear_check_on_shutdown,
+                create_directories.__qualname__: create_directories,
+                clear_directories.__qualname__: clear_directories,
+            }
+        )
+        self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
+            (
+                "/static",
+                StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
+            ),
+        ]
+        self.templates = Jinja2Templates()
         self.user_middlewares: typing.List[Middleware] = []
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable

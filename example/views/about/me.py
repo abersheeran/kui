@@ -1,9 +1,9 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
 from indexpy.openapi import describe
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     @describe(
         200,
         """

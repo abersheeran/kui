@@ -1,23 +1,23 @@
 from typing import Union, List
 
 from indexpy.openapi.schema import replace_definitions
-from indexpy.openapi import models
+from pydantic import BaseModel
 
 
 def test_schema_models():
-    class Foo(models.Model):
+    class Foo(BaseModel):
         foo: int
 
-    class Bar(models.Model):
+    class Bar(BaseModel):
         bar: str
 
-    class A(models.Model):
+    class A(BaseModel):
         a: Foo
 
-    class B(models.Model):
+    class B(BaseModel):
         b: Union[Foo, Bar]
 
-    class C(models.Model):
+    class C(BaseModel):
         c: List[Foo]
 
     assert replace_definitions(A.schema()) == {

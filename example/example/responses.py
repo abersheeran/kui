@@ -1,6 +1,6 @@
 import typing
 
-from indexpy.responses import automatic, Response, JSONResponse
+from indexpy.http.responses import automatic, Response, JSONResponse
 
 
 @automatic.register(list)

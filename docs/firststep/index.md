@@ -19,10 +19,10 @@ pip install -U git+https://github.com/abersheeran/index.py
 约定一个目录为项目的根目录，在其中创建 `views/index.py` 文件，将下面的代码写入该文件里。
 
 ```python
-from indexpy.view import View
+from indexpy.http import HTTPView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
 
     def get(self):
         return "你好~"
@@ -47,10 +47,10 @@ class HTTP(View):
 最常见的接口返回类型就是 JSON，那么让我们对第一步创建的 `index.py` 做一点修改：
 
 ```python
-from indexpy.view import View
+from indexpy.http import HTTPView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
 
     def get(self):
         return {"key": "value"}

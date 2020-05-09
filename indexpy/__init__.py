@@ -1,18 +1,20 @@
 import sys
-import logging
 import importlib
 
 from .utils import State
 from .applications import Index
 from .config import here, Config
 
-__all__ = ["logger", "Index", "Config"]
+__all__ = ["Index", "Config", "g"]
 
+# default app
 app = Index()
-logger = logging.getLogger("indexpy")
+
 # global state
 g = State()
 
+# Current working directory first
 sys.path.insert(0, here)
+
 # loading preset functions
 importlib.import_module("indexpy.preset")

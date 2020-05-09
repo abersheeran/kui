@@ -1,6 +1,6 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.background import finished_response
+from indexpy.http import finished_response
 
 
 @finished_response
@@ -8,7 +8,7 @@ def onlytest():
     _ = ...
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     def get(self):
         onlytest()
         raise ValueError("some error")

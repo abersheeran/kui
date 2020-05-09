@@ -1,5 +1,4 @@
-from indexpy.middleware import MiddlewareMixin
-from indexpy import logger
+from indexpy.http import MiddlewareMixin
 
 
 class EmptyMiddleware(MiddlewareMixin):
@@ -10,8 +9,8 @@ class Middleware(MiddlewareMixin):
     mounts = (EmptyMiddleware,)
 
     async def process_request(self, request):
-        logger.debug("enter second process request")
+        print("enter second process request")
 
     async def process_response(self, request, response):
-        logger.debug("enter second last process response")
+        print("enter second last process response")
         return response

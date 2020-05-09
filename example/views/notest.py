@@ -1,5 +1,5 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     pass

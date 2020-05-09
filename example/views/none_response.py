@@ -1,8 +1,8 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     async def get(self):
         pass
 

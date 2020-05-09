@@ -26,20 +26,25 @@ gunicorn = "^20.0.4"
 uvicorn = "^0.11.3"
 starlette = "^0.13.1"
 requests = "^2.23.0"
-pytest = "^5.4.1"
 aiofiles = "^0.5.0"
 jinja2 = "^2.10.3"
-watchdog = "^0.10.2"
 python-multipart = "^0.0.5"
 pyyaml = "^5.3"
 pydantic = "^1.5"
 contextvars = { version="^2.4", python= "~3.6" }
+pytest = { version="^5.4.1", optional=true }
+watchdog = { version="^0.10.2", optional=true }
+
+[tool.poetry.extras]
+test = ["pytest"]
+hotreload = ["watchdog"]
+full = ["pytest", "watchdog"]
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"
 flake8 = "^3.7.9"
 black = "^19.10b0"
-pytest-asyncio = "^0.10.0"
+pytest-asyncio = "^0.12"
 coverage = "^5.0.3"
 django = "^3.0.2"
 # only docs

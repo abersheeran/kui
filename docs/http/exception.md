@@ -5,7 +5,7 @@
 ```python
 from indexpy import Index
 from indexpy.types import Request, Response
-from indexpy.responses import PlainTextResponse
+from indexpy.http.responses import PlainTextResponse
 from starlette.exceptions import HTTPException
 
 app = Index()

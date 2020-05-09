@@ -1,7 +1,6 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.background import after_response, finished_response
-from indexpy import logger
+from indexpy.http import after_response, finished_response
 
 
 @finished_response
@@ -11,13 +10,13 @@ def onlytest():
 
 @after_response
 def only_print(message: str) -> None:
-    logger.debug(message)
+    print(message)
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     async def get(self):
         only_print("world")
-        logger.debug("hello")
+        print("hello")
         onlytest()
         return ""
 

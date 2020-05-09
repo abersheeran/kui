@@ -8,10 +8,12 @@ Index 允许注册若干个事件处理程序，以处理在应用程序启动�
 你可以用装饰器语法注册事件处理程序：
 
 ```python
+import logging
+
 from indexpy import Index
-from indexpy.config import logger
 
 app = Index()
+logger = logging.getLogger("example")
 
 
 @app.on_startup

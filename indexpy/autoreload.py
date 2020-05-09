@@ -59,7 +59,7 @@ def _import(abspath: str, nosleep: bool = False):
     try:
         return importlib.import_module(relpath.replace("/", "."))
     except SyntaxError:
-        logger.debug(f"load fail {abspath}")
+        print(f"load fail {abspath}")
 
 
 def _reload(abspath: str) -> None:
@@ -81,11 +81,11 @@ class MonitorFileEventHandler(FileSystemEventHandler):
         return super().dispatch(event)
 
     def on_modified(self, event: FileSystemEvent):
-        logger.debug(f"reloading {event.src_path}")
+        print(f"reloading {event.src_path}")
         threading.Thread(target=_reload, args=(event.src_path,), daemon=True).start()
 
     def on_created(self, event: FileSystemEvent):
-        logger.debug(f"loading {event.src_path}")
+        print(f"loading {event.src_path}")
         threading.Thread(target=_import, args=(event.src_path,), daemon=True).start()
 
 

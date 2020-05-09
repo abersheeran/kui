@@ -5,41 +5,27 @@ import os
 import logging
 from typing import Optional
 
-from starlette.staticfiles import StaticFiles
-
 from .config import here
 from .autoreload import MonitorFile
-from .applications import Index
 
 logging.getLogger("multipart").setLevel(logging.INFO)
-
-app = Index()
-
-app.mount(
-    "/static",
-    StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
-    "asgi",
-)
 
 
 monitor: Optional[MonitorFile] = None
 
 
-@app.on_startup
 def check_on_startup() -> None:
     # monitor file event
     global monitor
     monitor = MonitorFile(here)
 
 
-@app.on_shutdown
 def clear_check_on_shutdown() -> None:
     global monitor
     if monitor is not None:
         monitor.stop()
 
 
-@app.on_startup
 def create_directories() -> None:
     """
     create directories for static & template
@@ -48,7 +34,6 @@ def create_directories() -> None:
     os.makedirs(os.path.join(here, "static"), exist_ok=True)
 
 
-@app.on_shutdown
 def clear_directories() -> None:
     """
     if no files exist in the directory, delete them

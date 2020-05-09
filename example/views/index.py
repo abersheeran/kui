@@ -1,29 +1,30 @@
-from indexpy.view import View
+from indexpy.http import HTTPView
 from indexpy.test import TestView
-from indexpy.responses import TemplateResponse
-from indexpy.openapi import models, describe
+from indexpy.http.responses import TemplateResponse
+from indexpy.openapi import describe
+from pydantic import BaseModel, Field
 
 from utils import db
 
 
-class Hello(models.Model):
+class Hello(BaseModel):
     name: str = "Aber"
 
 
-class Message(models.Model):
+class Message(BaseModel):
     """your message"""
 
-    name: str = models.Field(..., description="your name")
-    text: str = models.Field(..., description="what are you want to say?")
+    name: str = Field(..., description="your name")
+    text: str = Field(..., description="what are you want to say?")
 
 
-class MessageResponse(models.Model):
+class MessageResponse(BaseModel):
     """message response"""
 
     message: Message
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     @describe(
         200,
         """

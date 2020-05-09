@@ -3,17 +3,15 @@ from typing import (
     Any,
     Tuple,
     Union,
-    Awaitable,
     Callable,
     Iterable,
 )
+from .http.request import Request
+from .http.responses import Response
+from .websocket.request import WebSocket
 
-from starlette.requests import Request
-from starlette.responses import Response
 
 # WSGI: view PEP3333
 Environ = MutableMapping[str, Any]
 StartResponse = Callable[[str, Iterable[Tuple[str, str]]], None]
 WSGIApp = Callable[[Environ, StartResponse], Iterable[Union[str, bytes]]]
-
-HTTPFunc = Callable[[Request], Awaitable[Union[Response, Tuple]]]

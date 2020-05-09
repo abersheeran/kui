@@ -1,10 +1,11 @@
 from indexpy import g
-from indexpy.view import View, SocketView
-from indexpy.responses import TemplateResponse
+from indexpy.http import HTTPView
+from indexpy.http.responses import TemplateResponse
+from indexpy.websocket import SocketView
 from indexpy.test import TestView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     def get(self):
         return TemplateResponse("chat.html", {"request": self.request})
 

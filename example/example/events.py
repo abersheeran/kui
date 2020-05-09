@@ -1,4 +1,8 @@
-from indexpy import app, logger
+import logging
+
+from indexpy import app
+
+logger = logging.getLogger(__name__)
 
 
 @app.on_startup

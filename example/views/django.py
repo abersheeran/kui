@@ -1,10 +1,11 @@
 from starlette.testclient import TestClient
-from indexpy.view import View, SocketView
+from indexpy.http import HTTPView
+from indexpy.websocket import SocketView
 from indexpy.test import TestView
 from indexpy import Index
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     async def get(self):
         return "/django"
 

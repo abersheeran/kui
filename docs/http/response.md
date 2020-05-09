@@ -19,11 +19,11 @@
 Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
 
 ```python
-from indexpy.view import View
-from indexpy.responses import TemplateResponse
+from indexpy.http import HTTPView
+from indexpy.http.responses import TemplateResponse
 
 
-class HTTP(View):
+class HTTP(HTTPView):
     def get(self):
         return TemplateResponse("chat.html", {"request": self.request})
 ```
@@ -43,7 +43,7 @@ class HTTP(View):
 以下是一个处理 `dict` 类型的返回值的例子。
 
 ```python
-from indexpy.responses import automatic
+from indexpy.http.responses import automatic
 
 
 @automatic.register(dict)
@@ -59,10 +59,10 @@ def _automatic(
 再接着看下面这个类
 
 ```python
-from indexpy.view import View
+from indexpy.http import HTTPView
 
 
-class HTTP(View):
+class HTTP(HTTPView):
 
     async def get(self):
         return {"message": "some error in server"}, 500, {"server": "index.py"}
