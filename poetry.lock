@@ -4,7 +4,7 @@ description = "Convert WSGI app to ASGI app or ASGI app to WSGI app."
 name = "a2wsgi"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "0.3.1"
+version = "0.3.2"
 
 [[package]]
 category = "main"
@@ -369,7 +369,7 @@ description = "A Material Design theme for MkDocs"
 name = "mkdocs-material"
 optional = false
 python-versions = "*"
-version = "5.1.5"
+version = "5.1.6"
 
 [package.dependencies]
 Pygments = ">=2.4"
@@ -806,13 +806,13 @@ testing = ["jaraco.itertools", "func-timeout"]
 test = ["pytest", "requests"]
 
 [metadata]
-content-hash = "b54ab3d351ba199b9226b1b1597fbb4422d0bf322cc5182fb78e54cd2f27e868"
+content-hash = "c07caa6c2b892cca07ee2d670d39cee5d60c7564db44a54a38b5afe7b36b9336"
 python-versions = "^3.6"
 
 [metadata.files]
 a2wsgi = [
-    {file = "a2wsgi-0.3.1-py3-none-any.whl", hash = "sha256:a53dab3db713acbac50265857c922aac8772d48d3907940d696e3bb605773e69"},
-    {file = "a2wsgi-0.3.1.tar.gz", hash = "sha256:bc06570e4a8cfb6d91ee26bf1e0f4fd5c35937aee632c1acbe5c3b55c0bff044"},
+    {file = "a2wsgi-0.3.2-py3-none-any.whl", hash = "sha256:3c371348a2eacc9a3b4d547afd17f90f49c20c78ef04eda090b15c114097c421"},
+    {file = "a2wsgi-0.3.2.tar.gz", hash = "sha256:bef9e465be73453168c910da426c38d8474bd2f8413345ad62d35458bd052350"},
 ]
 aiofiles = [
     {file = "aiofiles-0.5.0-py3-none-any.whl", hash = "sha256:377fdf7815cc611870c59cbd07b68b180841d2a2b79812d8c218be02448c2acb"},
@@ -1017,8 +1017,8 @@ mkdocs = [
     {file = "mkdocs-1.1.tar.gz", hash = "sha256:9243291392f59e20b655e4e46210233453faf97787c2cf72176510e868143174"},
 ]
 mkdocs-material = [
-    {file = "mkdocs-material-5.1.5.tar.gz", hash = "sha256:84ab9a5ceaa5c1b25e70464e8da1f0a4c03dcf1bd6099cfba9fd541cf7876f6b"},
-    {file = "mkdocs_material-5.1.5-py2.py3-none-any.whl", hash = "sha256:6dafa092e30d04adaa46e63515b9180b61a26233cfe16d79168adc2dd91b3ea1"},
+    {file = "mkdocs-material-5.1.6.tar.gz", hash = "sha256:a50180157d0fb539022f8476e3220e45934610fc1d61f54efa6fe266681cb202"},
+    {file = "mkdocs_material-5.1.6-py2.py3-none-any.whl", hash = "sha256:e6678eac0aec6f50ed44042d00a985c4256a3148e1a560914a934de956210e6c"},
 ]
 mkdocs-material-extensions = [
     {file = "mkdocs-material-extensions-1.0b2.tar.gz", hash = "sha256:838580195f3f4d6c937238b1ce81365744348bca8bb2c694028aacf21bfac518"},
