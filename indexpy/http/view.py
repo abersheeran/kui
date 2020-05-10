@@ -48,7 +48,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         header = sig.parameters.get("header")
         if header:
             assert issubclass(header.annotation, BaseModel)
-            _header = header.annotation(**request.headers.to_dict())
+            _header = header.annotation(**request.headers)
             handler = functools.partial(handler, header=_header)
 
         cookie = sig.parameters.get("cookie")
