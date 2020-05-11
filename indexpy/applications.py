@@ -295,10 +295,12 @@ class Index(metaclass=Singleton):
         self.lifespan = Lifespan(
             on_startup={
                 check_on_startup.__qualname__: check_on_startup,
-                clear_check_on_shutdown.__qualname__: clear_check_on_shutdown,
                 create_directories.__qualname__: create_directories,
+            },
+            on_shutdown={
+                clear_check_on_shutdown.__qualname__: clear_check_on_shutdown,
                 clear_directories.__qualname__: clear_directories,
-            }
+            },
         )
         self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
             (
