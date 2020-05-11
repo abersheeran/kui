@@ -31,19 +31,20 @@ python-multipart = "^0.0.5"
 pyyaml = "^5.3"
 pydantic = "^1.5"
 watchdog = "^0.10.2"
-contextvars = { version="^2.4", python= "~3.6" }
-requests = { version="^2.23.0", optional=true }
-pytest = { version="^5.4.1", optional=true }
+contextvars = {version = "^2.4", python = "~3.6"}
+requests = {version = "^2.23.0", optional = true}
+pytest = {version = "^5.4.2", optional = true}
 
 [tool.poetry.extras]
 test = ["pytest", "requests"]
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.761"
-flake8 = "^3.7.9"
-black = "^19.10b0"
+mypy = "*"
+flake8 = "*"
+black = {version = "*", allow-prereleases = true}
+pytest = "^5.4.2"
+pytest-cov = "^2.8.1"
 pytest-asyncio = "^0.12"
-coverage = "^5.0.3"
 django = "^3.0.2"
 # only docs
 mkdocs = "*"

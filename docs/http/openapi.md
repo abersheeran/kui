@@ -9,7 +9,7 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 
 ```python
 from indexpy import Index
-from indexpy.openapi.application import OpenAPI
+from indexpy.openapi import OpenAPI
 
 app = Index()
 

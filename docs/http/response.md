@@ -1,8 +1,8 @@
 ## 响应类型
 
-对于任何正常处理的 HTTP 请求都必须返回一个 `index.responses.Response` 对象或者是它的子类对象。
+对于任何正常处理的 HTTP 请求都必须返回一个 `indexpy.http.responses.Response` 对象或者是它的子类对象。
 
-在 `index.repsonses` 里内置的可用对象如下：
+在 `index.http.repsonses` 里内置的可用对象如下：
 
 * [Response](https://www.starlette.io/responses/#response)
 * [HTMLResponse](https://www.starlette.io/responses/#htmlresponse)

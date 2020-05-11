@@ -12,7 +12,7 @@
 |views/api/create_article.py|/api/create-article
 |views/article/index.py|/article/
 
-`HTTP` 的类应从 `indexpy.view.View` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
+`HTTP` 的类应从 `indexpy.http.HTTPView` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
 
 - get
 - post

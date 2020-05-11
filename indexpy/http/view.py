@@ -24,6 +24,24 @@ HTTP_METHOD_NAMES = [
 ViewMeta = keepasync(*HTTP_METHOD_NAMES)
 
 
+def merge_list(
+    raw: typing.List[typing.Tuple[str, str]]
+) -> typing.Dict[str, typing.Union[typing.List[str], str]]:
+    """
+    If there are values with the same key value, they are merged into a List.
+    """
+    d: typing.Dict[str, typing.Union[typing.List[str], str]] = {}
+    for k, v in raw:
+        if k in d:
+            if isinstance(d[k], list):
+                typing.cast(typing.List, d[k]).append(v)
+            else:
+                d[k] = [typing.cast(str, d[k]), v]
+        else:
+            d[k] = v
+    return d
+
+
 class HTTPView(metaclass=ViewMeta):  # type: ignore
     def __init__(self, request: Request) -> None:
         self.request = request
@@ -39,37 +57,39 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         sig = signature(handler)
 
         # try to get parameters model and parse
-        query = sig.parameters.get("query")
-        if query:
-            assert issubclass(query.annotation, BaseModel)
-            _query = query.annotation(**request.query_params.to_dict())
-            handler = functools.partial(handler, query=_query)
+        if "query" in sig.parameters:
+            query_model = sig.parameters["query"].annotation
+            assert issubclass(query_model, BaseModel)
+            handler = functools.partial(
+                handler,
+                query=query_model(**merge_list(request.query_params.multi_items())),
+            )
 
-        header = sig.parameters.get("header")
-        if header:
-            assert issubclass(header.annotation, BaseModel)
-            _header = header.annotation(**request.headers)
-            handler = functools.partial(handler, header=_header)
+        if "header" in sig.parameters:
+            header_model = sig.parameters["header"].annotation
+            assert issubclass(header_model, BaseModel)
+            handler = functools.partial(
+                handler, header=header_model(**merge_list(request.headers.items()))
+            )
 
-        cookie = sig.parameters.get("cookie")
-        if cookie:
-            assert issubclass(cookie.annotation, BaseModel)
-            _cookie = cookie.annotation(**request.cookies)
-            handler = functools.partial(handler, cookie=_cookie)
+        if "cookie" in sig.parameters:
+            cookie_model = sig.parameters["cookie"].annotation
+            assert issubclass(cookie_model, BaseModel)
+            handler = functools.partial(handler, cookie=cookie_model(**request.cookies))
 
         # try to get body model and parse
-        body = sig.parameters.get("body")
-        if body:
-            assert issubclass(body.annotation, BaseModel)
+        if "body" in sig.parameters:
+            body_model = sig.parameters["body"].annotation
+            assert issubclass(body_model, BaseModel)
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:
                 _body_data = await request.form()
-            _body = body.annotation(**_body_data)
+            _body = body_model(**_body_data)
             handler = functools.partial(handler, body=_body)
         return handler
 
-    async def __call__(self) -> typing.Union[Response, typing.Tuple]:
+    async def __call__(self) -> typing.Union[Response, tuple]:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.

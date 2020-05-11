@@ -16,7 +16,7 @@ from starlette.datastructures import (
     Address,
     URL,
     Headers,
-    QueryParams as _QueryParams,
+    QueryParams,
     State,
 )
 from starlette.formparsers import (
@@ -32,20 +32,6 @@ from starlette.requests import (
     empty_send,
     ClientDisconnect,
 )
-
-
-class QueryParams(_QueryParams):
-    def to_dict(self) -> Dict[str, Union[List[str], str]]:
-        d: Dict[str, Union[List[str], str]] = {}
-        for k, v in self._list:
-            if k in d:
-                if isinstance(d[k], list):
-                    cast(List, d[k]).append(v)
-                else:
-                    d[k] = [cast(str, d[k]), v]
-            else:
-                d[k] = v
-        return d
 
 
 class HTTPConnection(Mapping):

@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
-from starlette.exceptions import HTTPException
+from starlette.routing import NoMatchFound
 
 from ..http.responses import (
     JSONResponse,
@@ -155,7 +155,7 @@ class OpenAPI:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http" or scope["path"] not in ("/", "/get"):
-            raise HTTPException(404)
+            raise NoMatchFound()
         request = Request(scope, receive, send)
 
         if scope["path"] == "/get":
@@ -163,7 +163,7 @@ class OpenAPI:
         elif scope["path"] == "/":
             handler = getattr(self, "template")
         else:
-            raise HTTPException(404)
+            raise NoMatchFound()
         response = await handler(request)
         await response(scope, receive, send)
 

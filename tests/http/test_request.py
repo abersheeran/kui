@@ -25,13 +25,13 @@ def test_request_url():
 def test_request_query_params():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        params = request.query_params.to_dict()
+        params = dict(request.query_params)
         response = JSONResponse({"params": params})
         await response(scope, receive, send)
 
     client = TestClient(app)
-    response = client.get("/?a=123&b=456&b=789")
-    assert response.json() == {"params": {"a": "123", "b": ["456", "789"]}}
+    response = client.get("/?a=123&b=456")
+    assert response.json() == {"params": {"a": "123", "b": "456"}}
 
 
 def test_request_headers():
