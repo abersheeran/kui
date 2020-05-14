@@ -291,7 +291,10 @@ class IndexFile:
 
 class Index(metaclass=Singleton):
     def __init__(self) -> None:
+        config = Config()
+
         self.indexfile = IndexFile("views", here, True)
+        self.templates = Jinja2Templates()
         self.lifespan = Lifespan(
             on_startup={
                 check_on_startup.__qualname__: check_on_startup,
@@ -308,8 +311,18 @@ class Index(metaclass=Singleton):
                 StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
             ),
         ]
-        self.templates = Jinja2Templates()
-        self.user_middlewares: typing.List[Middleware] = []
+        self.user_middlewares: typing.List[Middleware] = [
+            Middleware(
+                CORSMiddleware,
+                allow_origins=config.CORS_ALLOW_ORIGINS,
+                allow_methods=config.CORS_ALLOW_METHODS,
+                allow_headers=config.CORS_ALLOW_HEADERS,
+                allow_credentials=config.CORS_ALLOW_CREDENTIALS,
+                allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
+                expose_headers=config.CORS_EXPOSE_HEADERS,
+                max_age=config.CORS_MAX_AGE,
+            ),
+        ]
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable
         ] = {}
@@ -331,16 +344,7 @@ class Index(metaclass=Singleton):
                 exception_handlers[key] = value
 
         middlewares = [
-            Middleware(
-                CORSMiddleware,
-                allow_origins=config.CORS_ALLOW_ORIGINS,
-                allow_methods=config.CORS_ALLOW_METHODS,
-                allow_headers=config.CORS_ALLOW_HEADERS,
-                allow_credentials=config.CORS_ALLOW_CREDENTIALS,
-                allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
-                expose_headers=config.CORS_EXPOSE_HEADERS,
-                max_age=config.CORS_MAX_AGE,
-            ),
+            Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS),
             Middleware(
                 ServerErrorMiddleware, handler=error_handler, debug=config.DEBUG
             ),
@@ -350,7 +354,6 @@ class Index(metaclass=Singleton):
             middlewares.append(Middleware(HTTPSRedirectMiddleware))
 
         middlewares += [
-            Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS),
             Middleware(
                 ExceptionMiddleware, handlers=exception_handlers, debug=config.DEBUG
             ),
@@ -438,6 +441,9 @@ class Index(metaclass=Singleton):
                 except NoMatchFound:
                     if has_received:  # has call received
                         raise HTTPException(404)
+                except HTTPException as e:
+                    if e.status_code != 404 or has_received:
+                        raise e
 
             try:
                 await self.indexfile(scope, receive, send)

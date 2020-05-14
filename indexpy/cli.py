@@ -18,8 +18,8 @@ try:
     from .test import cmd_test
 except ImportError as e:
 
-    def cmd_test():  # type: ignore
-        raise e
+    def cmd_test(raise_exception=e):  # type: ignore
+        raise raise_exception
 
 
 from .autoreload import cmd_check
@@ -89,9 +89,6 @@ def serve(application):
 @click.argument("method", type=click.Choice(["start", "stop", "reload"]))
 @click.argument("application", default="indexpy:app")
 def gunicorn(workers, daemon, configuration, method, application):
-    if sys.platform in ("win32", "cygwin", "msys"):
-        raise RuntimeError("gunicorn can't run on windows system.")
-
     if method == "start":
         command = [
             "gunicorn -k uvicorn.workers.UvicornWorker",
