@@ -32,3 +32,9 @@ Websocket 的处理程序编写与 HTTP 类似，同样使用文件路径映射�
 - `receive_text`/`send_text`: 接收/发送 `text` 类型的数据
 
 - `receive_json`/`send_json`: 接收/发送 `bytes`/`text` 类型的数据，但以 JSON 格式作为中转。这意味着你可以直接发送/接收任何能被 `json.dumps`/`json.loads` 解析的对象。
+
+## 其他功能
+
+**TODO**
+
+正在为 uvicorn 编写 [Websocket Denial Response](https://asgi.readthedocs.io/en/latest/extensions.html#websocket-denial-response) 扩展，等待扩展发布后将新增 WebSocket 中间件功能。

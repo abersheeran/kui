@@ -110,7 +110,9 @@ def _none(ret: typing.Type[None]) -> typing.NoReturn:
 @automatic.register(tuple)
 @automatic.register(list)
 @automatic.register(dict)
-def _json(body: typing.Dict, status: int = 200, headers: dict = None) -> Response:
+def _json(
+    body: typing.Tuple[tuple, list, dict], status: int = 200, headers: dict = None
+) -> Response:
     return JSONResponse(body, status, headers)
 
 

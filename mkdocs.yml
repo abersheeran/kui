@@ -13,23 +13,18 @@ edit_uri: "https://github.com/abersheeran/index.py/tree/master/docs/"
 
 nav:
   - 介绍: "index.md"
-  - 简单使用:
+  - 教程:
     - 第一步: 'firststep/index.md'
-  - 配置:
-    - 配置介绍: 'config/index.md'
-    - 配置列表: 'config/list.md'
-  - HTTP:
-    - HTTP: 'http/http.md'
-    - Response: 'http/response.md'
-    - Middleware: 'http/middleware.md'
-    - OpenAPI: 'http/openapi.md'
-    - Exception: 'http/exception.md'
-    - Background: 'http/background.md'
+  - Config:
+    - 介绍: 'config/index.md'
+    - 列表: 'config/list.md'
+  - HTTP: 'http.md'
   - WebSocket: 'websocket.md'
   - Lifespan: 'event.md'
   - Mount: 'mount.md'
   - Test: 'test.md'
   - Command: 'command.md'
+  - OpenAPI: 'openapi.md'
   - 额外知识:
     - 热重载的注意事项: 'knowledge/hotreload.md'
 

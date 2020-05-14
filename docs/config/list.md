@@ -83,7 +83,7 @@ log_level   | logging
 
 **默认值:** `False`
 
-由于 Python 的 module 只允许字母、数字与下划线，但 URI 中出现出现下划线是被谷歌不推荐的，所以有了这个配置选项。
+由于 Python 的 module 只允许字母、数字与下划线，但 URI 中出现出现下划线是不推荐的，所以有了这个配置选项。
 
 当 `allow_underline` 为假时，如果 _ 存在于 URI 中，它将会被自动替换成 - 并且 301 跳转过去。
 
