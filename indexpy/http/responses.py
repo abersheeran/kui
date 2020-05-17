@@ -92,7 +92,7 @@ class YAMLResponse(Response):
 
 
 @functools.singledispatch
-def automatic(*args) -> Response:
+def automatic(*args: typing.Any) -> Response:
     # Response or Response subclass
     if isinstance(args[0], Response):
         return args[0]

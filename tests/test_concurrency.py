@@ -91,3 +91,18 @@ async def test_keepasync():
     await Test().hello()
     await Test().test()
     assert Test.test.__name__ == "test"
+
+
+@pytest.mark.asyncio
+async def test_keepasync_subclass():
+    class Base(metaclass=keepasync("hello", "test")):
+        def hello(self):
+            pass
+
+    class Sub(Base):
+        def test(self):
+            pass
+
+    await Sub().hello()
+    await Sub().test()
+    assert Sub.test.__name__ == "test"

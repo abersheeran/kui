@@ -27,7 +27,7 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
                 return func
         else:
             # callable object
-            if inspect.iscoroutinefunction(_func.__call__):  # type: ignore
+            if asyncio.iscoroutinefunction(getattr(_func, "__call__")):
                 return func
 
     @functools.wraps(func)
@@ -37,7 +37,7 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
     return wrapper
 
 
-def keepasync(*args: str) -> typing.Type[type]:
+def keepasync(*args: str) -> typing.Callable[..., type]:
     """
     Ensure that the specified method must be an asynchronous function
 
@@ -52,11 +52,16 @@ def keepasync(*args: str) -> typing.Type[type]:
     """
 
     class AlwaysAsyncMeta(type):
-        def __new__(cls, clsname, bases, clsdict):
+        def __new__(
+            cls: type,
+            clsname: str,
+            bases: typing.Tuple[type],
+            namespace: typing.Dict[str, typing.Any],
+        ):
             for name in args:
-                if name not in clsdict:
+                if name not in namespace:
                     continue
-                clsdict[name] = complicating(clsdict[name])
-            return super().__new__(cls, clsname, bases, clsdict)
+                namespace[name] = complicating(namespace[name])
+            return type.__new__(cls, clsname, bases, namespace)
 
     return AlwaysAsyncMeta

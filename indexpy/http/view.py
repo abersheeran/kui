@@ -55,27 +55,25 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
     ) -> typing.Optional[typing.Any]:
 
         sig = signature(handler)
+        params: typing.Dict[str, BaseModel] = {}
 
         # try to get parameters model and parse
         if "query" in sig.parameters:
             query_model = sig.parameters["query"].annotation
             assert issubclass(query_model, BaseModel)
-            handler = functools.partial(
-                handler,
-                query=query_model(**merge_list(request.query_params.multi_items())),
+            params["query"] = query_model(
+                **merge_list(request.query_params.multi_items())
             )
 
         if "header" in sig.parameters:
             header_model = sig.parameters["header"].annotation
             assert issubclass(header_model, BaseModel)
-            handler = functools.partial(
-                handler, header=header_model(**merge_list(request.headers.items()))
-            )
+            params["header"] = header_model(**merge_list(request.headers.items()))
 
         if "cookie" in sig.parameters:
             cookie_model = sig.parameters["cookie"].annotation
             assert issubclass(cookie_model, BaseModel)
-            handler = functools.partial(handler, cookie=cookie_model(**request.cookies))
+            params["cookie"] = cookie_model(**request.cookies)
 
         # try to get body model and parse
         if "body" in sig.parameters:
@@ -85,9 +83,9 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
                 _body_data = await request.json()
             else:
                 _body_data = await request.form()
-            _body = body_model(**_body_data)
-            handler = functools.partial(handler, body=_body)
-        return handler
+            params["body"] = body_model(**_body_data)
+
+        return functools.partial(handler, **params)
 
     async def __call__(self) -> typing.Union[Response, tuple]:
         # Try to dispatch to the right method; if a method doesn't exist,
@@ -110,7 +108,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
 
     async def catch_validation_error(
         self, e: ValidationError
-    ) -> typing.Union[Response, typing.Tuple]:
+    ) -> typing.Union[Response, tuple]:
         """
         Used to handle request parsing errors
         """
