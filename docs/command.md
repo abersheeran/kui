@@ -84,10 +84,6 @@ Options:
 * `index-cli test /::Test::test_get_0`: 指定一个测试函数
 * `index-cli test views/index.py::Test::test_get_0`: 指定一个测试函数(**与上一条命令等价**)
 
-### index-cli check
-
-这能遍历你项目里的所有 `.py` 文件，来检查其中是不是出现了不允许的 `import` 方法。至于原因，可以看看[ Python 的热重载](https://abersheeran.com/articles/Python-Reload/)。
-
 ## 自定义命令
 
 Index 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令支持。
@@ -117,7 +113,6 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  check       check .py files in program
   gunicorn    deploy by gunicorn
   only-print  Custom command
   serve       use only uvicorn

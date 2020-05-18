@@ -145,12 +145,3 @@ class MonitorFile:
         """drop observer"""
         self.observer.stop()
         self.observer.join()
-
-
-def cmd_check():
-    for root, _, files in os.walk(here):
-        for file in files:
-            if not file.endswith(".py"):
-                continue
-            abspath = os.path.join(root, file).replace("\\", "/")
-            _import(abspath, nosleep=True)

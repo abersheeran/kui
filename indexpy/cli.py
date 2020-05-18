@@ -22,7 +22,6 @@ except ImportError as e:
         raise raise_exception
 
 
-from .autoreload import cmd_check
 from .__version__ import __version__
 
 
@@ -114,6 +113,5 @@ def gunicorn(workers, daemon, configuration, method, application):
 
 
 main.command(name="test", help="run test")(cmd_test)
-main.command(name="check", help="check .py file in program")(cmd_check)
 
 import_module("commands")
