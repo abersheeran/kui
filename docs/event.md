@@ -27,4 +27,4 @@ def logger_on_shutdown():
 ```
 
 !!! notice
-    拥有相同 `__qualname__` 的函数将被最后一个所覆盖，不要在同一个文件内注册同名函数。
+    拥有相同 `__qualname__` 的函数将被最后一个所覆盖。
