@@ -87,6 +87,12 @@ log_level   | logging
 
 当 `allow_underline` 为假时，如果 _ 存在于 URI 中，它将会被自动替换成 - 并且 301 跳转过去。
 
+### TEMPLATES
+
+**默认值:** `("templates",)`
+
+通过这个值，可以控制 `TemplateResponse` 将在哪些路径下寻找模板。
+
 ### CORS_ALLOW_ORIGINS
 
 **默认值:** `()`

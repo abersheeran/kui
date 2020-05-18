@@ -4,7 +4,7 @@ from indexpy.http.responses import TemplateResponse
 from indexpy.openapi import describe
 from pydantic import BaseModel, Field
 
-from utils import db
+from utils.db import some_db_settings
 
 
 class Hello(BaseModel):
@@ -39,7 +39,7 @@ class HTTP(HTTPView):
         """
         return TemplateResponse(
             "home.html",
-            {"request": self.request, "db": db.some_db_settings, "name": query.name},
+            {"request": self.request, "db": some_db_settings, "name": query.name},
         )
 
     @describe(200, MessageResponse)

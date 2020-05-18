@@ -5,18 +5,20 @@ cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
 templates: ["templates", "other_templates"]
+autoreload: false
+hotreload: true
 
 # use in development
 dev:
     "host": "localhost"
     "debug": true
+    "log_level": "debug"
 
 # use in production
 pro:
     "host": "127.0.0.1"
     "port": "41900"
     "log_level": "warning"
-    "hotreload": false
 
 # use in test
 test:
