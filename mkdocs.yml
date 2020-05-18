@@ -34,7 +34,3 @@ markdown_extensions:
   - admonition
   - codehilite
   - extra
-
-extra:
-  search:
-    language: 'jp'
