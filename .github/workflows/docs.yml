@@ -1,9 +1,7 @@
 name: Deploy GitHub Pages
 
 on:
-  push:
-    tags:
-    - '*'
+  push
 
 jobs:
   build-and-deploy:
