@@ -37,16 +37,7 @@ __all__ = [
 class Jinja2Templates(metaclass=Singleton):
     def __init__(self) -> None:
         self.loader = jinja2.FileSystemLoader(Config().TEMPLATES)
-
-    @property
-    def env(self) -> jinja2.Environment:  # type: ignore
-        if not hasattr(self, "_env"):
-            self._env = jinja2.Environment(loader=self.loader, autoescape=True)
-        return self._env
-
-    @env.setter  # type: ignore
-    def set_env(self, value: jinja2.Environment) -> None:
-        self._env = value
+        self.env = jinja2.Environment(loader=self.loader, autoescape=True)
 
     def get_template(self, name: str) -> jinja2.Template:
         return self.env.get_template(name)
