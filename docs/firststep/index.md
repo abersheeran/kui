@@ -44,7 +44,7 @@ class HTTP(HTTPView):
 
 ## 返回 JSON
 
-最常见的接口返回类型就是 JSON，那么让我们对第一步创建的 `index.py` 做一点修改：
+最常见的接口返回类型就是 JSON，那么让我们对上面创建的 `index.py` 文件做一点修改：
 
 ```python
 from indexpy.http import HTTPView
