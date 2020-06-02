@@ -31,3 +31,7 @@ def test_url_about(run):
 
 def test_url_index(run):
     assert run(["test", "-app", "example:app", "/"]).exit_code == 0
+
+
+def test_example(run):
+    assert run(["test", "-app", "example:app"]).exit_code == 0
