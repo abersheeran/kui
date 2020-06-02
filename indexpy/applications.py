@@ -25,7 +25,7 @@ from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
 from .http.request import Request
-from .http.responses import FileResponse, TemplateResponse, automatic, Jinja2Templates
+from .http.responses import FileResponse, TemplateResponse, Jinja2Templates
 from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
@@ -246,10 +246,6 @@ class IndexFile:
 
             # get response
             response = await get_response(request)
-            if isinstance(response, tuple):
-                response = automatic(*response)
-            else:
-                response = automatic(response)
             response.background = after_response_tasks_var.get()
             await response(scope, receive, send)
         finally:

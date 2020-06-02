@@ -5,7 +5,7 @@ from inspect import signature
 from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
-from .responses import Response
+from .responses import Response, automatic
 from .request import Request
 
 
@@ -87,7 +87,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
 
         return functools.partial(handler, **params)
 
-    async def __call__(self) -> typing.Union[Response, tuple]:
+    async def __call__(self) -> Response:
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
@@ -102,9 +102,15 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         try:
             handler = await self.partial(handler, self.request)
         except ValidationError as e:
-            return await self.catch_validation_error(e)
+            resp = await self.catch_validation_error(e)
+        else:
+            resp = await handler()
 
-        return await handler()
+        if isinstance(resp, tuple):
+            resp = automatic(*resp)
+        else:
+            resp = automatic(resp)
+        return resp
 
     async def catch_validation_error(
         self, e: ValidationError
