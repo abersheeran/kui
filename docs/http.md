@@ -36,15 +36,21 @@
 
 在 `index.http.repsonses` 里内置的可用对象如下：
 
-* [Response](https://www.starlette.io/responses/#response)
-* [HTMLResponse](https://www.starlette.io/responses/#htmlresponse)
-* [PlainTextResponse](https://www.starlette.io/responses/#plaintextresponse)
-* [JSONResponse](https://www.starlette.io/responses/#jsonresponse)
-* [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
-* [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
-* [FileResponse](https://www.starlette.io/responses/#fileresponse)
+### [Response](https://www.starlette.io/responses/#response)
 
-* TemplateResponse
+### [HTMLResponse](https://www.starlette.io/responses/#htmlresponse)
+
+### [PlainTextResponse](https://www.starlette.io/responses/#plaintextresponse)
+
+### [JSONResponse](https://www.starlette.io/responses/#jsonresponse)
+
+### [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
+
+### [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
+
+### [FileResponse](https://www.starlette.io/responses/#fileresponse)
+
+### TemplateResponse
 
 Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
 
@@ -58,7 +64,7 @@ class HTTP(HTTPView):
         return TemplateResponse("chat.html", {"request": self.request})
 ```
 
-* YAMLResponse
+### YAMLResponse
 
 由于 YAML 与 JSON 的等价性，YAMLResponse 与 JSONResponse 的使用方法相同。
 
@@ -101,7 +107,7 @@ def _plain_text(
 
 在 `views` 中任意 `__init__.py` 中定义名为 `Middleware` 的类, 它将能处理所有通过该路径的 HTTP 请求。
 
-譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/*` 的请求。
+譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/###` 的请求。
 
 `Middleware` 需要继承 `indexpy.http.MiddlewareMixin`，有以下两个方法可以重写。
 
@@ -146,6 +152,8 @@ class Middleware(MiddlewareMixin):
         print("example base middleware response")
         return response
 ```
+
+## 自定义状态处理
 
 对于一些故意抛出的异常或者特定的 HTTP 状态码，Index 提供了方法进行统一处理。
 
