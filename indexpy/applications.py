@@ -38,7 +38,7 @@ from .preset import (
     create_directories,
     clear_directories,
 )
-
+from .parser import Parser
 
 class Lifespan:
     def __init__(
@@ -111,6 +111,7 @@ class IndexFile:
         self.module_name = module_name
         self.basepath = basepath
         self.try_html = try_html
+        self.parser = Parser(os.path.join(basepath, module_name))
 
     def _split_path(self, path: str) -> typing.List[str]:
         """
@@ -176,15 +177,19 @@ class IndexFile:
 
         return path
 
-    def get_view(self, path: str) -> typing.Optional[ModuleType]:
+    def get_view(self, path: str) -> typing.Optional[typing.Tuple[ModuleType, dict]]:
         """
         get module from url path
         """
-        module_name = self.get_module_name_from_path(path)
-        if module_name is None:
-            return None
 
-        return importlib.import_module(module_name)
+        module = self.parser.match_path(path)
+        if module is None:
+            return None
+        module_path = module['module']
+        params = module['params']
+        module_path = self.get_path_from_filepath(module_path)
+        module_name = self.get_module_name_from_path(module_path)
+        return importlib.import_module(module_name), params
 
     def get_views(self) -> typing.Iterator[typing.Tuple[ModuleType, str]]:
         """
@@ -206,7 +211,7 @@ class IndexFile:
                 path = self.get_path_from_filepath(abspath)
                 if path is None:
                     continue
-                module = self.get_view(path)
+                module, _ = self.get_view(path)
                 if module is None:
                     continue
                 yield module, path
@@ -215,7 +220,9 @@ class IndexFile:
         request = self.HTTPClass(scope, receive, send)
         pathlist = self._split_path(request.url.path)
 
-        module = self.get_view(request.url.path)
+        module, params = self.get_view(request.url.path)
+        request.set_params(params)
+
         if not hasattr(module, "HTTP"):
             if self.try_html:
                 pathlist = pathlist[1:]  # delete self.module_name from pathlist
@@ -239,6 +246,8 @@ class IndexFile:
             )
             # call middleware
             for deep in range(len(pathlist), 0, -1):
+                if not os.path.exists(os.path.join(*pathlist[:deep])):
+                    continue
                 module = importlib.import_module(".".join(pathlist[:deep]))
                 if not hasattr(module, "Middleware"):
                     continue

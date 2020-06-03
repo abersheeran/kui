@@ -111,7 +111,7 @@ class HTTPConnection(Mapping):
 
 class Request(HTTPConnection):
     def __init__(
-        self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send
+        self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send, params: dict = Dict
     ):
         super().__init__(scope)
         assert scope["type"] == "http"
@@ -119,6 +119,14 @@ class Request(HTTPConnection):
         self._send = send
         self._stream_consumed = False
         self._is_disconnected = False
+        self._params = params
+
+    @property
+    def params(self) -> dict:
+        return self._params
+
+    def set_params(self, params: dict):
+        self._params = params
 
     @property
     def method(self) -> str:
