@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Optional, Iterable, Mapping, Union
+from typing import Any, List, Dict, Optional, Iterable, Union, Sequence
 
 import yaml
 from pydantic import BaseModel
@@ -15,26 +15,28 @@ def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
 
     if schema.get("definitions") is not None:
 
-        def replace(mapping: Dict[str, Any]) -> None:
-            for _name in mapping.keys():
-                if _name == "$ref":
-                    define_schema = schema
-                    for key in mapping["$ref"][2:].split("/"):
-                        define_schema = define_schema[key]
-                    break
-                elif isinstance(mapping[_name], Mapping):
-                    replace(mapping[_name])
-                elif isinstance(mapping[_name], Iterable) and not isinstance(
-                    mapping[_name], str
-                ):
-                    for value in mapping[_name]:
-                        replace(value)
-            else:
+        def replace(value: Union[str, Sequence[Any], Dict[str, Any]]) -> None:
+            if isinstance(value, str):
                 return
-            # replace ref and del it
-            mapping.update(define_schema)
-            del mapping["$ref"]
+            elif isinstance(value, Sequence):
+                for _value in value:
+                    replace(_value)
+            elif isinstance(value, Dict):
+                for _name in tuple(value.keys()):
+                    if _name == "$ref":
+                        define_schema = schema
+                        for key in value["$ref"][2:].split("/"):
+                            define_schema = define_schema[key]
+                        # replace ref and del it
+                        value.update(define_schema)
+                        del value["$ref"]
+                    elif isinstance(value[_name], Dict):
+                        replace(value[_name])
+                    elif isinstance(value[_name], Sequence):
+                        for _value in value[_name]:
+                            replace(_value)
 
+        replace(schema["definitions"])
         replace(schema["properties"])
         del schema["definitions"]
 

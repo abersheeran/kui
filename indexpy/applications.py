@@ -218,7 +218,7 @@ class IndexFile:
         module = self.get_view(request.url.path)
         if not hasattr(module, "HTTP"):
             if self.try_html:
-                pathlist = pathlist[1:]  # delete module_name from pathlist
+                pathlist = pathlist[1:]  # delete self.module_name from pathlist
                 try:
                     # only html, no middleware/background tasks or other anything
                     await TemplateResponse(
