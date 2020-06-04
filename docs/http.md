@@ -30,7 +30,113 @@
 !!! notice
     注意：这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们。
 
-## 响应
+## 获取请求
+
+如上所说，所有 HTTP 类中的方法都可以通过 `self.request` 来读取此次请求的信息。下面将介绍它最常用的一些属性。
+
+### Method
+
+通过 `request.method` 可以获取到请求方法，例如 `get`/`post` 等。
+
+### URL
+
+通过 `request.url` 可以获取到请求路径。该属性是一个类似于字符串的对象，它公开了可以从URL中解析出的所有组件。
+
+例如：`request.url.path`, `request.url.port`, `request.url.scheme`
+
+### Headers
+
+`request.headers` 是一个大小写无关的多值字典(multi-dict)。但通过 `request.headers.keys()`/`request.headers.items()` 取出来的 `key` 均为小写。
+
+### Query Parameters
+
+`request.query_params` 是一个不可变的多值字典(multi-dict)。
+
+例如：`request.query_params['search']`
+
+### Client Address
+
+`request.client` 是一个 `namedtuple`，定义为 `namedtuple("Address", ["host", "port"])`。
+
+获取客户端 hostname 或 IP 地址: `request.client.host`。
+
+获取客户端在当前连接中使用的端口: `request.client.port`。
+
+!!!notice
+    元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。
+
+### Cookies
+
+`request.cookies` 是一个标准字典，定义为 `Dict[str, str]`。
+
+例如：`request.cookies.get('mycookie')`
+
+!!!notice
+    你没办法从`request.cookies`里读取到无效的 cookie (RFC2109)
+
+### Body
+
+有几种方法可以读到请求体内容：
+
+- `await request.body()`：返回一个 `bytes`。
+
+- `await request.form()`：将 `body` 作为表单进行解析并返回结果（多值字典）。
+
+- `await request.json()`：将 `body` 作为 JSON 字符串解析并返回结果。
+
+你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
+
+```python
+async def post(self):
+    ...
+    body = b''
+    async for chunk in self.request.stream():
+        body += chunk
+    ...
+```
+
+如果你直接使用了 `request.stream()` 去读取数据，那么请求体将不会缓存在内存中。其后任何对 `.body()`/`.form()`/`.json()` 的调用都将抛出错误。
+
+在某些情况下，例如长轮询或流式响应，你可能需要确定客户端是否已断开连接。可以使用 `disconnected = await request.is_disconnected()` 确定此状态。
+
+### Request Files
+
+通过 `await request.form()` 可以解析通过 `multipart/form-data` 格式接收到的表单，包括文件。
+
+文件将被包装为 `starlette.datastructures.UploadFile` 对象，它有如下属性：
+
+* `filename: str`: 被提交的原始文件名称 (例如 `myimage.jpg`).
+* `content_type: str`: 文件类型 (MIME type / media type) (例如 `image/jpeg`).
+* `file: tempfile.SpooledTemporaryFile`: 存储文件内容的临时文件（可以直接读写这个对象，但最好不要）。
+
+`UploadFile` 还有四个异步方法（当文件在内存中时将直接进行操作，在磁盘时将使用多线程包裹原始文件的操作从而得到异步能力 [starlette#933](https://github.com/encode/starlette/pull/933)）。
+
+* `async write(data: Union[str, bytes])`: 写入数据到文件中。
+* `async read(size: int)`: 从文件中读取数据。
+* `async seek(offset: int)`: 文件指针跳转到指定位置。
+* `async close()`: 关闭文件。
+
+下面是一个读取原始文件名称和内容的例子：
+
+```python
+form = await request.form()
+filename = form["upload_file"].filename
+contents = await form["upload_file"].read()
+```
+
+### State
+
+某些情况下需要储存一些额外的自定义信息到 `request` 中，可以使用 `request.state` 用于存储。
+
+```python
+request.state.user = User(name="Alice")  # 写
+
+user_name = request.state.user.name  # 读
+
+del request.state.user  # 删
+```
+
+## 返回响应
 
 对于任何正常处理的 HTTP 请求都必须返回一个 `indexpy.http.responses.Response` 对象或者是它的子类对象。
 
