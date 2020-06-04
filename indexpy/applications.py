@@ -105,7 +105,7 @@ class Lifespan:
 
 class IndexFile:
     HTTPClass = Request
-    WSClass = WebSocket
+    WebSocketClass = WebSocket
 
     def __init__(self, module_name: str, basepath: str, try_html: bool = False) -> None:
         self.module_name = module_name
@@ -256,7 +256,7 @@ class IndexFile:
             await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        websocket = self.WSClass(scope, receive=receive, send=send)
+        websocket = self.WebSocketClass(scope, receive=receive, send=send)
 
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
