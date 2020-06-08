@@ -187,7 +187,7 @@ version = "0.18.2"
 category = "main"
 description = "WSGI HTTP Server for UNIX"
 name = "gunicorn"
-optional = false
+optional = true
 python-versions = ">=3.4"
 version = "20.0.4"
 
@@ -729,7 +729,7 @@ python-versions = "*"
 version = "1.4.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Backported and Experimental Type Hints for Python 3.5+"
 name = "typing-extensions"
 optional = false
@@ -820,10 +820,11 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [extras]
+gunicorn = ["gunicorn"]
 test = ["pytest", "requests"]
 
 [metadata]
-content-hash = "bfc5be809016c7109081b227586b9a4fa50d4a4c68c7458efcfc45a083d55f57"
+content-hash = "4f3c855d87938746201ea1223a0e68105cdef39660e0dbb641567916a31ca845"
 python-versions = "^3.6"
 
 [metadata.files]

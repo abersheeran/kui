@@ -1,7 +1,12 @@
 import os
 from copy import deepcopy
 from inspect import signature
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Sequence
+
+try:
+    from typing import TypedDict  # type: ignore
+except ImportError:
+    from typing_extensions import TypedDict
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
@@ -17,6 +22,11 @@ from ..applications import Index, IndexFile
 from .schema import schema_parameters, schema_request_body, schema_response
 
 
+class Tag(TypedDict):
+    description: str
+    paths: Sequence[str]
+
+
 class OpenAPI:
     def __init__(
         self,
@@ -24,7 +34,7 @@ class OpenAPI:
         description: str,
         version: str,
         *,
-        tags: Dict[str, Any] = {},
+        tags: Dict[str, Tag] = {},
         template: str = "",
         media_type="yaml",
     ):
