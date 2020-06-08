@@ -290,7 +290,7 @@ class Index(metaclass=Singleton):
         config = Config()
 
         self.indexfile = IndexFile("views", here, True)
-        self.templates = Jinja2Templates()
+        self.templates = Jinja2Templates(config.TEMPLATES)
         self.lifespan = Lifespan(
             on_startup={
                 check_on_startup.__qualname__: check_on_startup,

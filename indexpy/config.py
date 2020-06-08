@@ -28,12 +28,11 @@ class ConfigFileError(ConfigError):
     pass
 
 
-class UpperDict:
-    def __init__(self, data: dict):
-        self.__dict: typing.Dict[str, typing.Any] = dict()
-
-        for key in data.keys():
-            self[key] = data[key]
+class UpperDict(dict):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        for key, value in list(self.items()):
+            self[key] = value
 
     def __str__(self) -> str:
         indent = 4
@@ -42,7 +41,7 @@ class UpperDict:
         def append(line):
             result.append(" " * indent + line)
 
-        for key, value in self.__dict.items():
+        for key, value in self.items():
             if isinstance(value, UpperDict):
                 append(f"{key}: {{")
                 for line in str(value).splitlines()[1:-1]:
@@ -62,35 +61,82 @@ class UpperDict:
         key = key.upper()
 
         if isinstance(value, dict):
-            if key in self.__dict.keys():
+            if key in self.keys():
                 for k, v in value.items():
-                    self.__dict[key][k.upper()] = v
+                    super().__setitem__(k.upper(), v)
             else:
-                self.__dict[key] = UpperDict(value)
+                super().__setitem__(key, UpperDict(value))
         else:
-            self.__dict[key] = value
+            super().__setitem__(key, value)
 
     def __getitem__(self, key: str) -> typing.Any:
-        return self.__dict[key.upper()]
+        return super().__getitem__(key.upper())
 
     def __delitem__(self, key: str) -> None:
-        del self.__dict[key.upper()]
+        super().__delitem__(key.upper())
 
-    def update(self, data: dict) -> None:
-        for key in data.keys():
-            self[key] = data[key]
+    def update(self, m, **kwargs):
+        if hasattr(m, "items"):
+            m = m.items()
 
-    def get(self, key: str, default=None) -> typing.Any:
-        try:
-            return self[key]
-        except KeyError:
-            return default
+        for key, value in m:
+            self[key] = value
+
+        for key, value in kwargs.items():
+            self[key] = value
 
 
 class Config(UpperDict, metaclass=Singleton):
+    ENV: str
+    DEBUG: bool
+    HOST: str
+    PORT: int
+    LOG_LEVEL: str
+    HOTRELOAD: bool
+    AUTORELOAD: bool
+    # template
+    TEMPLATES: typing.Iterable[str]
+    # url
+    ALLOW_UNDERLINE: bool
+    # middleware
+    FORCE_SSL: bool
+    ALLOWED_HOSTS: typing.Sequence[str]
+    CORS_ALLOW_ORIGINS: typing.Sequence[str]
+    CORS_ALLOW_METHODS: typing.Sequence[str]
+    CORS_ALLOW_HEADERS: typing.Sequence[str]
+    CORS_ALLOW_CREDENTIALS: bool
+    CORS_ALLOW_ORIGIN_REGEX: typing.Optional[str]
+    CORS_EXPOSE_HEADERS: typing.Sequence[str]
+    CORS_MAX_AGE: int
+
+    def setdefaults(self) -> None:
+        """set default value"""
+
+        self["env"] = "dev"
+        self["debug"] = False
+        self["host"] = "127.0.0.1"
+        self["port"] = 4190
+        self["log_level"] = "info"
+        self["hotreload"] = False
+        self["autoreload"] = True
+        # template
+        self["templates"] = ("templates",)
+        # url
+        self["allow_underline"] = False
+        # middleware
+        self["force_ssl"] = False
+        self["allowed_hosts"] = ["*"]
+        self["cors_allow_origins"] = ()
+        self["cors_allow_methods"] = ("GET",)
+        self["cors_allow_headers"] = ()
+        self["cors_allow_credentials"] = False
+        self["cors_allow_origin_regex"] = None
+        self["cors_expose_headers"] = ()
+        self["cors_max_age"] = 600
+
     def __init__(self) -> None:
         super().__init__({})
-        self.setdefault()
+        self.setdefaults()
         # read config from file
         self.import_from_file()
         # read config from environ
@@ -131,31 +177,6 @@ class Config(UpperDict, metaclass=Singleton):
             result["env"] = os.environ.get("INDEX_ENV")
 
         self.update(result)
-
-    def setdefault(self) -> None:
-        """set default value"""
-
-        self["env"] = "dev"
-        self["debug"] = False
-        self["host"] = "127.0.0.1"
-        self["port"] = 4190
-        self["log_level"] = "info"
-        self["hotreload"] = False
-        self["autoreload"] = True
-        # template
-        self["templates"] = ("templates",)
-        # url
-        self["allow_underline"] = False
-        # middleware
-        self["force_ssl"] = False
-        self["allowed_hosts"] = ["*"]
-        self["cors_allow_origins"] = ()
-        self["cors_allow_methods"] = ("GET",)
-        self["cors_allow_headers"] = ()
-        self["cors_allow_credentials"] = False
-        self["cors_allow_origin_regex"] = None
-        self["cors_expose_headers"] = ()
-        self["cors_max_age"] = 600
 
     def __getattr__(self, name: str) -> typing.Any:
         value = self.get(name, ...)

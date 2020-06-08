@@ -1,5 +1,6 @@
 import typing
 import functools
+from importlib import import_module
 
 import yaml
 import jinja2
@@ -34,9 +35,9 @@ __all__ = [
 ]
 
 
-class Jinja2Templates(metaclass=Singleton):
-    def __init__(self) -> None:
-        self.loader = jinja2.FileSystemLoader(Config().TEMPLATES)
+class Jinja2Templates:
+    def __init__(self, searchpath: typing.Union[str, typing.Iterable[str]]) -> None:
+        self.loader = jinja2.FileSystemLoader(searchpath)
         self.env = jinja2.Environment(loader=self.loader, autoescape=True)
 
     def get_template(self, name: str) -> jinja2.Template:
@@ -70,7 +71,8 @@ def TemplateResponse(
     media_type: str = None,
     background: BackgroundTask = None,
 ) -> _TemplateResponse:
-    return Jinja2Templates().TemplateResponse(
+    app = getattr(import_module("..applications", __package__), "Index")()
+    return app.templates.TemplateResponse(
         name, context, status_code, headers, media_type, background
     )
 

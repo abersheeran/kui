@@ -22,7 +22,7 @@ index-cli = "indexpy.cli:main"
 [tool.poetry.dependencies]
 python = "^3.6"
 starlette = "^0.13.1"
-gunicorn = "^20.0.4"
+gunicorn = {version = "^20.0.4", optional = true}
 uvicorn = "^0.11.3"
 a2wsgi = "^0.3.4"
 aiofiles = "^0.5.0"
@@ -36,6 +36,7 @@ requests = {version = "^2.23.0", optional = true}
 pytest = {version = "^5.4.2", optional = true}
 
 [tool.poetry.extras]
+gunicorn = ["gunicorn"]
 test = ["pytest", "requests"]
 
 [tool.poetry.dev-dependencies]
@@ -45,7 +46,10 @@ black = {version = "*", allow-prereleases = true}
 pytest = "^5.4.2"
 pytest-cov = "^2.8.1"
 pytest-asyncio = "^0.12"
+
+# For test mount WSGI
 django = "^3.0.2"
+
 # only docs
 mkdocs = "*"
 mkdocs-material = "*"

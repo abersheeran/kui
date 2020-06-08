@@ -1,5 +1,6 @@
 import asyncio
 import json
+import http
 from typing import (
     cast,
     Any,
@@ -26,7 +27,6 @@ from starlette.formparsers import (
     parse_options_header,
 )
 from starlette.requests import (
-    cookie_parser,
     SERVER_PUSH_HEADERS_TO_COPY,
     empty_receive,
     empty_send,
@@ -86,11 +86,13 @@ class HTTPConnection(Mapping):
     @property
     def cookies(self) -> Dict[str, str]:
         if not hasattr(self, "_cookies"):
-            cookies: Dict[str, str] = {}
+            cookies = {}
             cookie_header = self.headers.get("cookie")
-
             if cookie_header:
-                cookies = cookie_parser(cookie_header)
+                cookie = http.cookies.SimpleCookie()  # type: http.cookies.BaseCookie
+                cookie.load(cookie_header)
+                for key, morsel in cookie.items():
+                    cookies[key] = morsel.value
             self._cookies = cookies
         return self._cookies
 
