@@ -1,8 +1,8 @@
 # index.py
 
 [![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3ATest)
-[![PyPi Downloads](https://pepy.tech/badge/index-py)](https://pepy.tech/project/index-py)
-[![PyPi Downloads](https://pepy.tech/badge/index-py/week)](https://pepy.tech/project/index-py/week)
+[![PyPI](https://img.shields.io/pypi/v/index.py)](https://pypi.org/project/index.py/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/index.py)
 
 一个基于 ASGI 协议的高性能 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
 
