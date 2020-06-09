@@ -21,7 +21,32 @@ HTTP_METHOD_NAMES = [
 ]
 
 
-ViewMeta = keepasync(*HTTP_METHOD_NAMES)
+class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
+    def __init__(
+        cls,
+        name: str,
+        bases: typing.Tuple[type],
+        namespace: typing.Dict[str, typing.Any],
+    ):
+        param_names = ["query", "header", "cookie", "body"]
+
+        for key in filter(lambda key: key in HTTP_METHOD_NAMES, namespace.keys()):
+            function = namespace[key]
+            sig = signature(function)
+
+            setattr(
+                function,
+                "__params__",
+                {
+                    param_name: sig.parameters[param_name].annotation
+                    for param_name in param_names
+                    if (
+                        param_name in sig.parameters
+                        and issubclass(sig.parameters[param_name].annotation, BaseModel)
+                    )
+                },
+            )
+        super().__init__(name, bases, namespace)
 
 
 def merge_list(
@@ -50,40 +75,35 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         return self.__call__().__await__()
 
     @staticmethod
-    async def partial(
-        handler: typing.Callable, request: Request
-    ) -> typing.Optional[typing.Any]:
+    async def partial(handler: typing.Callable, request: Request) -> typing.Any:
+        __params__ = getattr(handler, "__params__", {})
 
-        sig = signature(handler)
+        if not __params__:
+            return handler
+
         params: typing.Dict[str, BaseModel] = {}
 
         # try to get parameters model and parse
-        if "query" in sig.parameters:
-            query_model = sig.parameters["query"].annotation
-            assert issubclass(query_model, BaseModel)
-            params["query"] = query_model(
+        if "query" in __params__:
+            params["query"] = __params__["query"](
                 **merge_list(request.query_params.multi_items())
             )
 
-        if "header" in sig.parameters:
-            header_model = sig.parameters["header"].annotation
-            assert issubclass(header_model, BaseModel)
-            params["header"] = header_model(**merge_list(request.headers.items()))
+        if "header" in __params__:
+            params["header"] = __params__["header"](
+                **merge_list(request.headers.items())
+            )
 
-        if "cookie" in sig.parameters:
-            cookie_model = sig.parameters["cookie"].annotation
-            assert issubclass(cookie_model, BaseModel)
-            params["cookie"] = cookie_model(**request.cookies)
+        if "cookie" in __params__:
+            params["cookie"] = __params__["cookie"](**request.cookies)
 
         # try to get body model and parse
-        if "body" in sig.parameters:
-            body_model = sig.parameters["body"].annotation
-            assert issubclass(body_model, BaseModel)
+        if "body" in __params__:
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:
                 _body_data = await request.form()
-            params["body"] = body_model(**_body_data)
+            params["body"] = __params__["body"](**_body_data)
 
         return functools.partial(handler, **params)
 

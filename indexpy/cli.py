@@ -47,7 +47,7 @@ def execute(command: Union[List[str], str]) -> int:
     while process.poll() is None:
         time.sleep(1)
 
-    return process.poll()
+    return process.returncode
 
 
 @click.group(help=f"Index.py {__version__}")

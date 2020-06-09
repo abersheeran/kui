@@ -1,12 +1,13 @@
 import os
+import sys
 from copy import deepcopy
 from inspect import signature
 from typing import List, Dict, Any, Sequence
 
-try:
-    from typing import TypedDict  # type: ignore
-except ImportError:
+if sys.version_info[:2] < (3, 8):
     from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
@@ -93,7 +94,6 @@ class OpenAPI:
     def _generate_method(
         self, viewclass: object, path: str, method: str
     ) -> Dict[str, Any]:
-        sig = signature(getattr(viewclass, method))
         result: Dict[str, Any] = {}
 
         doc = getattr(viewclass, method).__doc__
@@ -106,26 +106,14 @@ class OpenAPI:
                 }
             )
 
+        params = getattr(getattr(viewclass, method), "__params__", {})
         result["parameters"] = schema_parameters(
-            None,
-            sig.parameters.get("query").annotation  # type: ignore
-            if sig.parameters.get("query")
-            else None,
-            sig.parameters.get("header").annotation  # type: ignore
-            if sig.parameters.get("header")
-            else None,
-            sig.parameters.get("cookie").annotation  # type: ignore
-            if sig.parameters.get("cookie")
-            else None,
+            None, params.get("query"), params.get("header"), params.get("cookie"),
         )
         if not result["parameters"]:
             del result["parameters"]
 
-        result["requestBody"] = schema_request_body(
-            sig.parameters.get("body").annotation  # type: ignore
-            if sig.parameters.get("body")
-            else None
-        )
+        result["requestBody"] = schema_request_body(params.get("body"))
         if not result["requestBody"]:
             del result["requestBody"]
 

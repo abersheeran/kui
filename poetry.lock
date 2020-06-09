@@ -824,7 +824,7 @@ gunicorn = ["gunicorn"]
 test = ["pytest", "requests"]
 
 [metadata]
-content-hash = "4f3c855d87938746201ea1223a0e68105cdef39660e0dbb641567916a31ca845"
+content-hash = "ac63cac462f8de86e6df1185e760f150d4d5f94e646c457a6824276ac32b3e38"
 python-versions = "^3.6"
 
 [metadata.files]
