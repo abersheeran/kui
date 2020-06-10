@@ -51,8 +51,10 @@ def execute(command: Union[List[str], str]) -> int:
 
 
 @click.group(help=f"Index.py {__version__}")
-@click.option("--env", default=config.ENV, help="set config.ENV")
-@click.option("--debug/--no-debug", default=config.DEBUG, help="set config.DEBUG")
+@click.option("--env", default=lambda: config.ENV, help="set config.ENV")
+@click.option(
+    "--debug/--no-debug", default=lambda: config.DEBUG, help="set config.DEBUG"
+)
 def main(env, debug):
     # change config
     os.environ["INDEX_ENV"] = env
@@ -64,7 +66,7 @@ def main(env, debug):
 
 
 @main.command(help="use only uvicorn to deploy")
-@click.argument("application", default="indexpy:app")
+@click.argument("application", default=lambda: config.APP)
 def serve(application):
     uvicorn.run(
         application,
@@ -86,7 +88,7 @@ def serve(application):
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
 @click.argument("method", type=click.Choice(["start", "stop", "reload"]))
-@click.argument("application", default="indexpy:app")
+@click.argument("application", default=lambda: config.APP)
 def gunicorn(workers, daemon, configuration, method, application):
     if method == "start":
         command = [

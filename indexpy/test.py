@@ -85,7 +85,7 @@ class LiteralOption(click.Option):
 @click.option(
     "-app",
     "--application",
-    default="indexpy:app",
+    default=lambda: Config().APP,
     help="ASGI Application, like: main:app",
 )
 @click.option("--args", cls=LiteralOption, default="[]")

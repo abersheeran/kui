@@ -1,4 +1,5 @@
 # overwrite default value to this program
+app: "example:app"
 port: 4918
 allowed_hosts: ["localhost"]
 cors_allow_origins: ["*"]
