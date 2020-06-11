@@ -14,6 +14,12 @@
 
 当 `DEBUG` 为真时，将详细的显示 `500` 错误信息。
 
+### APP
+
+**默认值:** `indexpy:app`
+
+`app` 允许自定义 `serve`/`gunicorn`/`test` 命令中的默认 `app`。
+
 ### LOG_LEVEL
 
 **默认值:** `"info"`
