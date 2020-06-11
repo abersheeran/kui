@@ -32,30 +32,11 @@ class UpperDict(dict):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         for key, value in list(self.items()):
+            super().__delitem__(key)
             self[key] = value
 
     def __str__(self) -> str:
-        indent = 4
-        result = ["{"]
-
-        def append(line):
-            result.append(" " * indent + line)
-
-        for key, value in self.items():
-            if isinstance(value, UpperDict):
-                append(f"{key}: {{")
-                for line in str(value).splitlines()[1:-1]:
-                    append(f"{line}")
-                append("}")
-            else:
-                if isinstance(value, str):
-                    append(f"{key}: '{value}',")
-                else:
-                    append(f"{key}: {value},")
-
-        result.append("}")
-
-        return "\n".join(result)
+        return json.dumps(self, indent=4)
 
     def __setitem__(self, key: str, value: typing.Any) -> None:
         key = key.upper()
@@ -213,7 +194,8 @@ class Config(UpperDict, metaclass=Singleton):
         super().__setitem__(key, value)
 
     def get(self, key, default=None) -> typing.Any:
-        env = super().get(self["env"], {})
+        key = key.upper()
+        env = super().get(self["env"].upper(), {})
         value = env.get(key, ...)
         if value is ...:
             value = super().get(key, default)

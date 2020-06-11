@@ -1,3 +1,5 @@
+import json
+
 from indexpy.config import UpperDict, Config, ConfigError
 
 
@@ -31,3 +33,20 @@ def test_edit():
         assert False
     except Exception as e:
         assert isinstance(e, ConfigError)
+
+
+def test_env():
+    config = Config()
+
+    config.update({"env": "dev"})
+    assert config.DEBUG is True
+    assert config.HOST == "localhost"
+    assert config.LOG_LEVEL == "debug"
+
+    config.update({"env": "pro"})
+    assert config.DEBUG is False
+    assert config.HOST == "127.0.0.1"
+    assert config.LOG_LEVEL == "warning"
+
+    config.update({"env": "test"})
+    assert config.LOG_LEVEL == "debug"
