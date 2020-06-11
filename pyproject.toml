@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "index.py"
-version = "0.10.4"
+version = "0.10.5"
 description = "An easy-to-use asynchronous web framework based on ASGI."
 readme = "README.md"
 authors = ["abersheeran <me@abersheeran.com>"]
