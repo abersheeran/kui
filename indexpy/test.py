@@ -6,12 +6,7 @@ import typing
 import click
 from uvicorn.importer import import_from_string
 from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
-
-try:
-    from requests import Response, Session
-except ImportError:
-    Response = None  # type: ignore
-    Session = None  # type: ignore
+from requests import Response, Session
 
 from .applications import Index
 from .config import here, LOG_LEVELS, Config
