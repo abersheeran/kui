@@ -7,7 +7,7 @@ Index 借助了 [starlette 的 Test Client](https://www.starlette.io/testclient/
 !!! notice
     在测试程序里，所有的 HTTP 请求、发送 ws 数据、接收 ws 数据都是同步的。
 
-`TestView` 做了轻度的封装，你可以直接在需要测试的 HTTP/Socket 的同一个文件内直接编写测试程序，不需要指定测试的URI。
+`TestView` 做了轻度的封装，你可以直接在需要测试的 HTTP/Socket 的同一个文件内直接编写测试程序，不需要指定测试的 URI。
 
 Test Client 的 HTTP 请求部分是基于 requests，保持了 requests 的所有的 API，故而你可以像使用 requests 一样去测试你的程序。
 

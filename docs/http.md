@@ -176,9 +176,9 @@ class HTTP(HTTPView):
 
 唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
-### 自定义返回类型
+### 响应的简化写法
 
-为了方便使用，Index 允许自定义一些函数来处理 `HTTP` 内的处理方法返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
+为了方便使用，Index 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
 
 Index 内置了三个处理函数用于处理六种类型：
 
@@ -207,6 +207,38 @@ def _plain_text(
     body: typing.Union[str, bytes], status: int = 200, headers: dict = None
 ) -> Response:
     return PlainTextResponse(body, status, headers)
+```
+
+正是有了这些内置处理函数，下面这段代码将被正确解析为一个 JSON 响应。
+
+```python
+from indexpy.http import HTTPView
+
+
+class HTTP(HTTPView):
+
+    def get(self):
+        return {"key": "value"}
+```
+
+同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 `TypedDict`，Python 的 `Dict` 约束依旧很弱，但 dataclass 则有效得多），例如：
+
+```python
+from dataclasses import dataclass, asdict
+
+from indexpy.http.responses import automatic, Response, JSONResponse
+
+
+@dataclass
+class Error:
+    code: int = 0
+    title: str = ""
+    message: str = ""
+
+
+@automatic.register(Error)
+def _error_json(error: Error, status: int = 400) -> Response:
+    return JSONResponse(asdict(error), status)
 ```
 
 ## 中间件
