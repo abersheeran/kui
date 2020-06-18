@@ -13,13 +13,13 @@ from starlette.responses import (
     StreamingResponse,
     FileResponse,
 )
-from starlette.templating import (
-    BackgroundTask,
-    _TemplateResponse,
-)
+from starlette.background import BackgroundTask
 
+from ..types import Scope, Receive, Send
 from ..utils import Singleton
 from ..config import Config
+
+from .request import HTTPConnection
 
 __all__ = [
     "automatic",
@@ -43,7 +43,11 @@ class Jinja2Templates:
     def get_template(self, name: str) -> jinja2.Template:
         return self.env.get_template(name)
 
-    def TemplateResponse(
+
+class TemplateResponse(Response):
+    media_type = "text/html"
+
+    def __init__(
         self,
         name: str,
         context: dict,
@@ -51,30 +55,29 @@ class Jinja2Templates:
         headers: dict = None,
         media_type: str = None,
         background: BackgroundTask = None,
-    ) -> _TemplateResponse:
-        template = self.get_template(name)
-        return _TemplateResponse(
-            template,
-            context,
-            status_code=status_code,
-            headers=headers,
-            media_type=media_type,
-            background=background,
-        )
+    ):
+        if not (
+            "request" in context and isinstance(context["request"], HTTPConnection)
+        ):
+            raise ValueError('context must include "request".')
+        app = context["request"].scope["app"]
+        self.template: jinja2.Template = app.templates.get_template(name)
+        self.context = context
+        content = self.template.render(context)
+        super().__init__(content, status_code, headers, media_type, background)
 
-
-def TemplateResponse(
-    name: str,
-    context: dict,
-    status_code: int = 200,
-    headers: dict = None,
-    media_type: str = None,
-    background: BackgroundTask = None,
-) -> _TemplateResponse:
-    app = getattr(import_module("..applications", __package__), "Index")()
-    return app.templates.TemplateResponse(
-        name, context, status_code, headers, media_type, background
-    )
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        request = self.context.get("request", {})
+        extensions = request.get("extensions", {})
+        if "http.response.template" in extensions:
+            await send(
+                {
+                    "type": "http.response.template",
+                    "template": self.template,
+                    "context": self.context,
+                }
+            )
+        await super().__call__(scope, receive, send)
 
 
 class YAMLResponse(Response):

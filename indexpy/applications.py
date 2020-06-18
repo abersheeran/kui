@@ -453,7 +453,7 @@ class Index(metaclass=Singleton):
                 if isinstance(app, WSGIMiddleware):
                     if scope["type"] != "http":
                         continue
-                subscope = copy.deepcopy(scope)
+                subscope = copy.copy(scope)
                 subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
@@ -477,4 +477,5 @@ class Index(metaclass=Singleton):
             await self.lifespan(scope, receive, send)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        scope["app"] = self
         await self.asgiapp(scope, receive, send)
