@@ -15,6 +15,3 @@ g = State()
 
 # Current working directory first
 sys.path.insert(0, here)
-
-# loading preset functions
-importlib.import_module("indexpy.preset")
