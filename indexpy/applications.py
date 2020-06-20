@@ -423,7 +423,7 @@ class Index(metaclass=Singleton):
             assert route.startswith("/"), "prefix must be start with '/'"
             assert not route.endswith("/"), "prefix can't end with '/'"
         if app_type == "wsgi":
-            app = WSGIMiddleware(app)
+            app = WSGIMiddleware(typing.cast(WSGIApp, app))
         app = typing.cast(ASGIApp, app)
         self.mount_apps.append((route, app))
 
