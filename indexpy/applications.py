@@ -20,12 +20,13 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.exceptions import HTTPException, ExceptionMiddleware
 from starlette.routing import NoMatchFound
+from jinja2 import Environment, FileSystemLoader
 
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
 from .http.request import Request
-from .http.responses import FileResponse, TemplateResponse, Jinja2Templates
+from .http.responses import FileResponse, TemplateResponse
 from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
@@ -290,7 +291,7 @@ class Index(metaclass=Singleton):
         config = Config()
 
         self.indexfile = IndexFile("views", here, True)
-        self.templates = Jinja2Templates(config.TEMPLATES)
+        self.jinja_env = Environment(loader=FileSystemLoader(config.TEMPLATES))
         self.lifespan = Lifespan(
             on_startup={
                 check_on_startup.__qualname__: check_on_startup,

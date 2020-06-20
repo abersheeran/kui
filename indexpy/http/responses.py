@@ -1,4 +1,5 @@
 import typing
+import asyncio
 import functools
 from importlib import import_module
 
@@ -35,15 +36,6 @@ __all__ = [
 ]
 
 
-class Jinja2Templates:
-    def __init__(self, searchpath: typing.Union[str, typing.Iterable[str]]) -> None:
-        self.loader = jinja2.FileSystemLoader(searchpath)
-        self.env = jinja2.Environment(loader=self.loader, autoescape=True)
-
-    def get_template(self, name: str) -> jinja2.Template:
-        return self.env.get_template(name)
-
-
 class TemplateResponse(Response):
     media_type = "text/html"
 
@@ -60,15 +52,20 @@ class TemplateResponse(Response):
             "request" in context and isinstance(context["request"], HTTPConnection)
         ):
             raise ValueError('context must include "request".')
-        app = context["request"].scope["app"]
-        self.template: jinja2.Template = app.templates.get_template(name)
+        self.env: jinja2.Environment = context["request"].scope["app"].jinja_env
+        self.template = self.env.get_template(name)
         self.context = context
-        content = self.template.render(context)
-        super().__init__(content, status_code, headers, media_type, background)
+        super().__init__(None, status_code, headers, media_type, background)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        request = self.context.get("request", {})
-        extensions = request.get("extensions", {})
+        if self.env.enable_async:  # type: ignore
+            content = await self.template.render_async(self.context)
+        else:
+            content = self.template.render(self.context)
+        self.body = self.render(content)
+        self.headers.setdefault("content-length", str(len(content)))
+
+        extensions = self.context.get("request", {}).get("extensions", {})
         if "http.response.template" in extensions:
             await send(
                 {
