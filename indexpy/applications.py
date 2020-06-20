@@ -291,7 +291,9 @@ class Index(metaclass=Singleton):
         config = Config()
 
         self.indexfile = IndexFile("views", here, True)
-        self.jinja_env = Environment(loader=FileSystemLoader(config.TEMPLATES))
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(config.TEMPLATES), enable_async=True
+        )
         self.lifespan = Lifespan(
             on_startup={
                 check_on_startup.__qualname__: check_on_startup,
