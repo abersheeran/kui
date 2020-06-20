@@ -63,7 +63,7 @@ class TemplateResponse(Response):
         else:
             content = self.template.render(self.context)
         self.body = self.render(content)
-        self.headers.setdefault("content-length", str(len(content)))
+        self.headers.setdefault("content-length", str(len(self.body)))
 
         extensions = self.context.get("request", {}).get("extensions", {})
         if "http.response.template" in extensions:
