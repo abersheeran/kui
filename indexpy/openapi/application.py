@@ -5,9 +5,9 @@ from inspect import signature
 from typing import List, Dict, Any, Sequence
 
 if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict
+    from typing_extensions import TypedDict, Literal
 else:
-    from typing import TypedDict
+    from typing import TypedDict, Literal
 
 from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
@@ -37,7 +37,7 @@ class OpenAPI:
         *,
         tags: Dict[str, Tag] = {},
         template: str = "",
-        media_type="yaml",
+        media_type: Literal["yaml", "json"] = "yaml",
     ):
         """
         media_type: yaml or json

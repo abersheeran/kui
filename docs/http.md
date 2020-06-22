@@ -158,7 +158,7 @@ del request.state.user  # 删
 
 ### TemplateResponse
 
-Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下的 `templates` 目录里寻找对应的模板进行渲染。
+Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（寻找路径由 [`TEMPLATES`](/config/list/#templates) 配置进行管理）
 
 ```python
 from indexpy.http import HTTPView
@@ -170,9 +170,21 @@ class HTTP(HTTPView):
         return TemplateResponse("chat.html", {"request": self.request})
 ```
 
+`TemplateResponse` 使用的 `jinja2.Environment` 来自于 `Index().jinja_env`，通过更改、覆盖等方式，你可以自由的控制 `TemplateResponse`。
+
+例子：
+
+```python
+from datetime import datetime
+from indexpy import Index
+
+app = Index()
+app.jinja_env.globals["now"] = datetime.now
+```
+
 ### YAMLResponse
 
-由于 YAML 与 JSON 的等价性，YAMLResponse 与 JSONResponse 的使用方法相同。
+YAMLResponse 与 JSONResponse 的使用方法相同。
 
 唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
