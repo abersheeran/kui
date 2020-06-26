@@ -286,9 +286,9 @@ class IndexFile:
         await handler(scope, receive, send)
 
 
-class Index(metaclass=Singleton):
+class Index:
     def __init__(self) -> None:
-        config = Config()
+        self.config = config = Config()
 
         self.indexfile = IndexFile("views", here, True)
         self.jinja_env = Environment(
@@ -332,7 +332,7 @@ class Index(metaclass=Singleton):
         self.asgiapp = self.build_app()
 
     def build_app(self) -> ASGIApp:
-        config = Config()
+        config = self.config
         error_handler = None
         exception_handlers = {}
 

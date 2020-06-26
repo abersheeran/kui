@@ -59,10 +59,14 @@ class TestClient:
         return self.__client.__exit__()
 
 
+__global_test_app__: typing.Optional[Index] = None
+
+
 class TestView:
     @property
     def client(self) -> TestClient:
-        app = Index()
+        app = __global_test_app__
+        assert app is not None
         path = app.indexfile.get_path_from_module_name(self.__class__.__module__)
         if path is None:
             raise Exception("What's wrong with you?")
@@ -88,7 +92,10 @@ class LiteralOption(click.Option):
 def cmd_test(application: str, args: typing.List[str], path: str):
     import pytest
 
+    global __global_test_app__
     app: Index = import_from_string(application)
+    __global_test_app__ = app
+
     pytest_args = [
         f"--rootdir={os.getcwd()}",
         "--override-ini=python_files=views/*.py",
@@ -96,6 +103,7 @@ def cmd_test(application: str, args: typing.List[str], path: str):
         "--override-ini=python_functions=test_*",
     ]
     pytest_args.extend(args)
+
     if path:
         if ".py" in path:
             pytest_args.append(path)
