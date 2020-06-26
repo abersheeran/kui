@@ -14,7 +14,6 @@ from starlette.websockets import WebSocketClose
 from starlette.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
-from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -25,6 +24,7 @@ from jinja2 import Environment, FileSystemLoader
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
+from .middleware.errors import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import FileResponse, TemplateResponse
 from .http.background import (
