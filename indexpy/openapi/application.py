@@ -2,7 +2,7 @@ import os
 import sys
 from copy import deepcopy
 from inspect import signature
-from typing import List, Dict, Any, Sequence
+from typing import cast, List, Dict, Any, Sequence
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import TypedDict, Literal
@@ -65,13 +65,13 @@ class OpenAPI:
                 else:
                     self.path2tag[path] = [tag_name]
 
-    def _generate_paths(self) -> Dict[str, Any]:
+    def _generate_paths(self, app: Index) -> Dict[str, Any]:
         result = {}
-        for app in reversed(
-            [Index().indexfile]
-            + [app for _, app in Index().mount_apps if isinstance(app, IndexFile)]
+        for subapp in reversed(
+            [app.indexfile]
+            + [subapp for _, subapp in app.mount_apps if isinstance(subapp, IndexFile)]
         ):
-            for view, path in app.get_views():
+            for view, path in subapp.get_views():
                 if not hasattr(view, "HTTP"):
                     continue
                 viewclass = getattr(view, "HTTP")
@@ -147,7 +147,7 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = self._generate_paths()
+        openapi["paths"] = self._generate_paths(cast(Index, request["app"]))
 
         return openapi
 
