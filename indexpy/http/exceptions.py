@@ -67,6 +67,7 @@ class ExceptionMiddleware:
             await self.app(scope, receive, sender)
         except Exception as exc:
             handler = None
+            request_class = scope["app"].factory_class["http"]
 
             if isinstance(exc, HTTPException):
                 handler = self._status_handlers.get(exc.status_code)
@@ -81,7 +82,7 @@ class ExceptionMiddleware:
                 msg = "Caught handled exception, but response already started."
                 raise RuntimeError(msg) from exc
 
-            request = Request(scope, receive=receive)
+            request = request_class(scope, receive, send)
             if asyncio.iscoroutinefunction(handler):
                 response = await handler(request, exc)
             else:
