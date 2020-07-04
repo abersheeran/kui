@@ -6,7 +6,6 @@ import traceback
 import importlib
 from types import ModuleType
 
-from a2wsgi import WSGIMiddleware
 from starlette.types import Scope, Receive, Send, ASGIApp, Message
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.requests import URL
@@ -16,22 +15,22 @@ from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
-from starlette.exceptions import HTTPException, ExceptionMiddleware
 from starlette.routing import NoMatchFound
 from jinja2 import Environment, FileSystemLoader
+from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
 from .middleware.errors import ServerErrorMiddleware
 from .http.request import Request
-from .http.responses import FileResponse, TemplateResponse
+from .http.responses import Response, FileResponse, TemplateResponse, PlainTextResponse
 from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
     finished_response_tasks_var,
 )
+from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
 from .preset import (
     check_on_startup,
@@ -105,13 +104,18 @@ class Lifespan:
 
 
 class IndexFile:
-    HTTPClass = Request
-    WebSocketClass = WebSocket
-
-    def __init__(self, module_name: str, basepath: str, try_html: bool = False) -> None:
+    def __init__(
+        self,
+        module_name: str,
+        basepath: str,
+        *,
+        try_html: bool = False,
+        factory_class=None,
+    ) -> None:
         self.module_name = module_name
         self.basepath = basepath
         self.try_html = try_html
+        self.factory_class = factory_class or {"http": Request, "websocket": WebSocket}
 
     def _split_path(self, path: str) -> typing.List[str]:
         """
@@ -213,7 +217,7 @@ class IndexFile:
                 yield module, path
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
-        request = self.HTTPClass(scope, receive, send)
+        request = self.factory_class["http"](scope, receive, send)
         pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
@@ -222,10 +226,9 @@ class IndexFile:
                 pathlist = pathlist[1:]  # delete self.module_name from pathlist
                 try:
                     # only html, no middleware/background tasks or other anything
-                    await TemplateResponse(
+                    return await TemplateResponse(
                         os.path.join(*pathlist) + ".html", {"request": request}
                     )(scope, receive, send)
-                    return
                 except LookupError:
                     pass
             raise NoMatchFound()
@@ -257,7 +260,7 @@ class IndexFile:
             await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        websocket = self.WebSocketClass(scope, receive=receive, send=send)
+        websocket = self.factory_class["websocket"](scope, receive=receive, send=send)
 
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
@@ -268,7 +271,7 @@ class IndexFile:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
 
-        if scope["type"] in ("http", "websocket"):
+        if scope["type"] in ("http", "websocket"):  # Handle some special routes
             url = URL(scope=scope)
             path = url.path
             if path.endswith("/index"):
@@ -289,8 +292,10 @@ class IndexFile:
 class Index:
     def __init__(self) -> None:
         self.config = config = Config()
-
-        self.indexfile = IndexFile("views", here, True)
+        self.factory_class = {"http": Request, "websocket": WebSocket}
+        self.indexfile = IndexFile(
+            "views", here, try_html=True, factory_class=self.factory_class
+        )
         self.jinja_env = Environment(
             loader=FileSystemLoader(config.TEMPLATES), enable_async=True
         )
@@ -349,14 +354,7 @@ class Index:
             ),
         ] + self.user_middlewares
 
-        if config.FORCE_SSL:
-            middlewares.append(Middleware(HTTPSRedirectMiddleware))
-
-        middlewares += [
-            Middleware(
-                ExceptionMiddleware, handlers=exception_handlers, debug=config.DEBUG
-            ),
-        ]
+        middlewares.append(Middleware(ExceptionMiddleware, handlers=exception_handlers))
 
         app = self.app
 
@@ -411,26 +409,13 @@ class Index:
             assert not route.endswith("/"), "route can't end with '/'"
         self.mount_apps.append((route, WSGIMiddleware(app)))
 
-    def mount(
-        self, route: str, app: typing.Union[ASGIApp, WSGIApp], app_type: str
-    ) -> None:
-        import warnings
-
-        warnings.warn(
-            "`mount` method has been deprecated and will be removed in version 0.11.0 !",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        assert app_type in ("asgi", "wsgi")
-        if route != "":  # allow use "" to mount app
-            assert route.startswith("/"), "prefix must be start with '/'"
-            assert not route.endswith("/"), "prefix can't end with '/'"
-        if app_type == "wsgi":
-            app = WSGIMiddleware(typing.cast(WSGIApp, app))
-        app = typing.cast(ASGIApp, app)
-        self.mount_apps.append((route, app))
-
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        App without ASGI middleware.
+
+        For lifespan, call Index directly.
+        For http/websocket, find the appropriate subapp, or Index itself.
+        """
         if scope["type"] in ("http", "websocket"):
             path = scope["path"]
             root_path = scope.get("root_path", "")
@@ -481,4 +466,21 @@ class Index:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
+
+        # Force jump to https/wss
+        if (
+            self.config.FORCE_SSL
+            and scope["type"] in ("http", "websocket")
+            and scope["scheme"] in ("http", "ws",)
+        ):
+            url = URL(scope=scope)
+            redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
+            netloc = url.hostname if url.port in (80, 443) else url.netloc
+            url = url.replace(scheme=redirect_scheme, netloc=netloc)
+            response = RedirectResponse(
+                url, status_code=301
+            )  # for SEO, status code must be 301
+            await response(scope, receive, send)
+            return
+
         await self.asgiapp(scope, receive, send)

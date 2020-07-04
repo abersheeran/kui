@@ -1,7 +1,7 @@
 from indexpy import app
 from indexpy.types import Request, Response
 from indexpy.http.responses import PlainTextResponse
-from starlette.exceptions import HTTPException
+from indexpy.http import HTTPException
 
 
 @app.exception_handler(404)
