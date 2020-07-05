@@ -41,8 +41,7 @@ setup(
     packages=[
         'example.example', 'example.utils', 'example.views',
         'example.views.about', 'example.views.openapi', 'example.wsgi_example',
-        'indexpy', 'indexpy.http', 'indexpy.middleware', 'indexpy.openapi',
-        'indexpy.websocket'
+        'indexpy', 'indexpy.http', 'indexpy.openapi', 'indexpy.websocket'
     ],
     package_dir={"": "."},
     package_data={
