@@ -22,9 +22,7 @@ jobs:
           poetry install -E test
       - name: Test with pytest
         run: |
-          pytest -o log_cli=true -o log_cli_level=DEBUG
-          cd example
-          index-cli test -app example:app
+          python script/test.py
 
   Windows-Test:
     runs-on: windows-latest
@@ -45,9 +43,7 @@ jobs:
           poetry install -E test
       - name: Test with pytest
         run: |
-          pytest -o log_cli=true -o log_cli_level=DEBUG
-          cd example
-          index-cli test -app example:app
+          python script/test.py
 
   MacOS-Test:
     runs-on: macos-latest
@@ -68,6 +64,4 @@ jobs:
           poetry install -E test
       - name: Test with pytest
         run: |
-          pytest -o log_cli=true -o log_cli_level=DEBUG
-          cd example
-          index-cli test -app example:app
+          python script/test.py
