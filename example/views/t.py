@@ -11,5 +11,5 @@ def onlytest():
 class HTTP(HTTPView):
     def get(self):
         onlytest()
-        a = "fuck"
-        raise Exception("fuck")
+        a = "temporary"
+        raise Exception("SomeError.")

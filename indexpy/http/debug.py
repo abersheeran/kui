@@ -1,17 +1,24 @@
 import asyncio
 import html
 import inspect
+import pprint
 import traceback
 import typing
 
 from starlette.concurrency import run_in_threadpool
-from starlette.requests import Request
-from starlette.responses import HTMLResponse, PlainTextResponse, Response
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from indexpy.types import ASGIApp, Message, Receive, Scope, Send, Request, Response
+from indexpy.http.responses import HTMLResponse, PlainTextResponse
 
 STYLES = """
-p {
-    color: #211c1c;
+:root {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+* {
+    box-sizing: border-box;
+}
+code, pre, .code {
+    font-family: "Biaodian Pro Sans CNS", Menlo, Consolas, Courier, "Zhuyin Heiti", "Han Heiti", monospace;
 }
 .traceback-container {
     border: 1px solid #038BB8;
@@ -19,16 +26,32 @@ p {
 .traceback-title {
     background-color: #038BB8;
     color: lemonchiffon;
-    padding: 12px;
+    padding: 15px;
     font-size: 20px;
-    margin-top: 0px;
+    margin: 0px;
+}
+.frame {
+    position: relative;
+}
+.frame .more {
+    display: block;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+}
+.frame .more + .detail {
+    display: none;
+    position: relative;
+    z-index: 2;
+}
+.frame .more:checked + .detail {
+    display: block;
 }
 .frame-line {
     padding-left: 10px;
-    font-family: monospace;
-}
-.frame-filename {
-    font-family: monospace;
 }
 .center-line {
     background-color: #038BB8;
@@ -40,44 +63,34 @@ p {
 }
 .frame-title {
     font-weight: unset;
-    padding: 10px 10px 10px 10px;
+    padding: 15px 10px;
+    margin: 0px;
     background-color: #E4F4FD;
-    margin-right: 10px;
     color: #191f21;
     font-size: 17px;
     border: 1px solid #c7dce8;
 }
-.collapse-btn {
-    float: right;
-    padding: 0px 5px 1px 5px;
-    border: solid 1px #96aebb;
-    cursor: pointer;
-}
-.collapsed {
-  display: none;
-}
-.source-code {
-  font-family: courier;
+.source {
   font-size: small;
-  padding-bottom: 10px;
+  border-bottom: 1px solid #c7dce8;
 }
-"""
-
-JS = """
-<script type="text/javascript">
-    function collapse(element){
-        const frameId = element.getAttribute("data-frame-id");
-        const frame = document.getElementById(frameId);
-
-        if (frame.classList.contains("collapsed")){
-            element.innerHTML = "&#8210;";
-            frame.classList.remove("collapsed");
-        } else {
-            element.innerHTML = "+";
-            frame.classList.add("collapsed");
-        }
-    }
-</script>
+table {
+    width: 100%;
+    border-spacing: 0px;
+}
+table pre {
+    white-space: pre-wrap;
+}
+table td {
+    padding: 10px;
+    border-bottom: 1px solid #c7dce8;
+}
+table tr td:nth-child(1) {
+    border-right: 2px solid #c7dce8;
+}
+table tr:nth-last-child(1) td {
+    border-bottom: none;
+}
 """
 
 TEMPLATE = """
@@ -86,7 +99,7 @@ TEMPLATE = """
         <style type='text/css'>
             {styles}
         </style>
-        <title>Starlette Debugger</title>
+        <title>Index.py Debugger</title>
     </head>
     <body>
         <h1>500 Server Error</h1>
@@ -95,29 +108,39 @@ TEMPLATE = """
             <p class="traceback-title">Traceback</p>
             <div>{exc_html}</div>
         </div>
-        {js}
     </body>
 </html>
 """
 
 FRAME_TEMPLATE = """
-<div>
-    <p class="frame-title">File <span class="frame-filename">{frame_filename}</span>,
-    line <i>{frame_lineno}</i>,
-    in <b>{frame_name}</b>
-    <span class="collapse-btn" data-frame-id="{frame_filename}-{frame_lineno}" onclick="collapse(this)">{collapse_button}</span>
-    </p>
-    <div id="{frame_filename}-{frame_lineno}" class="source-code {collapsed}">{code_context}</div>
+<div class="frame">
+    <p class="frame-title"><code class="frame-filename">{frame_filename}</code>
+    in <b><code>{frame_name}</code></b> at line {frame_lineno}</p>
+    <input type="radio" name="more" {checked} class="more"/>
+    <div class="detail">
+        <div id="{frame_filename}-{frame_lineno}" class="source">
+            {code_context}
+        </div>
+        {locals}
+    </div>
 </div>
 """
 
+VARS = """
+<table>
+    <tbody>
+        {vars}
+    </tbody>
+</table>
+"""
+
 LINE = """
-<p><span class="frame-line">
+<p><span class="frame-line code">
 <span class="lineno">{lineno}.</span> {line}</span></p>
 """
 
 CENTER_LINE = """
-<p class="center-line"><span class="frame-line center-line">
+<p class="center-line"><span class="frame-line center-line code">
 <span class="lineno">{lineno}.</span> {line}</span></p>
 """
 
@@ -159,7 +182,7 @@ class ServerErrorMiddleware:
             await self.app(scope, receive, _send)
         except Exception as exc:
             if not response_started:
-                request = Request(scope)
+                request = scope["app"].factory_class["http"](scope)
                 if self.debug:
                     # In debug mode, return traceback responses.
                     response = self.debug_response(request, exc)
@@ -198,6 +221,18 @@ class ServerErrorMiddleware:
             self.format_line(index, line, frame.lineno, frame.index)  # type: ignore
             for index, line in enumerate(frame.code_context or [])
         )
+        _locals_vars = frame.frame.f_locals.copy()
+        locals_var = VARS.format(
+            title="locals",
+            vars="".join(
+                [
+                    "<tr><td><pre>{name}</pre></td><td><pre>{value}</pre></td></tr>".format(
+                        name=name, value=html.escape(pprint.pformat(value))
+                    )
+                    for name, value in _locals_vars.items()
+                ]
+            ),
+        )
 
         values = {
             # HTML escape - filename could contain < or >, especially if it's a virtual file e.g. <stdin> in the REPL
@@ -206,8 +241,8 @@ class ServerErrorMiddleware:
             # HTML escape - if you try very hard it's possible to name a function with < or >
             "frame_name": html.escape(frame.function),
             "code_context": code_context,
-            "collapsed": "collapsed" if is_collapsed else "",
-            "collapse_button": "+" if is_collapsed else "&#8210;",
+            "checked": "checked" if not is_collapsed else "",
+            "locals": locals_var,
         }
         return FRAME_TEMPLATE.format(**values)
 
@@ -228,7 +263,7 @@ class ServerErrorMiddleware:
         # escape error class and text
         error = f"{html.escape(traceback_obj.exc_type.__name__)}: {html.escape(str(traceback_obj))}"
 
-        return TEMPLATE.format(styles=STYLES, js=JS, error=error, exc_html=exc_html)
+        return TEMPLATE.format(styles=STYLES, error=error, exc_html=exc_html)
 
     def generate_plain_text(self, exc: Exception) -> str:
         return "".join(traceback.format_tb(exc.__traceback__))

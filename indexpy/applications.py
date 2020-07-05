@@ -22,7 +22,7 @@ from a2wsgi import WSGIMiddleware
 from .types import WSGIApp
 from .utils import Singleton
 from .config import here, Config
-from .middleware.errors import ServerErrorMiddleware
+from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import Response, FileResponse, TemplateResponse, PlainTextResponse
 from .http.background import (
