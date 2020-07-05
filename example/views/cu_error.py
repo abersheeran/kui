@@ -14,6 +14,6 @@ class HTTP(HTTPView):
 class Test(TestView):
     def test_valueerror(self):
         resp = self.client.get()
-        resp.json() == dict(
+        assert resp.json() == dict(
             code=1, title="Error title", message="Something went wrong with the server."
         )

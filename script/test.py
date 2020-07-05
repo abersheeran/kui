@@ -20,10 +20,12 @@ def execute(*commands):
 
 
 def shell(command: str) -> None:
-    sys.exit(execute(command))
+    exit_code = execute(command)
+    if exit_code != 0:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":
     shell("pytest -o log_cli=true -o log_cli_level=DEBUG")
-    shell("cd example")
+    os.chdir("example")
     shell("index-cli test -app example:app")
