@@ -28,6 +28,7 @@ jobs:
       - name: Build setup.py
         run: |
           dephell deps convert
+          rm -f pyproject.toml poetry.lock
 
       - name: Push setup.py to branch `setup.py`.
         run: |
