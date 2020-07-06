@@ -29,7 +29,7 @@ jobs:
 
       - name: Push setup.py to branch `setup.py`.
         run: |
-          remote_repo="https://${GITHUB_ACTOR}:${secrets.GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          remote_repo="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config http.sslVerify false
           git config user.name "Automated Publisher"
           git config user.email "actions@users.noreply.github.com"
@@ -46,3 +46,5 @@ jobs:
           timestamp=$(date -u)
           git commit -m "Automated publish: ${timestamp} ${GITHUB_SHA}" || exit 0
           git push publisher setup.py
+        env:
+          GITHUB_TOKEN: ${secrets.GITHUB_TOKEN}
