@@ -84,6 +84,28 @@ class YAMLResponse(Response):
         return yaml.dump(content, indent=2).encode("utf8")
 
 
+def convert(response: typing.Any) -> Response:
+    """
+    shortcut for automatic
+
+    Example:
+    ```
+        response = convert(response)
+    ```
+    It is equivalent to:
+    ```
+        if isinstance(response, tuple):
+            response = automatic(*response)
+        else:
+            response = automatic(response)
+    ```
+    """
+    if isinstance(response, tuple):
+        return automatic(*response)
+    else:
+        return automatic(response)
+
+
 @functools.singledispatch
 def automatic(*args: typing.Any) -> Response:
     # Response or Response subclass

@@ -1,11 +1,12 @@
 import typing
 import functools
+import logging
 from inspect import signature
 
 from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
-from .responses import Response, automatic
+from .responses import Response, convert
 from .request import Request
 
 
@@ -21,6 +22,9 @@ HTTP_METHOD_NAMES = [
 ]
 
 
+logger = logging.getLogger(__name__)
+
+
 class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
     def __init__(
         cls,
@@ -30,9 +34,38 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
     ):
         param_names = ["query", "header", "cookie", "body"]
 
-        for key in filter(lambda key: key in HTTP_METHOD_NAMES, namespace.keys()):
-            function = namespace[key]
+        for function_name in filter(
+            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
+        ):
+            function = namespace[function_name]
             sig = signature(function)
+
+            not_allowed_keys = [
+                key
+                for key in filter(
+                    lambda key: key not in param_names and key != "self",
+                    sig.parameters.keys(),
+                )
+            ]
+            if not_allowed_keys:
+                raise TypeError(
+                    f"Params {not_allowed_keys} is not allowed in `{function_name}`. "
+                    + f"Only allow {param_names}"
+                )
+
+            incorrect_keys = [
+                param_name
+                for param_name in param_names
+                if (
+                    param_name in sig.parameters
+                    and not issubclass(sig.parameters[param_name].annotation, BaseModel)
+                )
+            ]
+            if incorrect_keys:
+                raise TypeError(
+                    f"Params {incorrect_keys} annotation is incorrect in `{function_name}`. "
+                    + "You should inherit `pydantic.BaseModel`."
+                )
 
             setattr(
                 function,
@@ -71,7 +104,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
     def __init__(self, request: Request) -> None:
         self.request = request
 
-    def __await__(self):
+    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
         return self.__call__().__await__()
 
     @staticmethod
@@ -112,12 +145,9 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
 
-        if self.request.method.lower() in HTTP_METHOD_NAMES:
-            handler = getattr(
-                self, self.request.method.lower(), self.http_method_not_allowed
-            )
-        else:
-            handler = self.http_method_not_allowed
+        handler = getattr(
+            self, self.request.method.lower(), self.http_method_not_allowed
+        )
 
         try:
             handler = await self.partial(handler, self.request)
@@ -126,15 +156,9 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         else:
             resp = await handler()
 
-        if isinstance(resp, tuple):
-            resp = automatic(*resp)
-        else:
-            resp = automatic(resp)
-        return resp
+        return convert(resp)
 
-    async def catch_validation_error(
-        self, e: ValidationError
-    ) -> typing.Union[Response, tuple]:
+    async def catch_validation_error(self, e: ValidationError) -> typing.Any:
         """
         Used to handle request parsing errors
         """

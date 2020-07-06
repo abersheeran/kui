@@ -1,7 +1,7 @@
 import typing
 
 from ..concurrency import keepasync
-from .responses import Response, automatic
+from .responses import Response, convert
 from .request import Request
 
 
@@ -26,10 +26,7 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
         if response is None:
             response = await self.get_response(request)
 
-        if isinstance(response, tuple):
-            response = automatic(*response)
-        else:
-            response = automatic(response)
+        response = convert(response)
 
         response = await self.process_response(request, response)
 
