@@ -27,7 +27,22 @@ jobs:
         run: |
           dephell deps convert
 
-      - name: Push new files back to master.
-        uses: mikeal/publish-to-github-action@1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push setup.py to branch `setup.py`.
+        run: |
+          remote_repo="https://${GITHUB_ACTOR}:${secrets.GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git config http.sslVerify false
+          git config user.name "Automated Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git remote add publisher "${remote_repo}"
+          git show-ref # useful for debugging
+          git branch --verbose
+
+          # install lfs hooks
+          git lfs install
+
+          # publish any new files
+          git checkout -b setup.py
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "Automated publish: ${timestamp} ${GITHUB_SHA}" || exit 0
+          git push publisher setup.py
