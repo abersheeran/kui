@@ -65,14 +65,12 @@ code, pre, .code {
     font-weight: unset;
     padding: 15px 10px;
     margin: 0px;
-    background-color: #E4F4FD;
     color: #191f21;
     font-size: 17px;
-    border: 1px solid #c7dce8;
+    border-top: 1px solid #646a6d;
 }
 .source {
   font-size: small;
-  border-bottom: 1px solid #c7dce8;
 }
 table {
     width: 100%;
@@ -85,11 +83,11 @@ table td {
     padding: 10px;
     border-bottom: 1px solid #c7dce8;
 }
-table tr td:nth-child(1) {
-    border-right: 2px solid #c7dce8;
-}
 table tr:nth-last-child(1) td {
     border-bottom: none;
+}
+table tr td:nth-last-child(1) {
+    background-color: #f3f3f3;
 }
 """
 
