@@ -250,14 +250,17 @@ class IndexFile:
 
             # get response
             response = await get_response(request)
-            response.background = after_response_tasks_var.get()
+            background_tasks = after_response_tasks_var.get()
+            if background_tasks.tasks != []:
+                response.background = background_tasks
             await response(scope, receive, send)
         finally:
             after_response_tasks_var.reset(after_response_tasks_token)
 
             run_finished_response_tasks = finished_response_tasks_var.get()
             finished_response_tasks_var.reset(finished_response_tasks_token)
-            await run_finished_response_tasks()
+            if run_finished_response_tasks.tasks != []:
+                await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = self.factory_class["websocket"](scope, receive=receive, send=send)

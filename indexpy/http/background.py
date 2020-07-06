@@ -1,9 +1,14 @@
+import sys
 import typing
 import traceback
+from logging import getLogger
 from contextvars import ContextVar
 from functools import wraps
 
 from starlette.background import BackgroundTasks as _BackgroundTasks
+
+
+logger = getLogger(__name__)
 
 
 class BackgroundTasks(_BackgroundTasks):
@@ -11,8 +16,11 @@ class BackgroundTasks(_BackgroundTasks):
         for task in self.tasks:
             try:
                 await task()
-            except Exception:
-                traceback.print_exc()
+            except Exception as exc:
+                logger.error(
+                    "Background task failed to run:\n"
+                    + "".join(traceback.format_exception(*sys.exc_info()))
+                )
 
 
 after_response_tasks_var: ContextVar[BackgroundTasks] = ContextVar(
