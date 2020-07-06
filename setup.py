@@ -21,7 +21,7 @@ if os.path.exists(readme_path):
 setup(
     long_description=readme,
     name='index.py',
-    version='0.10.9',
+    version='0.11.0',
     description='An easy-to-use asynchronous web framework based on ASGI.',
     python_requires='==3.*,>=3.6.0',
     project_urls={
