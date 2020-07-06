@@ -67,7 +67,7 @@ code, pre, .code {
     margin: 0px;
     color: #191f21;
     font-size: 17px;
-    border-top: 1px solid #646a6d;
+    border-top: 1px solid #038BB8;
 }
 .source {
   font-size: small;
@@ -75,19 +75,21 @@ code, pre, .code {
 table {
     width: 100%;
     border-spacing: 0px;
+    padding: 0 10px;
+    margin-top: 25px;
 }
 table pre {
     white-space: pre-wrap;
 }
 table td {
     padding: 10px;
-    border-bottom: 1px solid #c7dce8;
+    border-top: 1px solid #c7dce8;
 }
-table tr:nth-last-child(1) td {
-    border-bottom: none;
+table tr td:nth-child(1) {
+    padding-left: 0px;
 }
 table tr td:nth-last-child(1) {
-    background-color: #f3f3f3;
+    background-color: #f7f7f7;
 }
 """
 

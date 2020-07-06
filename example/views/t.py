@@ -9,7 +9,7 @@ def onlytest():
 
 
 class HTTP(HTTPView):
-    def get(self):
+    async def get(self):
         onlytest()
         a = "temporary"
         raise Exception("SomeError.")
