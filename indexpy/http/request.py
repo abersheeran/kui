@@ -1,6 +1,7 @@
 import asyncio
 import json
 import http
+from http import cookies as http_cookies
 from typing import (
     cast,
     Any,
@@ -12,7 +13,6 @@ from typing import (
     AsyncGenerator,
 )
 
-from starlette.types import Scope, Send, Receive
 from starlette.datastructures import (
     Address,
     URL,
@@ -28,10 +28,37 @@ from starlette.formparsers import (
 )
 from starlette.requests import (
     SERVER_PUSH_HEADERS_TO_COPY,
-    empty_receive,
-    empty_send,
     ClientDisconnect,
 )
+
+from ..types import Scope, Send, Receive, Message
+
+
+def cookie_parser(cookie_string: str) -> Dict[str, str]:
+    """
+    This function parses a ``Cookie`` HTTP header into a dict of key/value pairs.
+
+    It attempts to mimic browser cookie parsing behavior: browsers and web servers
+    frequently disregard the spec (RFC 6265) when setting and reading cookies,
+    so we attempt to suit the common scenarios here.
+
+    This function has been adapted from Django 3.1.0.
+    Note: we are explicitly _NOT_ using `SimpleCookie.load` because it is based
+    on an outdated spec and will fail on lots of input we want to support
+    """
+    cookie_dict: Dict[str, str] = {}
+    for chunk in cookie_string.split(";"):
+        if "=" in chunk:
+            key, val = chunk.split("=", 1)
+        else:
+            # Assume an empty name per
+            # https://bugzilla.mozilla.org/show_bug.cgi?id=169091
+            key, val = "", chunk
+        key, val = key.strip(), val.strip()
+        if key or val:
+            # unquote using Python's algorithm.
+            cookie_dict[key] = http_cookies._unquote(val)  # type: ignore
+    return cookie_dict
 
 
 class HTTPConnection(Mapping):
@@ -86,13 +113,11 @@ class HTTPConnection(Mapping):
     @property
     def cookies(self) -> Dict[str, str]:
         if not hasattr(self, "_cookies"):
-            cookies = {}
+            cookies: Dict[str, str] = {}
             cookie_header = self.headers.get("cookie")
+
             if cookie_header:
-                cookie = http.cookies.SimpleCookie()  # type: http.cookies.BaseCookie
-                cookie.load(cookie_header)
-                for key, morsel in cookie.items():
-                    cookies[key] = morsel.value
+                cookies = cookie_parser(cookie_header)
             self._cookies = cookies
         return self._cookies
 
@@ -109,6 +134,14 @@ class HTTPConnection(Mapping):
             # Create a state instance with a reference to the dict in which it should store info
             self._state = State(self.scope["state"])
         return self._state
+
+
+async def empty_receive() -> Message:
+    raise RuntimeError("Receive channel has not been made available")
+
+
+async def empty_send(message: Message) -> None:
+    raise RuntimeError("Send channel has not been made available")
 
 
 class Request(HTTPConnection):
