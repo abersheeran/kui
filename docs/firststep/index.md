@@ -11,7 +11,7 @@ pip install -U index.py
 或者直接从 Github 上安装最新版本
 
 ```bash
-pip install -U git+https://github.com/abersheeran/index.py
+pip install -U git+https://github.com/abersheeran/index.py@setup.py
 ```
 
 ## 你好
