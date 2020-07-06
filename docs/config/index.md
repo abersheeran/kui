@@ -22,24 +22,27 @@ Index 在启动时将从环境变量里读取 `INDEX_DEBUG` 和 `INDEX_ENV` 两�
 
 ```yaml
 # overwrite default value to this program
-log_level: "info"
-allow_underline: true,
+app: "example:app"
+port: 4918
 allowed_hosts: ["localhost"]
 cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
+templates: ["templates", "other_templates"]
+autoreload: false
+hotreload: true
 
 # use in development
 dev:
-    "host": "0.0.0.0"
+    "host": "localhost"
     "debug": true
+    "log_level": "debug"
 
 # use in production
 pro:
     "host": "127.0.0.1"
     "port": "41900"
     "log_level": "warning"
-    "hotreload": false
 
 # use in test
 test:
