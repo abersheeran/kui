@@ -47,6 +47,7 @@ jobs:
           git add -A
           timestamp=$(date -u)
           git commit -m "Automated publish: ${timestamp} ${GITHUB_SHA}" || exit 0
+          git pull --rebase publisher setup.py
           git push publisher setup.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
