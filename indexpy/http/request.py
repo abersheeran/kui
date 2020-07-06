@@ -1,17 +1,7 @@
 import asyncio
 import json
-import http
+import typing
 from http import cookies as http_cookies
-from typing import (
-    cast,
-    Any,
-    Dict,
-    Union,
-    List,
-    Iterator,
-    Mapping,
-    AsyncGenerator,
-)
 
 from starlette.datastructures import (
     Address,
@@ -34,7 +24,7 @@ from starlette.requests import (
 from ..types import Scope, Send, Receive, Message
 
 
-def cookie_parser(cookie_string: str) -> Dict[str, str]:
+def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:
     """
     This function parses a ``Cookie`` HTTP header into a dict of key/value pairs.
 
@@ -46,7 +36,7 @@ def cookie_parser(cookie_string: str) -> Dict[str, str]:
     Note: we are explicitly _NOT_ using `SimpleCookie.load` because it is based
     on an outdated spec and will fail on lots of input we want to support
     """
-    cookie_dict: Dict[str, str] = {}
+    cookie_dict: typing.Dict[str, str] = {}
     for chunk in cookie_string.split(";"):
         if "=" in chunk:
             key, val = chunk.split("=", 1)
@@ -61,7 +51,7 @@ def cookie_parser(cookie_string: str) -> Dict[str, str]:
     return cookie_dict
 
 
-class HTTPConnection(Mapping):
+class HTTPConnection(typing.Mapping):
     """
     A base class for incoming HTTP connections, that is used to provide
     any functionality that is common to both `Request` and `WebSocket`.
@@ -74,7 +64,7 @@ class HTTPConnection(Mapping):
     def __getitem__(self, key: str) -> str:
         return self.scope[key]
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> typing.Iterator[str]:
         return iter(self.scope)
 
     def __len__(self) -> int:
@@ -111,9 +101,9 @@ class HTTPConnection(Mapping):
         return self._query_params
 
     @property
-    def cookies(self) -> Dict[str, str]:
+    def cookies(self) -> typing.Dict[str, str]:
         if not hasattr(self, "_cookies"):
-            cookies: Dict[str, str] = {}
+            cookies: typing.Dict[str, str] = {}
             cookie_header = self.headers.get("cookie")
 
             if cookie_header:
@@ -163,7 +153,7 @@ class Request(HTTPConnection):
     def receive(self) -> Receive:
         return self._receive
 
-    async def stream(self) -> AsyncGenerator[bytes, None]:
+    async def stream(self) -> typing.AsyncGenerator[bytes, None]:
         if hasattr(self, "_body"):
             yield self._body
             yield b""
@@ -194,7 +184,7 @@ class Request(HTTPConnection):
             self._body = b"".join(chunks)
         return self._body
 
-    async def json(self) -> Any:
+    async def json(self) -> typing.Any:
         if not hasattr(self, "_json"):
             body = await self.body()
             self._json = json.loads(body)
