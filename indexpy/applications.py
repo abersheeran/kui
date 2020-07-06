@@ -318,18 +318,7 @@ class Index:
                 StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
             ),
         ]
-        self.user_middlewares: typing.List[Middleware] = [
-            Middleware(
-                CORSMiddleware,
-                allow_origins=config.CORS_ALLOW_ORIGINS,
-                allow_methods=config.CORS_ALLOW_METHODS,
-                allow_headers=config.CORS_ALLOW_HEADERS,
-                allow_credentials=config.CORS_ALLOW_CREDENTIALS,
-                allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
-                expose_headers=config.CORS_EXPOSE_HEADERS,
-                max_age=config.CORS_MAX_AGE,
-            ),
-        ]
+        self.user_middlewares: typing.List[Middleware] = []
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable
         ] = {}
@@ -350,12 +339,35 @@ class Index:
             else:
                 exception_handlers[key] = value
 
-        middlewares = [
-            Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS),
-            Middleware(
-                ServerErrorMiddleware, handler=error_handler, debug=config.DEBUG
-            ),
-        ] + self.user_middlewares
+        middlewares = []
+
+        if config.ALLOWED_HOSTS != ["*"]:
+            middlewares.append(
+                Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
+            )
+
+        middlewares.append(
+            Middleware(ServerErrorMiddleware, handler=error_handler, debug=config.DEBUG)
+        )
+
+        if (
+            config.CORS_ALLOW_ORIGIN_REGEX is not None
+            or len(config.CORS_ALLOW_ORIGINS) > 0
+        ):
+            middlewares.append(
+                Middleware(
+                    CORSMiddleware,
+                    allow_origins=config.CORS_ALLOW_ORIGINS,
+                    allow_methods=config.CORS_ALLOW_METHODS,
+                    allow_headers=config.CORS_ALLOW_HEADERS,
+                    allow_credentials=config.CORS_ALLOW_CREDENTIALS,
+                    allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
+                    expose_headers=config.CORS_EXPOSE_HEADERS,
+                    max_age=config.CORS_MAX_AGE,
+                )
+            )
+
+        middlewares += self.user_middlewares
 
         middlewares.append(Middleware(ExceptionMiddleware, handlers=exception_handlers))
 
