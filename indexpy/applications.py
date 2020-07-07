@@ -1,17 +1,22 @@
 import os
+import sys
 import copy
 import typing
 import asyncio
+import logging
 import traceback
 import importlib
 from types import ModuleType
 
-from starlette.types import Scope, Receive, Send, ASGIApp, Message
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
 from starlette.status import WS_1001_GOING_AWAY
-from starlette.requests import URL
+from starlette.datastructures import URL
 from starlette.websockets import WebSocketClose
 from starlette.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -19,12 +24,18 @@ from starlette.routing import NoMatchFound
 from jinja2 import Environment, FileSystemLoader
 from a2wsgi import WSGIMiddleware
 
-from .types import WSGIApp
+from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message
 from .utils import Singleton
 from .config import here, Config
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
-from .http.responses import Response, FileResponse, TemplateResponse, PlainTextResponse
+from .http.responses import (
+    Response,
+    FileResponse,
+    TemplateResponse,
+    PlainTextResponse,
+    RedirectResponse,
+)
 from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
@@ -38,6 +49,9 @@ from .preset import (
     create_directories,
     clear_directories,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class Lifespan:
@@ -107,15 +121,20 @@ class IndexFile:
     def __init__(
         self,
         module_name: str,
-        basepath: str,
+        basepath: str = None,
         *,
-        try_html: bool = False,
-        factory_class=None,
+        factory_class: typing.Dict[str, typing.Any] = None,
     ) -> None:
         self.module_name = module_name
+        if basepath is None:
+            basepath = os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(importlib.import_module(module_name).__file__)
+                )
+            )
         self.basepath = basepath
-        self.try_html = try_html
         self.factory_class = factory_class or {"http": Request, "websocket": WebSocket}
+        logger.debug(f"Index File in module {module_name}, basepath: {basepath}")
 
     def _split_path(self, path: str) -> typing.List[str]:
         """
@@ -222,15 +241,6 @@ class IndexFile:
 
         module = self.get_view(request.url.path)
         if not hasattr(module, "HTTP"):
-            if self.try_html:
-                pathlist = pathlist[1:]  # delete self.module_name from pathlist
-                try:
-                    # only html, no middleware/background tasks or other anything
-                    return await TemplateResponse(
-                        os.path.join(*pathlist) + ".html", {"request": request}
-                    )(scope, receive, send)
-                except LookupError:
-                    pass
             raise NoMatchFound()
 
         get_response = getattr(module, "HTTP")
@@ -273,32 +283,19 @@ class IndexFile:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
-
-        if scope["type"] in ("http", "websocket"):  # Handle some special routes
-            url = URL(scope=scope)
-            path = url.path
-            if path.endswith("/index"):
-                handler = RedirectResponse(
-                    url.replace(path=f'{path[:-len("/index")]}'), status_code=301,
-                )
-            elif "_" in path and not Config().ALLOW_UNDERLINE:
-                handler = RedirectResponse(
-                    url.replace(path=f'{path.replace("_", "-")}'), status_code=301,
-                )
-            elif path == "/favicon.ico":
-                if os.path.exists(os.path.normpath("favicon.ico")):
-                    handler = FileResponse("favicon.ico")
-
         await handler(scope, receive, send)
+
+
+class FactoryClass(TypedDict):
+    http: typing.Type[Request]
+    websocket: typing.Type[WebSocket]
 
 
 class Index:
     def __init__(self) -> None:
         self.config = config = Config()
-        self.factory_class = {"http": Request, "websocket": WebSocket}
-        self.indexfile = IndexFile(
-            "views", here, try_html=True, factory_class=self.factory_class
-        )
+        self.factory_class: FactoryClass = {"http": Request, "websocket": WebSocket}
+        self.indexfile = IndexFile("views", factory_class=self.factory_class)
         self.jinja_env = Environment(
             loader=FileSystemLoader(config.TEMPLATES), enable_async=True
         )
@@ -431,71 +428,92 @@ class Index:
         For lifespan, call Index directly.
         For http/websocket, find the appropriate subapp, or Index itself.
         """
-        if scope["type"] in ("http", "websocket"):
-            path = scope["path"]
-            root_path = scope.get("root_path", "")
-            has_received = False
+        if scope["type"] == "lifespan":
+            return await self.lifespan(scope, receive, send)
 
-            async def subreceive() -> Message:
-                nonlocal has_received
-                has_received = True
-                return await receive()
+        path = scope["path"]
+        root_path = scope.get("root_path", "")
+        has_received = False
 
-            async def subsend(message: Message) -> None:
-                if (
-                    message["type"] == "http.response.start"
-                    and message["status"] == 404
-                ):
-                    raise NoMatchFound()
-                await send(message)
+        async def subreceive() -> Message:
+            nonlocal has_received
+            has_received = True
+            return await receive()
 
-            # Call into a submounted app, if one exists.
-            for path_prefix, app in self.mount_apps:
-                if not path.startswith(path_prefix + "/"):
-                    continue
-                if isinstance(app, WSGIMiddleware):
-                    if scope["type"] != "http":
-                        continue
-                subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix) :]
-                subscope["root_path"] = root_path + path_prefix
-                try:
-                    await app(subscope, subreceive, subsend)
-                    return
-                except NoMatchFound:
-                    if has_received:  # has call received
-                        raise HTTPException(404)
-                except HTTPException as e:
-                    if e.status_code != 404 or has_received:
-                        raise e
+        async def subsend(message: Message) -> None:
+            if message["type"] == "http.response.start" and message["status"] == 404:
+                raise NoMatchFound()
+            await send(message)
 
+        # Call into a submounted app, if one exists.
+        for path_prefix, app in filter(
+            lambda item: path.startswith(item[0] + "/"), self.mount_apps
+        ):
+            if isinstance(app, WSGIMiddleware) and scope["type"] != "http":
+                continue
+            subscope = copy.copy(scope)
+            subscope["path"] = path[len(path_prefix) :]
+            subscope["root_path"] = root_path + path_prefix
             try:
-                await self.indexfile(scope, receive, send)
+                await app(subscope, subreceive, subsend)
+                return
             except NoMatchFound:
-                if scope["type"] == "http":
+                if has_received:  # has call received
                     raise HTTPException(404)
-                await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
+            except HTTPException as e:
+                if e.status_code != 404 or has_received:
+                    raise e
 
-        elif scope["type"] == "lifespan":
-            await self.lifespan(scope, receive, send)
+        try:
+            return await self.indexfile(scope, receive, send)
+        except NoMatchFound:
+            pass
+
+        if scope["type"] == "http":
+            try:
+                # only html, no middleware/background tasks or other anything
+                response = TemplateResponse(
+                    path + ".html",
+                    {"request": self.factory_class["http"](scope, receive, send)},
+                )
+                return await response(scope, receive, send)
+            except LookupError:
+                pass
+            raise HTTPException(404)
+        await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
 
-        # Force jump to https/wss
-        if (
-            self.config.FORCE_SSL
-            and scope["type"] in ("http", "websocket")
-            and scope["scheme"] in ("http", "ws",)
-        ):
+        if scope["type"] in ("http", "websocket"):  # Handle some special routes
             url = URL(scope=scope)
-            redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
-            netloc = url.hostname if url.port in (80, 443) else url.netloc
-            url = url.replace(scheme=redirect_scheme, netloc=netloc)
-            response = RedirectResponse(
-                url, status_code=301
-            )  # for SEO, status code must be 301
-            await response(scope, receive, send)
-            return
+            path = url.path
+            response = None
+
+            # Force jump to https/wss
+            if self.config.FORCE_SSL and scope["scheme"] in ("http", "ws"):
+                redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
+                netloc = url.hostname if url.port in (80, 443) else url.netloc
+                url = url.replace(scheme=redirect_scheme, netloc=netloc)
+                response = RedirectResponse(
+                    url, status_code=301
+                )  # for SEO, status code must be 301
+
+            # url rule judgment
+            if path.endswith("/index"):
+                response = RedirectResponse(
+                    url.replace(path=path[: -len("/index")]), status_code=301,
+                )
+            elif "_" in path and not Config().ALLOW_UNDERLINE:
+                response = RedirectResponse(
+                    url.replace(path=path.replace("_", "-")), status_code=301,
+                )
+            elif path == "/favicon.ico":
+                if os.path.exists(os.path.normpath("favicon.ico")):
+                    response = FileResponse("favicon.ico")
+
+            if response is not None:
+                await response(scope, receive, send)
+                return
 
         await self.asgiapp(scope, receive, send)
