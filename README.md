@@ -1,6 +1,7 @@
 # index.py
 
 [![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3ATest)
+[![Publish PyPi](https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22)
 [![PyPI](https://img.shields.io/pypi/v/index.py)](https://pypi.org/project/index.py/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/index.py)
 
