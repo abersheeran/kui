@@ -3,9 +3,9 @@ from types import TracebackType
 from typing import Any, Type, Tuple, Union, Callable, Iterable, MutableMapping, Optional
 
 if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict
+    from typing_extensions import TypedDict, Literal
 else:
-    from typing import TypedDict
+    from typing import TypedDict, Literal
 
 from starlette.types import *
 
@@ -26,6 +26,7 @@ __all__ = (
     "Environ",
     "StartResponse",
     "WSGIApp",
+    "FactoryClass",
 )
 
 # WSGI: view PEP3333
