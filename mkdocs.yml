@@ -34,3 +34,6 @@ markdown_extensions:
   - admonition
   - codehilite
   - extra
+
+plugins:
+  - search
