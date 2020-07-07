@@ -30,11 +30,8 @@ def replace_definitions(schema: Dict[str, Any]) -> Dict[str, Any]:
                         # replace ref and del it
                         value.update(define_schema)
                         del value["$ref"]
-                    elif isinstance(value[_name], Dict):
+                    else:
                         replace(value[_name])
-                    elif isinstance(value[_name], Sequence):
-                        for _value in value[_name]:
-                            replace(_value)
 
         replace(schema["definitions"])
         replace(schema["properties"])

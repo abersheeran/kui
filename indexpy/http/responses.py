@@ -20,7 +20,6 @@ from ..types import Scope, Receive, Send
 from ..utils import Singleton
 from ..config import Config
 
-from .request import HTTPConnection
 
 __all__ = [
     "automatic",
@@ -48,9 +47,7 @@ class TemplateResponse(Response):
         media_type: str = None,
         background: BackgroundTask = None,
     ):
-        if not (
-            "request" in context and isinstance(context["request"], HTTPConnection)
-        ):
+        if "request" not in context:
             raise ValueError('context must include "request".')
         self.env: jinja2.Environment = context["request"].scope["app"].jinja_env
         self.template = self.env.get_template(name)
