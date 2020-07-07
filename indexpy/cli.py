@@ -51,16 +51,7 @@ def execute(command: Union[List[str], str]) -> int:
 
 
 @click.group(help=f"Index.py {__version__}")
-@click.option("--env", default=lambda: config.ENV, help="set config.ENV")
-@click.option(
-    "--debug/--no-debug", default=lambda: config.DEBUG, help="set config.DEBUG"
-)
 def main(env, debug):
-    # change config
-    os.environ["INDEX_ENV"] = env
-    os.environ["INDEX_DEBUG"] = "on" if debug else "off"
-    config.import_from_environ()
-    Index().rebuild_app()
     # set index logger level
     logging.getLogger("indexpy").setLevel(LOG_LEVELS[config.LOG_LEVEL])
 

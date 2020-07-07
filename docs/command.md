@@ -9,17 +9,6 @@ Index 内置了一些命令方便使用。
 
 `index-cli` 是 `index` 内置的根命令，所有其余命令均为 `index-cli` 的子命令。
 
-`index-cli` 有两个选项——`--env` 与 `--debug / --no-debug`。当你并不想设置，或者无法设置环境变量时，可以使用这两个选项指定 [ENV](/config/#env) 与 [DEBUG](/config/#debug) 配置。在命令中显式的设置这两个配置，可以覆盖环境变量或者配置文件中的值。
-
-以下为一些例子：
-
-```bash
-# 设置环境为 pro 并关闭 debug
-index-cli --env "pro" --no-debug serve
-# 设置环境为 test
-index-cli --env "test" test
-```
-
 ### index-cli serve
 
 使用 uvicorn 启动 Index，如果使用了 Lifespan/Mount 等需要自行创建 application 的功能，应当显式的指定 application，例如 `index-cli serve main:app`。
