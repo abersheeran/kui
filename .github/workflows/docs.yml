@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'mkdocs.yml'
+      - 'docs/*'
 
 jobs:
   build-and-deploy:
