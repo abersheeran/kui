@@ -51,7 +51,7 @@ def execute(command: Union[List[str], str]) -> int:
 
 
 @click.group(help=f"Index.py {__version__}")
-def main(env, debug):
+def main():
     # set index logger level
     logging.getLogger("indexpy").setLevel(LOG_LEVELS[config.LOG_LEVEL])
 
