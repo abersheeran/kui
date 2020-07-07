@@ -53,7 +53,9 @@ def execute(command: Union[List[str], str]) -> int:
 @click.group(help=f"Index.py {__version__}")
 def main():
     # set index logger level
-    logging.getLogger("indexpy").setLevel(LOG_LEVELS[config.LOG_LEVEL])
+    root_logger = logging.getLogger("indexpy")
+    logging.basicConfig(level=logging.DEBUG)
+    # root_logger.setLevel(LOG_LEVELS[config.LOG_LEVEL])
 
 
 @main.command(help="use only uvicorn to deploy")
