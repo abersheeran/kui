@@ -8,11 +8,6 @@ import traceback
 import importlib
 from types import ModuleType
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
-
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.datastructures import URL
 from starlette.websockets import WebSocketClose
@@ -24,7 +19,7 @@ from starlette.routing import NoMatchFound
 from jinja2 import Environment, FileSystemLoader
 from a2wsgi import WSGIMiddleware
 
-from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message
+from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, FactoryClass
 from .utils import Singleton
 from .config import here, Config
 from .http.debug import ServerErrorMiddleware
@@ -123,7 +118,7 @@ class IndexFile:
         module_name: str,
         basepath: str = None,
         *,
-        factory_class: typing.Dict[str, typing.Any] = None,
+        factory_class: FactoryClass = None,
     ) -> None:
         self.module_name = module_name
         if basepath is None:
@@ -284,11 +279,6 @@ class IndexFile:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
         await handler(scope, receive, send)
-
-
-class FactoryClass(TypedDict):
-    http: typing.Type[Request]
-    websocket: typing.Type[WebSocket]
 
 
 class Index:
@@ -488,7 +478,7 @@ class Index:
         if scope["type"] in ("http", "websocket"):  # Handle some special routes
             url = URL(scope=scope)
             path = url.path
-            response = None
+            response: typing.Optional[Response] = None
 
             # Force jump to https/wss
             if self.config.FORCE_SSL and scope["scheme"] in ("http", "ws"):
