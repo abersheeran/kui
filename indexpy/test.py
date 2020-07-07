@@ -81,6 +81,17 @@ class LiteralOption(click.Option):
             raise click.BadParameter(value)
 
 
+def _convert_path(app: Index, path: str) -> str:
+    if ".py" in path:
+        return path
+    elif "::" in path:
+        pathlist = path.split("::")
+        pathlist[0] = app.indexfile.get_filepath_from_path(pathlist[0])
+        return "::".join(pathlist)
+    else:
+        return app.indexfile.get_filepath_from_path(path)
+
+
 @click.option(
     "-app",
     "--application",
@@ -105,14 +116,7 @@ def cmd_test(application: str, args: typing.List[str], path: str):
     pytest_args.extend(args)
 
     if path:
-        if ".py" in path:
-            pytest_args.append(path)
-        elif "::" in path:
-            pathlist = path.split("::")
-            pathlist[0] = app.indexfile.get_filepath_from_path(pathlist[0])
-            pytest_args.append("::".join(pathlist))
-        else:
-            pytest_args.append(app.indexfile.get_filepath_from_path(path))
+        pytest_args.append(_convert_path(app, path))
 
     with _TestClient(app):
         sys.exit(pytest.main(pytest_args))

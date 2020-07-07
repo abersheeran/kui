@@ -466,14 +466,6 @@ version = "0.8.0"
 
 [[package]]
 category = "main"
-description = "File system general utilities"
-name = "pathtools"
-optional = false
-python-versions = "*"
-version = "0.1.2"
-
-[[package]]
-category = "main"
 description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
 optional = false
@@ -778,20 +770,6 @@ version = "0.14.0"
 
 [[package]]
 category = "main"
-description = "Filesystem events monitoring"
-name = "watchdog"
-optional = false
-python-versions = "*"
-version = "0.10.3"
-
-[package.dependencies]
-pathtools = ">=0.1.1"
-
-[package.extras]
-watchmedo = ["PyYAML (>=3.10)", "argh (>=0.24.1)"]
-
-[[package]]
-category = "main"
 description = "Measures the displayed width of unicode strings in a terminal"
 name = "wcwidth"
 optional = false
@@ -826,7 +804,7 @@ requests = ["requests"]
 test = ["pytest", "requests"]
 
 [metadata]
-content-hash = "4e8bb279b4817a8b9aac1e71a1015510c25e2261a4ea05b2ce7bf912dba4e7fe"
+content-hash = "50378c5847e8244abe7fb49d9e7a4a4e450e16784b339d76000e2bb2fa888acb"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1077,9 +1055,6 @@ pathspec = [
     {file = "pathspec-0.8.0-py2.py3-none-any.whl", hash = "sha256:7d91249d21749788d07a2d0f94147accd8f845507400749ea19c1ec9054a12b0"},
     {file = "pathspec-0.8.0.tar.gz", hash = "sha256:da45173eb3a6f2a5a487efba21f050af2b41948be6ab52b6a1e3ff22bb8b7061"},
 ]
-pathtools = [
-    {file = "pathtools-0.1.2.tar.gz", hash = "sha256:7c35c5421a39bb82e58018febd90e3b6e5db34c5443aaaf742b3f33d4655f1c0"},
-]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
@@ -1262,9 +1237,6 @@ uvloop = [
     {file = "uvloop-0.14.0-cp38-cp38-macosx_10_11_x86_64.whl", hash = "sha256:bcac356d62edd330080aed082e78d4b580ff260a677508718f88016333e2c9c5"},
     {file = "uvloop-0.14.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:4315d2ec3ca393dd5bc0b0089d23101276778c304d42faff5dc4579cb6caef09"},
     {file = "uvloop-0.14.0.tar.gz", hash = "sha256:123ac9c0c7dd71464f58f1b4ee0bbd81285d96cdda8bc3519281b8973e3a461e"},
-]
-watchdog = [
-    {file = "watchdog-0.10.3.tar.gz", hash = "sha256:4214e1379d128b0588021880ccaf40317ee156d4603ac388b9adcf29165e0c04"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},

@@ -10,6 +10,8 @@ def logger_on_startup():
     logger.info("Called on startup")
 
 
-@app.on_shutdown
 def logger_on_shutdown():
     logger.info("Called on shutdown")
+
+
+app.on_shutdown(logger_on_shutdown)

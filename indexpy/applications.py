@@ -19,7 +19,16 @@ from starlette.routing import NoMatchFound
 from jinja2 import Environment, FileSystemLoader
 from a2wsgi import WSGIMiddleware
 
-from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, FactoryClass
+from .types import (
+    WSGIApp,
+    Scope,
+    Receive,
+    Send,
+    ASGIApp,
+    Message,
+    FactoryClass,
+    Literal,
+)
 from .utils import Singleton
 from .config import here, Config
 from .http.debug import ServerErrorMiddleware
@@ -38,12 +47,6 @@ from .http.background import (
 )
 from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
-from .preset import (
-    check_on_startup,
-    clear_check_on_shutdown,
-    create_directories,
-    clear_directories,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -52,17 +55,19 @@ logger = logging.getLogger(__name__)
 class Lifespan:
     def __init__(
         self,
-        on_startup: typing.Dict[str, typing.Callable] = None,
-        on_shutdown: typing.Dict[str, typing.Callable] = None,
+        on_startup: typing.List[typing.Callable] = None,
+        on_shutdown: typing.List[typing.Callable] = None,
     ) -> None:
-        self.on_startup: typing.Dict[str, typing.Callable] = on_startup or {}
-        self.on_shutdown: typing.Dict[str, typing.Callable] = on_shutdown or {}
+        self.on_startup = on_startup or []
+        self.on_shutdown = on_shutdown or []
 
-    def add_event_handler(self, event_type: str, func: typing.Callable) -> None:
+    def add_event_handler(
+        self, event_type: Literal["startup", "shutdown"], func: typing.Callable
+    ) -> None:
         if event_type == "startup":
-            self.on_startup[func.__qualname__] = func
+            self.on_startup.append(func)
         elif event_type == "shutdown":
-            self.on_shutdown[func.__qualname__] = func
+            self.on_shutdown.append(func)
         else:
             raise ValueError("event_type must be in ('startup', 'shutdown')")
 
@@ -70,7 +75,7 @@ class Lifespan:
         """
         Run any `.on_startup` event handlers.
         """
-        for handler in self.on_startup.values():
+        for handler in self.on_startup:
             if asyncio.iscoroutinefunction(handler):
                 await handler()
             else:
@@ -80,7 +85,7 @@ class Lifespan:
         """
         Run any `.on_shutdown` event handlers.
         """
-        for handler in self.on_shutdown.values():
+        for handler in self.on_shutdown:
             if asyncio.iscoroutinefunction(handler):
                 await handler()
             else:
@@ -289,22 +294,17 @@ class Index:
         self.jinja_env = Environment(
             loader=FileSystemLoader(config.TEMPLATES), enable_async=True
         )
-        self.lifespan = Lifespan(
-            on_startup={
-                check_on_startup.__qualname__: check_on_startup,
-                create_directories.__qualname__: create_directories,
-            },
-            on_shutdown={
-                clear_check_on_shutdown.__qualname__: clear_check_on_shutdown,
-                clear_directories.__qualname__: clear_directories,
-            },
-        )
         self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
             (
                 "/static",
                 StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
             ),
         ]
+        self.lifespan = Lifespan(
+            on_startup=[
+                lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
+            ],
+        )
         self.user_middlewares: typing.List[Middleware] = []
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable

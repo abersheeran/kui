@@ -4,15 +4,10 @@ from copy import deepcopy
 from inspect import signature
 from typing import cast, List, Dict, Any, Sequence
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict, Literal
-else:
-    from typing import TypedDict, Literal
-
-from starlette.types import Scope, Receive, Send
 from starlette.endpoints import Request, Response
 from starlette.routing import NoMatchFound
 
+from ..types import Scope, Receive, Send, TypedDict, Literal
 from ..http.responses import (
     JSONResponse,
     YAMLResponse,

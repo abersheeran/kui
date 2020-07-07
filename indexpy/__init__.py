@@ -1,5 +1,4 @@
 import sys
-import importlib
 
 from .utils import State
 from .applications import Index
