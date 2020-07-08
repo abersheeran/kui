@@ -28,7 +28,7 @@
 这些函数默认不接受任何参数，但你可以使用 `self.request` 去获取此次请求的一些信息。
 
 !!! notice
-    注意：这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
+    这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
 
 ## 获取请求
 
@@ -253,21 +253,37 @@ def _error_json(error: Error, status: int = 400) -> Response:
     return JSONResponse(asdict(error), status)
 ```
 
+### 默认响应
+
+当你需要返回一个 HTTP 状态码以及其默认的描述时，可以使用
+
+```python
+raise indexpy.http.HTTPException(CODE)
+```
+
+其好处在于你可以通过[自定义异常处理](#_8)来捕捉并自定义它们。
+
+例如：网站需要有统一的 404 页面。
+
 ## 中间件
 
 在 `views` 中任意 `__init__.py` 中定义名为 `Middleware` 的类, 它将能处理所有通过该路径的 HTTP 请求。
 
 譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/###` 的请求。
 
-`Middleware` 需要继承 `indexpy.http.MiddlewareMixin`，有以下两个方法可以重写。
+`Middleware` 需要继承 `indexpy.http.MiddlewareMixin`，有以下三个方法可以重写。
 
-1. `process_request(request)`
+- `process_request(request)`
 
     此方法在请求被层层传递时调用，可用于修改 `request` 对象以供后续处理使用。必须返回 `None`，否则返回值将作为最终结果并直接终止此次请求。
 
-2. `process_response(request, response)`
+- `process_response(request, response)`
 
     此方法在请求被正常处理、已经返回响应对象后调用，它必须返回一个可用的响应对象（一般来说直接返回 `response` 即可）。
+
+- `process_exception(request, exception)`
+
+    此方法在中间件之后的调用链路上出现异常时被调用。当其返回值为 `None` 时，异常会被原样抛出，否则其返回值将作为此次请求的响应值被返回。
 
 !!! notice
     以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
@@ -303,9 +319,9 @@ class Middleware(MiddlewareMixin):
         return response
 ```
 
-## 自定义状态处理
+## 自定义异常处理
 
-对于一些故意抛出的异常或者特定的 HTTP 状态码，Index 提供了方法进行统一处理。
+对于一些故意抛出的异常，Index 提供了方法进行统一处理。
 
 以下为样例：
 
@@ -329,7 +345,10 @@ def value_error(request: Request, exc: ValueError) -> Response:
 ```
 
 !!!notice
-    如果是捕捉 HTTP 状态码，则处理函数的 `exc` 类型是 `indexpy.http.HTTPException`。否则，捕捉什么异常，则 `exc` 就是什么类型的异常。
+    如果是捕捉 HTTP 状态码，则会捕捉 `indexpy.http.HTTPException`。
+
+!!!tip
+    在此可以捕捉包括挂载到 Index 中的其他 app 的异常。而中间件中仅能处理通过中间件的异常。
 
 ## 后台任务
 

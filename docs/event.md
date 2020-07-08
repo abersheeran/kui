@@ -25,6 +25,3 @@ def logger_on_startup():
 def logger_on_shutdown():
     logger.info("Called on shutdown")
 ```
-
-!!! notice
-    拥有相同 `__qualname__` 的函数将被最后一个所覆盖。

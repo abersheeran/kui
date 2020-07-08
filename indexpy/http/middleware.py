@@ -5,7 +5,7 @@ from .responses import Response, convert
 from .request import Request
 
 
-MiddlewareMeta = keepasync("process_request", "process_response")
+MiddlewareMeta = keepasync("process_request", "process_response", "process_exception")
 
 
 class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
@@ -24,7 +24,12 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
         response = await self.process_request(request)
 
         if response is None:
-            response = await self.get_response(request)
+            try:
+                response = await self.get_response(request)
+            except Exception as exc:
+                response = await self.process_exception(request, exc)
+                if response is None:
+                    raise exc
 
         response = convert(response)
 
@@ -32,8 +37,18 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
 
         return response
 
-    async def process_request(self, request: Request) -> typing.Union[None, typing.Any]:
-        """Must return None, otherwise return the value as the result of this request."""
+    async def process_request(self, request: Request) -> typing.Optional[typing.Any]:
+        """
+        Must return None, otherwise return the value as the result of this request.
+        """
 
     async def process_response(self, request: Request, response: Response) -> Response:
         return response
+
+    async def process_exception(
+        self, request: Request, exception: Exception
+    ) -> typing.Optional[typing.Any]:
+        """
+        If return None, will raise exception.
+        Otherwise return the value as the result of this request.
+        """

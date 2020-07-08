@@ -804,7 +804,7 @@ requests = ["requests"]
 test = ["pytest", "requests"]
 
 [metadata]
-content-hash = "50378c5847e8244abe7fb49d9e7a4a4e450e16784b339d76000e2bb2fa888acb"
+content-hash = "c33d1ba3b108f4d57ab1f512401b6e9090c7c1977ab92dd25db4eedf0bed5311"
 python-versions = "^3.6"
 
 [metadata.files]
