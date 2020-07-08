@@ -29,24 +29,22 @@ cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
 templates: ["templates", "other_templates"]
-autoreload: false
-hotreload: true
 
 # use in development
 dev:
-    "host": "localhost"
-    "debug": true
-    "log_level": "debug"
+  "host": "localhost"
+  "debug": true
+  "log_level": "debug"
 
 # use in production
 pro:
-    "host": "127.0.0.1"
-    "port": "41900"
-    "log_level": "warning"
+  "host": "127.0.0.1"
+  "port": "41900"
+  "log_level": "warning"
 
 # use in test
 test:
-    log_level: "debug"
+  log_level: "debug"
 ```
 
 ## 什么是配置隔离？

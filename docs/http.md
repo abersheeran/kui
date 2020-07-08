@@ -313,7 +313,7 @@ class Middleware(MiddlewareMixin):
 from indexpy import Index
 from indexpy.types import Request, Response
 from indexpy.http.responses import PlainTextResponse
-from starlette.exceptions import HTTPException
+from indexpy.http import HTTPException
 
 app = Index()
 
@@ -329,13 +329,13 @@ def value_error(request: Request, exc: ValueError) -> Response:
 ```
 
 !!!notice
-    如果是捕捉 HTTP 状态码，则处理函数的 `exc` 类型是 `starlette.exceptions.HTTPException`。否则，捕捉什么异常，则 `exc` 就是什么类型的异常。
+    如果是捕捉 HTTP 状态码，则处理函数的 `exc` 类型是 `indexpy.http.HTTPException`。否则，捕捉什么异常，则 `exc` 就是什么类型的异常。
 
 ## 后台任务
 
 ### After Response
 
-参考 starlette 的 `background` 设计，Index 提供了更简单可用的使用方法。
+Index 提供了简单可用的后台任务的使用方法。
 
 ```python
 from indexpy.http import HTTPView

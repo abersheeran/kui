@@ -6,8 +6,6 @@ cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
 templates: ["templates", "other_templates"]
-autoreload: false
-hotreload: true
 
 # use in development
 dev:
