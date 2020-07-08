@@ -1,7 +1,7 @@
 from starlette.testclient import TestClient
 from indexpy.http import HTTPView
 from indexpy.websocket import SocketView
-from indexpy.test import TestView, __global_test_app__
+from indexpy.test import TestView, get_test_app
 from indexpy import Index
 
 
@@ -21,14 +21,14 @@ class Test(TestView):
         assert resp.text == "/django"
 
     def test_django_admin(self):
-        client = TestClient(__global_test_app__)
+        client = TestClient(get_test_app())
         resp = client.get("/django/admin/")
         assert resp.status_code == 200, resp.status_code
 
     def test_wsgi_websocket(self):
         from starlette.websockets import WebSocketDisconnect
 
-        client = TestClient(__global_test_app__)
+        client = TestClient(get_test_app())
         try:
             resp = client.websocket_connect("/django/")
         except WebSocketDisconnect as e:

@@ -62,6 +62,11 @@ class TestClient:
 __global_test_app__: typing.Optional[Index] = None
 
 
+def get_test_app() -> Index:
+    assert __global_test_app__
+    return __global_test_app__
+
+
 class TestView:
     @property
     def client(self) -> TestClient:
