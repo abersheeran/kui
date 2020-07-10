@@ -1,7 +1,5 @@
 import typing
-import asyncio
 import functools
-from importlib import import_module
 
 import yaml
 import jinja2
@@ -17,8 +15,6 @@ from starlette.responses import (
 from starlette.background import BackgroundTask
 
 from ..types import Scope, Receive, Send
-from ..utils import Singleton
-from ..config import Config
 
 
 __all__ = [

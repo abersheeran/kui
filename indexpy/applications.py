@@ -1,5 +1,4 @@
 import os
-import sys
 import copy
 import typing
 import asyncio
@@ -19,25 +18,14 @@ from starlette.routing import NoMatchFound
 from jinja2 import Environment, FileSystemLoader
 from a2wsgi import WSGIMiddleware
 
-from .types import (
-    WSGIApp,
-    Scope,
-    Receive,
-    Send,
-    ASGIApp,
-    Message,
-    FactoryClass,
-    Literal,
-)
-from .utils import Singleton
+from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
 from .config import here, Config
+from .http import responses
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import (
     Response,
     FileResponse,
-    TemplateResponse,
-    PlainTextResponse,
     RedirectResponse,
 )
 from .http.background import (
@@ -50,6 +38,24 @@ from .websocket.request import WebSocket
 
 
 logger = logging.getLogger(__name__)
+
+
+class FactoryClass(TypedDict):
+    """
+    `Index().factory_class` type
+    """
+
+    http: typing.Type[Request]
+    websocket: typing.Type[WebSocket]
+
+
+def try_html(request: Request) -> typing.Optional[Response]:
+    try:
+        return responses.TemplateResponse(
+            request["path"] + ".html", {"request": request}
+        )
+    except LookupError:
+        return None
 
 
 class Lifespan:
@@ -460,15 +466,12 @@ class Index:
             pass
 
         if scope["type"] == "http":
-            try:
+            if self.config.TRY_HTML:
                 # only html, no middleware/background tasks or other anything
-                response = TemplateResponse(
-                    path + ".html",
-                    {"request": self.factory_class["http"](scope, receive, send)},
-                )
-                return await response(scope, receive, send)
-            except LookupError:
-                pass
+                response = try_html(self.factory_class["http"](scope, receive, send))
+                if response:
+                    return await response(scope, receive, send)
+
             raise HTTPException(404)
         await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
 

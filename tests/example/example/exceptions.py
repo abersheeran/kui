@@ -1,7 +1,7 @@
 from indexpy import app
-from indexpy.types import Request, Response
-from indexpy.http.responses import PlainTextResponse
 from indexpy.http import HTTPException
+from indexpy.http.request import Request
+from indexpy.http.responses import Response, PlainTextResponse
 
 
 @app.exception_handler(404)

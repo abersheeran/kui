@@ -9,7 +9,7 @@ from starlette.testclient import TestClient as _TestClient, ASGI2App, ASGI3App
 from requests import Response, Session
 
 from .applications import Index
-from .config import here, LOG_LEVELS, Config
+from .config import Config
 
 
 class TestClient:
@@ -82,7 +82,7 @@ class LiteralOption(click.Option):
     def type_cast_value(self, ctx, value):
         try:
             return ast.literal_eval(value)
-        except:
+        except Exception:
             raise click.BadParameter(value)
 
 

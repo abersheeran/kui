@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import signal
 import logging
@@ -12,7 +11,6 @@ import uvicorn
 
 from .utils import import_module
 from .config import here, LOG_LEVELS, Config
-from .applications import Index
 
 try:
     from .test import cmd_test

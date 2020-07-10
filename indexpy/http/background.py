@@ -16,7 +16,7 @@ class BackgroundTasks(_BackgroundTasks):
         for task in self.tasks:
             try:
                 await task()
-            except Exception as exc:
+            except Exception:
                 logger.error(
                     "Background task failed to run:\n"
                     + "".join(traceback.format_exception(*sys.exc_info()))

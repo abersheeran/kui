@@ -77,6 +77,7 @@ class Config(UpperDict, metaclass=Singleton):
     HOTRELOAD: bool
     AUTORELOAD: bool
     # template
+    TRY_HTML: bool
     TEMPLATES: typing.Iterable[str]
     # url
     ALLOW_UNDERLINE: bool
@@ -103,6 +104,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["hotreload"] = False
         self["autoreload"] = True
         # template
+        self["try_html"] = True
         self["templates"] = ("templates",)
         # url
         self["allow_underline"] = False
@@ -146,7 +148,7 @@ class Config(UpperDict, metaclass=Singleton):
                 data = yaml.safe_load(file)
 
         if not isinstance(data, dict):
-            raise ConfigError(f"config must be a dictionary.")
+            raise ConfigError("config must be a dictionary.")
 
         self.update(data)
 
@@ -170,7 +172,7 @@ class Config(UpperDict, metaclass=Singleton):
         return value
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
-        if name == f"_UpperDict__dict":
+        if name == "_UpperDict__dict":
             return super().__setattr__(name, value)
         raise ConfigError("Modifying the attribute value of Config is not allowed.")
 

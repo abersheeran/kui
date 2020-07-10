@@ -1,22 +1,23 @@
 import sys
 from types import TracebackType
-from typing import Any, Type, Tuple, Union, Callable, Iterable, MutableMapping, Optional
+from typing import (
+    Any,
+    Type,
+    Tuple,
+    Union,
+    Callable,
+    Iterable,
+    MutableMapping,
+    Optional,
+    Awaitable,
+)
 
 if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict, Literal
+    from typing_extensions import TypedDict, Literal, Final, final, IntVar
 else:
-    from typing import TypedDict, Literal
+    from typing import TypedDict, Literal, Final, final, IntVar
 
-from starlette.types import *
-
-from .http.request import Request
-from .http.responses import Response
-from .websocket.request import WebSocket
-
-__all__ = (
-    "Request",
-    "Response",
-    "WebSocket",
+__all__ = [
     "Scope",
     "Message",
     "Receive",
@@ -26,8 +27,25 @@ __all__ = (
     "Environ",
     "StartResponse",
     "WSGIApp",
-    "FactoryClass",
-)
+] + [
+    # built-in types
+    "TypedDict",
+    "Literal",
+    "Final",
+    "final",
+    "IntVar",
+]
+
+# ASGI
+Scope = MutableMapping[str, Any]
+
+Message = MutableMapping[str, Any]
+
+Receive = Callable[[], Awaitable[Message]]
+
+Send = Callable[[Message], Awaitable[None]]
+
+ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
 
 # WSGI: view PEP3333
 ExcInfo = Tuple[Type[BaseException], BaseException, Optional[TracebackType]]
@@ -37,12 +55,3 @@ Environ = MutableMapping[str, Any]
 StartResponse = Callable[[str, Iterable[Tuple[str, str]], Optional[ExcInfo]], None]
 
 WSGIApp = Callable[[Environ, StartResponse], Iterable[Union[str, bytes]]]
-
-
-class FactoryClass(TypedDict):
-    """
-    `Index().factory_class` type
-    """
-
-    http: typing.Type[Request]
-    websocket: typing.Type[WebSocket]
