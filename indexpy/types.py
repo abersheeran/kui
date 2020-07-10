@@ -13,9 +13,9 @@ from typing import (
 )
 
 if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict, Literal, Final, final, IntVar
+    from typing_extensions import TypedDict, Literal, Final, final
 else:
-    from typing import TypedDict, Literal, Final, final, IntVar
+    from typing import TypedDict, Literal, Final, final
 
 __all__ = [
     "Scope",
@@ -33,7 +33,6 @@ __all__ = [
     "Literal",
     "Final",
     "final",
-    "IntVar",
 ]
 
 # ASGI
