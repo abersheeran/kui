@@ -50,6 +50,9 @@ class FactoryClass(TypedDict):
 
 
 def try_html(request: Request) -> typing.Optional[Response]:
+    """
+    try find html through TemplateResponse
+    """
     try:
         return responses.TemplateResponse(
             request["path"] + ".html", {"request": request}

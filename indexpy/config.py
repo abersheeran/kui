@@ -6,6 +6,7 @@ import logging
 import yaml
 
 from .utils import Singleton
+from .types import final
 
 __all__ = ["Config"]
 
@@ -67,6 +68,7 @@ class UpperDict(dict):
             self[key] = value
 
 
+@final
 class Config(UpperDict, metaclass=Singleton):
     ENV: str
     DEBUG: bool
