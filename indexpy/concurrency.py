@@ -14,8 +14,13 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
         return func
 
     _func = func
-    while hasattr(_func, "__wrapped__"):
-        _func = _func.__wrapped__  # type: ignore
+    while True:  # judge @wraps or partial
+        if hasattr(_func, "__wrapped__"):
+            _func = _func.__wrapped__  # type: ignore
+        elif isinstance(_func, functools.partial):
+            _func = _func.func
+        else:
+            break
 
     if asyncio.iscoroutinefunction(_func):
         return func

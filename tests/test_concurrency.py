@@ -1,5 +1,5 @@
 import asyncio
-from functools import wraps
+from functools import wraps, partial
 
 import pytest
 
@@ -77,6 +77,17 @@ async def test_complicating_5():
     assert asyncio.iscoroutinefunction(complicating(func))
     assert complicating(func).__name__ == func.__name__
     assert complicating(func).__doc__ == func.__doc__
+
+
+@pytest.mark.asyncio
+async def test_complicating_6():
+    async def func(a):
+        """t"""
+        return a
+
+    func = partial(func, a=1)
+
+    assert 1 == await complicating(func)()
 
 
 @pytest.mark.asyncio
