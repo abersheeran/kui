@@ -28,7 +28,12 @@ app.mount_asgi(
 
 ### 请求
 
-当你使用 `pydantic.BaseModel` 去解析请求时，请求文档将被自动生成。
+对于所有可处理 HTTP 请求的方法，均可以接受四种参数：`body`、`query`、`header`、`cookie`。
+
+!!! notice
+    由于 index.py 路由设计为文件映射，故而路径参数 `path` 无法使用。
+
+使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。
 
 ### 响应
 
@@ -37,16 +42,17 @@ app.mount_asgi(
 !!! notice
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
 
+### 样例
+
 ```python
 from indexpy.http import HTTPView
-from indexpy.test import TestView
 from indexpy.http.responses import TemplateResponse
 from indexpy.openapi import describe
 from pydantic import BaseModel, Field
 
 
 class Hello(BaseModel):
-    name: str = Field("Aber", description="your name")
+    name: str = "Aber"
 
 
 class Message(BaseModel):
@@ -66,26 +72,16 @@ class HTTP(HTTPView):
     @describe(
         200,
         """
-        image/png:
+        text/html:
             schema:
                 type: string
-                format: binary
-        """,
-    )
-    @describe(
-        403,
-        """text/plain:
-            schema:
-                type: string
-            example:
-                pong
         """,
     )
     async def get(self, query: Hello):
         """
         welcome page
         """
-        ...
+        return f"welcome, {query.name}."
 
     @describe(200, MessageResponse)
     @describe(201, None)
