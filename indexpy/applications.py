@@ -15,7 +15,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.routing import NoMatchFound
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
 from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
@@ -299,16 +299,28 @@ class Index:
     def __init__(self) -> None:
         self.config = config = Config()
         self.factory_class: FactoryClass = {"http": Request, "websocket": WebSocket}
+
         self.indexfile = IndexFile("views", factory_class=self.factory_class)
+
+        templates_loaders = []
+        for template_path in config.TEMPLATES:
+            if ":" in template_path:  # package: "package:path"
+                package_name, package_path = template_path.split(":", maxsplit=1)
+                templates_loaders.append(PackageLoader(package_name, package_path))
+            else:  # normal: "path"
+                templates_loaders.append(FileSystemLoader(template_path))
+
         self.jinja_env = Environment(
-            loader=FileSystemLoader(config.TEMPLATES), enable_async=True
+            loader=ChoiceLoader(templates_loaders), enable_async=True,
         )
+
         self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
             (
                 "/static",
                 StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
             ),
         ]
+
         self.lifespan = Lifespan(
             on_startup=[
                 lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
