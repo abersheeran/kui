@@ -302,7 +302,9 @@ class Index:
 
         self.indexfile = IndexFile("views", factory_class=self.factory_class)
 
-        templates_loaders = []
+        templates_loaders: typing.List[
+            typing.Union[FileSystemLoader, PackageLoader]
+        ] = []
         for template_path in config.TEMPLATES:
             if ":" in template_path:  # package: "package:path"
                 package_name, package_path = template_path.split(":", maxsplit=1)
