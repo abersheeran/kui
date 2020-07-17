@@ -76,13 +76,7 @@ class Config(UpperDict, metaclass=Singleton):
     HOST: str
     PORT: int
     LOG_LEVEL: str
-    HOTRELOAD: bool
     AUTORELOAD: bool
-    # template
-    TRY_HTML: bool
-    TEMPLATES: typing.Iterable[str]
-    # url
-    ALLOW_UNDERLINE: bool
     # middleware
     FORCE_SSL: bool
     ALLOWED_HOSTS: typing.Sequence[str]
@@ -103,13 +97,7 @@ class Config(UpperDict, metaclass=Singleton):
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self["log_level"] = "info"
-        self["hotreload"] = False
         self["autoreload"] = True
-        # template
-        self["try_html"] = True
-        self["templates"] = ("templates",)
-        # url
-        self["allow_underline"] = False
         # middleware
         self["force_ssl"] = False
         self["allowed_hosts"] = ["*"]

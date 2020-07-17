@@ -300,6 +300,8 @@ class Index:
         self,
         *,
         templates: typing.Iterable[str] = ("templates",),
+        try_html: bool = True,
+        allow_underline: bool = False,
         mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
             (
                 "/static",
@@ -310,10 +312,11 @@ class Index:
             lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
         ],
         on_shutdown: typing.List[typing.Callable] = [],
+        factory_class: FactoryClass = {"http": Request, "websocket": WebSocket},
     ) -> None:
-        self.factory_class: FactoryClass = {"http": Request, "websocket": WebSocket}
+        self.factory_class: FactoryClass = factory_class
 
-        self.indexfile = IndexFile("views", factory_class=self.factory_class)
+        self.indexfile = IndexFile("views", factory_class=factory_class)
 
         templates_loaders: typing.List[
             typing.Union[FileSystemLoader, PackageLoader]
@@ -328,6 +331,8 @@ class Index:
         self.jinja_env = Environment(
             loader=ChoiceLoader(templates_loaders), enable_async=True,
         )
+        self.try_html = try_html
+        self.allow_underline = allow_underline
 
         # Shallow copy list to prevent memory leak.
         self.mount_apps = list(mount_apps)
@@ -490,7 +495,7 @@ class Index:
             pass
 
         if scope["type"] == "http":
-            if Config().TRY_HTML:
+            if self.try_html:
                 # only html, no middleware/background tasks or other anything
                 response = try_html(self.factory_class["http"](scope, receive, send))
                 if response:
@@ -521,7 +526,7 @@ class Index:
                 response = RedirectResponse(
                     url.replace(path=path[: -len("/index")]), status_code=301,
                 )
-            elif "_" in path and not Config().ALLOW_UNDERLINE:
+            elif "_" in path and not self.allow_underline:
                 response = RedirectResponse(
                     url.replace(path=path.replace("_", "-")), status_code=301,
                 )
