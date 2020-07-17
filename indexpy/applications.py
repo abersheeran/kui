@@ -296,8 +296,21 @@ class IndexFile:
 
 
 class Index:
-    def __init__(self) -> None:
-        self.config = config = Config()
+    def __init__(
+        self,
+        *,
+        templates: typing.Iterable[str] = ("templates",),
+        mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
+            (
+                "/static",
+                StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
+            ),
+        ],
+        on_startup: typing.List[typing.Callable] = [
+            lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
+        ],
+        on_shutdown: typing.List[typing.Callable] = [],
+    ) -> None:
         self.factory_class: FactoryClass = {"http": Request, "websocket": WebSocket}
 
         self.indexfile = IndexFile("views", factory_class=self.factory_class)
@@ -305,7 +318,7 @@ class Index:
         templates_loaders: typing.List[
             typing.Union[FileSystemLoader, PackageLoader]
         ] = []
-        for template_path in config.TEMPLATES:
+        for template_path in templates:
             if ":" in template_path:  # package: "package:path"
                 package_name, package_path = template_path.split(":", maxsplit=1)
                 templates_loaders.append(PackageLoader(package_name, package_path))
@@ -316,18 +329,12 @@ class Index:
             loader=ChoiceLoader(templates_loaders), enable_async=True,
         )
 
-        self.mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
-            (
-                "/static",
-                StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
-            ),
-        ]
-
+        # Shallow copy list to prevent memory leak.
+        self.mount_apps = list(mount_apps)
         self.lifespan = Lifespan(
-            on_startup=[
-                lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
-            ],
+            on_startup=list(on_startup), on_shutdown=list(on_shutdown)
         )
+
         self.user_middlewares: typing.List[Middleware] = []
         self.exception_handlers: typing.Dict[
             typing.Union[int, typing.Type[Exception]], typing.Callable
@@ -339,7 +346,7 @@ class Index:
         self.asgiapp = self.build_app()
 
     def build_app(self) -> ASGIApp:
-        config = self.config
+        config = Config()
         error_handler = None
         exception_handlers = {}
 
@@ -483,7 +490,7 @@ class Index:
             pass
 
         if scope["type"] == "http":
-            if self.config.TRY_HTML:
+            if Config().TRY_HTML:
                 # only html, no middleware/background tasks or other anything
                 response = try_html(self.factory_class["http"](scope, receive, send))
                 if response:
@@ -501,7 +508,7 @@ class Index:
             response: typing.Optional[Response] = None
 
             # Force jump to https/wss
-            if self.config.FORCE_SSL and scope["scheme"] in ("http", "ws"):
+            if Config().FORCE_SSL and scope["scheme"] in ("http", "ws"):
                 redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
                 netloc = url.hostname if url.port in (80, 443) else url.netloc
                 url = url.replace(scheme=redirect_scheme, netloc=netloc)

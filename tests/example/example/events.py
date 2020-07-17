@@ -1,6 +1,6 @@
 import logging
 
-from indexpy import app
+from . import app
 
 logger = logging.getLogger(__name__)
 

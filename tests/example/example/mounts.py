@@ -1,9 +1,10 @@
 import os
-from indexpy import app
 from indexpy.__version__ import __version__
 from indexpy.openapi.application import OpenAPI
 
-from wsgi_example import wsgi, asgi
+from . import app
+
+from wsgi_example import wsgi
 
 app.mount_asgi(
     "/openapi",
