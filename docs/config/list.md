@@ -78,29 +78,6 @@ log_level   | logging
 
 `autoreload` 为真时，使用 `index-cli serve` 或 `index-cli gunicorn start` 时，将会监听当前的项目修改，自动重启服务。
 
-### ALLOW_UNDERLINE
-
-**默认值:** `False`
-
-由于 Python 的 module 只允许字母、数字与下划线，但 URI 中出现出现下划线是不推荐的，所以有了这个配置选项。
-
-当 `allow_underline` 为假时，如果 _ 存在于 URI 中，它将会被自动替换成 - 并且 301 跳转过去。
-
-### TRY_HTML
-
-**默认值:** `True`
-
-允许 Index 在找不到 Python 模块处理 HTTP 时，自动寻找同名模板，使用 [`TemplateResonse`](/http/#templateresponse) 进行渲染并返回。
-
-!!!notice
-    此情况下模板可读取的参数仅为 [`request`](/http/#_2)。
-
-### TEMPLATES
-
-**默认值:** `("templates",)`
-
-通过这个值，可以控制 [`TemplateResonse`](/http/#templateresponse) 将在哪些路径下寻找模板。
-
 ### CORS_ALLOW_ORIGINS
 
 **默认值:** `()`

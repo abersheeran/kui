@@ -5,7 +5,7 @@
 但较为特殊的是名为 `index.py` 的文件，它能够处理以 `/` 作为最后一个字符的 URI。
 
 !!! tip
-    由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 [ALLOW_UNDERLINE](/config/list/#allow_underline) 为真去关闭此功能。
+    由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 `Index(allow_underline=True)` 去关闭此功能。
 
 一些例子|文件相对路径|文件能处理的URI
 ---|---|---
@@ -158,7 +158,7 @@ del request.state.user  # 删
 
 ### TemplateResponse
 
-Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（寻找路径由 [`TEMPLATES`](/config/list/#templates) 配置进行管理）
+Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（寻找路径由 Index 的 `templates` 参数进行配置）
 
 ```python
 from indexpy.http import HTTPView
