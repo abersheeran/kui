@@ -4,6 +4,9 @@ Index.py 拥有许多内置的 Application，整个程序由这些 Application �
 
 `Index` 对象作为 Index.py 程序的入口，推荐每个项目里始终只使用一个 `Index` 对象。
 
+!!! tip
+    通过 `scope["app"]`、`request["app"]` 或 `websocket["app"]` 可以获取到正在使用的 `Index` 对象。
+
 ### `__init__`
 
 它有许多初始化参数，可用于控制一些 Application 内的程序逻辑。
