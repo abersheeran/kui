@@ -127,13 +127,7 @@ class Lifespan:
 
 
 class IndexFile:
-    def __init__(
-        self,
-        module_name: str,
-        basepath: str = None,
-        *,
-        factory_class: FactoryClass = None,
-    ) -> None:
+    def __init__(self, module_name: str, basepath: str = None,) -> None:
         self.module_name = module_name
         if basepath is None:
             basepath = os.path.dirname(
@@ -142,7 +136,6 @@ class IndexFile:
                 )
             )
         self.basepath = basepath
-        self.factory_class = factory_class or {"http": Request, "websocket": WebSocket}
         logger.debug(f"Index File in module {module_name}, basepath: {basepath}")
 
     def _split_path(self, path: str) -> typing.List[str]:
@@ -245,7 +238,7 @@ class IndexFile:
                 yield module, path
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
-        request = self.factory_class["http"](scope, receive, send)
+        request = scope["app"].factory_class["http"](scope, receive, send)
         pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
@@ -282,7 +275,9 @@ class IndexFile:
                 await run_finished_response_tasks()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        websocket = self.factory_class["websocket"](scope, receive=receive, send=send)
+        websocket = scope["app"].factory_class["websocket"](
+            scope, receive=receive, send=send
+        )
 
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
@@ -316,7 +311,7 @@ class Index:
     ) -> None:
         self.factory_class: FactoryClass = factory_class
 
-        self.indexfile = IndexFile("views", factory_class=factory_class)
+        self.indexfile = IndexFile("views")
 
         templates_loaders: typing.List[
             typing.Union[FileSystemLoader, PackageLoader]
