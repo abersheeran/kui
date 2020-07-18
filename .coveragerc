@@ -1,4 +1,7 @@
 [run]
+include =
+    indexpy/*
+
 omit =
     .venv/*
     */tests/*
