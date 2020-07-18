@@ -18,6 +18,7 @@ nav:
   - Config:
       - 介绍: "config/index.md"
       - 列表: "config/list.md"
+  - Application: application.md
   - HTTP: "http.md"
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"

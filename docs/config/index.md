@@ -28,7 +28,6 @@ allowed_hosts: ["localhost"]
 cors_allow_origins: ["*"]
 cors_allow_methods: ["GET"]
 cors_allow_credentials: false
-templates: ["templates", "other_templates"]
 
 # use in development
 dev:
@@ -45,6 +44,7 @@ pro:
 # use in test
 test:
   log_level: "debug"
+
 ```
 
 ## 什么是配置隔离？
