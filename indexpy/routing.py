@@ -158,12 +158,13 @@ class TreeNode:
 
 
 def find_common_prefix(x: str, y: str) -> str:
+    """
+    find the longest common prefix of x and y
+    """
     for i in range(min(len(x), len(y))):
         if x[i] != y[i]:
-            break
-    else:
-        return x[: i + 1]
-    return x[:i]
+            return x[:i]
+    return x[: i + 1]
 
 
 class RadixTree:
@@ -211,7 +212,8 @@ class RadixTree:
                     new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
                     point.next_nodes.append(new_node)
                     point = new_node
-                    left = right
+
+                left = right
                 continue
 
             right = path_format.find("{", left)
@@ -223,14 +225,8 @@ class RadixTree:
                 if prefix == "":
                     continue
                 elif node.characters == prefix:
-                    if path_format[left:right] == prefix:
-                        point = node
-                    else:
-                        new_node = TreeNode(
-                            characters=path_format[left + len(prefix) : right]
-                        )
-                        node.next_nodes.append(new_node)
-                        point = new_node
+                    point = node
+                    right = left + len(prefix)
                     break
                 else:
                     node_index = point.next_nodes.index(node)
@@ -278,6 +274,7 @@ class RadixTree:
                     if none_or_match:
                         result = none_or_match.group()
                         params[node.characters] = result
+                        point = node
                         left += len(result)
                         break
 
