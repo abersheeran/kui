@@ -16,9 +16,7 @@ from ..applications import Index, IndexFile
 from .schema import schema_parameters, schema_request_body, schema_response
 
 
-class Tag(TypedDict):
-    description: str
-    paths: Sequence[str]
+Tag = TypedDict("Tag", {"description": str, "paths": Sequence[str]})
 
 
 class OpenAPI:
