@@ -1,5 +1,7 @@
 # index.py
 
+中文 | [English](https://github.com/abersheeran/index.py/tree/master/README-en.md)
+
 [![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3ATest)
 [![Build setup.py](https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22)
 [![Publish PyPi](https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22)
@@ -11,11 +13,11 @@
 你也可以直接查看 [Example](https://github.com/abersheeran/index.py/tree/master/tests/example) 来学习如何使用。
 
 - 无需手动绑定路由 (文件系统映射URI)
-- 自动解析请求 & 生成文档 (基于 pydantic)
-- 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
-- 现代化的测试组件 (基于 pytest 与 requests)
-- 非常简单的部署 (基于 uvicorn 与 gunicorn)
-- 挂载 ASGI/WSGI 应用 (比 starlette 更易用)
+- 自动解析请求 & 生成文档 (基于 `pydantic`)
+- 可视化 API 接口 (基于 `ReDoc`, 针对中文字体优化)
+- 现代化的测试组件 (基于 `pytest` 与 `requests`)
+- 非常简单的部署 (基于 `uvicorn` 与 `gunicorn`)
+- 挂载 ASGI/WSGI 应用 (比 `starlette` 更易用)
 - 更好用的 background tasks
 - 可使用任何可用的 ASGI 生态
 
