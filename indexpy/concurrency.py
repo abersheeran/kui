@@ -7,7 +7,7 @@ from starlette.concurrency import run_in_threadpool
 
 
 def make_async(
-    func: typing.Callable = None, only_mark: bool = False
+    func: typing.Callable = None, *, only_mark: bool = False
 ) -> typing.Callable:
     """
     always return a awaitable callable object

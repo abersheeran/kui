@@ -105,7 +105,11 @@ def _convert_path(app: Index, path: str) -> str:
 )
 @click.option("--args", cls=LiteralOption, default="[]")
 @click.argument("path", default="")
-def cmd_test(application: str, args: typing.List[str], path: str):
+def cmd_test(application: str, args: typing.List[str] = [], path: str = ""):
+    sys.exit(impl_test(application, args, path))
+
+
+def impl_test(application: str, args: typing.List[str] = [], path: str = ""):
     import pytest
 
     global __global_test_app__
@@ -124,4 +128,4 @@ def cmd_test(application: str, args: typing.List[str], path: str):
         pytest_args.append(_convert_path(app, path))
 
     with _TestClient(app):
-        sys.exit(pytest.main(pytest_args))
+        return pytest.main(pytest_args)

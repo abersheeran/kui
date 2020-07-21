@@ -3,7 +3,10 @@ import math
 import typing
 import uuid
 from decimal import Decimal
+from functools import partial
 from dataclasses import dataclass, field
+
+from .types import Literal
 
 
 class Convertor:
@@ -252,9 +255,6 @@ class RadixTree:
 
         left, path_len = 1, len(path)
         while left < path_len:
-            if not point.next_nodes:
-                return None, None
-
             for node in point.next_nodes:
                 if node.re_pattern is not None:
                     none_or_match = re.match(node.re_pattern, path[left:])
@@ -270,9 +270,11 @@ class RadixTree:
                         point = node
                         left = right
                         break
+            else:
+                return None, None
 
-        if left == path_len:
-            return params, node
+        if left == path_len and point.endpoint is not None:
+            return params, point
         return None, None
 
 
@@ -292,33 +294,65 @@ class Router:
     def __init__(
         self,
         routes: typing.List[
-            typing.Tuple[str, typing.Any, typing.Optional[str]]
+            typing.Tuple[
+                Literal["http", "websocket"], str, typing.Any, typing.Optional[str]
+            ]
         ] = list(),
     ) -> None:
-        self.radix_tree = RadixTree()
-        self.routes: typing.Dict[
+        self.http_tree = RadixTree()
+        self.websocket_tree = RadixTree()
+
+        self.http_routes: typing.Dict[
+            str, typing.Tuple[str, typing.Dict[str, Convertor], typing.Any]
+        ] = {}
+        self.websocket_routes: typing.Dict[
             str, typing.Tuple[str, typing.Dict[str, Convertor], typing.Any]
         ] = {}
 
         for route in routes:
             self.append(*route)
 
-    def append(self, path: str, endpoint: typing.Any, name: str = None) -> None:
+    def append(
+        self,
+        protocol: Literal["http", "websocket"],
+        path: str,
+        endpoint: typing.Any,
+        name: str = None,
+    ) -> None:
 
-        self.radix_tree.append(path, endpoint)
+        if endpoint is None:
+            raise ValueError("endpoint must be not None")
+
+        if protocol == "http":
+            radix_tree = self.http_tree
+            routes = self.http_routes
+        elif protocol == "websocket":
+            radix_tree = self.websocket_tree
+            routes = self.websocket_routes
+        else:
+            raise ValueError("`protocol` must be in ('http', 'websocket')")
+
+        radix_tree.append(path, endpoint)
         path_format, path_convertors = compile_path(path)
 
-        if name in self.routes:
+        if name in routes:
             raise ValueError(f"Duplicate route name: {name}")
         if isinstance(name, str):
-            self.routes[name] = (path_format, path_convertors, endpoint)
+            routes[name] = (path_format, path_convertors, endpoint)
 
     def search(
-        self, path: str
+        self, protocol: Literal["http", "websocket"], path: str
     ) -> typing.Tuple[typing.Dict[str, typing.Any], typing.Any]:
-        params, node = self.radix_tree.search(path)
+        if protocol == "http":
+            radix_tree = self.http_tree
+        elif protocol == "websocket":
+            radix_tree = self.websocket_tree
+        else:
+            raise ValueError("`protocol` must be in ('http', 'websocket')")
 
-        if not (params and node):
+        params, node = radix_tree.search(path)
+
+        if params is None or node is None:
             raise NoMatchFound(path)
 
         return (
@@ -329,12 +363,23 @@ class Router:
             node.endpoint,
         )
 
-    def url_for(self, name: str, **path_params: typing.Any) -> str:
+    def url_for(
+        self,
+        name: str,
+        path_params: typing.Dict[str, typing.Any] = {},
+        protocol: Literal["http", "websocket"] = "http",
+    ) -> str:
+        if protocol == "http":
+            routes = self.http_routes
+        elif protocol == "websocket":
+            routes = self.websocket_routes
+        else:
+            raise ValueError("`protocol` must be in ('http', 'websocket')")
 
-        if name not in self.routes:
+        if name not in routes:
             raise NoRouteFound(f"No route with name '{name}' exists")
 
-        path_format, path_convertors, _ = self.routes[name]
+        path_format, path_convertors, _ = routes[name]
 
         return path_format.format_map(
             {
@@ -342,3 +387,49 @@ class Router:
                 for name, value in path_params.items()
             }
         )
+
+    def http(
+        self, path: str, endpoint: typing.Any = None, *, name: str = ""
+    ) -> typing.Any:
+        """
+        shortcut for `self.append`
+        """
+        if path and endpoint is None:
+            # example: @router.http("/path", name="hello")
+            #          async def func(request): ...
+            return partial(
+                lambda endpoint: self.http(path=path, endpoint=endpoint, name=name)
+            )
+
+        if endpoint is None:
+            raise ValueError("endpoint must be is not None")
+
+        if name == "":
+            name = endpoint.__name__
+
+        self.append("http", path, endpoint, name)
+
+        return endpoint
+
+    def websocket(
+        self, path: str, endpoint: typing.Any = None, *, name: str = ""
+    ) -> typing.Any:
+        """
+        shortcut for `self.append`
+        """
+        if path and endpoint is None:
+            # example: @router.websocket("/path", name="hello")
+            #          async def func(websocket): ...
+            return partial(
+                lambda endpoint: self.websocket(path=path, endpoint=endpoint, name=name)
+            )
+
+        if endpoint is None:
+            raise ValueError("endpoint must be is not None")
+
+        if name == "":
+            name = endpoint.__name__
+
+        self.append("websocket", path, endpoint, name)
+
+        return endpoint

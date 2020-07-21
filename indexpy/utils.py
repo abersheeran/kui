@@ -3,7 +3,7 @@ import asyncio
 import threading
 import importlib
 from types import ModuleType
-from typing import Tuple, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, Callable
 
 
 class Singleton(type):
@@ -28,6 +28,24 @@ def import_module(name: str) -> Optional[ModuleType]:
     ):
         return importlib.import_module(name)
     return None  # nothing to do when module not be found
+
+
+class cached_property(property):
+    """
+    A property that is only computed once per instance and then replaces
+    itself with an ordinary attribute. Deleting the attribute resets the
+    property.
+    """
+
+    def __init__(self, func: Callable) -> None:
+        self.__doc__ = getattr(func, "__doc__")
+        self.func = func
+
+    def __get__(self, obj: Any, cls: Optional[type] = None) -> Any:
+        if obj is None:
+            return self
+        value = obj.__dict__[self.func.__name__] = self.func(obj)
+        return value
 
 
 class State(dict):

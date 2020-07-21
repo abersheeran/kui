@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from indexpy.test import _convert_path
+from indexpy.test import _convert_path, impl_test
 
 from . import example_path
 
@@ -19,3 +19,7 @@ def test_convert_path(source, target):
     from example import app
 
     assert _convert_path(app, source) == os.path.join(example_path, "views", target)
+
+
+def test_impl_test_command():
+    impl_test("example:app")
