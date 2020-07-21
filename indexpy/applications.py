@@ -14,12 +14,12 @@ from starlette.staticfiles import StaticFiles
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from starlette.routing import NoMatchFound
 from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
 from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
 from .config import here, Config
+from .routing import NoMatchFound
 from .http import responses
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request

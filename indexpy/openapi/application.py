@@ -3,9 +3,9 @@ from copy import deepcopy
 from typing import cast, List, Dict, Any, Sequence
 
 from starlette.endpoints import Request, Response
-from starlette.routing import NoMatchFound
 
 from ..types import Scope, Receive, Send, TypedDict, Literal
+from ..routing import NoMatchFound
 from ..http.responses import (
     JSONResponse,
     YAMLResponse,

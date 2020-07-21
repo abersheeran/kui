@@ -6,6 +6,37 @@ import functools
 from starlette.concurrency import run_in_threadpool
 
 
+def make_async(
+    func: typing.Callable = None, only_mark: bool = False
+) -> typing.Callable:
+    """
+    always return a awaitable callable object
+    """
+
+    if only_mark and func is None:
+        return functools.partial(make_async, only_mark=True)
+
+    if func is None:
+        raise ValueError("`func` must be not None")
+
+    if asyncio.iscoroutinefunction(func):
+        return func
+
+    if only_mark:
+
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs) -> typing.Any:
+            return await func(*args, **kwargs)  # type: ignore
+
+    else:
+
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs) -> typing.Any:
+            return await run_in_threadpool(func, *args, **kwargs)  # type: ignore
+
+    return wrapper
+
+
 def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable]:
     """
     always return a awaitable callable object
@@ -13,26 +44,14 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
     if asyncio.iscoroutinefunction(func):
         return func
 
-    _func = func
-    while True:  # judge @wraps or partial
-        if hasattr(_func, "__wrapped__"):
-            _func = _func.__wrapped__  # type: ignore
-        elif isinstance(_func, functools.partial):
-            _func = _func.func
-        else:
-            break
-
-    if asyncio.iscoroutinefunction(_func):
-        return func
-
-    if not (inspect.isfunction(_func) or inspect.ismethod(_func)):
-        if inspect.isclass(_func):
+    if not (inspect.isfunction(func) or inspect.ismethod(func)):
+        if inspect.isclass(func):
             # class that has `__await__` method
-            if hasattr(_func, "__await__"):
+            if hasattr(func, "__await__"):
                 return func
         else:
             # callable object
-            if asyncio.iscoroutinefunction(getattr(_func, "__call__")):
+            if asyncio.iscoroutinefunction(getattr(func, "__call__")):
                 return func
 
     @functools.wraps(func)

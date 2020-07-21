@@ -1,9 +1,8 @@
 import asyncio
-from functools import wraps, partial
 
 import pytest
 
-from indexpy.concurrency import complicating, keepasync
+from indexpy.concurrency import make_async, complicating, keepasync
 
 
 @pytest.mark.asyncio
@@ -44,22 +43,6 @@ async def test_complicating_2():
 
 @pytest.mark.asyncio
 async def test_complicating_3():
-    def d(func):
-        @wraps(func)
-        def f(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        return f
-
-    @d
-    async def t():
-        pass
-
-    assert complicating(t) is t
-
-
-@pytest.mark.asyncio
-async def test_complicating_4():
     @asyncio.coroutine
     def t():
         pass
@@ -69,7 +52,7 @@ async def test_complicating_4():
 
 
 @pytest.mark.asyncio
-async def test_complicating_5():
+async def test_complicating_4():
     def func():
         """t"""
 
@@ -77,17 +60,6 @@ async def test_complicating_5():
     assert asyncio.iscoroutinefunction(complicating(func))
     assert complicating(func).__name__ == func.__name__
     assert complicating(func).__doc__ == func.__doc__
-
-
-@pytest.mark.asyncio
-async def test_complicating_6():
-    async def func(a):
-        """t"""
-        return a
-
-    func = partial(func, a=1)
-
-    assert 1 == await complicating(func)()
 
 
 @pytest.mark.asyncio
@@ -117,3 +89,20 @@ async def test_keepasync_subclass():
     await Sub().hello()
     await Sub().test()
     assert Sub.test.__name__ == "test"
+
+
+@pytest.mark.asyncio
+async def test_make_async():
+    @make_async
+    def hello():
+        return True
+
+    assert await hello()
+    assert asyncio.iscoroutinefunction(hello)
+
+    @make_async(only_mark=True)
+    def future():
+        return asyncio.sleep(0.001)
+
+    assert await future() is None
+    assert asyncio.iscoroutinefunction(future)
