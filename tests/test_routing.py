@@ -1,3 +1,5 @@
+from decimal import Decimal
+from uuid import UUID
 import pytest
 
 from indexpy.routing import RadixTree, Router, NoMatchFound, NoRouteFound
@@ -15,6 +17,9 @@ def tree():
     tree.append("/sayhi/{name}", ...)
     tree.append("/sayhi/{name}/suffix", ...)
     tree.append("/sayhi/{name}/avatar.{suffix}", ...)
+    tree.append("/path/{filepath:path}", ...)
+    tree.append("/decimal/{number:decimal}", ...)
+    tree.append("/uuid/{id:uuid}", ...)
 
     return tree
 
@@ -28,6 +33,13 @@ def tree():
         ("/sayhi/aber", {"name": "aber"}),
         ("/sayhi/aber/suffix", {"name": "aber"}),
         ("/sayhi/aber/avatar.png", {"name": "aber", "suffix": "png"}),
+        ("/path/adsf", {"filepath": "adsf"}),
+        ("/path/adsf/123", {"filepath": "adsf/123"}),
+        ("/decimal/1.111", {"number": Decimal("1.111")}),
+        (
+            "/uuid/123e4567-e89b-12d3-a456-426655440000",
+            {"id": UUID("123e4567-e89b-12d3-a456-426655440000")},
+        ),
     ],
 )
 def test_tree_success_search(tree: RadixTree, path, params):
@@ -45,6 +57,20 @@ def test_tree_success_search(tree: RadixTree, path, params):
 )
 def test_tree_fail_search(tree: RadixTree, path):
     assert tree.search(path)[0] is None, f"error in {path}"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/path/{urlpath:path}/",
+        "/sayhi/{name:int}/suffix",
+        "/sayhi/{hi}/suffix",
+        "/hello",
+    ],
+)
+def test_tree_fail_add(tree: RadixTree, path):
+    with pytest.raises(ValueError):
+        tree.append(path, ...)
 
 
 @pytest.fixture
