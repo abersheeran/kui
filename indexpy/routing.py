@@ -384,7 +384,7 @@ class Routes(typing.List[BaseRoute]):
 
 
 class Mount(Routes):
-    def __init__(self, prefix: str, routes: Routes = []) -> None:
+    def __init__(self, prefix: str, routes: Routes = typing.cast(Routes, [])) -> None:
         self.prefix = prefix
         super().__init__(*routes)
 
