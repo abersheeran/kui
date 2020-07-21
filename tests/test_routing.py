@@ -7,12 +7,12 @@ from indexpy.routing import RadixTree
 def tree():
     tree = RadixTree()
 
-    tree.add("/hello")
-    tree.add("/hello/{time:int}")
-    tree.add("/hello/world")
-    tree.add("/sayhi/{name}")
-    tree.add("/sayhi/{name}/suffix")
-    tree.add("/sayhi/{name}/avatar.{suffix}")
+    tree.append("/hello")
+    tree.append("/hello/{time:int}")
+    tree.append("/hello/world")
+    tree.append("/sayhi/{name}")
+    tree.append("/sayhi/{name}/suffix")
+    tree.append("/sayhi/{name}/avatar.{suffix}")
 
     return tree
 

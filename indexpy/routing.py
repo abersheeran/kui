@@ -5,8 +5,6 @@ import uuid
 from decimal import Decimal
 from dataclasses import dataclass, field
 
-from .types import ASGIApp, Literal
-
 
 class Convertor:
     regex = ""
@@ -142,19 +140,13 @@ def compile_path(path: str) -> typing.Tuple[str, typing.Dict[str, Convertor]]:
     return path_format, param_convertors
 
 
-HttpMethods = Literal[
-    "get", "post", "put", "patch", "delete", "head", "options", "trace"
-]
-
-
 @dataclass
 class TreeNode:
     characters: str
     re_pattern: typing.Optional[typing.Pattern] = None
+    param_convertors: typing.Dict[str, Convertor] = field(default_factory=dict)
     next_nodes: typing.List["TreeNode"] = field(default_factory=list)
-    app: typing.Optional[ASGIApp] = None
-    param_convertors: typing.Optional[typing.Dict[str, Convertor]] = None
-    endpoints: typing.Dict[HttpMethods, typing.Callable] = field(default_factory=dict)
+    endpoint: typing.Any = None
 
 
 def find_common_prefix(x: str, y: str) -> str:
@@ -169,19 +161,13 @@ def find_common_prefix(x: str, y: str) -> str:
 
 class RadixTree:
     def __init__(self) -> None:
-        self.head = TreeNode("")
+        self.root = TreeNode("/")
 
-    def add(
-        self,
-        path: str,
-        endpoints: typing.Optional[typing.Dict[HttpMethods, typing.Callable]] = None,
-        app: typing.Optional[ASGIApp] = None,
-    ) -> None:
-
-        point = self.head
+    def append(self, path: str, endpoint: typing.Any = None) -> None:
+        point = self.root
         path_format, param_convertors = compile_path(path)
 
-        left, path_format_len = 0, len(path_format)
+        left, path_format_len = 1, len(path_format)
 
         while left < path_format_len:
 
@@ -214,59 +200,60 @@ class RadixTree:
                     point = new_node
 
                 left = right
-                continue
-
-            right = path_format.find("{", left)
-            if right == -1:
-                right = path_format_len
-
-            for node in filter(lambda node: node.re_pattern is None, point.next_nodes):
-                prefix = find_common_prefix(node.characters, path_format[left:right])
-                if prefix == "":
-                    continue
-                elif node.characters == prefix:
-                    point = node
-                    right = left + len(prefix)
-                    break
-                else:
-                    node_index = point.next_nodes.index(node)
-                    prefix_node = TreeNode(characters=prefix)
-                    point.next_nodes[node_index] = prefix_node
-                    node.characters = node.characters[len(prefix) :]
-                    prefix_node.next_nodes.append(node)
-                    new_node = TreeNode(
-                        characters=path_format[left + len(prefix) : right]
-                    )
-                    prefix_node.next_nodes.append(new_node)
-                    point = new_node
-                    break
             else:
-                new_node = TreeNode(characters=path_format[left:right])
-                point.next_nodes.append(new_node)
-                point = new_node
-            left = right
+                right = path_format.find("{", left)
+                if right == -1:
+                    right = path_format_len
 
-        if (
-            point.endpoints
-            and endpoints
-            and set(endpoints.keys()) & set(point.endpoints.keys())
-        ) or (point.app and app):
+                for node in filter(
+                    lambda node: node.re_pattern is None, point.next_nodes
+                ):
+                    prefix = find_common_prefix(
+                        node.characters, path_format[left:right]
+                    )
+                    if prefix == "":
+                        continue
+                    elif node.characters == prefix:
+                        point = node
+                        right = left + len(prefix)
+                        break
+                    else:
+                        node_index = point.next_nodes.index(node)
+                        prefix_node = TreeNode(characters=prefix)
+                        point.next_nodes[node_index] = prefix_node
+                        node.characters = node.characters[len(prefix) :]
+                        prefix_node.next_nodes.append(node)
+                        new_node = TreeNode(
+                            characters=path_format[left + len(prefix) : right]
+                        )
+                        prefix_node.next_nodes.append(new_node)
+                        point = new_node
+                        break
+                else:
+                    new_node = TreeNode(characters=path_format[left:right])
+                    point.next_nodes.append(new_node)
+                    point = new_node
+
+                left = right
+
+        if point.endpoint is not None:
             raise ValueError(f"Routing conflict: {path}")
 
-        point.endpoints = endpoints  # type: ignore
-        point.app = app
+        point.endpoint = endpoint
         point.param_convertors = param_convertors
 
     def search(
         self, path: str
-    ) -> typing.Optional[typing.Tuple[typing.Dict[str, typing.Any], TreeNode]]:
-        point = self.head
+    ) -> typing.Union[
+        typing.Tuple[typing.Dict[str, typing.Any], TreeNode], typing.Tuple[None, None]
+    ]:
+        point = self.root
         params = {}
 
-        left, path_len = 0, len(path)
+        left, path_len = 1, len(path)
         while left < path_len:
             if not point.next_nodes:
-                return None
+                return None, None
 
             for node in point.next_nodes:
                 if node.re_pattern is not None:
@@ -277,13 +264,81 @@ class RadixTree:
                         point = node
                         left += len(result)
                         break
-
-                right = left + len(node.characters)
-                if path[left:right] == node.characters:
-                    point = node
-                    left = right
-                    break
+                else:
+                    right = left + len(node.characters)
+                    if path[left:right] == node.characters:
+                        point = node
+                        left = right
+                        break
 
         if left == path_len:
             return params, node
-        return None
+        return None, None
+
+
+class NoMatchFound(Exception):
+    """
+    Raised by `.search(path)` if no matching route exists.
+    """
+
+
+class NoRouteFound(Exception):
+    """
+    Raised by `.url_for(name, **path_params)` if no matching route exists.
+    """
+
+
+class Router:
+    def __init__(
+        self,
+        routes: typing.List[
+            typing.Tuple[str, typing.Any, typing.Optional[str]]
+        ] = list(),
+    ) -> None:
+        self.radix_tree = RadixTree()
+        self.routes: typing.Dict[
+            str, typing.Tuple[str, typing.Dict[str, Convertor], typing.Any]
+        ] = {}
+
+        for route in routes:
+            self.append(*route)
+
+    def append(self, path: str, endpoint: typing.Any, name: str = None) -> None:
+
+        self.radix_tree.append(path, endpoint)
+        path_format, path_convertors = compile_path(path)
+
+        if name in self.routes:
+            raise ValueError(f"Duplicate route name: {name}")
+        if isinstance(name, str):
+            self.routes[name] = (path_format, path_convertors, endpoint)
+
+    def search(
+        self, path: str
+    ) -> typing.Tuple[typing.Dict[str, typing.Any], typing.Any]:
+        params, node = self.radix_tree.search(path)
+
+        if not (params and node):
+            raise NoMatchFound(path)
+
+        return (
+            {
+                name: node.param_convertors[name].to_string(value)
+                for name, value in params.items()
+            },
+            node.endpoint,
+        )
+
+    def url_for(self, name: str, **path_params: typing.Any) -> str:
+
+        if name not in self.routes:
+            raise NoRouteFound(f"No route with name '{name}' exists")
+
+        path_format, path_convertors, _ = self.routes[name]
+
+        return path_format.format_map(
+            {
+                name: path_convertors[name].to_string(value)
+                for name, value in path_params.items()
+            }
+        )
