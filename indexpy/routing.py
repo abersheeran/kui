@@ -150,7 +150,7 @@ HttpMethods = Literal[
 @dataclass
 class TreeNode:
     characters: str
-    re_pattern: typing.Optional[re.Pattern] = None
+    re_pattern: typing.Optional[typing.Pattern] = None
     next_nodes: typing.List["TreeNode"] = field(default_factory=list)
     app: typing.Optional[ASGIApp] = None
     param_convertors: typing.Optional[typing.Dict[str, Convertor]] = None
