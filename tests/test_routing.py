@@ -2,7 +2,16 @@ from decimal import Decimal
 from uuid import UUID
 import pytest
 
-from indexpy.routing import RadixTree, Router, NoMatchFound, NoRouteFound
+from indexpy.routing import (
+    RadixTree,
+    Router,
+    Routes,
+    Mount,
+    HttpRoute,
+    SocketRoute,
+    NoMatchFound,
+    NoRouteFound,
+)
 from indexpy.http import HTTPView
 from indexpy.websocket import SocketView
 
@@ -82,10 +91,16 @@ def router():
         return f"hi, {name}"
 
     router = Router(
-        [
-            ("http", "/hello/world", hello_world, "hello-world"),
-            ("http", "/sayhi/{name}", sayhi, "sayhi"),
-        ]
+        Routes(
+            HttpRoute("/sayhi/{name}", sayhi, "sayhi"),
+            Mount(
+                "/hello",
+                [
+                    HttpRoute("/world", hello_world, "hello-world"),
+                    SocketRoute("/socket_world", lambda websocket: None),
+                ],
+            ),
+        )
     )
 
     @router.http("/about", name=None)

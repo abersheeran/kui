@@ -290,15 +290,107 @@ class NoRouteFound(Exception):
     """
 
 
+@dataclass
+class BaseRoute:
+    path: str
+    endpoint: typing.Any
+    name: str
+
+
+@dataclass
+class HttpRoute(BaseRoute):
+    name: str = ""
+
+
+@dataclass
+class SocketRoute(BaseRoute):
+    name: str = ""
+
+
+class Routes(typing.List[BaseRoute]):
+    def __init__(self, *iterable: typing.Union["BaseRoute", "Mount"]) -> None:
+        routes = []
+        for route_or_mount in iterable:
+            if not isinstance(route_or_mount, Mount):
+                routes.append(route_or_mount)
+                continue
+            for route in route_or_mount:  # type: BaseRoute
+                routes.append(
+                    route.__class__(
+                        path=route_or_mount.prefix + route.path,
+                        endpoint=route.endpoint,
+                        name=route.name,
+                    )
+                )
+        super().__init__(routes)
+
+    def http(
+        self, path: str, endpoint: typing.Any = None, *, name: str = ""
+    ) -> typing.Any:
+        """
+        shortcut for `self.append`
+
+        example:
+            @router.http("/path", name="endpoint-name")
+            async def endpoint(request): ...
+        or
+            router.http("/path", endpoint, name="endpoint-name")
+        """
+        if path and endpoint is None:
+            # example: @router.http("/path", name="hello")
+            #          async def func(request): ...
+            return partial(
+                lambda endpoint: self.http(path=path, endpoint=endpoint, name=name)
+            )
+
+        if endpoint is None:
+            raise ValueError("endpoint must be is not None")
+
+        if name == "":
+            name = endpoint.__name__
+
+        self.append(HttpRoute(path, endpoint, name))
+
+        return endpoint
+
+    def websocket(
+        self, path: str, endpoint: typing.Any = None, *, name: str = ""
+    ) -> typing.Any:
+        """
+        shortcut for `self.append`
+
+        example:
+            @router.websocket("/path", name="endpoint-name")
+            async def endpoint(websocket): ...
+        or
+            router.websocket("/path", endpoint, name="endpoint-name")
+        """
+        if path and endpoint is None:
+            # example: @router.websocket("/path", name="hello")
+            #          async def func(websocket): ...
+            return partial(
+                lambda endpoint: self.websocket(path=path, endpoint=endpoint, name=name)
+            )
+
+        if endpoint is None:
+            raise ValueError("endpoint must be is not None")
+
+        if name == "":
+            name = endpoint.__name__
+
+        self.append(SocketRoute(path, endpoint, name))
+
+        return endpoint
+
+
+class Mount(Routes):
+    def __init__(self, prefix: str, routes: Routes = []) -> None:
+        self.prefix = prefix
+        super().__init__(*routes)
+
+
 class Router:
-    def __init__(
-        self,
-        routes: typing.List[
-            typing.Tuple[
-                Literal["http", "websocket"], str, typing.Any, typing.Optional[str]
-            ]
-        ] = list(),
-    ) -> None:
+    def __init__(self, routes: typing.List[BaseRoute] = list()) -> None:
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
 
@@ -310,7 +402,14 @@ class Router:
         ] = {}
 
         for route in routes:
-            self.append(*route)
+            if isinstance(route, HttpRoute):
+                self.append("http", route.path, route.endpoint, route.name)
+            elif isinstance(route, SocketRoute):
+                self.append("websocket", route.path, route.endpoint, route.name)
+            else:
+                raise TypeError(
+                    f"Need type: `HttpRoute` or `SocketRoute`, but got type: {type(route)}"
+                )
 
     def append(
         self,
@@ -337,7 +436,7 @@ class Router:
 
         if name in routes:
             raise ValueError(f"Duplicate route name: {name}")
-        if isinstance(name, str):
+        if isinstance(name, str) and name:
             routes[name] = (path_format, path_convertors, endpoint)
 
     def search(
@@ -393,6 +492,12 @@ class Router:
     ) -> typing.Any:
         """
         shortcut for `self.append`
+
+        example:
+            @router.http("/path", name="endpoint-name")
+            async def endpoint(request): ...
+        or
+            router.http("/path", endpoint, name="endpoint-name")
         """
         if path and endpoint is None:
             # example: @router.http("/path", name="hello")
@@ -416,6 +521,12 @@ class Router:
     ) -> typing.Any:
         """
         shortcut for `self.append`
+
+        example:
+            @router.websocket("/path", name="endpoint-name")
+            async def endpoint(websocket): ...
+        or
+            router.websocket("/path", endpoint, name="endpoint-name")
         """
         if path and endpoint is None:
             # example: @router.websocket("/path", name="hello")
