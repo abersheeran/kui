@@ -22,6 +22,7 @@ from starlette.requests import (
 )
 
 from ..types import Scope, Send, Receive, Message
+from ..utils import cached_property
 
 
 def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:
@@ -70,60 +71,48 @@ class HTTPConnection(typing.Mapping):
     def __len__(self) -> int:
         return len(self.scope)
 
-    @property
+    @cached_property
     def url(self) -> URL:
-        if not hasattr(self, "_url"):
-            self._url = URL(scope=self.scope)
-        return self._url
+        return URL(scope=self.scope)
 
-    @property
+    @cached_property
     def base_url(self) -> URL:
-        if not hasattr(self, "_base_url"):
-            base_url_scope = dict(self.scope)
-            base_url_scope["path"] = "/"
-            base_url_scope["query_string"] = b""
-            base_url_scope["root_path"] = base_url_scope.get(
-                "app_root_path", base_url_scope.get("root_path", "")
-            )
-            self._base_url = URL(scope=base_url_scope)
-        return self._base_url
+        base_url_scope = dict(self.scope)
+        base_url_scope["path"] = "/"
+        base_url_scope["query_string"] = b""
+        base_url_scope["root_path"] = base_url_scope.get(
+            "app_root_path", base_url_scope.get("root_path", "")
+        )
+        return URL(scope=base_url_scope)
 
-    @property
+    @cached_property
     def headers(self) -> Headers:
-        if not hasattr(self, "_headers"):
-            self._headers = Headers(scope=self.scope)
-        return self._headers
+        return Headers(scope=self.scope)
 
-    @property
+    @cached_property
     def query_params(self) -> QueryParams:
-        if not hasattr(self, "_query_params"):
-            self._query_params = QueryParams(self.scope["query_string"])
-        return self._query_params
+        return QueryParams(self.scope["query_string"])
 
-    @property
+    @cached_property
     def cookies(self) -> typing.Dict[str, str]:
-        if not hasattr(self, "_cookies"):
-            cookies: typing.Dict[str, str] = {}
-            cookie_header = self.headers.get("cookie")
+        cookies: typing.Dict[str, str] = {}
+        cookie_header = self.headers.get("cookie")
 
-            if cookie_header:
-                cookies = cookie_parser(cookie_header)
-            self._cookies = cookies
-        return self._cookies
+        if cookie_header:
+            cookies = cookie_parser(cookie_header)
+        return cookies
 
-    @property
+    @cached_property
     def client(self) -> Address:
         host, port = self.scope.get("client") or (None, None)
         return Address(host=host, port=port)
 
-    @property
+    @cached_property
     def state(self) -> State:
-        if not hasattr(self, "_state"):
-            # Ensure 'state' has an empty dict if it's not already populated.
-            self.scope.setdefault("state", {})
-            # Create a state instance with a reference to the dict in which it should store info
-            self._state = State(self.scope["state"])
-        return self._state
+        # Ensure 'state' has an empty dict if it's not already populated.
+        self.scope.setdefault("state", {})
+        # Create a state instance with a reference to the dict in which it should store info
+        return State(self.scope["state"])
 
 
 async def empty_receive() -> Message:
@@ -148,10 +137,6 @@ class Request(HTTPConnection):
     @property
     def method(self) -> str:
         return self.scope["method"]
-
-    @property
-    def receive(self) -> Receive:
-        return self._receive
 
     async def stream(self) -> typing.AsyncGenerator[bytes, None]:
         if hasattr(self, "_body"):
