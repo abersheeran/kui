@@ -15,9 +15,9 @@ class SocketView:
         self.websocket = websocket
 
     def __await__(self):
-        return self.__call__().__await__()
+        return self.__impl__().__await__()
 
-    async def __call__(self) -> None:
+    async def __impl__(self) -> None:
         try:
             close_code = status.WS_1000_NORMAL_CLOSURE
             await self.on_connect()

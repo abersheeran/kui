@@ -12,7 +12,7 @@ A high-performance web framework based on the ASGI protocol. [Index.py Documenta
 
 You can also view the [Example](https://github.com/abersheeran/index.py/tree/master/tests/example) to learn how to use it.
 
-- No need to manually bind routing (file system mapping URI)
+- Flexible and efficient routing system (based on Radix Tree)
 - Automatically parse requests & generate documents (based on `pydantic`)
 - Visual API interface (based on `ReDoc`, optimized for fonts)
 - Modern test components (based on `pytest` and `requests`)

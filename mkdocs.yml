@@ -23,7 +23,6 @@ nav:
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
   - Mount: "mount.md"
-  - Test: "test.md"
   - Command: "command.md"
   - OpenAPI: "openapi.md"
 

@@ -86,6 +86,10 @@ class HTTPConnection(typing.Mapping):
         return URL(scope=base_url_scope)
 
     @cached_property
+    def path_params(self) -> typing.Dict[str, typing.Any]:
+        return self.scope.get("path_params", {})
+
+    @cached_property
     def headers(self) -> Headers:
         return Headers(scope=self.scope)
 

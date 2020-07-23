@@ -27,7 +27,7 @@ async def test_complicating_1():
             pass
 
     await AsyncClass()
-    assert complicating(AsyncClass).__name__ == "AsyncClass"
+    assert complicating(AsyncClass) == AsyncClass
 
     await AsyncClass().dispatch()
     assert complicating(AsyncClass.dispatch) is AsyncClass.dispatch
@@ -112,9 +112,9 @@ async def test_make_async():
 @pytest.mark.asyncio
 async def test_make_async_annotation():
     @make_async
-    def hello(request, query: int):
+    def hello(request, name: int):
         return True
 
     sig = inspect.signature(hello)
-    assert [param_name for param_name in sig.parameters] == ["request", "query"]
-    assert sig.parameters["query"].annotation == int
+    assert [param_name for param_name in sig.parameters] == ["request", "name"]
+    assert sig.parameters["name"].annotation == int

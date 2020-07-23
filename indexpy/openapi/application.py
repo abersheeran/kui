@@ -58,35 +58,45 @@ class OpenAPI:
 
     def _generate_paths(self, app: Index) -> Dict[str, Any]:
         result = {}
-        for subapp in reversed(
+
+        for path_format, path_convertors, endpoint in app.router.http_routes.values():
+            path_docs = self._generate_path(endpoint, path_format)
+            if path_docs:
+                result[path_format] = path_docs
+
+        for index_file_app in reversed(
             [subapp for _, subapp in app.mount_apps if isinstance(subapp, IndexFile)]
         ):
-            for view, path in subapp.get_views():
+            for view, path in index_file_app.get_views():
                 if not hasattr(view, "HTTP"):
                     continue
                 viewclass = getattr(view, "HTTP")
                 path_docs = self._generate_path(viewclass, path)
                 if path_docs:
                     result[path] = path_docs
+
         return result
 
-    def _generate_path(self, viewclass: object, path: str) -> Dict[str, Any]:
+    def _generate_path(self, view: Any, path: str) -> Dict[str, Any]:
         result = {}
-        for method in viewclass.allowed_methods():  # type: ignore
-            if method == "OPTIONS":
-                continue
-            method = method.lower()
-            method_docs = self._generate_method(viewclass, path, method)
+        if hasattr(view, "allowed_methods"):
+            for method in view.allowed_methods():  # type: ignore
+                if method == "OPTIONS":
+                    continue
+                method = method.lower()
+                method_docs = self._generate_method(getattr(view, method), path)
+                if method_docs:
+                    result[method] = method_docs
+        elif hasattr(view, "__method__"):
+            method_docs = self._generate_method(view, path)
             if method_docs:
-                result[method] = method_docs
+                result[view.__method__] = method_docs
         return result
 
-    def _generate_method(
-        self, viewclass: object, path: str, method: str
-    ) -> Dict[str, Any]:
+    def _generate_method(self, func: object, path: str) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
 
-        doc = getattr(viewclass, method).__doc__
+        doc = func.__doc__
         if isinstance(doc, str):
             doc = doc.strip()
             result.update(
@@ -96,9 +106,12 @@ class OpenAPI:
                 }
             )
 
-        params = getattr(getattr(viewclass, method), "__params__", {})
+        params = getattr(func, "__params__", {})
         result["parameters"] = schema_parameters(
-            None, params.get("query"), params.get("header"), params.get("cookie"),
+            params.get("path"),
+            params.get("query"),
+            params.get("header"),
+            params.get("cookie"),
         )
         if not result["parameters"]:
             del result["parameters"]
@@ -108,7 +121,7 @@ class OpenAPI:
             del result["requestBody"]
 
         try:
-            resps = getattr(getattr(viewclass, method), "__resps__")
+            resps = getattr(func, "__resps__")
         except AttributeError:
             pass
         else:
