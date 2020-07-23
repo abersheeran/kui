@@ -82,16 +82,16 @@ def convert(response: typing.Any) -> Response:
     shortcut for automatic
 
     Example:
-    ```
+
         response = convert(response)
-    ```
+
     It is equivalent to:
-    ```
+
         if isinstance(response, tuple):
             response = automatic(*response)
         else:
             response = automatic(response)
-    ```
+
     """
     if isinstance(response, tuple):
         return automatic(*response)

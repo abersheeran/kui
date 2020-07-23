@@ -1,5 +1,3 @@
-import json
-
 from indexpy.config import UpperDict, Config, ConfigError
 
 

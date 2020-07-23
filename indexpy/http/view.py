@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
 from .responses import Response
-from .request import Request
+from .request import HTTPConnection, Request
 
 
 HTTP_METHOD_NAMES = [
@@ -33,9 +33,9 @@ class ParamsValidationError(Exception):
 
 def bound_params(function: FunctionType) -> FunctionType:
     """
-    parse function params "query", "header", "cookie", "body"
+    parse function params "path", "query", "header", "cookie", "body"
     """
-    param_names = ("query", "header", "cookie", "body")
+    param_names = ("path", "query", "header", "cookie", "body")
     sig = signature(function)
 
     incorrect_keys = [
@@ -43,6 +43,7 @@ def bound_params(function: FunctionType) -> FunctionType:
         for param_name in param_names
         if (
             param_name in sig.parameters
+            and param_name != "path"
             and not issubclass(sig.parameters[param_name].annotation, BaseModel)
         )
     ]
@@ -85,16 +86,23 @@ def merge_list(
     return d
 
 
-async def parse_params(handler: typing.Callable, request: Request) -> typing.Any:
-    __params__ = getattr(handler, "__params__", {})
+async def parse_params(handler: typing.Callable, request: HTTPConnection) -> typing.Any:
 
-    if not __params__:
-        return handler
+    __params__ = getattr(handler, "__params__", {})
 
     params: typing.Dict[str, BaseModel] = {}
 
+    if request.path_params:
+        params["path"] = request.path_params
+
+    if not params:
+        return handler
+
     try:
         # try to get parameters model and parse
+        if "path" in __params__:
+            params["path"] = __params__["path"](**request.path_params)
+
         if "query" in __params__:
             params["query"] = __params__["query"](
                 **merge_list(request.query_params.multi_items())
@@ -110,6 +118,7 @@ async def parse_params(handler: typing.Callable, request: Request) -> typing.Any
 
         # try to get body model and parse
         if "body" in __params__:
+            request = typing.cast(Request, request)
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:
@@ -140,12 +149,8 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
 
 
 class HTTPView(metaclass=ViewMeta):  # type: ignore
-    def __init__(self, request: Request, **kwargs) -> None:
+    def __init__(self, request: Request) -> None:
         self.request = request
-        # bind path params
-        handler = getattr(self, request.method.lower(), None)
-        if handler is not None:
-            setattr(self, request.method.lower(), functools.partial(handler, **kwargs))
 
     def __await__(self) -> typing.Generator[typing.Any, None, Response]:
         return self.__impl__().__await__()

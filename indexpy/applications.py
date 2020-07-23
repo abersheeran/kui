@@ -26,6 +26,7 @@ from .http.view import parse_params
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import (
+    convert,
     Response,
     FileResponse,
     RedirectResponse,
@@ -493,29 +494,32 @@ class Index:
                 if e.status_code != 404 or has_received:
                     raise e
 
-        try:
-            params, endpoint = self.router.search(scope["type"], scope["path"])
-            request = self.factory_class["http"](scope, receive, send)
-            endpoint = await parse_params(endpoint, request)
+        handler: typing.Optional[ASGIApp] = None
 
-            get_response = lambda request: endpoint(request, **params)
+        try:
+            path_params, endpoint = self.router.search(scope["type"], scope["path"])
+            scope["path_params"] = path_params
+            request = self.factory_class[scope["type"]](scope, receive, send)  # type: ignore
+            get_handler = await parse_params(endpoint, request)
 
             for middleware in getattr(endpoint, "middlewares", ()):
-                get_response = middleware(get_response)
+                get_handler = middleware(get_handler)
 
-            return await get_response(request)
+            if scope["type"] == "http":
+                handler = convert(await get_handler(request))
+            else:
+                handler = get_handler(request)
         except NoMatchFound:
-            pass
-
-        if scope["type"] == "http":
-            if self.try_html:
+            if scope["type"] == "http" or self.try_html:
                 # only html, no middleware/background tasks or other anything
-                response = try_html(self.factory_class["http"](scope, receive, send))
-                if response:
-                    return await response(scope, receive, send)
+                handler = try_html(self.factory_class["http"](scope, receive, send))
 
-            raise HTTPException(404)
-        await WebSocketClose(WS_1001_GOING_AWAY)(scope, receive, send)
+        if handler is None:
+            if scope["type"] == "http":
+                raise HTTPException(404)
+            handler = WebSocketClose(WS_1001_GOING_AWAY)
+
+        return await handler(scope, receive, send)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

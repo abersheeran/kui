@@ -1,10 +1,7 @@
-import os
 from indexpy.__version__ import __version__
 from indexpy.openapi.application import OpenAPI
 
 from . import app
-
-from wsgi_example import wsgi
 
 app.mount_asgi(
     "/openapi",
@@ -22,7 +19,3 @@ app.mount_asgi(
         },
     ),
 )
-
-# set django setting
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wsgi_example.settings")
-app.mount_wsgi("/django", wsgi.application)

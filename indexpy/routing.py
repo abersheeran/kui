@@ -8,6 +8,7 @@ from dataclasses import dataclass, field, InitVar
 
 from .types import Literal
 from .http.view import bound_params, HTTPView, only_allow
+from .concurrency import complicating
 
 
 class Convertor:
@@ -297,6 +298,9 @@ class BaseRoute:
     endpoint: typing.Any
     name: str
 
+    def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
+        raise NotImplementedError()
+
 
 @dataclass
 class HttpRoute(BaseRoute):
@@ -310,11 +314,30 @@ class HttpRoute(BaseRoute):
             if method == "":
                 raise ValueError("View function must be marked with method")
             self.endpoint = only_allow(method, bound_params(self.endpoint))
+        self.endpoint = complicating(self.endpoint)
+
+    def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
+        if hasattr(routes, "http_middlewares"):
+            middlewares = getattr(self.endpoint, "middlewares", ())
+            setattr(
+                self.endpoint,
+                "middlewares",
+                tuple(getattr(routes, "http_middlewares")) + middlewares,
+            )
 
 
 @dataclass
 class SocketRoute(BaseRoute):
     name: str = ""
+
+    def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
+        if hasattr(routes, "socket_middlewares"):
+            middlewares = getattr(self.endpoint, "middlewares", ())
+            setattr(
+                self.endpoint,
+                "middlewares",
+                tuple(getattr(routes, "socket_middlewares")) + middlewares,
+            )
 
 
 T = typing.TypeVar("T")
@@ -323,19 +346,14 @@ T = typing.TypeVar("T")
 class Routes(typing.List[BaseRoute]):
     def __init__(self, *iterable: typing.Union["BaseRoute", "Mount"]) -> None:
         routes = []
-        self.middlewares: typing.List[typing.Any] = []
+        self.http_middlewares: typing.List[typing.Any] = []
+        self.socket_middlewares: typing.List[typing.Any] = []
         for route in iterable:
             if not isinstance(route, Routes):
                 routes.append(route)
                 continue
             for subroute in route:  # type: BaseRoute
-                if route.middlewares:
-                    setattr(
-                        subroute.endpoint,
-                        "middlewares",
-                        tuple(route.middlewares)
-                        + getattr(subroute.endpoint, "middlewares", tuple()),
-                    )
+                subroute.extend_middlewares(route)
                 routes.append(
                     subroute.__class__(
                         path=route.prefix + subroute.path,
@@ -415,13 +433,13 @@ class Routes(typing.List[BaseRoute]):
 
         example:
             @routes.http_middleware
-            def middleware(endpoint):
+            async def middleware(endpoint):
                 async def wrapper(request):
                     response = await endpoint(request)
                     return response
                 return wrapper
         or
-            def middleware(endpoint):
+            async def middleware(endpoint):
                 async def wrapper(request):
                     response = await endpoint(request)
                     return response
@@ -429,7 +447,28 @@ class Routes(typing.List[BaseRoute]):
 
             routes.http_middleware(middleware)
         """
-        self.middlewares.append(middleware)
+        self.http_middlewares.append(middleware)
+        return middleware
+
+    def socket_middleware(self, middleware: T) -> T:
+        """
+        append middleware in routes
+
+        example:
+            @routes.socket_middleware
+            async def middleware(endpoint):
+                async def wrapper(websocket):
+                    await endpoint(websocket)
+                return wrapper
+        or
+            async def middleware(endpoint):
+                async def wrapper(websocket):
+                    await endpoint(websocket)
+                return wrapper
+
+            routes.socket_middleware(middleware)
+        """
+        self.socket_middlewares.append(middleware)
         return middleware
 
 
@@ -507,13 +546,7 @@ class Router:
         """
 
         for route in routes:
-            if hasattr(routes, "middlewares"):
-                setattr(
-                    route.endpoint,
-                    "middlewares",
-                    tuple(getattr(routes, "middlewares"))
-                    + getattr(route.endpoint, "middlewares", tuple()),
-                )
+            route.extend_middlewares(routes)
             self.append(route)
 
     def url_for(
