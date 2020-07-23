@@ -507,11 +507,11 @@ class Router:
         """
 
         for route in routes:
-            if routes.middlewares:
+            if hasattr(routes, "middlewares"):
                 setattr(
                     route.endpoint,
                     "middlewares",
-                    tuple(route.middlewares)
+                    tuple(getattr(routes, "middlewares"))
                     + getattr(route.endpoint, "middlewares", tuple()),
                 )
             self.append(route)
