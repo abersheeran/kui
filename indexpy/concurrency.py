@@ -14,7 +14,7 @@ def make_async(
     """
 
     if only_mark and func is None:
-        return functools.partial(make_async, only_mark=True)
+        return lambda func: make_async(func, only_mark=True)
 
     if func is None:
         raise ValueError("`func` must be not None")

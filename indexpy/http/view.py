@@ -2,11 +2,12 @@ import typing
 import functools
 import logging
 from inspect import signature
+from types import FunctionType
 
 from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
-from .responses import Response, convert
+from .responses import Response
 from .request import Request
 
 
@@ -25,61 +26,45 @@ HTTP_METHOD_NAMES = [
 logger = logging.getLogger(__name__)
 
 
-class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
-    def __init__(
-        cls,
-        name: str,
-        bases: typing.Tuple[type],
-        namespace: typing.Dict[str, typing.Any],
-    ):
-        param_names = ["query", "header", "cookie", "body"]
+class ParamsValidationError(Exception):
+    def __init__(self, validation_error: ValidationError) -> None:
+        self.ve = validation_error
 
-        for function_name in filter(
-            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
-        ):
-            function = namespace[function_name]
-            sig = signature(function)
 
-            not_allowed_keys = [
-                key
-                for key in filter(
-                    lambda key: key not in param_names and key != "self",
-                    sig.parameters.keys(),
-                )
-            ]
-            if not_allowed_keys:
-                raise TypeError(
-                    f"Params {not_allowed_keys} is not allowed in `{function_name}`. "
-                    + f"Only allow {param_names}"
-                )
+def bound_params(function: FunctionType) -> FunctionType:
+    """
+    parse function params "query", "header", "cookie", "body"
+    """
+    param_names = ("query", "header", "cookie", "body")
+    sig = signature(function)
 
-            incorrect_keys = [
-                param_name
-                for param_name in param_names
-                if (
-                    param_name in sig.parameters
-                    and not issubclass(sig.parameters[param_name].annotation, BaseModel)
-                )
-            ]
-            if incorrect_keys:
-                raise TypeError(
-                    f"Params {incorrect_keys} annotation is incorrect in `{function_name}`. "
-                    + "You should inherit `pydantic.BaseModel`."
-                )
+    incorrect_keys = [
+        param_name
+        for param_name in param_names
+        if (
+            param_name in sig.parameters
+            and not issubclass(sig.parameters[param_name].annotation, BaseModel)
+        )
+    ]
+    if incorrect_keys:
+        raise TypeError(
+            f"Params {incorrect_keys} annotation is incorrect in `{function.__name__}`. "
+            + "You should inherit `pydantic.BaseModel`."
+        )
 
-            setattr(
-                function,
-                "__params__",
-                {
-                    param_name: sig.parameters[param_name].annotation
-                    for param_name in param_names
-                    if (
-                        param_name in sig.parameters
-                        and issubclass(sig.parameters[param_name].annotation, BaseModel)
-                    )
-                },
+    setattr(
+        function,
+        "__params__",
+        {
+            param_name: sig.parameters[param_name].annotation
+            for param_name in param_names
+            if (
+                param_name in sig.parameters
+                and issubclass(sig.parameters[param_name].annotation, BaseModel)
             )
-        super().__init__(name, bases, namespace)
+        },
+    )
+    return function
 
 
 def merge_list(
@@ -100,22 +85,15 @@ def merge_list(
     return d
 
 
-class HTTPView(metaclass=ViewMeta):  # type: ignore
-    def __init__(self, request: Request) -> None:
-        self.request = request
+async def parse_params(handler: typing.Callable, request: Request) -> typing.Any:
+    __params__ = getattr(handler, "__params__", {})
 
-    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
-        return self.__call__().__await__()
+    if not __params__:
+        return handler
 
-    @staticmethod
-    async def partial(handler: typing.Callable, request: Request) -> typing.Any:
-        __params__ = getattr(handler, "__params__", {})
+    params: typing.Dict[str, BaseModel] = {}
 
-        if not __params__:
-            return handler
-
-        params: typing.Dict[str, BaseModel] = {}
-
+    try:
         # try to get parameters model and parse
         if "query" in __params__:
             params["query"] = __params__["query"](
@@ -138,36 +116,63 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
                 _body_data = await request.form()
             params["body"] = __params__["body"](**_body_data)
 
-        return functools.partial(handler, **params)
+    except ValidationError as e:
+        raise ParamsValidationError(e)
 
-    async def __call__(self) -> Response:
+    return functools.partial(handler, **params)
+
+
+class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
+    def __init__(
+        cls,
+        name: str,
+        bases: typing.Tuple[type],
+        namespace: typing.Dict[str, typing.Any],
+    ):
+
+        for function_name in filter(
+            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
+        ):
+            function = namespace[function_name]
+            namespace[function_name] = bound_params(function)
+
+        super().__init__(name, bases, namespace)
+
+
+class HTTPView(metaclass=ViewMeta):  # type: ignore
+    def __init__(self, request: Request, **kwargs) -> None:
+        self.request = request
+        # bind path params
+        handler = getattr(self, request.method.lower(), None)
+        if handler is not None:
+            setattr(self, request.method.lower(), functools.partial(handler, **kwargs))
+
+    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
+        return self.__impl__().__await__()
+
+    async def __impl__(self) -> typing.Any:
         # Try to dispatch to the right method; if a method doesn't exist,
-        # defer to the error handler. Also defer to the error handler if the
-        # request method isn't on the approved list.
-
+        # defer to the error handler.
         handler = getattr(
             self, self.request.method.lower(), self.http_method_not_allowed
         )
 
-        try:
-            handler = await self.partial(handler, self.request)
-        except ValidationError as e:
-            resp = await self.catch_validation_error(e)
-        else:
-            resp = await handler()
+        handler = await parse_params(handler, self.request)
 
-        return convert(resp)
-
-    async def catch_validation_error(self, e: ValidationError) -> typing.Any:
-        """
-        Used to handle request parsing errors
-        """
-        return e.errors(), 400
+        return await handler()
 
     async def http_method_not_allowed(self) -> Response:
+        if self.request.method not in ("GET", "HEAD"):
+            status_code = 405
+        else:
+            status_code = 404
+
         return Response(
-            status_code=405,
-            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"},
+            status_code=status_code,
+            headers={
+                "Allow": ", ".join(self.allowed_methods()),
+                "Content-Length": "0",
+            },
         )
 
     async def options(self) -> Response:
@@ -179,3 +184,37 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
     @classmethod
     def allowed_methods(cls) -> typing.List[str]:
         return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)]
+
+
+def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callable:
+    """
+    Only allow the function to accept one type of request
+
+    example:
+        @only_allow("get")
+        async def handle(request):
+            ...
+    or
+        handle = only_allow("get", handle)
+    """
+
+    if method not in HTTP_METHOD_NAMES:
+        raise ValueError(f"method must be in {HTTP_METHOD_NAMES}")
+
+    if func is None:
+        return lambda func: only_allow(method, func)
+
+    setattr(func, "__method__", method)
+
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs) -> typing.Any:
+        request = args[0]
+        if request.method.lower() == method.lower():
+            return await func(*args, **kwargs)  # type: ignore
+        if request.method in ("GET", "HEAD"):
+            status_code = 404
+        else:
+            status_code = 405
+        return Response(status_code=status_code)
+
+    return wrapper

@@ -18,9 +18,11 @@ from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
 from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
+from .utils import cached_property
 from .config import here, Config
-from .routing import NoMatchFound
+from .routing import Router, BaseRoute, NoMatchFound
 from .http import responses
+from .http.view import parse_params
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import (
@@ -31,7 +33,6 @@ from .http.responses import (
 from .http.background import (
     BackgroundTasks,
     after_response_tasks_var,
-    finished_response_tasks_var,
 )
 from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
@@ -127,16 +128,22 @@ class Lifespan:
 
 
 class IndexFile:
-    def __init__(self, module_name: str, basepath: str = None,) -> None:
+    def __init__(
+        self, module_name: str, basepath: str = None, allow_underline: bool = False
+    ) -> None:
         self.module_name = module_name
-        if basepath is None:
-            basepath = os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(importlib.import_module(module_name).__file__)
-                )
-            )
-        self.basepath = basepath
+        self.allow_underline = allow_underline
+        if basepath is not None:
+            self.basepath = basepath
         logger.debug(f"Index File in module {module_name}, basepath: {basepath}")
+
+    @cached_property
+    def basepath(self) -> str:
+        return os.path.dirname(
+            os.path.dirname(
+                os.path.abspath(importlib.import_module(self.module_name).__file__)
+            )
+        )
 
     def _split_path(self, path: str) -> typing.List[str]:
         """
@@ -250,9 +257,6 @@ class IndexFile:
         try:
             # set background tasks contextvar
             after_response_tasks_token = after_response_tasks_var.set(BackgroundTasks())
-            finished_response_tasks_token = finished_response_tasks_var.set(
-                BackgroundTasks()
-            )
             # call middleware
             for deep in range(len(pathlist), 0, -1):
                 module = importlib.import_module(".".join(pathlist[:deep]))
@@ -269,11 +273,6 @@ class IndexFile:
         finally:
             after_response_tasks_var.reset(after_response_tasks_token)
 
-            run_finished_response_tasks = finished_response_tasks_var.get()
-            finished_response_tasks_var.reset(finished_response_tasks_token)
-            if run_finished_response_tasks.tasks != []:
-                await run_finished_response_tasks()
-
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = scope["app"].factory_class["websocket"](
             scope, receive=receive, send=send
@@ -287,6 +286,17 @@ class IndexFile:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
+        url = URL(scope=scope)
+
+        if url.path.endswith("/index"):
+            handler = RedirectResponse(
+                url.replace(path=url.path[: -len("/index")]), status_code=301,
+            )
+        elif "_" in url.path and not self.allow_underline:
+            handler = RedirectResponse(
+                url.replace(path=url.path.replace("_", "-")), status_code=301,
+            )
+
         await handler(scope, receive, send)
 
 
@@ -296,8 +306,8 @@ class Index:
         *,
         templates: typing.Iterable[str] = ("templates",),
         try_html: bool = True,
-        allow_underline: bool = False,
         mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
+            ("", IndexFile("views", allow_underline=False)),
             (
                 "/static",
                 StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
@@ -307,11 +317,11 @@ class Index:
             lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
         ],
         on_shutdown: typing.List[typing.Callable] = [],
+        routes: typing.List[BaseRoute] = [],
         factory_class: FactoryClass = {"http": Request, "websocket": WebSocket},
     ) -> None:
-        self.factory_class: FactoryClass = factory_class
-
-        self.indexfile = IndexFile("views")
+        self.factory_class = factory_class
+        self.router = Router(routes)
 
         templates_loaders: typing.List[
             typing.Union[FileSystemLoader, PackageLoader]
@@ -327,7 +337,6 @@ class Index:
             loader=ChoiceLoader(templates_loaders), enable_async=True,
         )
         self.try_html = try_html
-        self.allow_underline = allow_underline
 
         # Shallow copy list to prevent memory leak.
         self.mount_apps = list(mount_apps)
@@ -485,7 +494,16 @@ class Index:
                     raise e
 
         try:
-            return await self.indexfile(scope, receive, send)
+            params, endpoint = self.router.search(scope["type"], scope["path"])
+            request = self.factory_class["http"](scope, receive, send)
+            endpoint = await parse_params(endpoint, request)
+
+            get_response = lambda request: endpoint(request, **params)
+
+            for middleware in getattr(endpoint, "middlewares", ()):
+                get_response = middleware(get_response)
+
+            return await get_response(request)
         except NoMatchFound:
             pass
 
@@ -504,7 +522,6 @@ class Index:
 
         if scope["type"] in ("http", "websocket"):  # Handle some special routes
             url = URL(scope=scope)
-            path = url.path
             response: typing.Optional[Response] = None
 
             # Force jump to https/wss
@@ -516,16 +533,7 @@ class Index:
                     url, status_code=301
                 )  # for SEO, status code must be 301
 
-            # url rule judgment
-            if path.endswith("/index"):
-                response = RedirectResponse(
-                    url.replace(path=path[: -len("/index")]), status_code=301,
-                )
-            elif "_" in path and not self.allow_underline:
-                response = RedirectResponse(
-                    url.replace(path=path.replace("_", "-")), status_code=301,
-                )
-            elif path == "/favicon.ico":
+            if url.path == "/favicon.ico":
                 if os.path.exists(os.path.normpath("favicon.ico")):
                     response = FileResponse("favicon.ico")
 

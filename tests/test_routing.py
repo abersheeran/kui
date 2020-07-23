@@ -92,18 +92,18 @@ def router():
 
     router = Router(
         Routes(
-            HttpRoute("/sayhi/{name}", sayhi, "sayhi"),
+            HttpRoute("/sayhi/{name}", sayhi, "sayhi", "get"),
             Mount(
                 "/hello",
                 [
-                    HttpRoute("/world", hello_world, "hello-world"),
+                    HttpRoute("/world", hello_world, "hello-world", method="get"),
                     SocketRoute("/socket_world", lambda websocket: None),
                 ],
             ),
         )
     )
 
-    @router.http("/about", name=None)
+    @router.http("/about", name=None, method="get")
     def about(request, name: str = None):
         return str(request.url)
 

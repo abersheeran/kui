@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 
 import pytest
 
@@ -106,3 +107,14 @@ async def test_make_async():
 
     assert await future() is None
     assert asyncio.iscoroutinefunction(future)
+
+
+@pytest.mark.asyncio
+async def test_make_async_annotation():
+    @make_async
+    def hello(request, query: int):
+        return True
+
+    sig = inspect.signature(hello)
+    assert [param_name for param_name in sig.parameters] == ["request", "query"]
+    assert sig.parameters["query"].annotation == int

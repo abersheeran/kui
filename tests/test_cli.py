@@ -1,7 +1,6 @@
-import pytest
-from click.testing import CliRunner, Result
+from click.testing import CliRunner
 
-from indexpy.cli import execute, main, cmd_test
+from indexpy.cli import execute, main
 
 
 def test_execute():
