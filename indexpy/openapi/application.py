@@ -59,8 +59,7 @@ class OpenAPI:
     def _generate_paths(self, app: Index) -> Dict[str, Any]:
         result = {}
         for subapp in reversed(
-            [app.indexfile]
-            + [subapp for _, subapp in app.mount_apps if isinstance(subapp, IndexFile)]
+            [subapp for _, subapp in app.mount_apps if isinstance(subapp, IndexFile)]
         ):
             for view, path in subapp.get_views():
                 if not hasattr(view, "HTTP"):

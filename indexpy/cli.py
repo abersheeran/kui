@@ -12,13 +12,6 @@ import uvicorn
 from .utils import import_module
 from .config import here, LOG_LEVELS, Config
 
-try:
-    from .test import cmd_test
-except ImportError as e:
-
-    def cmd_test(raise_exception=e):  # type: ignore
-        raise raise_exception
-
 
 from .__version__ import __version__
 
@@ -103,7 +96,5 @@ def gunicorn(workers, daemon, configuration, method, application):
     elif method == "reload":
         execute(["kill -HUP", "`cat .pid`"])
 
-
-main.command(name="test", help="run test")(cmd_test)
 
 import_module("commands")

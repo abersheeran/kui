@@ -26,9 +26,6 @@ class BackgroundTasks(_BackgroundTasks):
 after_response_tasks_var: ContextVar[BackgroundTasks] = ContextVar(
     "after_response_tasks"
 )
-finished_response_tasks_var: ContextVar[BackgroundTasks] = ContextVar(
-    "finished_response_tasks"
-)
 
 
 def after_response(func: typing.Callable) -> typing.Callable:
@@ -37,17 +34,6 @@ def after_response(func: typing.Callable) -> typing.Callable:
     @wraps(func)
     def wrapper(*args, **kwargs) -> None:
         background_tasks = after_response_tasks_var.get()
-        background_tasks.add_task(func, *args, **kwargs)
-
-    return wrapper
-
-
-def finished_response(func: typing.Callable) -> typing.Callable:
-    """call func when response has finished"""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> None:
-        background_tasks = finished_response_tasks_var.get()
         background_tasks.add_task(func, *args, **kwargs)
 
     return wrapper

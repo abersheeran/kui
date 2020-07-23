@@ -3,8 +3,9 @@ import http
 import typing
 
 from ..types import ASGIApp, Message, Receive, Scope, Send
-from ..http.request import Request
-from ..http.responses import Response, PlainTextResponse
+from .view import ParamsValidationError
+from .request import Request
+from .responses import Response, PlainTextResponse, JSONResponse
 
 
 class HTTPException(Exception):
@@ -22,10 +23,13 @@ class HTTPException(Exception):
 class ExceptionMiddleware:
     def __init__(self, app: ASGIApp, handlers: dict = None) -> None:
         self.app = app
-        self._status_handlers = {}  # type: typing.Dict[int, typing.Callable]
-        self._exception_handlers = {
-            HTTPException: self.http_exception
-        }  # type: typing.Dict[typing.Type[Exception], typing.Callable]
+        self._status_handlers: typing.Dict[int, typing.Callable] = {}
+        self._exception_handlers: typing.Dict[
+            typing.Type[Exception], typing.Callable
+        ] = {
+            HTTPException: self.http_exception,
+            ParamsValidationError: self.params_validation_error,
+        }
         if handlers is not None:
             for key, value in handlers.items():
                 self.add_exception_handler(key, value)
@@ -93,3 +97,8 @@ class ExceptionMiddleware:
         if exc.status_code in {204, 304}:
             return Response(b"", status_code=exc.status_code)
         return PlainTextResponse(exc.detail, status_code=exc.status_code)
+
+    def params_validation_error(
+        self, request: Request, exc: ParamsValidationError
+    ) -> Response:
+        return JSONResponse(exc.ve.errors(), status_code=400)

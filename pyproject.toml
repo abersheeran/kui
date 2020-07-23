@@ -21,26 +21,24 @@ version = "0.11.1"
 index-cli = "indexpy.cli:main"
 
 [tool.poetry.dependencies]
+python = "^3.6"
+
 a2wsgi = "^0.3.6"
 aiofiles = "^0.5.0"
 contextvars = {version = "^2.4", python = "~3.6"}
 gunicorn = {version = "^20.0.4", optional = true}
 jinja2 = "^2.10.3"
 pydantic = "^1.6"
-pytest = {version = "^5.4.2", optional = true}
-python = "^3.6"
 python-multipart = "^0.0.5"
 pyyaml = "^5.3"
-requests = {version = "^2.23.0", optional = true}
+requests = {version = "^2.24.0", optional = true}
 starlette = "^0.13.1"
 typing-extensions = {version = "^3.7.4", python = "<3.8"}
 uvicorn = "^0.11.3"
 
 [tool.poetry.extras]
 gunicorn = ["gunicorn"] # for 'index-cli gunicorn'
-pytest = ["pytest"] # for `index-cli test`
-requests = ["requests"] # for `TestView`
-test = ["pytest", "requests"] # include all dependencies for test
+test = ["requests"] # include all dependencies for test
 
 [tool.poetry.dev-dependencies]
 black = {version = "*", allow-prereleases = true}
@@ -50,9 +48,6 @@ mypy = {version = "*", allow-prereleases = true}
 pytest = "^5.4.2"
 pytest-asyncio = "^0.12"
 pytest-cov = "^2.8.1"
-
-# For test mount WSGI
-django = "^3.0.2"
 
 # only docs
 mkdocs = "*"
@@ -74,8 +69,8 @@ exclude_lines = [
   "if False:",
   "assert False",
 ]
-skip_covered = true
 show_missing = true
+skip_covered = true
 
 [build-system]
 build-backend = "poetry.masonry.api"
