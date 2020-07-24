@@ -10,8 +10,6 @@
 
 一个基于 ASGI 协议的高性能 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
 
-你也可以直接查看 [Example](https://github.com/abersheeran/index.py/tree/master/tests/example) 来学习如何使用。
-
 - 灵活且高效的路由系统 (基于 Radix Tree)
 - 自动解析请求 & 生成文档 (基于 `pydantic`)
 - 可视化 API 接口 (基于 `ReDoc`, 针对中文字体优化)

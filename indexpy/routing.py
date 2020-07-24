@@ -3,12 +3,24 @@ import math
 import typing
 import uuid
 import inspect
+import copy
+from types import FunctionType
 from decimal import Decimal
 from dataclasses import dataclass, field, InitVar
 
 from .types import Literal
 from .http.view import bound_params, HTTPView, only_allow
 from .concurrency import complicating
+
+
+__all__ = [
+    "Routes",
+    "SubRoutes",
+    "HttpRoute",
+    "SocketRoute",
+    "NoMatchFound",
+    "NoRouteFound",
+]
 
 
 class Convertor:
@@ -301,20 +313,29 @@ class BaseRoute:
     def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
         raise NotImplementedError()
 
+    def __post_init__(self) -> None:
+        if not self.path.startswith("/"):
+            raise ValueError("Route path must start with '/'")
+
 
 @dataclass
 class HttpRoute(BaseRoute):
     name: str = ""
     method: InitVar[str] = ""
 
-    def __post_init__(self, method: str):
+    def __post_init__(self, method: str) -> None:  # type: ignore
+        super().__post_init__()
+
+        self.endpoint = complicating(self.endpoint)
+
         if inspect.isfunction(self.endpoint) and not hasattr(
             self.endpoint, "__method__"
         ):
             if method == "":
                 raise ValueError("View function must be marked with method")
-            self.endpoint = only_allow(method, bound_params(self.endpoint))
-        self.endpoint = complicating(self.endpoint)
+            self.endpoint = only_allow(
+                method, bound_params(typing.cast(FunctionType, self.endpoint)),
+            )
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "http_middlewares"):
@@ -344,23 +365,31 @@ T = typing.TypeVar("T")
 
 
 class Routes(typing.List[BaseRoute]):
-    def __init__(self, *iterable: typing.Union["BaseRoute", "Mount"]) -> None:
+    def __init__(
+        self,
+        *iterable: typing.Union["BaseRoute", "SubRoutes"],
+        http_middlewares: typing.List[typing.Any] = [],
+        socket_middlewares: typing.List[typing.Any] = [],
+    ) -> None:
         routes = []
-        self.http_middlewares: typing.List[typing.Any] = []
-        self.socket_middlewares: typing.List[typing.Any] = []
+        self.http_middlewares = copy.copy(http_middlewares)
+        self.socket_middlewares = copy.copy(socket_middlewares)
         for route in iterable:
             if not isinstance(route, Routes):
                 routes.append(route)
                 continue
             for subroute in route:  # type: BaseRoute
                 subroute.extend_middlewares(route)
-                routes.append(
-                    subroute.__class__(
-                        path=route.prefix + subroute.path,
-                        endpoint=subroute.endpoint,
-                        name=subroute.name,
+                if isinstance(route, SubRoutes):
+                    routes.append(
+                        subroute.__class__(
+                            path=route.prefix + subroute.path,
+                            endpoint=subroute.endpoint,
+                            name=subroute.name,
+                        )
                     )
-                )
+                else:
+                    routes.append(subroute)
         super().__init__(routes)
 
     def http(
@@ -433,13 +462,13 @@ class Routes(typing.List[BaseRoute]):
 
         example:
             @routes.http_middleware
-            async def middleware(endpoint):
+            def middleware(endpoint):
                 async def wrapper(request):
                     response = await endpoint(request)
                     return response
                 return wrapper
         or
-            async def middleware(endpoint):
+            def middleware(endpoint):
                 async def wrapper(request):
                     response = await endpoint(request)
                     return response
@@ -456,12 +485,12 @@ class Routes(typing.List[BaseRoute]):
 
         example:
             @routes.socket_middleware
-            async def middleware(endpoint):
+            def middleware(endpoint):
                 async def wrapper(websocket):
                     await endpoint(websocket)
                 return wrapper
         or
-            async def middleware(endpoint):
+            def middleware(endpoint):
                 async def wrapper(websocket):
                     await endpoint(websocket)
                 return wrapper
@@ -472,10 +501,23 @@ class Routes(typing.List[BaseRoute]):
         return middleware
 
 
-class Mount(Routes):
-    def __init__(self, prefix: str, routes: Routes = typing.cast(Routes, [])) -> None:
+class SubRoutes(Routes):
+    def __init__(
+        self,
+        prefix: str,
+        routes: Routes = typing.cast(Routes, []),
+        *,
+        http_middlewares: typing.List[typing.Any] = [],
+        socket_middlewares: typing.List[typing.Any] = [],
+    ) -> None:
+        if not prefix.startswith("/") or prefix.endswith("/"):
+            raise ValueError("Mount prefix cannot end with '/' and must start with '/'")
         self.prefix = prefix
-        super().__init__(*routes)
+        super().__init__(
+            *routes,
+            http_middlewares=http_middlewares,
+            socket_middlewares=socket_middlewares,
+        )
 
 
 class Router:
@@ -509,7 +551,7 @@ class Router:
 
         if route.name in routes:
             raise ValueError(f"Duplicate route name: {route.name}")
-        if isinstance(route.name, str) and route.name:
+        if route.name:
             routes[route.name] = (path_format, path_convertors, route.endpoint)
 
     def search(
