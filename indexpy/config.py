@@ -93,7 +93,6 @@ class Config(UpperDict, metaclass=Singleton):
 
         self["env"] = "dev"
         self["debug"] = False
-        self["app"] = "indexpy:app"
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self["log_level"] = "info"

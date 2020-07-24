@@ -4,7 +4,7 @@
 
 Index.py 有如下特性：
 
-- 无需手动绑定路由 (文件系统映射 URI)
+- 灵活且高效的路由系统 (基于 Radix Tree)
 - 自动解析请求 & 生成文档 (基于 pydantic)
 - 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
 - 现代化的测试组件 (基于 pytest 与 requests)

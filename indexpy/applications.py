@@ -30,10 +30,6 @@ from .http.responses import (
     FileResponse,
     RedirectResponse,
 )
-from .http.background import (
-    BackgroundTasks,
-    after_response_tasks_var,
-)
 from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
 
@@ -128,6 +124,10 @@ class Lifespan:
 
 
 class IndexFile:
+    """
+    TODO: need change
+    """
+
     def __init__(
         self, module_name: str, basepath: str = None, allow_underline: bool = False
     ) -> None:
@@ -254,24 +254,16 @@ class IndexFile:
 
         get_response = getattr(module, "HTTP")
 
-        try:
-            # set background tasks contextvar
-            after_response_tasks_token = after_response_tasks_var.set(BackgroundTasks())
-            # call middleware
-            for deep in range(len(pathlist), 0, -1):
-                module = importlib.import_module(".".join(pathlist[:deep]))
-                if not hasattr(module, "Middleware"):
-                    continue
-                get_response = getattr(module, "Middleware")(get_response)
+        # call middleware
+        for deep in range(len(pathlist), 0, -1):
+            module = importlib.import_module(".".join(pathlist[:deep]))
+            if not hasattr(module, "Middleware"):
+                continue
+            get_response = getattr(module, "Middleware")(get_response)
 
-            # get response
-            response = await get_response(request)
-            background_tasks = after_response_tasks_var.get()
-            if background_tasks.tasks != []:
-                response.background = background_tasks
-            await response(scope, receive, send)
-        finally:
-            after_response_tasks_var.reset(after_response_tasks_token)
+        # get response
+        response = await get_response(request)
+        await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = scope["app"].factory_class["websocket"](
@@ -281,6 +273,8 @@ class IndexFile:
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
             raise NoMatchFound()
+
+        # TODO add middleware
 
         await getattr(module, "Socket")(websocket)
 

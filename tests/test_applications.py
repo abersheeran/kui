@@ -1,3 +1,5 @@
+from functools import wraps
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -19,6 +21,7 @@ def app():
         return f"path {path['name']}"
 
     def http_middleware(endpoint):
+        @wraps(endpoint)
         async def wrapper(request):
             response = convert(await endpoint(request))
             response.body += b"; http middleware"
