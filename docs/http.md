@@ -1,38 +1,6 @@
-## 路由
+## 获取请求值
 
-在`views`里创建任意合法名称的`.py`文件，并在其中创建名为 `HTTP` 的类，即可使此文件能够处理对应其相对于 `views` 的路径的 HTTP 请求。
-
-但较为特殊的是名为 `index.py` 的文件，它能够处理以 `/` 作为最后一个字符的 URI。
-
-!!! tip
-    由于 Python 规定，模块名称必须由字母、数字与下划线组成，但这种 URI 不友好，所以 Index 会将 URI 中的 `_` 全部替换成 `-` 并做 301 跳转，你可以通过设置 `Index(allow_underline=True)` 去关闭此功能。
-
-一些例子|文件相对路径|文件能处理的URI
----|---|---
-|views/index.py|/
-|views/about.py|/about
-|views/api/create_article.py|/api/create-article
-|views/article/index.py|/article/
-
-`HTTP` 的类应从 `indexpy.http.HTTPView` 继承而来，你可以定义如下方法去处理对应的 HTTP 请求。
-
-- get
-- post
-- put
-- patch
-- delete
-- head
-- options
-- trace
-
-这些函数默认不接受任何参数，但你可以使用 `self.request` 去获取此次请求的一些信息。
-
-!!! notice
-    这些被用于实际处理 HTTP 请求的函数，无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
-
-## 获取请求
-
-如上所说，所有 HTTP 类中的方法都可以通过 `self.request` 来读取此次请求的信息。下面将介绍它最常用的一些属性。
+以下是 `indexpy.http.request.Request` 对象的常用属性与方法。
 
 ### Method
 
@@ -136,7 +104,7 @@ user_name = request.state.user.name  # 读
 del request.state.user  # 删
 ```
 
-## 返回响应
+## 返回响应值
 
 对于任何正常处理的 HTTP 请求都必须返回一个 `indexpy.http.responses.Response` 对象或者是它的子类对象。
 
@@ -265,60 +233,6 @@ raise indexpy.http.HTTPException(CODE)
 
 例如：网站需要有统一的 404 页面。
 
-## 中间件
-
-在 `views` 中任意 `__init__.py` 中定义名为 `Middleware` 的类, 它将能处理所有通过该路径的 HTTP 请求。
-
-譬如在 `views/__init__.py` 中定义的中间件，能处理所有 URI 的 HTTP 请求；在 `views/api/__init__.py` 则只能处理 URI 为 `/api/###` 的请求。
-
-`Middleware` 需要继承 `indexpy.http.MiddlewareMixin`，有以下三个方法可以重写。
-
-- `process_request(request)`
-
-    此方法在请求被层层传递时调用，可用于修改 `request` 对象以供后续处理使用。必须返回 `None`，否则返回值将作为最终结果并直接终止此次请求。
-
-- `process_response(request, response)`
-
-    此方法在请求被正常处理、已经返回响应对象后调用，它必须返回一个可用的响应对象（一般来说直接返回 `response` 即可）。
-
-- `process_exception(request, exception)`
-
-    此方法在中间件之后的调用链路上出现异常时被调用。当其返回值为 `None` 时，异常会被原样抛出，否则其返回值将作为此次请求的响应值被返回。
-
-!!! notice
-    以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
-
-### 子中间件
-
-很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `mounts` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
-
-!!! notice
-    子中间件的执行顺序是从左到右。
-
-```python
-from indexpy.http import MiddlewareMixin
-
-
-class ExampleChildMiddleware(MiddlewareMixin):
-    async def process_request(self, request):
-        print("enter first process request")
-
-    async def process_response(self, request, response):
-        print("enter last process response")
-        return response
-
-
-class Middleware(MiddlewareMixin):
-    mounts = (ExampleChildMiddleware,)
-
-    async def process_request(self, request):
-        print("example base middleware request")
-
-    async def process_response(self, request, response):
-        print("example base middleware response")
-        return response
-```
-
 ## 自定义异常处理
 
 对于一些故意抛出的异常，Index 提供了方法进行统一处理。
@@ -349,37 +263,3 @@ def value_error(request: Request, exc: ValueError) -> Response:
 
 !!!tip
     在此可以捕捉包括挂载到 Index 中的其他 app 的异常。而中间件中仅能处理通过中间件的异常。
-
-## 后台任务
-
-### After Response
-
-Index 提供了简单可用的后台任务的使用方法。
-
-```python
-from indexpy.http import HTTPView
-from indexpy.http import after_response
-
-
-@after_response
-def only_print(message: str) -> None:
-    print(message)
-
-
-class HTTP(HTTPView):
-    async def get(self):
-        """
-        welcome page
-        """
-        only_print("world")
-        print("hello")
-        return ""
-```
-
-得益于 [contextvars](https://docs.python.org/zh-cn/3.7/library/contextvars.html)，你可以在整个 HTTP 请求的周期内的任何位置去调用函数，它们都将在响应成功完成后开始执行。
-
-### Finished Response
-
-Index 提供了另一个装饰器 `finished_response`，它的使用与 `after_response` 完全相同。不同的是，`finished_response` 的执行时间节点在此次响应结束后（包括 `after_response` 任务执行完成），无论在此过程中是否引发了错误导致流程提前结束，`finished_response` 都将执行。
-
-粗浅的理解，`after_response` 用于请求被正常处理完成后执行一些任务，一旦处理请求的过程中抛出错误，`after_response` 将不会执行。而 `finished_response` 充当了 `finally` 的角色，无论如何，它都会执行（除非 Index 服务终止）。
