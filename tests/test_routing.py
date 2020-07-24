@@ -6,7 +6,7 @@ from indexpy.routing import (
     RadixTree,
     Router,
     Routes,
-    Mount,
+    SubRoutes,
     HttpRoute,
     SocketRoute,
     NoMatchFound,
@@ -93,7 +93,7 @@ def router():
     router = Router(
         Routes(
             HttpRoute("/sayhi/{name}", sayhi, "sayhi", "get"),
-            Mount(
+            SubRoutes(
                 "/hello",
                 [
                     HttpRoute("/world", hello_world, "hello-world", method="get"),
@@ -107,7 +107,7 @@ def router():
     def about(request, name: str = None):
         return str(request.url)
 
-    router.http("/about/{name}", about)
+    router.http("/about/{name}", about, method="get")
 
     @router.http("/http_view")
     class HTTP(HTTPView):

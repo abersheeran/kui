@@ -35,11 +35,18 @@ def test_edit():
 
 def test_env():
     config = Config()
+    config.update(
+        {
+            "dev": {"debug": True, "host": "localhost"},
+            "pro": {"debug": False, "log_level": "warning"},
+            "test": {"log_level": "debug"},
+        }
+    )
 
     config.update({"env": "dev"})
     assert config.DEBUG is True
     assert config.HOST == "localhost"
-    assert config.LOG_LEVEL == "debug"
+    assert config.LOG_LEVEL == "info"
 
     config.update({"env": "pro"})
     assert config.DEBUG is False

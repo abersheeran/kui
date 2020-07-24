@@ -10,7 +10,6 @@ from types import ModuleType
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.datastructures import URL
 from starlette.websockets import WebSocketClose
-from starlette.staticfiles import StaticFiles
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -19,7 +18,7 @@ from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
 from .utils import cached_property
-from .config import here, Config
+from .config import Config
 from .routing import Router, BaseRoute, NoMatchFound
 from .http import responses
 from .http.view import parse_params
@@ -305,18 +304,10 @@ class Index:
     def __init__(
         self,
         *,
-        templates: typing.Iterable[str] = ("templates",),
+        templates: typing.Iterable[str] = (),
         try_html: bool = True,
-        mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [
-            ("", IndexFile("views", allow_underline=False)),
-            (
-                "/static",
-                StaticFiles(directory=os.path.join(here, "static"), check_dir=False),
-            ),
-        ],
-        on_startup: typing.List[typing.Callable] = [
-            lambda: os.makedirs(os.path.join(here, "static"), exist_ok=True)
-        ],
+        mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [],
+        on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
         factory_class: FactoryClass = {"http": Request, "websocket": WebSocket},

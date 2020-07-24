@@ -11,7 +11,6 @@ def test_singleton():
 
 
 def test_import_module():
-    assert import_module("commands")
     assert import_module("sys") is None
 
 
