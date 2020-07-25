@@ -98,6 +98,28 @@ app.router.extend([
 ])
 ```
 
+### 路径参数
+
+使用 `{name:type}` 可以标注路径参数，在视图中使用 `path` 参数(`dict` 类型)接受全部的路径参数。目前支持的类型有 `str`、`int`、`decimal`、`uuid` 和 `path`。
+
+!!! tip
+    如果路径参数的类型为 `str`，可以忽略掉 `:str`，直接使用 `{name}`。
+
+!!! notice
+    `path` 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。
+
+```python
+from indexpy import Index
+from indexpy.routing import HttpRoute, SocketRoute
+
+app = Index()
+
+
+@app.router.http("/{username:str}", method="get")
+async def what_is_your_name(request, path):
+    return path["username"]
+```
+
 ### 类视图
 
 注册处理 HTTP 请求的可调用对象为函数时，必须标注允许处理的 HTTP 方法，且只允许一种。需要为同一个路由注册处理不同 HTTP 方法的可调用对象，应使用类视图，并继承自 `HTTPView`。
