@@ -1,3 +1,72 @@
+## HTTP 处理器
+
+在下文中，用于处理 HTTP 请求的可调用对象被称为 HTTP 处理器。
+
+### 函数处理器
+
+使用函数处理单一类型的请求是很简单的，它会接受一个位置参数 `request`，默认类型为 `indexpy.http.request.Request`。
+
+```python
+from indexpy import Index
+
+app = Index()
+
+
+@app.router.http("/hello", method="get")
+async def hello(request):
+    return "hello"
+```
+
+如果注册路由时使用了路径参数，则需要增加一个名为 `path` 的关键词参数，它将接受 `dict` 类型的对象，可以从中读取全部的路径参数。
+
+如果同时需要将一个 HTTP 处理器注册到多个路由中，并且存在有路由包含路径参数、有路由不包含路径参数，则需要为 `path` 参数增加默认值 `None`。
+
+```python
+from indexpy import Index
+
+app = Index()
+
+
+@app.router.http("/hello", method="get")
+@app.router.http("/hello/{name}", method="get")
+async def hello(request, path=None):
+    if path is None:
+        return "hello"
+    return f"hello {path['name']}"
+```
+
+### 类处理器
+
+使用类处理多种请求十分简单。只需要继承 `indexpy.http.HTTPView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
+
+通过 `self.request` 可以读取此次请求的信息。并且与函数处理器相同，如果需要读取路径参数，应分别在各个函数里增加名为 `path` 的关键词参数。
+
+```python
+from indexpy import Index
+from indexpy.http import HTTPView
+
+app = Index()
+
+
+@app.router.http("/cat")
+class Cat(HTTPView):
+
+    async def get(self):
+        return self.request.method
+
+    async def post(self):
+        return self.request.method
+
+    async def put(self):
+        return self.request.method
+
+    async def patch(self):
+        return self.request.method
+
+    async def delete(self):
+        return self.request.method
+```
+
 ## 获取请求值
 
 以下是 `indexpy.http.request.Request` 对象的常用属性与方法。
@@ -55,10 +124,10 @@
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
 ```python
-async def post(self):
+async def post(request):
     ...
     body = b''
-    async for chunk in self.request.stream():
+    async for chunk in request.stream():
         body += chunk
     ...
 ```

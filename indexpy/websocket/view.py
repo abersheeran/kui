@@ -2,14 +2,14 @@ import json
 import typing
 
 from starlette import status
-from starlette.types import Message
+from ..types import Message, Literal
 
 from .request import WebSocket
 
 
 class SocketView:
 
-    encoding: typing.Optional[str] = None  # May be "text", "bytes", or "json".
+    encoding: Literal["text", "bytes", "json"] = "json"
 
     def __init__(self, websocket: WebSocket) -> None:
         self.websocket = websocket

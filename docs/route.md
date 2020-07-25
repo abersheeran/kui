@@ -120,9 +120,9 @@ async def what_is_your_name(request, path):
     return path["username"]
 ```
 
-### 类视图
+### 注册多请求方法
 
-注册处理 HTTP 请求的可调用对象为函数时，必须标注允许处理的 HTTP 方法，且只允许一种。需要为同一个路由注册处理不同 HTTP 方法的可调用对象，应使用类视图，并继承自 `HTTPView`。
+注册处理 HTTP 请求的可调用对象为函数时，必须标注允许处理的 HTTP 方法，且只允许一种。需要为同一个路由注册处理不同 HTTP 方法的可调用对象，应使用类，并继承自 `HTTPView`。以下为示例代码，需要更详细的描述，应查看 [HTTP](../http/#_2) 章节。
 
 ```python
 from indexpy import Index
