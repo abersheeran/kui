@@ -1,5 +1,21 @@
 ## HTTP 中间件
 
+### 基于函数的中间件
+
+编写一个 HTTP 中间件十分简单，就像编写一个装饰器函数一样。
+
+第一层函数只有一个参数，就是被包裹的可调用对象。第二层函数仅接受一个参数 `requesst`，函数返回值将作为此次请求的响应结果。
+
+```python
+def middleware(endpoint):
+    def wrapper(request):
+        ...
+        response = await endpoint(request)
+        ...
+        return response
+    return wrapper
+```
+
 ### 基于类的中间件
 
 基于类的中间件可以继承 `indexpy.http.MiddlewareMixin`，有以下三个方法可以重写。
@@ -46,4 +62,19 @@ class Middleware(MiddlewareMixin):
     async def process_response(self, request, response):
         print("example base middleware response")
         return response
+```
+
+## WebSocket 中间件
+
+### 基于函数的中间件
+
+编写一个 WebSocket 中间件与编写一个 HTTP 中间件很相似，不同的是 `websocket` 对应的 `endpoint` 对象不会有返回值。中间件的第二层函数也不需要返回结果，任何返回结果都是无效的。
+
+```python
+def middleware(endpoint):
+    def wrapper(request):
+        ...
+        await endpoint(request)
+        ...
+    return wrapper
 ```
