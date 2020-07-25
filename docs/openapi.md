@@ -1,6 +1,6 @@
-Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。
+Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。这与 Index 核心并不是强耦合的，所以你可以选择使用，也可以选择不使用。
 
-## OpenAPI文档
+## 显示 OpenAPI 文档
 
 将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。
 
@@ -26,11 +26,26 @@ app.mount_asgi(
 
 空一行之后，后续的文字都会被当作详细介绍，被安置在 OpenAPI 文档中。
 
+例如：
+
+```python
+async def get(request):
+    """
+    获取用户信息
+
+    此接口用于获取用户信息，然后我就不知道该编什么话了，总之这一段都是接口描述，而空的一行的上面是接口标题。
+    """
+    ...
+```
+
 ### 请求
 
 对于所有可处理 HTTP 请求的方法，均可以接受五种参数：`path`、`body`、`query`、`header`、`cookie`。
 
 使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。
+
+!!! notice
+    `path` 参数，如果标的类型是继承自 `pydantic.BaseModel`，它就使用对应类型，否则就是 `dict` 类型。
 
 ### 响应
 
@@ -91,10 +106,11 @@ class HTTP(HTTPView):
         return {"message": body.dict()}, 200, {"server": "index.py"}
 ```
 
-
 ## Tags
 
-OpenAPI 的 Tags 是一个有用的功能，在 Index 里，你可以通过如下方式来指定 URL 的 tags
+OpenAPI 的 Tags 是一个有用的功能，在 Index 里，你可以通过如下方式来指定 URL 的分类标签。
+
+`tags` 参数必须是一个 `dict` 类型，键为标签名。值需要包含 `description`，用于描述此标签；`paths` 是 URL 列表，如果 URL 包含路径参数，直接使用不带 `:type` 的字符串即可。
 
 ```python
 app.mount_asgi(
