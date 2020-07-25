@@ -4,7 +4,7 @@ description = "Convert WSGI app to ASGI app or ASGI app to WSGI app."
 name = "a2wsgi"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "0.3.6"
+version = "1.0.0"
 
 [[package]]
 category = "main"
@@ -763,14 +763,14 @@ gunicorn = ["gunicorn"]
 test = ["requests"]
 
 [metadata]
-content-hash = "901cb567615f0c4af9783f9c785d7c5944381d725cb9850ba8bbda3811247983"
+content-hash = "e5a70c6d115bec4b1da661b9ae3605c1af8e833e51a62a428fd677dc1410b4e2"
 lock-version = "1.0"
 python-versions = "^3.6"
 
 [metadata.files]
 a2wsgi = [
-    {file = "a2wsgi-0.3.6-py3-none-any.whl", hash = "sha256:4ff400d818bf0c5243880bc61214875446478c7b53ceaf13bc70fd5c74fa9966"},
-    {file = "a2wsgi-0.3.6.tar.gz", hash = "sha256:5475937a91ffc8f8e8e5b833926420de218bd123793cbf33cef54f1a41d2a4cd"},
+    {file = "a2wsgi-1.0.0-py3-none-any.whl", hash = "sha256:077bb54d4dc68f589642dd02c7539f11e0ea1d415852a4faa6d2b9b40ff8f9dd"},
+    {file = "a2wsgi-1.0.0.tar.gz", hash = "sha256:ec35abd17901d8b32b1592a00db6f0fe1da33f13e40fb6f70aac83bcc7694a55"},
 ]
 aiofiles = [
     {file = "aiofiles-0.5.0-py3-none-any.whl", hash = "sha256:377fdf7815cc611870c59cbd07b68b180841d2a2b79812d8c218be02448c2acb"},
