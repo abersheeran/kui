@@ -28,10 +28,7 @@ app.mount_asgi(
 
 ### 请求
 
-对于所有可处理 HTTP 请求的方法，均可以接受四种参数：`body`、`query`、`header`、`cookie`。
-
-!!! notice
-    由于 index.py 路由设计为文件映射，故而路径参数 `path` 无法使用。
+对于所有可处理 HTTP 请求的方法，均可以接受五种参数：`path`、`body`、`query`、`header`、`cookie`。
 
 使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。
 
