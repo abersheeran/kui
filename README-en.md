@@ -16,7 +16,7 @@ A high-performance web framework based on the ASGI protocol. [Index.py Documenta
 - Modern test components (based on `pytest` and `requests`)
 - Very simple deployment (based on `uvicorn` and `gunicorn`)
 - Mount ASGI/WSGI applications (easier to use than `starlette`)
-- Better use of background tasks
+- Background tasks in process (based on `asyncio`)
 - Any available ASGI ecosystem can be used
 
 ## Install

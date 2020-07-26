@@ -13,10 +13,9 @@
 - 灵活且高效的路由系统 (基于 Radix Tree)
 - 自动解析请求 & 生成文档 (基于 `pydantic`)
 - 可视化 API 接口 (基于 `ReDoc`, 针对中文字体优化)
-- 现代化的测试组件 (基于 `pytest` 与 `requests`)
 - 非常简单的部署 (基于 `uvicorn` 与 `gunicorn`)
-- 挂载 ASGI/WSGI 应用 (比 `starlette` 更易用)
-- 更好用的 background tasks
+- 挂载 ASGI/WSGI 应用 (基于 [a2wsgi](https://github.com/abersheeran/a2wsgi/))
+- 进程内后台任务 (基于 `asyncio`)
 - 可使用任何可用的 ASGI 生态
 
 ## Install

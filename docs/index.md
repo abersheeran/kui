@@ -5,12 +5,11 @@
 Index.py 有如下特性：
 
 - 灵活且高效的路由系统 (基于 Radix Tree)
-- 自动解析请求 & 生成文档 (基于 pydantic)
-- 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
-- 现代化的测试组件 (基于 pytest 与 requests)
-- 非常简单的部署 (基于 uvicorn 与 gunicorn)
+- 自动解析请求 & 生成文档 (基于 `pydantic`)
+- 可视化 API 接口 (基于 `ReDoc`, 针对中文字体优化)
+- 非常简单的部署 (基于 `uvicorn` 与 `gunicorn`)
 - 挂载 ASGI/WSGI 应用 (基于 [a2wsgi](https://github.com/abersheeran/a2wsgi/))
-- 更好用的 background tasks (基于 starlette)
+- 进程内后台任务 (基于 `asyncio`)
 - 可使用任何可用的 ASGI 生态
 
 Index.py 是率先使用 Radix Tree 进行路由查找的 Python web 框架。并借助 `uvicorn` 的强力驱动，拥有极高的裸性能。

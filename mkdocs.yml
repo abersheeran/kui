@@ -29,6 +29,7 @@ nav:
   - Mount: "mount.md"
   - Command: "command.md"
   - OpenAPI: "openapi.md"
+  - Background Task: "background.md"
   - 设计与原理:
       - 异步与并发: "knowledge/concurrency.md"
 
