@@ -20,8 +20,8 @@ from indexpy.websocket import SocketView
 def tree():
     tree = RadixTree()
 
-    tree.append("/hello", ...)
     tree.append("/hello/{time:int}", ...)
+    tree.append("/hello", ...)
     tree.append("/hello/world", ...)
     tree.append("/sayhi/{name}", ...)
     tree.append("/sayhi/{name}/suffix", ...)

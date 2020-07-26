@@ -240,11 +240,14 @@ class RadixTree:
                         point.next_nodes[node_index] = prefix_node
                         node.characters = node.characters[len(prefix) :]
                         prefix_node.next_nodes.append(node)
-                        new_node = TreeNode(
-                            characters=path_format[left + len(prefix) : right]
-                        )
-                        prefix_node.next_nodes.append(new_node)
-                        point = new_node
+                        if path_format[left:right] == prefix:
+                            point = prefix_node
+                        else:
+                            new_node = TreeNode(
+                                characters=path_format[left + len(prefix) : right]
+                            )
+                            prefix_node.next_nodes.append(new_node)
+                            point = new_node
                         break
                 else:
                     new_node = TreeNode(characters=path_format[left:right])
