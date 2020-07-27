@@ -1,7 +1,7 @@
 import typing
 import functools
 import logging
-from inspect import signature
+from inspect import signature, isclass
 from types import FunctionType
 
 from pydantic import BaseModel, ValidationError
@@ -87,6 +87,8 @@ def merge_list(
 
 
 async def parse_params(handler: typing.Callable, request: HTTPConnection) -> typing.Any:
+    if isclass(handler):
+        return handler
 
     __params__ = getattr(handler, "__params__", {})
 
