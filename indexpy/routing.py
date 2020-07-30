@@ -9,7 +9,7 @@ from decimal import Decimal
 from dataclasses import dataclass, field, InitVar
 
 from .types import Literal
-from .http.view import bound_params, HTTPView, only_allow
+from .http.view import bound_params, only_allow
 from .concurrency import complicating
 
 
@@ -419,9 +419,6 @@ class Routes(typing.List[BaseRoute]):
 
         if endpoint is None:
             raise ValueError("endpoint must be is not None")
-
-        if not issubclass(endpoint, HTTPView):
-            raise ValueError("endpoint must be inherit `HTTPView`")
 
         if name == "":
             name = endpoint.__name__
