@@ -415,7 +415,9 @@ class Routes(typing.List[BaseRoute]):
         if path and endpoint is None:
             # example: @router.http("/path", name="hello")
             #          async def func(request): ...
-            return lambda endpoint: self.http(path=path, endpoint=endpoint, name=name)
+            return lambda endpoint: self.http(
+                path=path, endpoint=endpoint, name=name, method=method
+            )
 
         if endpoint is None:
             raise ValueError("endpoint must be is not None")
