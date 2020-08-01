@@ -367,33 +367,9 @@ class SocketRoute(BaseRoute):
 T = typing.TypeVar("T")
 
 
-class Routes(typing.List[BaseRoute]):
-    def __init__(
-        self,
-        *iterable: typing.Union["BaseRoute", "SubRoutes"],
-        http_middlewares: typing.List[typing.Any] = [],
-        socket_middlewares: typing.List[typing.Any] = [],
-    ) -> None:
-        routes = []
-        self.http_middlewares = copy.copy(http_middlewares)
-        self.socket_middlewares = copy.copy(socket_middlewares)
-        for route in iterable:
-            if not isinstance(route, Routes):
-                routes.append(route)
-                continue
-            for subroute in route:  # type: BaseRoute
-                subroute.extend_middlewares(route)
-                if isinstance(route, SubRoutes):
-                    routes.append(
-                        subroute.__class__(
-                            path=route.prefix + subroute.path,
-                            endpoint=subroute.endpoint,
-                            name=subroute.name,
-                        )
-                    )
-                else:
-                    routes.append(subroute)
-        super().__init__(routes)
+class RouteRegisterMixin:
+    def append(self, route: BaseRoute) -> None:
+        raise NotImplementedError()
 
     def http(
         self,
@@ -457,6 +433,35 @@ class Routes(typing.List[BaseRoute]):
         self.append(SocketRoute(path, endpoint, name))
 
         return endpoint
+
+
+class Routes(typing.List[BaseRoute], RouteRegisterMixin):
+    def __init__(
+        self,
+        *iterable: typing.Union["BaseRoute", "SubRoutes"],
+        http_middlewares: typing.List[typing.Any] = [],
+        socket_middlewares: typing.List[typing.Any] = [],
+    ) -> None:
+        routes = []
+        self.http_middlewares = copy.copy(http_middlewares)
+        self.socket_middlewares = copy.copy(socket_middlewares)
+        for route in iterable:
+            if not isinstance(route, Routes):
+                routes.append(route)
+                continue
+            for subroute in route:  # type: BaseRoute
+                subroute.extend_middlewares(route)
+                if isinstance(route, SubRoutes):
+                    routes.append(
+                        subroute.__class__(
+                            path=route.prefix + subroute.path,
+                            endpoint=subroute.endpoint,
+                            name=subroute.name,
+                        )
+                    )
+                else:
+                    routes.append(subroute)
+        super().__init__(routes)
 
     def http_middleware(self, middleware: T) -> T:
         """
@@ -522,7 +527,7 @@ class SubRoutes(Routes):
         )
 
 
-class Router:
+class Router(RouteRegisterMixin):
     def __init__(self, routes: typing.List[BaseRoute] = list()) -> None:
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
@@ -617,66 +622,3 @@ class Router:
                 for name, value in path_params.items()
             }
         )
-
-    def http(
-        self,
-        path: str,
-        endpoint: typing.Any = None,
-        *,
-        name: str = "",
-        method: str = "",
-    ) -> typing.Any:
-        """
-        shortcut for `self.append`
-
-        example:
-            @router.http("/path", name="endpoint-name")
-            async def endpoint(request): ...
-        or
-            router.http("/path", endpoint, name="endpoint-name")
-        """
-        if path and endpoint is None:
-            # example: @router.http("/path", name="hello")
-            #          async def func(request): ...
-            return lambda endpoint: self.http(
-                path=path, endpoint=endpoint, name=name, method=method
-            )
-
-        if endpoint is None:
-            raise ValueError("endpoint must be is not None")
-
-        if name == "":
-            name = endpoint.__name__
-
-        self.append(HttpRoute(path, endpoint, name, method))
-
-        return endpoint
-
-    def websocket(
-        self, path: str, endpoint: typing.Any = None, *, name: str = ""
-    ) -> typing.Any:
-        """
-        shortcut for `self.append`
-
-        example:
-            @router.websocket("/path", name="endpoint-name")
-            async def endpoint(websocket): ...
-        or
-            router.websocket("/path", endpoint, name="endpoint-name")
-        """
-        if path and endpoint is None:
-            # example: @router.websocket("/path", name="hello")
-            #          async def func(websocket): ...
-            return lambda endpoint: self.websocket(
-                path=path, endpoint=endpoint, name=name
-            )
-
-        if endpoint is None:
-            raise ValueError("endpoint must be is not None")
-
-        if name == "":
-            name = endpoint.__name__
-
-        self.append(SocketRoute(path, endpoint, name))
-
-        return endpoint
