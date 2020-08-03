@@ -9,8 +9,9 @@ from decimal import Decimal
 from dataclasses import dataclass, field, InitVar
 
 from .types import Literal
-from .http.view import bound_params, only_allow
+from .utils import superclass
 from .concurrency import complicating
+from .http.view import bound_params, only_allow
 
 
 __all__ = [
@@ -368,8 +369,26 @@ T = typing.TypeVar("T")
 
 
 class RouteRegisterMixin:
+    __slots__ = ()
+
     def append(self, route: BaseRoute) -> None:
         raise NotImplementedError()
+
+    def extend(self, routes: typing.List[BaseRoute]) -> None:
+        for route in routes:  # type: BaseRoute
+            if isinstance(routes, Routes):
+                route.extend_middlewares(routes)
+
+            if isinstance(routes, SubRoutes):
+                self.append(
+                    route.__class__(
+                        path=routes.prefix + route.path,
+                        endpoint=route.endpoint,
+                        name=route.name,
+                    )
+                )
+            else:
+                self.append(route)
 
     def http(
         self,
@@ -438,30 +457,29 @@ class RouteRegisterMixin:
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union["BaseRoute", "SubRoutes"],
+        *iterable: typing.Union["BaseRoute", "Routes"],
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
     ) -> None:
-        routes = []
+        super().__init__()
         self.http_middlewares = copy.copy(http_middlewares)
         self.socket_middlewares = copy.copy(socket_middlewares)
         for route in iterable:
             if not isinstance(route, Routes):
-                routes.append(route)
-                continue
-            for subroute in route:  # type: BaseRoute
-                subroute.extend_middlewares(route)
-                if isinstance(route, SubRoutes):
-                    routes.append(
-                        subroute.__class__(
-                            path=route.prefix + subroute.path,
-                            endpoint=subroute.endpoint,
-                            name=subroute.name,
-                        )
-                    )
-                else:
-                    routes.append(subroute)
-        super().__init__(routes)
+                self.append(route)
+            else:
+                self.extend(route)
+
+    def extend(self, routes: typing.List[BaseRoute]) -> None:  # type: ignore
+        """
+        Extend routes in routes
+
+        example:
+            routes.extend(Routes(...))
+        or
+            routes.extend([...])
+        """
+        return superclass(RouteRegisterMixin, self).extend(routes)
 
     def http_middleware(self, middleware: T) -> T:
         """
@@ -584,7 +602,7 @@ class Router(RouteRegisterMixin):
             node.endpoint,
         )
 
-    def extend(self, routes: typing.List[BaseRoute] = list()) -> None:
+    def extend(self, routes: typing.List[BaseRoute]) -> None:
         """
         Add routes in router
 
@@ -593,10 +611,7 @@ class Router(RouteRegisterMixin):
         or
             router.extend([...])
         """
-
-        for route in routes:
-            route.extend_middlewares(routes)
-            self.append(route)
+        return superclass(RouteRegisterMixin, self).extend(routes)
 
     def url_for(
         self,

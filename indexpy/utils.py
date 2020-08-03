@@ -2,6 +2,7 @@ import os
 import asyncio
 import threading
 import importlib
+from functools import partial
 from types import ModuleType
 from typing import Tuple, Dict, Any, Optional, Callable
 
@@ -46,6 +47,31 @@ class cached_property(property):
             return self
         value = obj.__dict__[self.func.__name__] = self.func(obj)
         return value
+
+
+class superclass:
+    """
+    Call the method of the specified parent class. The usage is similar
+    to `super`, but the difference from `super` is that `superclass`
+    only looks for methods in the specified parent class.
+
+    example:
+        superclass(Class, obj).function(...)
+    """
+
+    def __init__(self, cls: type, instance: Any):
+        if cls not in instance.__class__.mro():
+            raise ValueError("`cls` must be in parent classes")
+
+        self.__cls = cls
+        self.__instance = instance
+
+    def __getattr__(self, name: str) -> Callable[..., Any]:
+        if not hasattr(self.__cls, name):
+            raise AttributeError(name)
+
+        func = getattr(self.__cls, name)
+        return partial(func, self.__instance)
 
 
 class State(dict):
