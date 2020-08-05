@@ -37,15 +37,6 @@ from .websocket.request import WebSocket
 logger = logging.getLogger(__name__)
 
 
-class FactoryClass(TypedDict):
-    """
-    `Index().factory_class` type
-    """
-
-    http: typing.Type[Request]
-    websocket: typing.Type[WebSocket]
-
-
 def try_html(request: Request) -> typing.Optional[Response]:
     """
     try find html through TemplateResponse
@@ -292,6 +283,11 @@ class IndexFile:
             )
 
         await handler(scope, receive, send)
+
+
+FactoryClass = TypedDict(
+    "FactoryClass", {"http": typing.Type[Request], "websocket": typing.Type[WebSocket]},
+)
 
 
 class Index:
