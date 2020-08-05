@@ -9,53 +9,13 @@ on:
       - master
 
 jobs:
-  Linux-Test:
-    runs-on: ubuntu-latest
+  tests:
+    name: "Python ${{ matrix.python-version }} ${{ matrix.os }}"
+    runs-on: "${{ matrix.os }}"
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip poetry
-          poetry config virtualenvs.create false --local
-          poetry install -E test
-      - name: Test with pytest
-        run: |
-          python script/test.py
-
-  Windows-Test:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8]
-
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip poetry
-          poetry config virtualenvs.create false --local
-          poetry install -E test
-      - name: Test with pytest
-        run: |
-          python script/test.py
-
-  MacOS-Test:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v1
