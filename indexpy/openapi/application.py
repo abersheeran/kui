@@ -127,7 +127,7 @@ class OpenAPI:
         else:
             result["responses"] = {}
             for status, content in resps.items():
-                result["responses"][status] = {
+                result["responses"][int(status)] = {
                     "description": content["description"],
                 }
                 if content["model"] is not None:

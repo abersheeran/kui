@@ -1,8 +1,11 @@
+from http import HTTPStatus
+
 from starlette.testclient import TestClient
 from pydantic import BaseModel
 
 from indexpy import Index
 from indexpy.http import HTTPView
+from indexpy.openapi import describe
 from indexpy.openapi.application import OpenAPI
 
 
@@ -27,6 +30,14 @@ def test_openapi_page():
 
     @app.router.http("/http-view")
     class HTTPClass(HTTPView):
+        @describe(
+            HTTPStatus.OK,
+            """
+            text/html:
+                schema:
+                    type: string
+            """,
+        )
         async def get(self):
             """
             ...
@@ -34,6 +45,7 @@ def test_openapi_page():
             ......
             """
 
+        @describe(HTTPStatus.CREATED, Path)
         async def post(self):
             """
             ...
@@ -41,6 +53,7 @@ def test_openapi_page():
             ......
             """
 
+        @describe(HTTPStatus.NO_CONTENT)
         async def delete(self):
             """
             ...

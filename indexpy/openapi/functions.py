@@ -1,8 +1,11 @@
 import typing
+from http import HTTPStatus
 
 
 def describe(
-    status: int, response_model: typing.Any = None, description: str = ""
+    status: typing.Union[int, HTTPStatus],
+    response_model: typing.Any = None,
+    description: str = "",
 ) -> typing.Callable:
     """bind status => response model in http handler"""
 
