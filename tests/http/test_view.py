@@ -12,15 +12,15 @@ def app():
     @app.router.http("/cat", name=None)
     @app.router.http("/cat/{name}")
     class Cat(HTTPView):
-        async def get(self, path=None):
-            if path is None:
+        async def get(self):
+            if not self.request.path_params:
                 return self.request.method
-            return self.request.method + " " + path["name"]
+            return self.request.method + " " + self.request.path_params["name"]
 
-        async def post(self, path=None):
-            if path is None:
+        async def post(self):
+            if not self.request.path_params:
                 return self.request.method
-            return self.request.method + " " + path["name"]
+            return self.request.method + " " + self.request.path_params["name"]
 
     return app
 

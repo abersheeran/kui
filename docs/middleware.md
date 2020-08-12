@@ -8,7 +8,7 @@
 
 ```python
 def middleware(endpoint):
-    def wrapper(request):
+    async def wrapper(request):
         ...
         response = await endpoint(request)
         ...
@@ -35,7 +35,7 @@ def middleware(endpoint):
 !!! notice
     以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 `async def` 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。
 
-很多时候，对于同一个父 URI，需要有多个中间件去处理。通过指定 `Middleware` 中的 `mounts` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
+通过指定 `Middleware` 中的 `mounts` 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。
 
 !!! notice
     子中间件的执行顺序是从左到右。
@@ -72,9 +72,23 @@ class Middleware(MiddlewareMixin):
 
 ```python
 def middleware(endpoint):
-    def wrapper(request):
+    async def wrapper(request):
         ...
         await endpoint(request)
         ...
     return wrapper
 ```
+
+### 基于类的中间件
+
+基于类的中间件可以继承 `indexpy.websocket.MiddlewareMixin`，有以下两个方法可以重写。
+
+- `async def before_accept(self, websocket: WebSocket) -> None`
+
+    此方法在 websocket 连接被接受前调用。
+
+- `async def after_close(self, websocket: WebSocket) -> None`
+
+    此方法在 websocket 连接被关闭后调用。
+
+同样的，`indexpy.websocket.MiddlewareMixin` 也有 `mounts` 属性用于挂在子中间件。

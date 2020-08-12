@@ -44,9 +44,6 @@ async def get(request):
 
 使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。
 
-!!! notice
-    `path` 参数，如果标的类型是继承自 `pydantic.BaseModel`，它就使用对应类型，否则就是 `dict` 类型。
-
 ### 响应
 
 为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串（当你不想返回一个 application/json 类型的响应时）。

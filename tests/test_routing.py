@@ -87,8 +87,8 @@ def router():
     def hello_world(request):
         return "hello world"
 
-    def sayhi(request, name: str):
-        return f"hi, {name}"
+    def sayhi(request):
+        return f"hi, {request.path_params['name']}"
 
     router = Router(
         Routes(
@@ -104,7 +104,7 @@ def router():
     )
 
     @router.http("/about", name=None, method="get")
-    def about(request, name: str = None):
+    def about(request):
         return str(request.url)
 
     router.http("/about/{name}", about, method="get")

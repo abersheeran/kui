@@ -17,8 +17,8 @@ def app():
         return "hello world"
 
     @app.router.http("/path/{name}", method="get")
-    async def path(request, path):
-        return f"path {path['name']}"
+    async def path(request):
+        return f"path {request.path_params['name']}"
 
     def http_middleware(endpoint):
         @wraps(endpoint)
@@ -32,7 +32,7 @@ def app():
     def only_empty(request):
         return b""
 
-    def get_path(request, path):
+    def get_path(request):
         return request.url.path
 
     def holiday(request):

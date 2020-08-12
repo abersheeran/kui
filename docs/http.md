@@ -17,9 +17,7 @@ async def hello(request):
     return "hello"
 ```
 
-如果注册路由时使用了路径参数，则需要增加一个名为 `path` 的关键词参数，它将接受 `dict` 类型的对象，可以从中读取全部的路径参数。
-
-如果同时需要将一个 HTTP 处理器注册到多个路由中，并且存在有路由包含路径参数、有路由不包含路径参数，则需要为 `path` 参数增加默认值 `None`。
+`@app.router.http` 装饰器将返回原始的函数，故而可以将同一个函数注册到多个路由下。
 
 ```python
 from indexpy import Index
@@ -29,17 +27,17 @@ app = Index()
 
 @app.router.http("/hello", method="get")
 @app.router.http("/hello/{name}", method="get")
-async def hello(request, path=None):
-    if path is None:
-        return "hello"
-    return f"hello {path['name']}"
+async def hello(request):
+    if request.path_params:
+        return f"hello {request.path_params['name']}"
+    return "hello"
 ```
 
 ### 类处理器
 
 使用类处理多种请求十分简单。只需要继承 `indexpy.http.HTTPView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
 
-通过 `self.request` 可以读取此次请求的信息。并且与函数处理器相同，如果需要读取路径参数，应分别在各个函数里增加名为 `path` 的关键词参数。
+通过 `self.request` 可以读取此次请求的信息。
 
 ```python
 from indexpy import Index
@@ -80,6 +78,10 @@ class Cat(HTTPView):
 通过 `request.url` 可以获取到请求路径。该属性是一个类似于字符串的对象，它公开了可以从URL中解析出的所有组件。
 
 例如：`request.url.path`, `request.url.port`, `request.url.scheme`
+
+### Path Parameters
+
+`request.path_params` 是一个字典，包含所有解析出的路径参数。
 
 ### Headers
 

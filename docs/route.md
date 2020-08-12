@@ -116,8 +116,8 @@ app = Index()
 
 
 @app.router.http("/{username:str}", method="get")
-async def what_is_your_name(request, path):
-    return path["username"]
+async def what_is_your_name(request):
+    return request.path_params["username"]
 ```
 
 ### 注册多请求方法
@@ -162,8 +162,8 @@ app = Index()
 
 @app.router.http("/hello", name="hello", method="get")
 @app.router.http("/hello/{name}", name="hello-name", method="get")
-async def hello(request, path):
-    return f"hello {path['name']}"
+async def hello(request):
+    return f"hello {request.path_params['name']}"
 
 
 assert app.router.url_for("hello") == "/hello"

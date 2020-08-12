@@ -320,6 +320,7 @@ class BaseRoute:
     def __post_init__(self) -> None:
         if not self.path.startswith("/"):
             raise ValueError("Route path must start with '/'")
+        self.endpoint = copy.copy(self.endpoint)
 
 
 @dataclass

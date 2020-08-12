@@ -94,9 +94,6 @@ async def parse_params(handler: typing.Callable, request: HTTPConnection) -> typ
 
     params: typing.Dict[str, BaseModel] = {}
 
-    if request.path_params:
-        params["path"] = request.path_params
-
     if not params:
         return handler
 
