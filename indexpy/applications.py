@@ -248,26 +248,34 @@ class IndexFile:
         # call middleware
         for deep in range(len(pathlist), 0, -1):
             module = importlib.import_module(".".join(pathlist[:deep]))
-            if not hasattr(module, "Middleware"):
+            if not hasattr(module, "HTTPMiddleware"):
                 continue
-            get_response = getattr(module, "Middleware")(get_response)
+            get_response = getattr(module, "HTTPMiddleware")(get_response)
 
         # get response
-        response = await get_response(request)
+        response = convert(await get_response(request))
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = scope["app"].factory_class["websocket"](
             scope, receive=receive, send=send
         )
+        pathlist = self._split_path(websocket.url.path)
 
         module = self.get_view(websocket.url.path)
         if not hasattr(module, "Socket"):
             raise NoMatchFound()
 
-        # TODO add middleware
+        handler = getattr(module, "Socket")
 
-        await getattr(module, "Socket")(websocket)
+        # call middleware
+        for deep in range(len(pathlist), 0, -1):
+            module = importlib.import_module(".".join(pathlist[:deep]))
+            if not hasattr(module, "SocketMiddleware"):
+                continue
+            handler = getattr(module, "SocketMiddleware")(handler)
+
+        await handler(websocket)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         handler = getattr(self, scope["type"])
