@@ -78,7 +78,7 @@ class DecimalConvertor(Convertor):
     def convert(self, value: str) -> Decimal:
         return Decimal(value)
 
-    def to_string(self, value: Decimal) -> str:
+    def to_string(self, value: typing.Any) -> str:
         value = Decimal(value)
         if value < Decimal("0.0"):
             raise ValueError("Negative decimal are not supported")
