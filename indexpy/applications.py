@@ -95,18 +95,22 @@ class Lifespan:
         """
         message = await receive()
         assert message["type"] == "lifespan.startup"
-
         try:
             await self.startup()
         except BaseException:
             msg = traceback.format_exc()
             await send({"type": "lifespan.startup.failed", "message": msg})
             raise
-
         await send({"type": "lifespan.startup.complete"})
+
         message = await receive()
         assert message["type"] == "lifespan.shutdown"
-        await self.shutdown()
+        try:
+            await self.shutdown()
+        except BaseException:
+            msg = traceback.format_exc()
+            await send({"type": "lifespan.shutdown.failed", "message": msg})
+            raise
         await send({"type": "lifespan.shutdown.complete"})
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
