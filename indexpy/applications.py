@@ -19,7 +19,7 @@ from a2wsgi import WSGIMiddleware
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
 from .utils import cached_property
 from .config import Config
-from .routing import Router, BaseRoute, NoMatchFound
+from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
 from .http.view import parse_params
 from .http.debug import ServerErrorMiddleware

@@ -2,8 +2,8 @@ from decimal import Decimal
 from uuid import UUID
 import pytest
 
-from indexpy.routing import (
-    RadixTree,
+from indexpy.routing.tree import RadixTree
+from indexpy.routing.routes import (
     Router,
     Routes,
     SubRoutes,
