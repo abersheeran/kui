@@ -4,6 +4,7 @@ import typing
 import uuid
 import inspect
 import copy
+from functools import update_wrapper
 from types import FunctionType
 from decimal import Decimal
 from dataclasses import dataclass, field, InitVar
@@ -320,7 +321,6 @@ class BaseRoute:
     def __post_init__(self) -> None:
         if not self.path.startswith("/"):
             raise ValueError("Route path must start with '/'")
-        self.endpoint = copy.copy(self.endpoint)
 
 
 @dataclass
@@ -344,12 +344,10 @@ class HttpRoute(BaseRoute):
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "http_middlewares"):
-            middlewares = getattr(self.endpoint, "middlewares", ())
-            setattr(
-                self.endpoint,
-                "middlewares",
-                tuple(getattr(routes, "http_middlewares")) + middlewares,
-            )
+            endpoint = self.endpoint
+            for middleware in getattr(routes, "http_middlewares"):
+                endpoint = middleware(endpoint)
+            self.endpoint = update_wrapper(endpoint, self.endpoint)
 
 
 @dataclass
@@ -358,12 +356,10 @@ class SocketRoute(BaseRoute):
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "socket_middlewares"):
-            middlewares = getattr(self.endpoint, "middlewares", ())
-            setattr(
-                self.endpoint,
-                "middlewares",
-                tuple(getattr(routes, "socket_middlewares")) + middlewares,
-            )
+            endpoint = self.endpoint
+            for middleware in getattr(routes, "socket_middlewares"):
+                endpoint = middleware(endpoint)
+            self.endpoint = update_wrapper(endpoint, self.endpoint)
 
 
 T = typing.TypeVar("T")
