@@ -144,10 +144,19 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
             function = namespace[function_name]
             namespace[function_name] = bound_params(function)
 
+        setattr(
+            cls,
+            "allowed_methods",
+            [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)],
+        )
+
         super().__init__(name, bases, namespace)
 
 
 class HTTPView(metaclass=ViewMeta):  # type: ignore
+    if typing.TYPE_CHECKING:
+        allowed_methods: typing.List[str]
+
     def __init__(self, request: Request) -> None:
         self.request = request
 
@@ -173,21 +182,14 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
 
         return Response(
             status_code=status_code,
-            headers={
-                "Allow": ", ".join(self.allowed_methods()),
-                "Content-Length": "0",
-            },
+            headers={"Allow": ", ".join(self.allowed_methods), "Content-Length": "0"},
         )
 
     async def options(self) -> Response:
         """Handle responding to requests for the OPTIONS HTTP verb."""
         return Response(
-            headers={"Allow": ", ".join(self.allowed_methods()), "Content-Length": "0"}
+            headers={"Allow": ", ".join(self.allowed_methods), "Content-Length": "0"}
         )
-
-    @classmethod
-    def allowed_methods(cls) -> typing.List[str]:
-        return [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)]
 
 
 def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callable:
@@ -208,7 +210,7 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
     if func is None:
         return lambda func: only_allow(method, func)
 
-    setattr(func, "__method__", method)
+    setattr(func, "__method__", method.upper())
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs) -> typing.Any:

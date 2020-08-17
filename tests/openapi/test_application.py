@@ -4,6 +4,7 @@ from starlette.testclient import TestClient
 from pydantic import BaseModel
 
 from indexpy import Index
+from indexpy.routing import SubRoutes, HttpRoute
 from indexpy.http import HTTPView
 from indexpy.openapi import describe
 from indexpy.openapi.application import OpenAPI
@@ -60,6 +61,23 @@ def test_openapi_page():
 
             ......
             """
+
+    def just_middleware(endpoint):
+        async def w(c):
+            return await endpoint(c)
+
+        return w
+
+    middleware_routes = SubRoutes(
+        "/middleware",
+        [
+            HttpRoute("/path/{name}", path, "middleware-path", method="get"),
+            HttpRoute("/http-view", HTTPClass, "middleware-HTTPClass"),
+        ],
+        http_middlewares=[just_middleware],
+    )
+
+    app.router.extend(middleware_routes)
 
     client = TestClient(app)
     assert client.get("/openapi/get").status_code == 200

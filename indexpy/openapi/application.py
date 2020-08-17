@@ -80,7 +80,7 @@ class OpenAPI:
     def _generate_path(self, view: Any, path: str) -> Dict[str, Any]:
         result = {}
         if hasattr(view, "allowed_methods"):
-            for method in view.allowed_methods():  # type: ignore
+            for method in view.allowed_methods:  # type: ignore
                 if method == "OPTIONS":
                     continue
                 method = method.lower()
@@ -90,7 +90,7 @@ class OpenAPI:
         elif hasattr(view, "__method__"):
             method_docs = self._generate_method(view, path)
             if method_docs:
-                result[view.__method__] = method_docs
+                result[view.__method__.lower()] = method_docs
         return result
 
     def _generate_method(self, func: object, path: str) -> Dict[str, Any]:

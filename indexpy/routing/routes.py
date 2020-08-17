@@ -1,5 +1,4 @@
 import typing
-import inspect
 import copy
 from functools import update_wrapper
 from types import FunctionType
@@ -47,6 +46,8 @@ class BaseRoute:
     def __post_init__(self) -> None:
         if not self.path.startswith("/"):
             raise ValueError("Route path must start with '/'")
+        if self.name == "":
+            self.name = self.endpoint.__name__
 
 
 @dataclass
@@ -59,8 +60,9 @@ class HttpRoute(BaseRoute):
 
         self.endpoint = complicating(self.endpoint)
 
-        if inspect.isfunction(self.endpoint) and not hasattr(
-            self.endpoint, "__method__"
+        if not (
+            hasattr(self.endpoint, "allowed_methods")
+            or hasattr(self.endpoint, "__method__")
         ):
             if method == "":
                 raise ValueError("View function must be marked with method")
@@ -140,9 +142,6 @@ class RouteRegisterMixin:
         if endpoint is None:
             raise ValueError("endpoint must be is not None")
 
-        if name == "":
-            name = endpoint.__name__
-
         self.append(HttpRoute(path, endpoint, name, method))
 
         return endpoint
@@ -168,9 +167,6 @@ class RouteRegisterMixin:
 
         if endpoint is None:
             raise ValueError("endpoint must be is not None")
-
-        if name == "":
-            name = endpoint.__name__
 
         self.append(SocketRoute(path, endpoint, name))
 
