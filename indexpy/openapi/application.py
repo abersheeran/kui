@@ -79,8 +79,8 @@ class OpenAPI:
 
     def _generate_path(self, view: Any, path: str) -> Dict[str, Any]:
         result = {}
-        if hasattr(view, "allowed_methods"):
-            for method in view.allowed_methods:  # type: ignore
+        if hasattr(view, "__methods__"):
+            for method in view.__methods__:  # type: ignore
                 if method == "OPTIONS":
                     continue
                 method = method.lower()

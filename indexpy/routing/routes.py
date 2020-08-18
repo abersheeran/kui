@@ -61,7 +61,7 @@ class HttpRoute(BaseRoute):
         self.endpoint = complicating(self.endpoint)
 
         if not (
-            hasattr(self.endpoint, "allowed_methods")
+            hasattr(self.endpoint, "__methods__")
             or hasattr(self.endpoint, "__method__")
         ):
             if method == "":

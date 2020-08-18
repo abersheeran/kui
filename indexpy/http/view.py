@@ -146,7 +146,7 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
 
         setattr(
             cls,
-            "allowed_methods",
+            "__methods__",
             [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)],
         )
 
@@ -155,7 +155,7 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
 
 class HTTPView(metaclass=ViewMeta):  # type: ignore
     if typing.TYPE_CHECKING:
-        allowed_methods: typing.List[str]
+        __methods__: typing.List[str]
 
     def __init__(self, request: Request) -> None:
         self.request = request
@@ -182,13 +182,13 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
 
         return Response(
             status_code=status_code,
-            headers={"Allow": ", ".join(self.allowed_methods), "Content-Length": "0"},
+            headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"},
         )
 
     async def options(self) -> Response:
         """Handle responding to requests for the OPTIONS HTTP verb."""
         return Response(
-            headers={"Allow": ", ".join(self.allowed_methods), "Content-Length": "0"}
+            headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"}
         )
 
 
