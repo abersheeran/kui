@@ -100,7 +100,7 @@ app.router.extend([
 
 ### 路径参数
 
-使用 `{name:type}` 可以标注路径参数，在视图中使用 `path` 参数(`dict` 类型)接受全部的路径参数。目前支持的类型有 `str`、`int`、`decimal`、`uuid` 和 `path`。
+使用 `{name:type}` 可以标注路径参数，目前支持的类型有 `str`、`int`、`decimal`、`uuid` 和 `path`。
 
 !!! tip
     如果路径参数的类型为 `str`，可以忽略掉 `:str`，直接使用 `{name}`。

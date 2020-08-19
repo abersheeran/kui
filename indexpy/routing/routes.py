@@ -69,8 +69,13 @@ class HttpRoute(BaseRoute):
             self.endpoint = only_allow(
                 method, bound_params(typing.cast(FunctionType, self.endpoint)),
             )
-        elif method != "":
-            raise ValueError("View function has been marked with method")
+        else:
+            if hasattr(self.endpoint, "__method__") and (
+                method.upper() not in (getattr(self.endpoint, "__method__"), "")
+            ):
+                raise ValueError("View function has been marked with method")
+            if hasattr(self.endpoint, "__methods__") and method != "":
+                raise ValueError("View class can't be marked with method")
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "http_middlewares"):
