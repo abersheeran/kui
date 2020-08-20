@@ -148,7 +148,7 @@ async def post(request):
 * `content_type: str`: 文件类型 (MIME type / media type) (例如 `image/jpeg`).
 * `file: tempfile.SpooledTemporaryFile`: 存储文件内容的临时文件（可以直接读写这个对象，但最好不要）。
 
-`UploadFile` 还有四个异步方法（当文件在内存中时将直接进行操作，在磁盘时将使用多线程包裹原始文件的操作从而得到异步能力 [starlette#933](https://github.com/encode/starlette/pull/933)）。
+`UploadFile` 还有四个异步方法：
 
 * `async write(data: Union[str, bytes])`: 写入数据到文件中。
 * `async read(size: int)`: 从文件中读取数据。
