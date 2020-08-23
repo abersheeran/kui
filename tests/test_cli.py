@@ -1,10 +1,6 @@
 from click.testing import CliRunner
 
-from indexpy.cli import execute, main
-
-
-def test_execute():
-    assert execute(["uvicorn", "--help"]) == 0
+from indexpy.cli import main
 
 
 def test_custom_command():
