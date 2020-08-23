@@ -7,7 +7,6 @@ from typing import List, Union
 from multiprocessing import cpu_count
 
 import click
-import uvicorn
 
 from .utils import import_module
 from .config import here, LOG_LEVELS, Config
@@ -51,6 +50,8 @@ def main():
 @main.command(help="use only uvicorn to deploy")
 @click.argument("application", default=lambda: config.APP)
 def serve(application):
+    import uvicorn
+
     uvicorn.run(
         application,
         host=config.HOST,
