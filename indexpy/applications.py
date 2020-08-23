@@ -129,7 +129,7 @@ class IndexFile:
         self.module_name = module_name
         self.allow_underline = allow_underline
         if basepath is not None:
-            self.basepath = basepath
+            self.__dict__["basepath"] = basepath
         logger.debug(f"Index File in module {module_name}, basepath: {basepath}")
 
     @cached_property
