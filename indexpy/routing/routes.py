@@ -38,7 +38,7 @@ class NoRouteFound(Exception):
 class BaseRoute:
     path: str
     endpoint: typing.Any
-    name: str
+    name: typing.Optional[str]
 
     def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
         raise NotImplementedError()
@@ -52,7 +52,7 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
-    name: str = ""
+    name: typing.Optional[str] = ""
     method: InitVar[str] = ""
 
     def __post_init__(self, method: str) -> None:  # type: ignore
@@ -87,7 +87,7 @@ class HttpRoute(BaseRoute):
 
 @dataclass
 class SocketRoute(BaseRoute):
-    name: str = ""
+    name: typing.Optional[str] = ""
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "socket_middlewares"):
