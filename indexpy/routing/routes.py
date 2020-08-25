@@ -27,7 +27,7 @@ def request_response(view: typing.Any) -> ASGIApp:
     @wraps(view)
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
-        request = current_app.factory_class["http"](scope, receive, send)
+        request = current_app.factory_class.http(scope, receive, send)
         response = convert(await (await parse_params(view, request))(request))
         await response(scope, receive, send)
 
@@ -38,7 +38,7 @@ def websocket_session(view: typing.Any) -> ASGIApp:
     @wraps(view)
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
-        websocket = current_app.factory_class["websocket"](scope, receive, send)
+        websocket = current_app.factory_class.websocket(scope, receive, send)
         await view(websocket)(scope, receive, send)
 
     return _

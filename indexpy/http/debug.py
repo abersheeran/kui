@@ -183,7 +183,7 @@ class ServerErrorMiddleware:
             await self.app(scope, receive, _send)
         except Exception as exc:
             if not response_started:
-                request = scope["app"].factory_class["http"](scope)
+                request = scope["app"].factory_class.http(scope)
                 if self.debug:
                     # In debug mode, return traceback responses.
                     response = self.debug_response(request, exc)

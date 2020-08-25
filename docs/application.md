@@ -20,7 +20,7 @@
 
 - **`on_shutdown: typing.List[typing.Callable]`**：服务关闭前自动调用的函数列表；默认为空。
 
-- **`factory_class: typing.Dict`**：通过覆盖此参数，可以自定义整个 Index 中使用的 `Request` 类与 `WebSocket` 类。
+- **`factory_class: FactoryClass`**：通过覆盖此参数，可以自定义整个 Index 作用域中使用的 `Request` 类与 `WebSocket` 类。
 
 ### `jinja_env`
 

@@ -5,6 +5,7 @@ import asyncio
 import logging
 import traceback
 import importlib
+from dataclasses import dataclass
 from types import ModuleType
 
 from starlette.status import WS_1001_GOING_AWAY
@@ -16,7 +17,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
 from a2wsgi import WSGIMiddleware
 
-from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal, TypedDict
+from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal
 from .utils import cached_property
 from .config import Config
 from .routing.routes import Router, BaseRoute, NoMatchFound
@@ -239,7 +240,7 @@ class IndexFile:
                 yield module, path
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
-        request = scope["app"].factory_class["http"](scope, receive, send)
+        request = scope["app"].factory_class.http(scope, receive, send)
         pathlist = self._split_path(request.url.path)
 
         module = self.get_view(request.url.path)
@@ -260,7 +261,7 @@ class IndexFile:
         await response(scope, receive, send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
-        websocket = scope["app"].factory_class["websocket"](
+        websocket = scope["app"].factory_class.websocket(
             scope, receive=receive, send=send
         )
         pathlist = self._split_path(websocket.url.path)
@@ -296,9 +297,10 @@ class IndexFile:
         await handler(scope, receive, send)
 
 
-FactoryClass = TypedDict(
-    "FactoryClass", {"http": typing.Type[Request], "websocket": typing.Type[WebSocket]},
-)
+@dataclass
+class FactoryClass:
+    http: typing.Type[Request] = Request
+    websocket: typing.Type[WebSocket] = WebSocket
 
 
 class Index:
@@ -311,7 +313,7 @@ class Index:
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
-        factory_class: FactoryClass = {"http": Request, "websocket": WebSocket},
+        factory_class: FactoryClass = FactoryClass(),
     ) -> None:
         self.factory_class = factory_class
         self.router = Router(routes)
@@ -494,7 +496,7 @@ class Index:
         except NoMatchFound:
             if scope["type"] == "http" and self.try_html:
                 # only html, no middleware/background tasks or other anything
-                handler = try_html(self.factory_class["http"](scope, receive, send))
+                handler = try_html(self.factory_class.http(scope, receive, send))
 
         if handler is None:
             if scope["type"] == "http":
