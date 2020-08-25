@@ -503,7 +503,7 @@ class Index:
             else:
                 handler = get_handler(request)
         except NoMatchFound:
-            if scope["type"] == "http" or self.try_html:
+            if scope["type"] == "http" and self.try_html:
                 # only html, no middleware/background tasks or other anything
                 handler = try_html(self.factory_class["http"](scope, receive, send))
 
