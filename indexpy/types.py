@@ -13,7 +13,7 @@ from typing import (
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import TypedDict, Literal, Final, final
-else:
+else:  # pragma: no cover
     from typing import TypedDict, Literal, Final, final
 
 __all__ = [

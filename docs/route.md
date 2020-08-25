@@ -28,31 +28,9 @@ async def hello_ws(websocket):
 !!! notice
     如果指定路由的 `name` 为 `None`，则无法通过 `name` 查找到该路由。
 
-### 申明式注册
-
-除了装饰器用法，你也可以采取申明式，这两种方法是等价的。
-
-```python
-from indexpy import Index
-
-app = Index()
-
-
-async def hello(request):
-    return "hello world"
-
-
-async def hello_ws(websocket):
-    ...
-
-
-app.router.http("/hello", hello, name="hello", method="get")
-app.router.websocket("/hello", hello_ws, name="hello_ws")
-```
-
 ### 路由对象
 
-事实上，如上两种路由申明方式都是如下方法的快捷方式
+事实上，装饰器路由申明方式是如下方法的快捷方式
 
 ```python
 from indexpy import Index
@@ -163,7 +141,7 @@ app = Index()
 @app.router.http("/hello", name="hello", method="get")
 @app.router.http("/hello/{name}", name="hello-name", method="get")
 async def hello(request):
-    return f"hello {request.path_params['name']}"
+    return f"hello {request.path_params.get('name')}"
 
 
 assert app.router.url_for("hello") == "/hello"
@@ -177,7 +155,7 @@ assert app.router.url_for("hello-name", {"name": "Aber"}) == "/hello/Aber"
 
 当需要把某一些路由归为一组时，可使用 `Routes` 对象。`Routes` 对象也拥有 `.http` 与 `.websocket` 方法，使用方法与 `app.router` 相同。
 
-`Routes` 允许你使用类似于 Django 一样的路由申明方式，示例如下。
+`Routes` 继承自 `typing.List`，所以它允许你使用类似于 Django 一样的路由申明方式，示例如下。
 
 ```python
 from indexpy import Index

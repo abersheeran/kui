@@ -81,3 +81,8 @@ def test_openapi_page():
 
     client = TestClient(app)
     assert client.get("/openapi/get").status_code == 200
+    openapi_docs_text = client.get("/openapi/get").text
+    assert "/http-view" in openapi_docs_text
+    assert "/path/{name}" in openapi_docs_text
+    assert "/middleware/path/{name}" in openapi_docs_text
+    assert "/middleware/http-view" in openapi_docs_text

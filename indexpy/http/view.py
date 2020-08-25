@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
 from .responses import Response
-from .request import HTTPConnection, Request
+from .request import Request
 
 
 HTTP_METHOD_NAMES = [
@@ -86,7 +86,7 @@ def merge_list(
     return d
 
 
-async def parse_params(handler: typing.Callable, request: HTTPConnection) -> typing.Any:
+async def parse_params(handler: typing.Callable, request: Request) -> typing.Any:
     if isclass(handler):
         return handler
 
@@ -117,7 +117,6 @@ async def parse_params(handler: typing.Callable, request: HTTPConnection) -> typ
 
         # try to get body model and parse
         if "body" in __params__:
-            request = typing.cast(Request, request)
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:

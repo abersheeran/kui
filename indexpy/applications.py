@@ -21,7 +21,6 @@ from .utils import cached_property
 from .config import Config
 from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
-from .http.view import parse_params
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import (
@@ -490,18 +489,8 @@ class Index:
         handler: typing.Optional[ASGIApp] = None
 
         try:
-            path_params, endpoint = self.router.search(scope["type"], scope["path"])
+            path_params, handler = self.router.search(scope["type"], scope["path"])
             scope["path_params"] = path_params
-            request = self.factory_class[scope["type"]](scope, receive, send)  # type: ignore
-            get_handler = await parse_params(endpoint, request)
-
-            for middleware in getattr(endpoint, "middlewares", ()):
-                get_handler = middleware(get_handler)
-
-            if scope["type"] == "http":
-                handler = convert(await get_handler(request))
-            else:
-                handler = get_handler(request)
         except NoMatchFound:
             if scope["type"] == "http" and self.try_html:
                 # only html, no middleware/background tasks or other anything

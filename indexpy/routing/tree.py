@@ -2,6 +2,7 @@ import re
 import typing
 from dataclasses import dataclass, field
 
+from ..types import ASGIApp
 from .convertors import Convertor, PathConvertor, compile_path
 
 
@@ -11,7 +12,7 @@ class TreeNode:
     re_pattern: typing.Optional[typing.Pattern] = None
     param_convertors: typing.Dict[str, Convertor] = field(default_factory=dict)
     next_nodes: typing.List["TreeNode"] = field(default_factory=list)
-    endpoint: typing.Any = None
+    endpoint: typing.Optional[ASGIApp] = None
 
 
 def find_common_prefix(x: str, y: str) -> str:
@@ -28,7 +29,7 @@ class RadixTree:
     def __init__(self) -> None:
         self.root = TreeNode("/")
 
-    def append(self, path: str, endpoint: typing.Any = None) -> None:
+    def append(self, path: str, endpoint: ASGIApp) -> None:
         point = self.root
         path_format, param_convertors = compile_path(path)
 

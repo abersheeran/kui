@@ -1,13 +1,14 @@
 import typing
 import copy
-from functools import update_wrapper
+from functools import update_wrapper, wraps
 from types import FunctionType
 from dataclasses import dataclass, InitVar
 
-from indexpy.types import Literal
+from indexpy.types import Literal, ASGIApp, Scope, Receive, Send
 from indexpy.utils import superclass
 from indexpy.concurrency import complicating
-from indexpy.http.view import bound_params, only_allow
+from indexpy.http.view import bound_params, parse_params, only_allow
+from indexpy.http.responses import convert
 
 from .convertors import Convertor, compile_path
 from .tree import RadixTree
@@ -20,6 +21,27 @@ __all__ = [
     "NoMatchFound",
     "NoRouteFound",
 ]
+
+
+def request_response(view: typing.Any) -> ASGIApp:
+    @wraps(view)
+    async def _(scope: Scope, receive: Receive, send: Send) -> None:
+        current_app = scope["app"]
+        request = current_app.factory_class["http"](scope, receive, send)
+        response = convert(await (await parse_params(view, request))(request))
+        await response(scope, receive, send)
+
+    return _
+
+
+def websocket_session(view: typing.Any) -> ASGIApp:
+    @wraps(view)
+    async def _(scope: Scope, receive: Receive, send: Send) -> None:
+        current_app = scope["app"]
+        websocket = current_app.factory_class["websocket"](scope, receive, send)
+        await view(websocket)(scope, receive, send)
+
+    return _
 
 
 class NoMatchFound(Exception):
@@ -38,7 +60,8 @@ class NoRouteFound(Exception):
 class BaseRoute:
     path: str
     endpoint: typing.Any
-    name: typing.Optional[str]
+    name: typing.Optional[str] = ""
+    is_asgi_app: bool = False
 
     def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
         raise NotImplementedError()
@@ -52,7 +75,6 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
-    name: typing.Optional[str] = ""
     method: InitVar[str] = ""
 
     def __post_init__(self, method: str) -> None:  # type: ignore
@@ -87,8 +109,6 @@ class HttpRoute(BaseRoute):
 
 @dataclass
 class SocketRoute(BaseRoute):
-    name: typing.Optional[str] = ""
-
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "socket_middlewares"):
             endpoint = self.endpoint
@@ -123,61 +143,38 @@ class RouteRegisterMixin:
                 self.append(route)
 
     def http(
-        self,
-        path: str,
-        endpoint: typing.Any = None,
-        *,
-        name: str = "",
-        method: str = "",
-    ) -> typing.Any:
+        self, path: str, *, name: str = "", method: str = "", is_asgi_app: bool = False
+    ) -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(HttpRoute(path, endpoint, name, method))`
 
         example:
             @routes.http("/path", name="endpoint-name")
             class Endpoint(HTTPView): ...
-        or
-            routes.http("/path", Endpoint, name="endpoint-name")
         """
-        if path and endpoint is None:
-            # example: @router.http("/path", name="hello")
-            #          async def func(request): ...
-            return lambda endpoint: self.http(
-                path=path, endpoint=endpoint, name=name, method=method
-            )
 
-        if endpoint is None:
-            raise ValueError("endpoint must be is not None")
+        def register(endpoint: T) -> T:
+            self.append(HttpRoute(path, endpoint, name, is_asgi_app, method))
+            return endpoint
 
-        self.append(HttpRoute(path, endpoint, name, method))
-
-        return endpoint
+        return register
 
     def websocket(
-        self, path: str, endpoint: typing.Any = None, *, name: str = ""
-    ) -> typing.Any:
+        self, path: str, *, name: str = "", is_asgi_app: bool = False
+    ) -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(SocketRoute(path, endpoint, name))`
 
         example:
             @routes.websocket("/path", name="endpoint-name")
             async def endpoint(websocket): ...
-        or
-            routes.websocket("/path", endpoint, name="endpoint-name")
         """
-        if path and endpoint is None:
-            # example: @router.websocket("/path", name="hello")
-            #          async def func(websocket): ...
-            return lambda endpoint: self.websocket(
-                path=path, endpoint=endpoint, name=name
-            )
 
-        if endpoint is None:
-            raise ValueError("endpoint must be is not None")
+        def register(endpoint: T) -> T:
+            self.append(SocketRoute(path, endpoint, name, is_asgi_app))
+            return endpoint
 
-        self.append(SocketRoute(path, endpoint, name))
-
-        return endpoint
+        return register
 
 
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
@@ -289,12 +286,17 @@ class Router(RouteRegisterMixin):
         if isinstance(route, HttpRoute):
             radix_tree = self.http_tree
             routes = self.http_routes
+            if not route.is_asgi_app:
+                route.endpoint = request_response(route.endpoint)
         elif isinstance(route, SocketRoute):
             radix_tree = self.websocket_tree
             routes = self.websocket_routes
+            if not route.is_asgi_app:
+                route.endpoint = websocket_session(route.endpoint)
         else:
             raise TypeError(
-                f"Need type: `HttpRoute` or `SocketRoute`, but got type: {type(route)}"
+                "Need type: `HttpRoute` or `SocketRoute`,"
+                + f" but got type: {type(route)}"
             )
 
         radix_tree.append(route.path, route.endpoint)
