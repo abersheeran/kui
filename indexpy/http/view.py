@@ -216,7 +216,10 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
         request = args[0]
         if request.method.lower() == method.lower():
             return await func(*args, **kwargs)  # type: ignore
-        if request.method in ("GET", "HEAD"):
+
+        if request.method == "OPTIONS":
+            return Response(headers={"Allow": method, "Content-Length": "0"})
+        elif request.method in ("GET", "HEAD"):
             status_code = 404
         else:
             status_code = 405
