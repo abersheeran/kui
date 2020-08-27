@@ -33,9 +33,15 @@ async def hello(request):
     return "hello"
 ```
 
+!!! tip
+    在函数处理器中不允许自行编写代码处理 `options` 方法，但拥有与类处理器相同的处理 `options` 的默认程序。
+
 ### 类处理器
 
 使用类处理多种请求十分简单。只需要继承 `indexpy.http.HTTPView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
+
+!!! tip
+    对于一般的跨域需求，`options` 方法不需要自行编写，做好[跨域配置](../config/list/#cors_allow_origins)即可。
 
 通过 `self.request` 可以读取此次请求的信息。
 

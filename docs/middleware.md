@@ -16,6 +16,9 @@ def middleware(endpoint):
     return wrapper
 ```
 
+!!! tip
+    `endpoint` 是实际处理 HTTP 请求的可调用对象
+
 ### 基于类的中间件
 
 基于类的中间件可以继承 `indexpy.http.MiddlewareMixin`，有以下三个方法可以重写。
@@ -72,12 +75,15 @@ class Middleware(MiddlewareMixin):
 
 ```python
 def middleware(endpoint):
-    async def wrapper(request):
+    async def wrapper(websocket):
         ...
-        await endpoint(request)
+        await endpoint(websocket)
         ...
     return wrapper
 ```
+
+!!! tip
+    `endpoint` 是实际处理 WebSocket 请求的可调用对象
 
 ### 基于类的中间件
 
