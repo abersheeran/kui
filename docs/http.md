@@ -233,6 +233,34 @@ YAMLResponse 与 JSONResponse 的使用方法相同。
 
 唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
+### EventResponse
+
+通过 `EventResponse` 可以返回一个 [Server Sent Events | MDN文档](https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events) 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。
+
+`EventResponse` 除了可以接受诸如 `status_code`、`headers` 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 `yield` 的每一条消息都需要为合规的 Server-Sent Event 消息（`str` 类型），否则会出现不可预料的错误。
+
+如下是一个每隔一秒发送一条 hello 消息、一共发送一百零一条消息的样例。
+
+```python
+import asyncio
+
+from indexpy import Index
+from indexpy.http.responses import EventResponse
+
+app = Index()
+
+
+@app.router.http("/message", method="get")
+async def message(request):
+
+    async def message_gen():
+        for _ in range(101):
+            await asyncio.sleep(1)
+            yield "event: message\r\ndata: {'name': 'Aber', 'body': 'hello'}"
+
+    return EventResponse(message_gen())
+```
+
 ### 响应的简化写法
 
 为了方便使用，Index 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。

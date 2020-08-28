@@ -6,6 +6,7 @@ from types import FunctionType
 
 from pydantic import BaseModel, ValidationError
 
+from ..types import ASGIApp
 from ..concurrency import keepasync
 from .responses import Response
 from .request import Request
@@ -86,7 +87,10 @@ def merge_list(
     return d
 
 
-async def parse_params(handler: typing.Callable, request: Request) -> typing.Any:
+async def parse_params(
+    handler: typing.Callable, request: Request
+) -> typing.Callable[[Request], typing.Awaitable[ASGIApp]]:
+
     if isclass(handler):
         return handler
 

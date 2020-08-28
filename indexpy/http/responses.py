@@ -1,5 +1,6 @@
 import typing
 import functools
+import asyncio
 
 import yaml
 import jinja2
@@ -75,6 +76,86 @@ class YAMLResponse(Response):
 
     def render(self, content: typing.Any) -> bytes:
         return yaml.dump(content, indent=2).encode("utf8")
+
+
+class EventResponse(Response):
+    r"""
+    Server send event Response 🔗[MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
+
+    You have to deal with several fields specified in the SSE standard,
+    but sending ping frames is automatic, and its time period is controlled by `ping_interval`.
+
+    Ping frame like `event: ping\r\n\r\n`.
+
+    generator example:
+
+        async def generator_example():
+            yield '''event: date\r\ndata: {"date": "2020-12-31"}'''
+
+    """
+
+    media_type = "text/event-stream"
+    required_headers = {"Cache-Control": "no-cache", "Connection": "keep-alive"}
+
+    def __init__(
+        self,
+        generator: typing.AsyncGenerator[str, None],
+        status_code: int = 200,
+        headers: dict = None,
+        media_type: str = None,
+        background: BackgroundTask = None,
+        *,
+        ping_interval: int = 3,
+    ) -> None:
+        if headers:
+            headers.update(self.required_headers)
+        else:
+            headers = dict(self.required_headers)
+
+        super().__init__(None, status_code, headers, media_type, background)
+        self.generator = generator
+        self.ping_interval = ping_interval
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        await send(
+            {
+                "type": "http.response.start",
+                "status": self.status_code,
+                "headers": self.raw_headers,
+            }
+        )
+
+        done, pending = await asyncio.wait(
+            (self.keep_alive(send), self.send_event(send)),
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        [task.cancel() for task in pending]
+        [task.result() for task in done]
+        await send({"type": "http.response.body", "body": b""})
+
+        if self.background is not None:
+            await self.background()
+
+    async def send_event(self, send: Send) -> None:
+        async for chunk in self.generator:
+            await send(
+                {
+                    "type": "http.response.body",
+                    "body": f"{chunk.strip()}\r\n\r\n".encode(self.charset),
+                    "more_body": True,
+                }
+            )
+
+    async def keep_alive(self, send: Send) -> None:
+        while True:
+            await asyncio.sleep(self.ping_interval)
+            await send(
+                {
+                    "type": "http.response.body",
+                    "body": "event: ping\r\n\r\n".encode("utf8"),
+                    "more_body": True,
+                }
+            )
 
 
 def convert(response: typing.Any) -> Response:
