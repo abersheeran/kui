@@ -186,7 +186,7 @@ app.router.extend(routes)
 def http_only_print(endpoint):
     async def wrapper(request):
         print("http middleware start")
-        response = convert(await endpoint(request))
+        response = await endpoint(request)
         print("http middleware end")
         return response
 

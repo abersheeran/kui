@@ -265,6 +265,9 @@ async def message(request):
 
 为了方便使用，Index 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
 
+!!! tip
+    如果需要手动把函数的返回值转换为 `Response` 对象，则可以使用 `indexpy.http.responses.convert`。
+
 Index 内置了三个处理函数用于处理六种类型：
 
 ```python
