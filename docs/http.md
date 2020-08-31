@@ -349,9 +349,8 @@ raise indexpy.http.HTTPException(CODE)
 
 ```python
 from indexpy import Index
-from indexpy.types import Request, Response
-from indexpy.http.responses import PlainTextResponse
-from indexpy.http import HTTPException
+from indexpy.http import HTTPException, Request
+from indexpy.http.responses import Response, PlainTextResponse
 
 app = Index()
 
