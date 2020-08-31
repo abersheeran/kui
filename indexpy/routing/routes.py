@@ -274,10 +274,10 @@ class Router(RouteRegisterMixin):
         self.websocket_tree = RadixTree()
 
         self.http_routes: typing.Dict[
-            str, typing.Tuple[str, typing.Dict[str, Convertor], typing.Any]
+            str, typing.Tuple[str, typing.Dict[str, Convertor], ASGIApp]
         ] = {}
         self.websocket_routes: typing.Dict[
-            str, typing.Tuple[str, typing.Dict[str, Convertor], typing.Any]
+            str, typing.Tuple[str, typing.Dict[str, Convertor], ASGIApp]
         ] = {}
 
         self.extend(routes)
@@ -309,7 +309,7 @@ class Router(RouteRegisterMixin):
 
     def search(
         self, protocol: Literal["http", "websocket"], path: str
-    ) -> typing.Tuple[typing.Dict[str, typing.Any], typing.Any]:
+    ) -> typing.Tuple[typing.Dict[str, typing.Any], ASGIApp]:
         if protocol == "http":
             radix_tree = self.http_tree
         elif protocol == "websocket":
@@ -319,12 +319,12 @@ class Router(RouteRegisterMixin):
 
         params, node = radix_tree.search(path)
 
-        if params is None or node is None:
+        if params is None or node is None or node.endpoint is None:
             raise NoMatchFound(path)
 
         return (
             {
-                name: node.param_convertors[name].to_string(value)
+                name: node.param_convertors[name].convert(value)
                 for name, value in params.items()
             },
             node.endpoint,
