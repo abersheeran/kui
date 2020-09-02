@@ -48,9 +48,11 @@ class RadixTree:
                     )
 
                 try:
-                    node = tuple(filter(
-                        lambda node: node.re_pattern is not None, point.next_nodes
-                    ))[0]
+                    node = tuple(
+                        filter(
+                            lambda node: node.re_pattern is not None, point.next_nodes
+                        )
+                    )[0]
                 except IndexError:
                     new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
                     point.next_nodes.append(new_node)
@@ -117,7 +119,7 @@ class RadixTree:
     def search(
         self, path: str
     ) -> typing.Union[
-        typing.Tuple[typing.Dict[str, typing.Any], TreeNode], typing.Tuple[None, None]
+        typing.Tuple[typing.Dict[str, typing.Any], ASGIApp], typing.Tuple[None, None]
     ]:
         point = self.root
         params = {}
