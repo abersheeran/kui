@@ -317,18 +317,12 @@ class Router(RouteRegisterMixin):
         else:
             raise ValueError("`protocol` must be in ('http', 'websocket')")
 
-        params, node = radix_tree.search(path)
+        params, endpoint = radix_tree.search(path)
 
-        if params is None or node is None or node.endpoint is None:
+        if params is None or endpoint is None:
             raise NoMatchFound(path)
 
-        return (
-            {
-                name: node.param_convertors[name].convert(value)
-                for name, value in params.items()
-            },
-            node.endpoint,
-        )
+        return params, endpoint
 
     def extend(self, routes: typing.List[BaseRoute]) -> None:
         """

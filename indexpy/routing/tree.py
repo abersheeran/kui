@@ -47,23 +47,26 @@ class RadixTree:
                         "`PathConvertor` is only allowed to appear at the end of path"
                     )
 
-                for node in filter(
-                    lambda node: node.re_pattern is not None, point.next_nodes
-                ):
-                    if (node.re_pattern == re_pattern) != (
-                        node.characters == param_name
-                    ):
-                        raise ValueError(
-                            "The same regular matching is used in the same position"
-                            + ", but the parameter names are different."
-                        )
-                    if node.characters == param_name:
-                        point = node
-                        break
-                else:
+                try:
+                    node = tuple(filter(
+                        lambda node: node.re_pattern is not None, point.next_nodes
+                    ))[0]
+                except IndexError:
                     new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
                     point.next_nodes.append(new_node)
                     point = new_node
+                else:
+                    if node.re_pattern != re_pattern:
+                        raise ValueError(
+                            "The regular matching is used in the same position"
+                            + ", but the regular pattern are different."
+                        )
+                    if node.characters != param_name:
+                        raise ValueError(
+                            "The regular matching is used in the same position"
+                            + ", but the parameter name are different."
+                        )
+                    point = node
 
                 left = right
             else:
@@ -124,21 +127,29 @@ class RadixTree:
             for node in point.next_nodes:
                 if node.re_pattern is not None:
                     none_or_match = re.match(node.re_pattern, path[left:])
-                    if none_or_match:
-                        result = none_or_match.group()
-                        params[node.characters] = result
-                        point = node
-                        left += len(result)
-                        break
+                    if none_or_match is None:
+                        continue
+                    result = none_or_match.group()
+                    params[node.characters] = result
+                    point = node
+                    left += len(result)
+                    break
                 else:
                     right = left + len(node.characters)
-                    if path[left:right] == node.characters:
-                        point = node
-                        left = right
-                        break
+                    if path[left:right] != node.characters:
+                        continue
+                    point = node
+                    left = right
+                    break
             else:
                 return None, None
 
         if left == path_len and point.endpoint is not None:
-            return params, point
+            return (
+                {
+                    name: point.param_convertors[name].convert(value)
+                    for name, value in params.items()
+                },
+                point.endpoint,
+            )
         return None, None

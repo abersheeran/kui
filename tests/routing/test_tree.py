@@ -44,11 +44,8 @@ def tree():
 def test_tree_success_search(tree: RadixTree, path, params):
     result = tree.search(path)
     assert result is not None
-    raw_params, node = result
-    assert {
-        key: node.param_convertors[key].convert(value)
-        for key, value in raw_params.items()
-    } == params
+    params, node = result
+    assert params == params
 
 
 @pytest.mark.parametrize(
