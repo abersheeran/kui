@@ -40,6 +40,8 @@ An easy-to-use asynchronous web framework based on Radix Tree.
 
 ---
 
+Index.py implements the [ASGI3](http://asgi.readthedocs.io/en/latest/) interface and uses Radix Tree for route lookup. Is one of the fastest Python web frameworks. All features serve the rapid development of high-performance Web services.
+
 - Flexible and efficient routing system (based on Radix Tree)
 - Automatically parse requests & generate documents (based on `pydantic`)
 - Visual API interface (based on `ReDoc`, optimized for fonts)
@@ -59,4 +61,26 @@ or install the latest version from Github (unstable).
 
 ```bash
 pip install -U git+https://github.com/abersheeran/index.py@setup.py
+```
+
+## Quick start
+
+Write the following code to a `.py` file and execute it directly, visit `http://127.0.0.1:4190`.
+
+```python
+from indexpy import Index
+
+
+app = Index()
+
+
+@app.router.http("/")
+async def homepage(request):
+    return "hello, index.py"
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, interface="asgi3", port=4190)
 ```
