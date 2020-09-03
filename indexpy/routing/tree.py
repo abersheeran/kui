@@ -55,7 +55,7 @@ def append(
                 return append(node, path_format[length:], param_convertors)
 
         new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
-        point.next_nodes.append(new_node)
+        point.next_nodes.insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
 
     length = path_format.find("{")
@@ -73,16 +73,16 @@ def append(
         prefix_node = TreeNode(characters=prefix)
         point.next_nodes[node_index] = prefix_node
         node.characters = node.characters[len(prefix) :]
-        prefix_node.next_nodes.append(node)
+        prefix_node.next_nodes.insert(0, node)
         if path_format[:length] == prefix:
             return append(prefix_node, path_format[length:], param_convertors)
 
         new_node = TreeNode(characters=path_format[len(prefix) : length])
-        prefix_node.next_nodes.append(new_node)
+        prefix_node.next_nodes.insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
 
     new_node = TreeNode(characters=path_format[:length])
-    point.next_nodes.append(new_node)
+    point.next_nodes.insert(0, new_node)
     return append(new_node, path_format[length:], param_convertors)
 
 
@@ -91,33 +91,33 @@ def search(
 ) -> Optional[Tuple[Dict[str, str], TreeNode]]:
     """
     Find a suitable route
-
-    # TODO
-    # Modify the recursive function to loop
     """
-    if point.re_pattern is None:
-        length = len(point.characters)
-        if path[:length] != point.characters:
-            return None
-    else:
-        none_or_match = re.match(point.re_pattern, path)
-        if none_or_match is None:
-            return None
-        result = none_or_match.group()
-        params[point.characters] = result
-        length = len(result)
+    stack: List[Tuple[str, TreeNode]] = [(path, point)]
 
-    path = path[length:]
-    if not path:
-        return params, point
+    while stack:
+        path, point = stack.pop(len(stack) - 1)
 
-    for node in point.next_nodes:
-        result = search(node, path, params)
-        if result is not None:
-            return result
+        if point.re_pattern is None:
+            length = len(point.characters)
+            if path[:length] != point.characters:
+                continue
+        else:
+            none_or_match = re.match(point.re_pattern, path)
+            if none_or_match is None:
+                continue
+            result = none_or_match.group()
+            params[point.characters] = result
+            length = len(result)
 
-    if point.re_pattern is not None:
-        del params[point.characters]
+        path = path[length:]
+        if not path:  # path == "", found the first suitable route
+            for name in set(params.keys()) - set(point.param_convertors.keys()):
+                del params[name]
+            return params, point
+
+        for node in point.next_nodes:
+            stack.append((path, node))
+
     return None
 
 
