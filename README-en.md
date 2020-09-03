@@ -74,7 +74,7 @@ from indexpy import Index
 app = Index()
 
 
-@app.router.http("/")
+@app.router.http("/", method="get")
 async def homepage(request):
     return "hello, index.py"
 
