@@ -95,11 +95,10 @@ async def parse_params(
         return handler
 
     __params__ = getattr(handler, "__params__", {})
+    if not __params__:
+        return handler
 
     params: typing.Dict[str, BaseModel] = {}
-
-    if not params:
-        return handler
 
     try:
         # try to get parameters model and parse

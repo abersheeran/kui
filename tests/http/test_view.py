@@ -3,11 +3,15 @@ import pytest
 from indexpy import Index
 from indexpy.http import HTTPView
 from starlette.testclient import TestClient
+from pydantic import BaseModel
 
 
 @pytest.fixture
 def app():
     app = Index()
+
+    class Path(BaseModel):
+        name: str = None
 
     @app.router.http("/cat", name=None)
     @app.router.http("/cat/{name}")
@@ -17,10 +21,10 @@ def app():
                 return self.request.method
             return self.request.method + " " + self.request.path_params["name"]
 
-        async def post(self):
+        async def post(self, path: Path):
             if not self.request.path_params:
                 return self.request.method
-            return self.request.method + " " + self.request.path_params["name"]
+            return self.request.method + " " + path.name
 
     return app
 
