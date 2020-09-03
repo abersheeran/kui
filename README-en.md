@@ -1,14 +1,44 @@
-# index.py
+<div style="text-align: center;">
 
-[中文](https://github.com/abersheeran/index.py/tree/master/README.md) | English
+<h1> index.py </h1>
 
-[![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3ATest)
-[![Build setup.py](https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22)
-[![Publish PyPi](https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22)
-[![PyPI](https://img.shields.io/pypi/v/index.py)](https://pypi.org/project/index.py/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/index.py)
+<p>
+<a href="https://github.com/abersheeran/index.py/tree/master/README.md">中文</a>
+|
+English
+</p>
 
-A high-performance web framework based on the ASGI protocol. [Index.py Documentation](https://abersheeran.github.io/index.py/)
+<p>
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3ATest">
+<img src="https://github.com/abersheeran/index.py/workflows/Test/badge.svg" alt="Github Action Test" />
+</a>
+
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22">
+<img src="https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg" alt="Build setup.py" />
+</a>
+</p>
+
+<p>
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22">
+<img src="https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg" alt="Publish PyPi" />
+</a>
+
+<a href="https://pypi.org/project/index.py/">
+<img src="https://img.shields.io/pypi/v/index.py" alt="PyPI" />
+</a>
+</p>
+
+<p>
+<img src="https://img.shields.io/pypi/pyversions/index.py" alt="PyPI - Python Version" />
+</p>
+
+An easy-to-use asynchronous web framework based on Radix Tree.
+
+<a href="https://index-py.abersheeran.com">Index.py Documentation</a>
+
+</div>
+
+---
 
 - Flexible and efficient routing system (based on Radix Tree)
 - Automatically parse requests & generate documents (based on `pydantic`)

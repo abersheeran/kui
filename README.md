@@ -1,14 +1,44 @@
-# index.py
+<div style="text-align: center;">
 
-中文 | [English](https://github.com/abersheeran/index.py/tree/master/README-en.md)
+<h1> index.py </h1>
 
-[![Github Action Test](https://github.com/abersheeran/index.py/workflows/Test/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3ATest)
-[![Build setup.py](https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22)
-[![Publish PyPi](https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg)](https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22)
-[![PyPI](https://img.shields.io/pypi/v/index.py)](https://pypi.org/project/index.py/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/index.py)
+<p>
+中文
+|
+<a href="https://github.com/abersheeran/index.py/tree/master/README-en.md">English</a>
+</p>
 
-一个基于 ASGI 协议的高性能 web 框架。[Index.py 文档](https://abersheeran.github.io/index.py/)
+<p>
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3ATest">
+<img src="https://github.com/abersheeran/index.py/workflows/Test/badge.svg" alt="Github Action Test" />
+</a>
+
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22">
+<img src="https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg" alt="Build setup.py" />
+</a>
+</p>
+
+<p>
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Publish+PyPi%22">
+<img src="https://github.com/abersheeran/index.py/workflows/Publish%20PyPi/badge.svg" alt="Publish PyPi" />
+</a>
+
+<a href="https://pypi.org/project/index.py/">
+<img src="https://img.shields.io/pypi/v/index.py" alt="PyPI" />
+</a>
+</p>
+
+<p>
+<img src="https://img.shields.io/pypi/pyversions/index.py" alt="PyPI - Python Version" />
+</p>
+
+一个基于 Radix Tree 的高性能 web 框架。
+
+<a href="https://index-py.abersheeran.com">Index.py 文档</a>
+
+</div>
+
+---
 
 - 灵活且高效的路由系统 (基于 Radix Tree)
 - 自动解析请求 & 生成文档 (基于 `pydantic`)
