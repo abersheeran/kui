@@ -26,6 +26,10 @@ English
 <a href="https://pypi.org/project/index.py/">
 <img src="https://img.shields.io/pypi/v/index.py" alt="PyPI" />
 </a>
+
+<a href="https://pepy.tech/project/index-py/week">
+<img src="https://pepy.tech/badge/index-py/week" alt="Week Downloads">
+</a>
 </p>
 
 <p>
