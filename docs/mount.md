@@ -29,15 +29,18 @@ app.mount_asgi("/hello", anotherprogram_app)
 
 ```python
 from indexpy import Index
-from indexpy.routing import HttpRoute
+from indexpy.routing import ASGIRoute
 
 app = Index()
 app.router.append(
-    HttpRoute(
+    ASGIRoute(
         "/static{filepath:path}",
         StaticFiles(directory="static"),
         name="static",
-        is_asgi_app=True,
+        type=("http",),
     )
 )
 ```
+
+!!! notice
+    注册仅支持 WSGI 的 application，应使用 `starlette.middleware.wsgi.WSGIMiddleware` 或 `a2wsgi.WSGIMiddleware` 将其包装转换为支持 ASGI 的 application。

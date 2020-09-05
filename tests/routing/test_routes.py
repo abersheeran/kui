@@ -1,4 +1,5 @@
 import pytest
+from starlette.testclient import TestClient
 
 from indexpy.routing.routes import (
     Router,
@@ -6,10 +7,12 @@ from indexpy.routing.routes import (
     SubRoutes,
     HttpRoute,
     SocketRoute,
+    ASGIRoute,
     NoMatchFound,
     NoRouteFound,
 )
 from indexpy.http import HTTPView
+from indexpy.http.responses import PlainTextResponse
 from indexpy.websocket import SocketView
 
 
@@ -21,6 +24,9 @@ def router():
     def sayhi(request):
         return f"hi, {request.path_params['name']}"
 
+    async def asgi(sc, re, se):
+        ...
+
     router = Router(
         Routes(
             HttpRoute("/sayhi/{name}", sayhi, "sayhi", method="get"),
@@ -31,6 +37,13 @@ def router():
                     SocketRoute("/socket_world", lambda websocket: None),
                 ],
             ),
+            ASGIRoute(
+                "/nothing",
+                PlainTextResponse("hello world"),
+                name="asgi-hello-world",
+                type=("http",),
+            ),
+            ASGIRoute("/nothing/...", asgi, name="nothing..."),
         )
     )
 
@@ -58,6 +71,9 @@ def router():
         ("http", "/about", {}),
         ("http", "/http_view", {}),
         ("websocket", "/socket_view", {}),
+        ("http", "/nothing", {}),
+        ("http", "/nothing/...", {}),
+        ("websocket", "/nothing/...", {}),
     ],
 )
 def test_router_success_search(router: Router, protocol, path, params):
@@ -75,6 +91,7 @@ def test_router_success_search(router: Router, protocol, path, params):
         ("websocket", "/"),
         ("websocket", "/socket"),
         ("websocket", "/socket_view/"),
+        ("websocket", "/nothing"),
     ],
 )
 def test_router_fail_search(router: Router, protocol, path):
@@ -98,3 +115,25 @@ def test_router_success_url_for(router: Router, protocol, name, params, url):
 def test_router_fail_url_for(router: Router):
     with pytest.raises(NoRouteFound):
         router.url_for("longlongname")
+
+
+@pytest.fixture
+def app(router):
+    from indexpy import Index
+
+    app = Index()
+    app.router = router
+    return app
+
+
+@pytest.mark.parametrize(
+    "protocol,path,text",
+    [
+        ("http", "/hello/world", "hello world"),
+        ("http", "/sayhi/aber", "hi, aber"),
+        ("http", "/about", "http://testserver/about"),
+        ("http", "/nothing", "hello world"),
+    ],
+)
+def test_router_success_respond(app, protocol, path, text):
+    assert TestClient(app).get(path).text == text

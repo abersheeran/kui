@@ -2,11 +2,9 @@ import typing
 import functools
 import logging
 from inspect import signature, isclass
-from types import FunctionType
 
 from pydantic import BaseModel, ValidationError
 
-from ..types import ASGIApp
 from ..concurrency import keepasync
 from .responses import Response
 from .request import Request
@@ -32,7 +30,7 @@ class ParamsValidationError(Exception):
         self.ve = validation_error
 
 
-def bound_params(function: FunctionType) -> FunctionType:
+def parse_params(function: typing.Callable) -> typing.Callable:
     """
     parse function params "path", "query", "header", "cookie", "body"
     """
@@ -44,7 +42,6 @@ def bound_params(function: FunctionType) -> FunctionType:
         for param_name in param_names
         if (
             param_name in sig.parameters
-            and param_name != "path"
             and not issubclass(sig.parameters[param_name].annotation, BaseModel)
         )
     ]
@@ -54,18 +51,16 @@ def bound_params(function: FunctionType) -> FunctionType:
             + "You should inherit `pydantic.BaseModel`."
         )
 
-    setattr(
-        function,
-        "__params__",
-        {
-            param_name: sig.parameters[param_name].annotation
-            for param_name in param_names
-            if (
-                param_name in sig.parameters
-                and issubclass(sig.parameters[param_name].annotation, BaseModel)
-            )
-        },
-    )
+    __params__ = {
+        param_name: sig.parameters[param_name].annotation
+        for param_name in param_names
+        if (
+            param_name in sig.parameters
+            and issubclass(sig.parameters[param_name].annotation, BaseModel)
+        )
+    }
+    if __params__:
+        setattr(function, "__params__", __params__)
     return function
 
 
@@ -87,14 +82,14 @@ def merge_list(
     return d
 
 
-async def parse_params(
-    handler: typing.Callable, request: Request
-) -> typing.Callable[[Request], typing.Awaitable[ASGIApp]]:
-
+async def bound_params(handler: typing.Callable, request: Request) -> typing.Callable:
+    """
+    bound parameters "path", "query", "header", "cookie", "body" to the view function
+    """
     if isclass(handler):
         return handler
 
-    __params__ = getattr(handler, "__params__", {})
+    __params__ = getattr(handler, "__params__", None)
     if not __params__:
         return handler
 
@@ -144,7 +139,7 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
             lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
         ):
             function = namespace[function_name]
-            namespace[function_name] = bound_params(function)
+            namespace[function_name] = parse_params(function)
 
         setattr(
             cls,
@@ -172,7 +167,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
             self, self.request.method.lower(), self.http_method_not_allowed
         )
 
-        handler = await parse_params(handler, self.request)
+        handler = await bound_params(handler, self.request)
 
         return await handler()
 

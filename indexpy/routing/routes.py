@@ -1,13 +1,12 @@
 import typing
 import copy
 from functools import update_wrapper, wraps
-from types import FunctionType
 from dataclasses import dataclass, InitVar
 
 from indexpy.types import Literal, ASGIApp, Scope, Receive, Send
 from indexpy.utils import superclass
 from indexpy.concurrency import complicating
-from indexpy.http.view import bound_params, parse_params, only_allow
+from indexpy.http.view import parse_params, bound_params, only_allow
 from indexpy.http.responses import convert
 
 from .convertors import Convertor, compile_path
@@ -28,7 +27,7 @@ def request_response(view: typing.Any) -> ASGIApp:
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         request = current_app.factory_class.http(scope, receive, send)
-        response = convert(await (await parse_params(view, request))(request))
+        response = convert(await (await bound_params(view, request))(request))
         await response(scope, receive, send)
 
     return _
@@ -61,7 +60,6 @@ class BaseRoute:
     path: str
     endpoint: typing.Any
     name: typing.Optional[str] = ""
-    is_asgi_app: bool = False
 
     def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
         raise NotImplementedError()
@@ -88,9 +86,7 @@ class HttpRoute(BaseRoute):
         ):
             if method == "":
                 raise ValueError("View function must be marked with method")
-            self.endpoint = only_allow(
-                method, bound_params(typing.cast(FunctionType, self.endpoint)),
-            )
+            self.endpoint = only_allow(method, parse_params(self.endpoint))
         else:
             if hasattr(self.endpoint, "__method__") and (
                 method.upper() not in (getattr(self.endpoint, "__method__"), "")
@@ -100,9 +96,9 @@ class HttpRoute(BaseRoute):
                 raise ValueError("View class can't be marked with method")
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if hasattr(routes, "http_middlewares"):
+        if hasattr(routes, "_http_middlewares"):
             endpoint = self.endpoint
-            for middleware in getattr(routes, "http_middlewares"):
+            for middleware in getattr(routes, "_http_middlewares"):
                 endpoint = middleware(endpoint)
             self.endpoint = update_wrapper(endpoint, self.endpoint)
 
@@ -110,9 +106,22 @@ class HttpRoute(BaseRoute):
 @dataclass
 class SocketRoute(BaseRoute):
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if hasattr(routes, "socket_middlewares"):
+        if hasattr(routes, "_socket_middlewares"):
             endpoint = self.endpoint
-            for middleware in getattr(routes, "socket_middlewares"):
+            for middleware in getattr(routes, "_socket_middlewares"):
+                endpoint = middleware(endpoint)
+            self.endpoint = update_wrapper(endpoint, self.endpoint)
+
+
+@dataclass
+class ASGIRoute(BaseRoute):
+    # This is mypy error
+    type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket")  # type: ignore
+
+    def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
+        if hasattr(routes, "_asgi_middlewares"):
+            endpoint = self.endpoint
+            for middleware in getattr(routes, "_asgi_middlewares"):
                 endpoint = middleware(endpoint)
             self.endpoint = update_wrapper(endpoint, self.endpoint)
 
@@ -143,7 +152,7 @@ class RouteRegisterMixin:
                 self.append(route)
 
     def http(
-        self, path: str, *, name: str = "", method: str = "", is_asgi_app: bool = False
+        self, path: str, *, name: str = "", method: str = ""
     ) -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(HttpRoute(path, endpoint, name, method))`
@@ -154,14 +163,12 @@ class RouteRegisterMixin:
         """
 
         def register(endpoint: T) -> T:
-            self.append(HttpRoute(path, endpoint, name, is_asgi_app, method))
+            self.append(HttpRoute(path, endpoint, name, method))
             return endpoint
 
         return register
 
-    def websocket(
-        self, path: str, *, name: str = "", is_asgi_app: bool = False
-    ) -> typing.Callable[[T], T]:
+    def websocket(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(SocketRoute(path, endpoint, name))`
 
@@ -171,7 +178,28 @@ class RouteRegisterMixin:
         """
 
         def register(endpoint: T) -> T:
-            self.append(SocketRoute(path, endpoint, name, is_asgi_app))
+            self.append(SocketRoute(path, endpoint, name))
+            return endpoint
+
+        return register
+
+    def asgi(
+        self,
+        path: str,
+        *,
+        name: str = "",
+        type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket"),  # type: ignore
+    ) -> typing.Callable[[T], T]:
+        """
+        shortcut for `self.append(ASGIRoute(path, endpoint, name, type))`
+
+        example:
+            @routes.asgi("/path", name="endpoint-name")
+            class Endpoint(HTTPView): ...
+        """
+
+        def register(endpoint: T) -> T:
+            self.append(ASGIRoute(path, endpoint, name, type))
             return endpoint
 
         return register
@@ -183,10 +211,12 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
         *iterable: typing.Union["BaseRoute", "Routes"],
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
+        asgi_middlewares: typing.List[typing.Any] = [],
     ) -> None:
         super().__init__()
-        self.http_middlewares = copy.copy(http_middlewares)
-        self.socket_middlewares = copy.copy(socket_middlewares)
+        self._http_middlewares = copy.copy(http_middlewares)
+        self._socket_middlewares = copy.copy(socket_middlewares)
+        self._asgi_middlewares = copy.copy(asgi_middlewares)
         for route in iterable:
             if not isinstance(route, Routes):
                 self.append(route)
@@ -224,7 +254,7 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
 
             routes.http_middleware(middleware)
         """
-        self.http_middlewares.append(middleware)
+        self._http_middlewares.append(middleware)
         return middleware
 
     def socket_middleware(self, middleware: T) -> T:
@@ -245,7 +275,28 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
 
             routes.socket_middleware(middleware)
         """
-        self.socket_middlewares.append(middleware)
+        self._socket_middlewares.append(middleware)
+        return middleware
+
+    def asgi_middleware(self, middleware: T) -> T:
+        """
+        append middleware in routes
+
+        example:
+            @routes.asgi_middleware
+            def middleware(endpoint):
+                async def wrapper(scope, receive, send):
+                    await endpoint(scope, receive, send)
+                return wrapper
+        or
+            def middleware(endpoint):
+                async def wrapper(scope, receive, send):
+                    await endpoint(scope, receive, send)
+                return wrapper
+
+            routes.asgi_middleware(middleware)
+        """
+        self._asgi_middlewares.append(middleware)
         return middleware
 
 
@@ -253,10 +304,11 @@ class SubRoutes(Routes):
     def __init__(
         self,
         prefix: str,
-        routes: Routes = typing.cast(Routes, []),
+        routes: typing.List[BaseRoute] = [],
         *,
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
+        asgi_middlewares: typing.List[typing.Any] = [],
     ) -> None:
         if not prefix.startswith("/") or prefix.endswith("/"):
             raise ValueError("Mount prefix cannot end with '/' and must start with '/'")
@@ -265,6 +317,7 @@ class SubRoutes(Routes):
             *routes,
             http_middlewares=http_middlewares,
             socket_middlewares=socket_middlewares,
+            asgi_middlewares=asgi_middlewares,
         )
 
 
@@ -282,30 +335,62 @@ class Router(RouteRegisterMixin):
 
         self.extend(routes)
 
+    def _append(
+        self,
+        path: str,
+        endpoint: ASGIApp,
+        name: typing.Optional[str],
+        radix_tree: RadixTree,
+        routes: typing.Dict,
+    ) -> None:
+        if name in routes:
+            raise ValueError(f"Duplicate route name: {name}")
+
+        radix_tree.append(path, endpoint)
+        path_format, path_convertors = compile_path(path)
+
+        if name:  # name in ("", None)
+            routes[name] = (path_format, path_convertors, endpoint)
+
     def append(self, route: BaseRoute) -> None:
         if isinstance(route, HttpRoute):
-            radix_tree = self.http_tree
-            routes = self.http_routes
-            if not route.is_asgi_app:
-                route.endpoint = request_response(route.endpoint)
+            self._append(
+                route.path,
+                request_response(route.endpoint),
+                route.name,
+                self.http_tree,
+                self.http_routes,
+            )
         elif isinstance(route, SocketRoute):
-            radix_tree = self.websocket_tree
-            routes = self.websocket_routes
-            if not route.is_asgi_app:
-                route.endpoint = websocket_session(route.endpoint)
+            self._append(
+                route.path,
+                websocket_session(route.endpoint),
+                route.name,
+                self.websocket_tree,
+                self.websocket_routes,
+            )
+        elif isinstance(route, ASGIRoute):
+            if "http" in route.type:
+                self._append(
+                    route.path,
+                    route.endpoint,
+                    route.name,
+                    self.http_tree,
+                    self.http_routes,
+                )
+            if "websocket" in route.type:
+                self._append(
+                    route.path,
+                    route.endpoint,
+                    route.name,
+                    self.websocket_tree,
+                    self.websocket_routes,
+                )
         else:
             raise TypeError(
-                "Need type: `HttpRoute` or `SocketRoute`,"
+                "Need type: `ASGIRoute`, `HttpRoute` or `SocketRoute`,"
                 + f" but got type: {type(route)}"
             )
-
-        radix_tree.append(route.path, route.endpoint)
-        path_format, path_convertors = compile_path(route.path)
-
-        if route.name in routes:
-            raise ValueError(f"Duplicate route name: {route.name}")
-        if route.name:
-            routes[route.name] = (path_format, path_convertors, route.endpoint)
 
     def search(
         self, protocol: Literal["http", "websocket"], path: str
