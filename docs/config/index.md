@@ -37,7 +37,7 @@ dev:
 
 # use in production
 pro:
-  "host": "127.0.0.1"
+  "host": "0.0.0.0"
   "port": "41900"
   "log_level": "warning"
 
