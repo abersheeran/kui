@@ -30,12 +30,13 @@ app.mount_asgi("/hello", anotherprogram_app)
 ```python
 from indexpy import Index
 from indexpy.routing import ASGIRoute
+from starlette.staticfiles import StaticFiles
 
 app = Index()
 app.router.append(
     ASGIRoute(
         "/static{filepath:path}",
-        StaticFiles(directory="static"),
+        StaticFiles(directory="."),
         name="static",
         type=("http",),
     )
