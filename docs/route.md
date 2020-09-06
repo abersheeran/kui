@@ -266,3 +266,37 @@ Routes(
     ),
 )
 ```
+
+## 路由冲突
+
+> 当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。
+
+Index 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。
+
+```python
+app.router.extend([
+    HttpRoute("/static/verify.txt", ...),
+    HttpRoute("/static/{filepath:path}", ...),
+])
+```
+
+- 在上例中，两个路由同为 `/static/` 节点下的子节点，故而在匹配 url 为 `/static/verify.txt` 的请求时，按照注册顺序，会匹配到第一条。
+- 在下例中，`/static/verify/google.txt` 能匹配到的是第三条路由而不是第二条——因为第三条路由与第一条路由同为 `/static/verify/` 节点下的子节点，第二条路由属于 `/static/` 节点下，`/static/` 的子节点里优先匹配到 `verify` 节点与其子节点，后匹配 `{filepath:path}` 节点。故而匹配到第三条路由，而不是第二条。
+
+```python
+app.router.extend([
+    HttpRoute("/static/verify/bing.txt", ...),
+    HttpRoute("/static/{filepath:path}", ...),
+    HttpRoute("/static/verify/google.txt", ...),
+])
+```
+
+但如果注册顺序如下例，则 `/static/verify/google.txt` 匹配到的路由为第一条，
+
+```python
+app.router.extend([
+    HttpRoute("/static/{filepath:path}", ...),
+    HttpRoute("/static/verify/bing.txt", ...),
+    HttpRoute("/static/verify/google.txt", ...),
+])
+```
