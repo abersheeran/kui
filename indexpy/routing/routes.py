@@ -338,6 +338,7 @@ class IndexRoutes(typing.List[BaseRoute]):
             if relpath.endswith("index"):
                 relpath = relpath[:-5]
             path_list = relpath.split("/")
+            path_list.insert(0, module_name)
             url_path = relpath + suffix
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
