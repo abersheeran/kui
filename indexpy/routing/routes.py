@@ -325,7 +325,9 @@ class SubRoutes(Routes):
 
 
 class IndexRoutes(typing.List[BaseRoute]):
-    def __init__(self, module_name: str, suffix: str = "") -> None:
+    def __init__(
+        self, module_name: str, *, allow_underline: bool = False, suffix: str = ""
+    ) -> None:
         dirpath = Path(
             os.path.abspath(importlib.import_module(module_name).__file__)
         ).parent
@@ -334,7 +336,10 @@ class IndexRoutes(typing.List[BaseRoute]):
         for pypath in dirpath.glob("**/*.py"):
             relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
             path_list = relpath.split("/")
-            module = importlib.import_module(path_list.join("."))
+            url_path = relpath + suffix
+            if not allow_underline:
+                url_path = url_path.replace("_", "-")
+            module = importlib.import_module(".".join(path_list))
             url_name = getattr(module, "name", None)
             get_response = getattr(module, "HTTP", None)
             serve_socket = getattr(module, "Socket", None)
@@ -344,14 +349,14 @@ class IndexRoutes(typing.List[BaseRoute]):
                     if not hasattr(_module, "HTTPMiddleware"):
                         continue
                     get_response = getattr(_module, "HTTPMiddleware")(get_response)
-                self.append(HttpRoute(relpath + suffix, get_response, url_name))
+                self.append(HttpRoute(url_path, get_response, url_name))
             if serve_socket:
                 for deep in range(len(path_list), 0, -1):
                     _module = importlib.import_module(".".join(path_list[:deep]))
                     if not hasattr(_module, "SocketMiddleware"):
                         continue
                     serve_socket = getattr(_module, "SocketMiddleware")(serve_socket)
-                self.append(HttpRoute(relpath + suffix, serve_socket, url_name))
+                self.append(SocketRoute(url_path, serve_socket, url_name))
 
 
 class Router(RouteRegisterMixin):

@@ -111,8 +111,10 @@ def search(
 
         path = path[length:]
         if not path:  # path == "", found the first suitable route
-            for name in set(params.keys()) - set(point.param_convertors.keys()):
-                del params[name]
+            [
+                params.pop(name)
+                for name in set(params.keys()) - set(point.param_convertors.keys())
+            ]
             return params, point
 
         for node in point.next_nodes:
