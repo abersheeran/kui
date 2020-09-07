@@ -334,7 +334,7 @@ class IndexRoutes(typing.List[BaseRoute]):
         assert dirpath.name == module_name
 
         for pypath in dirpath.glob("**/*.py"):
-            relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
+            relpath = "/" + str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
             if relpath.endswith("index"):
                 relpath = relpath[:-5]
             path_list = relpath.split("/")
