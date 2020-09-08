@@ -11,7 +11,7 @@ from ..http.responses import (
     YAMLResponse,
     HTMLResponse,
 )
-from ..applications import Index, IndexFile
+from ..applications import Index
 
 from .schema import schema_parameters, schema_request_body, schema_response
 
@@ -63,17 +63,6 @@ class OpenAPI:
             path_docs = self._generate_path(endpoint, path_format)
             if path_docs:
                 result[path_format] = path_docs
-
-        for index_file_app in reversed(
-            [subapp for _, subapp in app.mount_apps if isinstance(subapp, IndexFile)]
-        ):
-            for view, path in index_file_app.get_views():
-                if not hasattr(view, "HTTP"):
-                    continue
-                viewclass = getattr(view, "HTTP")
-                path_docs = self._generate_path(viewclass, path)
-                if path_docs:
-                    result[path] = path_docs
 
         return result
 

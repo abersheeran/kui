@@ -4,9 +4,7 @@ import typing
 import asyncio
 import logging
 import traceback
-import importlib
 from dataclasses import dataclass
-from types import ModuleType
 
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.datastructures import URL
@@ -18,14 +16,12 @@ from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
 from a2wsgi import WSGIMiddleware
 
 from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal
-from .utils import cached_property
 from .config import Config
 from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
 from .http.responses import (
-    convert,
     Response,
     FileResponse,
     RedirectResponse,
