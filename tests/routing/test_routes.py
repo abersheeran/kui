@@ -36,6 +36,7 @@ def router():
                     HttpRoute("/world", hello_world, "hello-world", method="get"),
                     SocketRoute("/socket_world", lambda websocket: None),
                 ],
+                namespace="hello",
             ),
             ASGIRoute(
                 "/nothing",
@@ -102,10 +103,12 @@ def test_router_fail_search(router: Router, protocol, path):
 @pytest.mark.parametrize(
     "protocol,name,params,url",
     [
-        ("http", "hello-world", {}, "/hello/world"),
+        ("http", "hello:hello-world", {}, "/hello/world"),
         ("http", "sayhi", {"name": "aber"}, "/sayhi/aber"),
         ("http", "about", {"name": "aber"}, "/about/aber"),
         ("websocket", "socket", {}, "/socket_view"),
+        ("http", "nothing...", {}, "/nothing/..."),
+        ("http", "asgi-hello-world", {}, "/nothing"),
     ],
 )
 def test_router_success_url_for(router: Router, protocol, name, params, url):

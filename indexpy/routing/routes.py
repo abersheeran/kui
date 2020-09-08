@@ -144,15 +144,16 @@ class RouteRegisterMixin:
                 route.extend_middlewares(routes)
 
             if isinstance(routes, SubRoutes):
-                self.append(
-                    route.__class__(
-                        path=routes.prefix + route.path,
-                        endpoint=route.endpoint,
-                        name=route.name,
-                    )
+                route = route.__class__(
+                    path=routes.prefix + route.path,
+                    endpoint=route.endpoint,
+                    name=route.name,
                 )
-            else:
-                self.append(route)
+
+            if getattr(routes, "namespace", None) and route.name:
+                route.name = getattr(routes, "namespace") + ":" + route.name
+
+            self.append(route)
 
     def http(
         self, path: str, *, name: str = "", method: str = ""
@@ -211,12 +212,14 @@ class RouteRegisterMixin:
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union["BaseRoute", "Routes"],
+        *iterable: typing.Union["BaseRoute", "Routes", "IndexRoutes"],
+        namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
         asgi_middlewares: typing.List[typing.Any] = [],
     ) -> None:
         super().__init__()
+        self.namespace = namespace
         self._http_middlewares = copy.copy(http_middlewares)
         self._socket_middlewares = copy.copy(socket_middlewares)
         self._asgi_middlewares = copy.copy(asgi_middlewares)
@@ -309,6 +312,7 @@ class SubRoutes(Routes):
         prefix: str,
         routes: typing.List[BaseRoute] = [],
         *,
+        namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
         asgi_middlewares: typing.List[typing.Any] = [],
@@ -318,6 +322,7 @@ class SubRoutes(Routes):
         self.prefix = prefix
         super().__init__(
             *routes,
+            namespace=namespace,
             http_middlewares=http_middlewares,
             socket_middlewares=socket_middlewares,
             asgi_middlewares=asgi_middlewares,
@@ -326,7 +331,12 @@ class SubRoutes(Routes):
 
 class IndexRoutes(typing.List[BaseRoute]):
     def __init__(
-        self, module_name: str, *, allow_underline: bool = False, suffix: str = ""
+        self,
+        module_name: str,
+        *,
+        namespace: str = "",
+        allow_underline: bool = False,
+        suffix: str = "",
     ) -> None:
         dirpath = Path(
             os.path.abspath(importlib.import_module(module_name).__file__)
@@ -335,13 +345,17 @@ class IndexRoutes(typing.List[BaseRoute]):
 
         for pypath in dirpath.glob("**/*.py"):
             relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
+
             path_list = relpath.split("/")
             path_list.insert(0, module_name)
-            if relpath.endswith("index"):
-                relpath = relpath[:-5]
-            url_path = "/" + relpath + suffix
+
+            url_path = "/" + relpath
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
+            if url_path.endswith("index"):
+                url_path = url_path[:-5]
+            url_path = url_path + suffix
+
             module = importlib.import_module(".".join(path_list))
             url_name = getattr(module, "name", None)
             get_response = getattr(module, "HTTP", None)
@@ -360,6 +374,8 @@ class IndexRoutes(typing.List[BaseRoute]):
                         continue
                     serve_socket = getattr(_module, "SocketMiddleware")(serve_socket)
                 self.append(SocketRoute(url_path, serve_socket, url_name))
+
+        self.namespace = namespace
 
 
 class Router(RouteRegisterMixin):
