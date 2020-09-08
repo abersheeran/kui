@@ -99,7 +99,7 @@ class HttpRoute(BaseRoute):
                 raise ValueError("View class can't be marked with method")
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if hasattr(routes, "_http_middlewares"):
+        if getattr(routes, "_http_middlewares", None):
             endpoint = self.endpoint
             for middleware in getattr(routes, "_http_middlewares"):
                 endpoint = middleware(endpoint)
@@ -109,7 +109,7 @@ class HttpRoute(BaseRoute):
 @dataclass
 class SocketRoute(BaseRoute):
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if hasattr(routes, "_socket_middlewares"):
+        if getattr(routes, "_socket_middlewares", None):
             endpoint = self.endpoint
             for middleware in getattr(routes, "_socket_middlewares"):
                 endpoint = middleware(endpoint)
@@ -221,7 +221,7 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
         self._socket_middlewares = copy.copy(socket_middlewares)
         self._asgi_middlewares = copy.copy(asgi_middlewares)
         for route in iterable:
-            if not isinstance(route, Routes):
+            if not isinstance(route, typing.List):
                 self.append(route)
             else:
                 self.extend(route)
@@ -334,12 +334,12 @@ class IndexRoutes(typing.List[BaseRoute]):
         assert dirpath.name == module_name
 
         for pypath in dirpath.glob("**/*.py"):
-            relpath = "/" + str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
-            if relpath.endswith("index"):
-                relpath = relpath[:-5]
+            relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
             path_list = relpath.split("/")
             path_list.insert(0, module_name)
-            url_path = relpath + suffix
+            if relpath.endswith("index"):
+                relpath = relpath[:-5]
+            url_path = "/" + relpath + suffix
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
             module = importlib.import_module(".".join(path_list))
