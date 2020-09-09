@@ -15,15 +15,6 @@ from indexpy.http.responses import convert
 from .convertors import Convertor, compile_path
 from .tree import RadixTree
 
-__all__ = [
-    "Routes",
-    "SubRoutes",
-    "HttpRoute",
-    "SocketRoute",
-    "NoMatchFound",
-    "NoRouteFound",
-]
-
 
 def request_response(view: typing.Any) -> ASGIApp:
     @wraps(view)
@@ -212,7 +203,7 @@ class RouteRegisterMixin:
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union["BaseRoute", "Routes", "IndexRoutes"],
+        *iterable: typing.Union["BaseRoute", "Routes", "FileRoutes"],
         namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
@@ -329,7 +320,7 @@ class SubRoutes(Routes):
         )
 
 
-class IndexRoutes(typing.List[BaseRoute]):
+class FileRoutes(typing.List[BaseRoute]):
     def __init__(
         self,
         module_name: str,
@@ -352,8 +343,6 @@ class IndexRoutes(typing.List[BaseRoute]):
             url_path = "/" + relpath
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
-            if url_path.endswith("index"):
-                url_path = url_path[:-5]
             url_path = url_path + suffix
 
             module = importlib.import_module(".".join(path_list))

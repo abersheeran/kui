@@ -4,7 +4,7 @@ from .routes import (
     HttpRoute,
     SocketRoute,
     ASGIRoute,
-    IndexRoutes,
+    FileRoutes,
     NoMatchFound,
     NoRouteFound,
 )
@@ -15,7 +15,7 @@ __all__ = [
     "HttpRoute",
     "SocketRoute",
     "ASGIRoute",
-    "IndexRoutes",
+    "FileRoutes",
     "NoMatchFound",
     "NoRouteFound",
 ]
