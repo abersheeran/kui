@@ -41,7 +41,7 @@ async def hello(request):
 使用类处理多种请求十分简单。只需要继承 `indexpy.http.HTTPView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
 
 !!! tip
-    对于一般的跨域需求，`options` 方法不需要自行编写，做好[跨域配置](../config/list/#cors_allow_origins)即可。
+    对于一般的跨域需求，`options` 方法不需要自行编写，做好[跨域配置](./config/list.md#cors_allow_origins)即可。
 
 通过 `self.request` 可以读取此次请求的信息。
 

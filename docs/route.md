@@ -180,7 +180,7 @@ app.router.extend(routes)
 
 ### 注册中间件
 
-通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例，关于中间件定义更详细的描述请查看[中间件章节](../middleware/)。
+通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例，关于中间件定义更详细的描述请查看[中间件章节](./middleware.md)。
 
 ```python
 def http_only_print(endpoint):

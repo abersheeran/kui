@@ -30,7 +30,7 @@ async def signup(request):
 ```
 
 !!! notice
-    如果无法使用 `async def` 定义需要在后台执行的函数，请使用 [`@make_async`](../knowledge/concurrency/#make_async) 进行包装。
+    如果无法使用 `async def` 定义需要在后台执行的函数，请使用 [`@make_async`](./knowledge/concurrency.md#make_async) 进行包装。
 
 ## 多后台任务
 
