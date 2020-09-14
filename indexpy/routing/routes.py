@@ -37,6 +37,23 @@ def websocket_session(view: typing.Any) -> ASGIApp:
     return _
 
 
+def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
+    assert path_prefix.startswith("/"), "path_prefix must be start with '/'"
+    assert not path_prefix.endswith("/"), "path_prefix can't end with '/'"
+
+    @wraps(asgi)
+    async def _(scope: Scope, receive: Receive, send: Send) -> None:
+        path = scope["path"]
+        root_path = scope.get("root_path", "")
+
+        subscope = copy.copy(scope)
+        subscope["path"] = path[len(path_prefix) :]
+        subscope["root_path"] = root_path + path_prefix
+        await asgi(subscope, receive, send)
+
+    return _
+
+
 class NoMatchFound(Exception):
     """
     Raised by `.search(path)` if no matching route exists.
@@ -111,6 +128,12 @@ class SocketRoute(BaseRoute):
 class ASGIRoute(BaseRoute):
     # This is mypy error
     type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket")  # type: ignore
+    root_path: InitVar[str] = ""
+
+    def __post_init__(self, root_path: str) -> None:  # type: ignore
+        super().__post_init__()
+        if root_path:
+            self.endpoint = subpath_asgi(root_path, self.endpoint)
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         if hasattr(routes, "_asgi_middlewares"):
@@ -184,6 +207,7 @@ class RouteRegisterMixin:
         *,
         name: str = "",
         type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket"),  # type: ignore
+        root_path: str = "",
     ) -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(ASGIRoute(path, endpoint, name, type))`
@@ -194,7 +218,7 @@ class RouteRegisterMixin:
         """
 
         def register(endpoint: T) -> T:
-            self.append(ASGIRoute(path, endpoint, name, type))
+            self.append(ASGIRoute(path, endpoint, name, type, root_path))
             return endpoint
 
         return register
@@ -343,7 +367,10 @@ class FileRoutes(typing.List[BaseRoute]):
             url_path = "/" + relpath
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
-            url_path = url_path + suffix
+            if url_path.endswith("/index"):
+                url_path = url_path[: -len("index")]
+            else:
+                url_path = url_path + suffix
 
             module = importlib.import_module(".".join(path_list))
             url_name = getattr(module, "name", None)
@@ -395,7 +422,7 @@ class Router(RouteRegisterMixin):
         radix_tree.append(path, endpoint)
         path_format, path_convertors = compile_path(path)
 
-        if name:  # name in ("", None)
+        if name:  # name not in ("", None)
             routes[name] = (path_format, path_convertors, endpoint)
 
     def append(self, route: BaseRoute) -> None:

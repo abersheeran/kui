@@ -24,8 +24,18 @@ def router():
     def sayhi(request):
         return f"hi, {request.path_params['name']}"
 
-    async def asgi(sc, re, se):
-        ...
+    async def asgi(scope, receive, send):
+        assert scope["root_path"] == "/nothing"
+        assert scope["path"] == "/..."
+        assert scope["type"] == "http"
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [[b"content-type", b"text/plain"]],
+            }
+        )
+        await send({"type": "http.response.body", "body": b"Hello, world!"})
 
     router = Router(
         Routes(
@@ -44,7 +54,7 @@ def router():
                 name="asgi-hello-world",
                 type=("http",),
             ),
-            ASGIRoute("/nothing/...", asgi, name="nothing..."),
+            ASGIRoute("/nothing/...", asgi, name="nothing...", root_path="/nothing"),
         )
     )
 
@@ -136,6 +146,7 @@ def app(router):
         ("http", "/sayhi/aber", "hi, aber"),
         ("http", "/about", "http://testserver/about"),
         ("http", "/nothing", "hello world"),
+        ("http", "/nothing/...", "Hello, world!"),
     ],
 )
 def test_router_success_respond(app, protocol, path, text):
