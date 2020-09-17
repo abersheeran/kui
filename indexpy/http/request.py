@@ -72,6 +72,11 @@ class HTTPConnection(typing.Mapping):
         return len(self.scope)
 
     @cached_property
+    def client(self) -> Address:
+        host, port = self.scope.get("client") or (None, None)
+        return Address(host=host, port=port)
+
+    @cached_property
     def url(self) -> URL:
         return URL(scope=self.scope)
 
@@ -107,9 +112,11 @@ class HTTPConnection(typing.Mapping):
         return cookies
 
     @cached_property
-    def client(self) -> Address:
-        host, port = self.scope.get("client") or (None, None)
-        return Address(host=host, port=port)
+    def session(self) -> typing.Dict[str, typing.Any]:
+        assert (
+            "session" in self.scope
+        ), "`starlette.middleware.sessions.SessionMiddleware` must be installed to access request.session"
+        return self.scope["session"]
 
     @cached_property
     def state(self) -> State:
