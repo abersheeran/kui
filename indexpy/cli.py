@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import signal
 import logging
@@ -47,7 +48,7 @@ def main():
     indexpy_logger.setLevel(LOG_LEVELS[config.LOG_LEVEL])
 
 
-@main.command(help="use only uvicorn to deploy")
+@main.command(help="use uvicorn to run Index.py")
 @click.argument("application", default=lambda: config.APP)
 def serve(application):
     import uvicorn
@@ -63,39 +64,57 @@ def serve(application):
     )
 
 
-@main.command(help="use uvicorn to deploy by gunicorn")
+@click.group(help="use gunicorn to run Index.py")
+def gunicorn():
+    pass
+
+
+@gunicorn.command()
 @click.option("--workers", "-w", default=cpu_count())
+@click.option("--worker-class", "-k", default="uvicorn.workers.UvicornWorker")
 @click.option("--daemon", "-d", default=False, is_flag=True)
 @click.option(
     "--configuration",
     "-c",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
-@click.argument("method", type=click.Choice(["start", "stop", "reload"]))
 @click.argument("application", default=lambda: config.APP)
-def gunicorn(workers, daemon, configuration, method, application):
-    if method == "start":
-        command = [
-            "gunicorn -k uvicorn.workers.UvicornWorker",
-            f"--bind {config.HOST}:{config.PORT}",
-            f"--chdir {here}",
-            f"--workers {workers}",
-            f"--pid {os.path.join(here, '.pid')}",
-            f"--log-level {config.LOG_LEVEL}",
-        ]
-        if daemon:
-            command.append("-D --log-file log.index")
-        if config.AUTORELOAD:
-            command.append("--reload")
-        if configuration:
-            command.append("-c " + configuration)
-        command.append(application)
+def start(workers, worker_class, daemon, configuration, application):
+    from gunicorn.app.wsgiapp import run
 
-        execute(command)
-    elif method == "stop":
-        execute(["kill -TERM", "`cat .pid`"])
-    elif method == "reload":
-        execute(["kill -HUP", "`cat .pid`"])
+    command = (
+        "gunicorn"
+        + f" -k {worker_class}"
+        + f" --bind {config.HOST}:{config.PORT}"
+        + f" --chdir {here}"
+        + f" --workers {workers}"
+        + f" --pid {os.path.join(here, '.pid')}"
+        + f" --log-level {config.LOG_LEVEL}"
+    )
+    args = command.split(" ")
+    if daemon:
+        args.extend("-D --log-file log.index".split(" "))
+    if config.AUTORELOAD:
+        args.append("--reload")
+    if configuration:
+        args.append("-c")
+        args.append(configuration.strip())
+    args.append(application)
 
+    sys.argv = args
+    run()
+
+
+@gunicorn.command("")
+def stop():
+    execute(["kill -TERM", "`cat .pid`"])
+
+
+@gunicorn.command()
+def reload():
+    execute(["kill -HUP", "`cat .pid`"])
+
+
+main.add_command(gunicorn, "gunicorn")
 
 import_module("commands")
