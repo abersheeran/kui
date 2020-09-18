@@ -4,7 +4,7 @@ import copy
 import importlib
 from pathlib import Path
 from functools import update_wrapper, wraps
-from dataclasses import dataclass, InitVar
+from dataclasses import dataclass, InitVar, asdict
 
 from indexpy.types import Literal, ASGIApp, Scope, Receive, Send
 from indexpy.utils import superclass
@@ -158,11 +158,9 @@ class RouteRegisterMixin:
                 route.extend_middlewares(routes)
 
             if isinstance(routes, SubRoutes):
-                route = route.__class__(
-                    path=routes.prefix + route.path,
-                    endpoint=route.endpoint,
-                    name=route.name,
-                )
+                data = asdict(route)
+                data["path"] = routes.prefix + data["path"]
+                route = route.__class__(**data)
 
             if getattr(routes, "namespace", None) and route.name:
                 route.name = getattr(routes, "namespace") + ":" + route.name
