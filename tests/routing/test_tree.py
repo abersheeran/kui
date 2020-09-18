@@ -49,7 +49,8 @@ def test_tree_success_search(tree: RadixTree, path, params):
 
 
 @pytest.mark.parametrize(
-    "path", ["", "/hello/", "/hello/world/", "/sayhi/aber/avatar"],
+    "path",
+    ["", "/hello/", "/hello/world/", "/sayhi/aber/avatar"],
 )
 def test_tree_fail_search(tree: RadixTree, path):
     assert tree.search(path)[0] is None, f"error in {path}"

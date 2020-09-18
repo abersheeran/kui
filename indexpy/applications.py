@@ -146,7 +146,8 @@ class Index:
                 templates_loaders.append(FileSystemLoader(template_path))
 
         self.jinja_env = Environment(
-            loader=ChoiceLoader(templates_loaders), enable_async=True,
+            loader=ChoiceLoader(templates_loaders),
+            enable_async=True,
         )
         self.try_html = try_html
 

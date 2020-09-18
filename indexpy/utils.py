@@ -16,7 +16,10 @@ from typing import (
 
 class Singleton(type):
     def __init__(
-        cls, name: str, bases: Tuple[type], namespace: Dict[str, Any],
+        cls,
+        name: str,
+        bases: Tuple[type],
+        namespace: Dict[str, Any],
     ) -> None:
         cls.instance = None
         super().__init__(name, bases, namespace)
