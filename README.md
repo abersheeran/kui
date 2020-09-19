@@ -47,11 +47,11 @@
 Index.py 实现了 [ASGI3](http://asgi.readthedocs.io/en/latest/) 接口，并使用 Radix Tree 进行路由查找。是最快的 Python web 框架之一。一切特性都服务于快速开发高性能的 Web 服务。
 
 - 灵活且高效的路由系统 (基于 Radix Tree)
-- 自动解析请求 & 生成文档 (基于 `pydantic`)
-- 可视化 API 接口 (基于 `ReDoc`, 针对中文字体优化)
-- 非常简单的部署 (基于 `uvicorn` 与 `gunicorn`)
+- 自动解析请求 & 生成文档 (基于 [pydantic](https://pydantic-docs.helpmanual.io/))
+- 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
+- 非常简单的部署 (基于 uvicorn 与 gunicorn)
 - 挂载 ASGI/WSGI 应用 (基于 [a2wsgi](https://github.com/abersheeran/a2wsgi/))
-- 进程内后台任务 (基于 `asyncio`)
+- 进程内后台任务 (基于 [asyncio](https://docs.python.org/3/library/asyncio.html))
 - 可使用任何可用的 ASGI 生态
 
 ## Install
