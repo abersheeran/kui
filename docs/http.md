@@ -195,6 +195,43 @@ del request.state.user  # 删
 
 ### [JSONResponse](https://www.starlette.io/responses/#jsonresponse)
 
+#### 自定义序列化方法
+
+很多时候，Python 内置的 `json` 标准库无法满足实际项目的序列化需求，这时候就需要自定义一个 `JSONResponse` 来使用了。
+
+```python
+import json
+import decimal
+import datetime
+
+from indexpy.http.responses import JSONResponse as _JSONResponse
+
+
+def json_encoder(obj):
+    if isinstance(obj, datetime.datetime):
+        return obj.strftime("%Y-%m-%d %H:%M:%S")
+
+    if isinstance(obj, datetime.date):
+        return obj.strftime("%Y-%m-%d")
+
+    if isinstance(obj, decimal.Decimal):
+        return str(obj)
+
+    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
+
+
+class CustomizeJSONResponse(_JSONResponse):
+    def render(self, content) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+            default=json_encoder,
+        ).encode("utf-8")
+```
+
 ### [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
 
 ### [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
@@ -327,6 +364,21 @@ class Error:
 @automatic.register(Error)
 def _error_json(error: Error, status: int = 400) -> Response:
     return JSONResponse(asdict(error), status)
+```
+
+或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`（以上文中自定义 JSON 序列化为例）：
+
+```python
+from indexpy.http.responses import automatic, Response
+
+...
+
+
+@automatic.register(tuple)
+@automatic.register(list)
+@automatic.register(dict)
+def _more_json(body: dict, status: int = 200, headers: dict = None) -> Response:
+    return CustomizeJSONResponse(body, status, headers)
 ```
 
 ### 默认响应
