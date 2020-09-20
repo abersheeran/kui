@@ -9,7 +9,6 @@ from ..concurrency import keepasync
 from .responses import Response
 from .request import Request
 
-
 HTTP_METHOD_NAMES = [
     "get",
     "post",
@@ -20,7 +19,6 @@ HTTP_METHOD_NAMES = [
     "options",
     "trace",
 ]
-
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +132,6 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
         bases: typing.Tuple[type],
         namespace: typing.Dict[str, typing.Any],
     ):
-
         for function_name in filter(
             lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
         ):
@@ -207,14 +204,15 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
     if func is None:
         return lambda func: only_allow(method, func)
 
+    func = parse_params(func)
     setattr(func, "__method__", method.upper())
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs) -> typing.Any:
         request = args[0]
         if request.method.lower() == method.lower():
-            handler = await bound_params(func, request)
-            return await handler(*args, **kwargs)  # type: ignore
+            handler = await bound_params(func, request)  # type: ignore
+            return await handler(*args, **kwargs)
 
         if request.method == "OPTIONS":
             return Response(headers={"Allow": method, "Content-Length": "0"})

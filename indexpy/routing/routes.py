@@ -9,7 +9,7 @@ from dataclasses import dataclass, InitVar, asdict
 from indexpy.types import Literal, ASGIApp, Scope, Receive, Send
 from indexpy.utils import superclass
 from indexpy.concurrency import complicating
-from indexpy.http.view import parse_params, bound_params, only_allow
+from indexpy.http.view import only_allow
 from indexpy.http.responses import convert
 
 from .convertors import Convertor, compile_path
@@ -97,7 +97,7 @@ class HttpRoute(BaseRoute):
         ):
             if method == "":
                 raise ValueError("View function must be marked with method")
-            self.endpoint = only_allow(method, parse_params(self.endpoint))
+            self.endpoint = only_allow(method, self.endpoint)
         else:
             if hasattr(self.endpoint, "__method__") and (
                 method.upper() not in (getattr(self.endpoint, "__method__"), "")
