@@ -2,6 +2,7 @@ from functools import wraps
 
 import pytest
 from starlette.testclient import TestClient
+from pydantic import BaseModel
 
 from indexpy.applications import Index
 from indexpy.routing import Routes, SubRoutes, HttpRoute
@@ -16,9 +17,12 @@ def app():
     async def hello(request):
         return "hello world"
 
+    class Name(BaseModel):
+        name: str
+
     @app.router.http("/path/{name}", method="get")
-    async def path(request):
-        return f"path {request.path_params['name']}"
+    async def path(request, path: Name):
+        return f"path {path.name}"
 
     def http_middleware(endpoint):
         @wraps(endpoint)
@@ -32,7 +36,7 @@ def app():
     def only_empty(request):
         return b""
 
-    def get_path(request):
+    def get_path(request, path: Name):
         return request.url.path
 
     def holiday(request):

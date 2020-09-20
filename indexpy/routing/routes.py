@@ -21,7 +21,7 @@ def request_response(view: typing.Any) -> ASGIApp:
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         request = current_app.factory_class.http(scope, receive, send)
-        response = convert(await (await bound_params(view, request))(request))
+        response = convert(await view(request))
         await response(scope, receive, send)
 
     return _

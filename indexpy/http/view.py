@@ -213,7 +213,8 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
     async def wrapper(*args, **kwargs) -> typing.Any:
         request = args[0]
         if request.method.lower() == method.lower():
-            return await func(*args, **kwargs)  # type: ignore
+            handler = await bound_params(func, request)
+            return await handler(*args, **kwargs)  # type: ignore
 
         if request.method == "OPTIONS":
             return Response(headers={"Allow": method, "Content-Length": "0"})
