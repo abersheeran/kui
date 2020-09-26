@@ -61,7 +61,8 @@ jobs:
           git branch --verbose
 
           # publish all
-          git push --mirror coding
+          git push --all --force coding
+          git push --tags --force coding
         env:
           CODING_REPOSITORY: aber/github/index.py
           CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
