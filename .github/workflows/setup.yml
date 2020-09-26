@@ -51,3 +51,18 @@ jobs:
           git push --force publisher setup.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to mirror
+        run: |
+          remote_repo="https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net/${CODING_REPOSITORY}.git"
+
+          git remote add coding "${remote_repo}"
+          git show-ref # useful for debugging
+          git branch --verbose
+
+          # publish all
+          git push --all --force coding
+        env:
+          CODING_REPOSITORY: aber/github/index.py
+          CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
+          CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
