@@ -59,6 +59,7 @@ jobs:
       - name: Clone
         run: |
           git clone https://github.com/${GITHUB_REPOSITORY}.git
+          cd index.py
           git fetch --all
 
       - name: Push to Coding
