@@ -59,7 +59,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Pull all ref
-        run: git pull --all
+        run: |
+          git remote add old https://github.com/${GITHUB_REPOSITORY}.git
+          git fetch --all --unshallow old
 
       - name: Push to Coding
         run: |
