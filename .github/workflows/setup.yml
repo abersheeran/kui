@@ -60,7 +60,7 @@ jobs:
         run: |
           git init
           git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
-          git pull --all
+          git fetch --all
 
       - name: Push to Coding
         run: |
