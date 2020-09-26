@@ -58,8 +58,8 @@ jobs:
     steps:
       - name: Clone
         run: |
-          git clone https://github.com/${GITHUB_REPOSITORY}.git
-          cd index.py
+          git init
+          git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
           git fetch --all
 
       - name: Push to Coding
