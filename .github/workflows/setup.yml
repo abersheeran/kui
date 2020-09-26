@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Pull all ref
-        run: git pull --all origin
+        run: git pull --all
 
       - name: Push to Coding
         run: |
