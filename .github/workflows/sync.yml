@@ -22,6 +22,6 @@ jobs:
           # publish all
           git push --all --force coding
         env:
-          CODING_REPOSITORY: aber/github/index.py.git
+          CODING_REPOSITORY: aber/github/index.py
           CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
           CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
