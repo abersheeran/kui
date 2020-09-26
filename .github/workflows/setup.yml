@@ -49,3 +49,5 @@ jobs:
           timestamp=$(date -u)
           git commit -m "Automated publish: ${timestamp} ${GITHUB_SHA}" || exit 0
           git push --force publisher setup.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
