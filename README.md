@@ -66,6 +66,12 @@ pip install -U index.py
 pip install -U git+https://github.com/abersheeran/index.py@setup.py
 ```
 
+中国大陆内的用户可从 Coding 上的镜像仓库拉取
+
+```bash
+pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
+```
+
 ## Quick start
 
 向一个 `.py` 文件写入如下代码并直接执行它，访问 `http://127.0.0.1:4190`。
