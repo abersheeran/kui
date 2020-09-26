@@ -60,9 +60,8 @@ jobs:
         run: |
           git init
           git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
-          git fetch --all
+          git pull --all
           git checkout master
-          git show-ref # useful for debugging
 
       - name: Push to Coding
         run: |
