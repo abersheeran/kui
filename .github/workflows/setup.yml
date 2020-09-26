@@ -60,8 +60,7 @@ jobs:
 
       - name: Pull all ref
         run: |
-          git remote add old https://github.com/${GITHUB_REPOSITORY}.git
-          git fetch --all --unshallow old
+          git fetch --all --unshallow
 
       - name: Push to Coding
         run: |
