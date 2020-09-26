@@ -60,7 +60,7 @@ jobs:
         run: |
           git init
           git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
-          git branch --set-upstream-to=origin/<branch> master
+          git branch --set-upstream-to=origin/master master
           git pull --all
 
       - name: Push to Coding
