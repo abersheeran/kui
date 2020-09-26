@@ -56,11 +56,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-deploy
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Pull all ref
+      - name: Clone
         run: |
-          git fetch --all --unshallow
+          git clone https://github.com/${GITHUB_REPOSITORY}.git
+          git fetch --all
 
       - name: Push to Coding
         run: |
