@@ -20,7 +20,7 @@ jobs:
           git lfs install
 
           # publish all
-          git push --all --force --tags coding
+          git push --all --force coding
         env:
           CODING_REPOSITORY: ${{ secrets.CODING_REPOSITORY }}
           CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
