@@ -57,7 +57,7 @@ jobs:
           remote_repo="https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net/${CODING_REPOSITORY}.git"
 
           git remote add coding "${remote_repo}"
-          git pull --all
+          git pull --all origin
           git show-ref # useful for debugging
           git branch --verbose
 
