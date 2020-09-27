@@ -61,6 +61,10 @@ jobs:
           git init
           git remote add origin https://github.com/${GITHUB_REPOSITORY}.git
           git fetch --all
+          for branch in `git branch -a | grep remotes | grep -v HEAD | grep -v master`; do
+            git branch --track ${branch##*/} $branch
+          done
+          git fetch --all
 
       - name: Push to Coding
         run: |
