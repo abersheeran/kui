@@ -59,7 +59,7 @@ class OpenAPI:
     def _generate_paths(self, app: Index) -> Dict[str, Any]:
         result = {}
 
-        for path_format, path_convertors, endpoint in app.router.http_routes.values():
+        for path_format, endpoint in app.router.http_tree.iterator():
             path_docs = self._generate_path(endpoint, path_format)
             if path_docs:
                 result[path_format] = path_docs

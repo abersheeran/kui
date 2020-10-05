@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Union, Dict, List, Tuple, Pattern, Any
+from typing import Optional, Union, Dict, List, Tuple, Pattern, Any, Generator
 from dataclasses import dataclass, field
 
 from ..types import ASGIApp
@@ -157,3 +157,16 @@ class RadixTree:
             },
             node.endpoint,
         )
+
+    def iterator(self) -> Generator[Tuple[str, ASGIApp], None, None]:
+        stack: List[Tuple[str, TreeNode]] = [(self.root.characters, self.root)]
+
+        while stack:
+            characters, point = stack.pop(len(stack) - 1)
+            for node in point.next_nodes:
+                if node.re_pattern is not None:
+                    stack.append((f"{characters}{{{node.characters}}}", node))
+                else:
+                    stack.append((f"{characters}{node.characters}", node))
+            if point.endpoint:
+                yield characters, point.endpoint

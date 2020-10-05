@@ -69,3 +69,21 @@ def test_tree_fail_search(tree: RadixTree, path):
 def test_tree_fail_add(tree: RadixTree, path):
     with pytest.raises(ValueError):
         tree.append(path, ...)
+
+
+def test_tree_iterator(tree: RadixTree):
+    for _0, _1 in zip(
+        tree.iterator(),
+        [
+            ("/hello", ...),
+            ("/hello/{time}", ...),
+            ("/hello/world", ...),
+            ("/sayhi/{name}", ...),
+            ("/sayhi/{name}/suffix", ...),
+            ("/sayhi/{name}/avatar.{suffix}", ...),
+            ("/path/{filepath}", ...),
+            ("/decimal/{number}", ...),
+            ("/uuid/{id}", ...),
+        ],
+    ):
+        assert _0 == _1

@@ -28,4 +28,4 @@ def shell(command: str) -> None:
 if __name__ == "__main__":
     shell("flake8 indexpy --ignore W503,E203,E501,E731")
     shell("mypy -p indexpy --ignore-missing-imports")
-    shell("pytest --cov indexpy -o log_cli=true -o log_cli_level=DEBUG")
+    shell("pytest --cov indexpy -s -o log_cli=true -o log_cli_level=DEBUG")
