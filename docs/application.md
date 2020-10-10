@@ -30,3 +30,27 @@
 
 !!! notice
     Index 内置的 `jinja_env` 默认开启了 `enable_async` 选项，这意味着你可以传入 `async def` 定义的异步函数。但在模板中，可以像调用普通函数一样调用它——异步等待是自动的。
+
+## Dispatcher
+
+`Dispatcher` 可以用于组合多个 ASGI 应用。以下为一个简单的用例，当一个新的请求 `/django/admin/` 到达 `app` 时，按照顺序依次调用 `django_app`、`other_django_app`，第一个非 404 的响应将会作为最后的结果返回给客户端。如果所有的 Application 都返回 404 响应且未读取请求体，则最终由 `application` 来处理此次请求；如果有任意一个 Application 读取了请求体且返回 404 响应，则会调用 `handle404` 返回响应（默认是一个空内容的 404 响应，你可以在参数里覆盖它）。
+
+```python
+from a2wsgi import WSGIMiddleware
+from indexpy import Index, Dispatcher
+
+from django_app_name.wsgi import application as django_app
+from other_django_app_name.wsgi import application as other_django_app
+from fastapi_app import app as fastapi_app
+
+application = Index()
+
+app = Dispatcher(application, [
+    ("/django", WSGIMiddleware(django_app)),
+    ("/django", WSGIMiddleware(other_django_app)),
+    ("/some", fastapi_app),
+])
+```
+
+!!! notice
+    使用 `pip install a2wsgi` 安装 `a2wsgi`，就可以使用 `a2wsgi.WSGIMiddleware` 将一个 `WSGI` 应用转换为 `ASGI` 应用。
