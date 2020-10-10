@@ -23,7 +23,6 @@ index-cli = "indexpy.cli:main"
 [tool.poetry.dependencies]
 python = "^3.6"
 
-a2wsgi = "^1.0.0"
 click = "^7.1.2"
 gunicorn = {version = "^20.0.4", optional = true}
 jinja2 = "^2.10.3"

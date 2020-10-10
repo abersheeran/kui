@@ -10,9 +10,8 @@ from indexpy.openapi import OpenAPI
 
 app = Index()
 
-app.mount_asgi(
-    "/openapi",
-    OpenAPI("index.py example", "just a example, power by index.py", "0.1.0")
+app.router.extend(
+    SubRoutes("/openapi", OpenAPI("Title", "description", "1.0").routes)
 )
 ```
 

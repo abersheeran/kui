@@ -20,6 +20,16 @@ async def hello(request):
 @app.router.websocket("/hello", name="hello_ws")
 async def hello_ws(websocket):
     ...
+
+
+@app.router.asgi(
+    "/static{filepath:path}",
+    name="static",
+    type=("http",),
+    root_path="/static"
+)
+async def static(scope, receive, send):
+    ...
 ```
 
 !!! tip
@@ -34,7 +44,7 @@ async def hello_ws(websocket):
 
 ```python
 from indexpy import Index
-from indexpy.routing import HttpRoute, SocketRoute
+from indexpy.routing import HttpRoute, SocketRoute, ASGIRoute
 
 app = Index()
 
@@ -47,8 +57,21 @@ async def hello_ws(websocket):
     ...
 
 
+async def static(scope, receive, send):
+    ...
+
+
 app.router.append(HttpRoute("/hello", hello, name="hello", method="get"))
 app.router.append(SocketRoute("/hello", hello_ws, name="hello_ws"))
+app.router.append(
+    ASGIRoute(
+        "/static{filepath:path}",
+        static,
+        name="static",
+        type=("http",),
+        root_path="/static",
+    )
+)
 ```
 
 ### 列表式注册

@@ -13,9 +13,8 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
-from a2wsgi import WSGIMiddleware
 
-from .types import WSGIApp, Scope, Receive, Send, ASGIApp, Message, Literal
+from .types import Scope, Receive, Send, ASGIApp, Message, Literal
 from .config import Config
 from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
@@ -126,7 +125,6 @@ class Index:
         *,
         templates: typing.Iterable[str] = (),
         try_html: bool = True,
-        mount_apps: typing.List[typing.Tuple[str, ASGIApp]] = [],
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
@@ -152,7 +150,6 @@ class Index:
         self.try_html = try_html
 
         # Shallow copy list to prevent memory leak.
-        self.mount_apps = list(mount_apps)
         self.lifespan = Lifespan(
             on_startup=list(on_startup), on_shutdown=list(on_shutdown)
         )
@@ -245,24 +242,6 @@ class Index:
         self.lifespan.add_event_handler("shutdown", func)
         return func
 
-    def mount_asgi(self, route: str, app: ASGIApp) -> None:
-        """
-        mount ASGI app
-        """
-        if route != "":  # allow use "" to mount app
-            assert route.startswith("/"), "route must be start with '/'"
-            assert not route.endswith("/"), "route can't end with '/'"
-        self.mount_apps.append((route, app))
-
-    def mount_wsgi(self, route: str, app: WSGIApp) -> None:
-        """
-        mount WSGI app
-        """
-        if route != "":  # allow use "" to mount app
-            assert route.startswith("/"), "route must be start with '/'"
-            assert not route.endswith("/"), "route can't end with '/'"
-        self.mount_apps.append((route, WSGIMiddleware(app)))
-
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
         App without ASGI middleware.
@@ -272,39 +251,6 @@ class Index:
         """
         if scope["type"] == "lifespan":
             return await self.lifespan(scope, receive, send)
-
-        path = scope["path"]
-        root_path = scope.get("root_path", "")
-        has_received = False
-
-        async def subreceive() -> Message:
-            nonlocal has_received
-            has_received = True
-            return await receive()
-
-        async def subsend(message: Message) -> None:
-            if message["type"] == "http.response.start" and message["status"] == 404:
-                raise NoMatchFound()
-            await send(message)
-
-        # Call into a submounted app, if one exists.
-        for path_prefix, app in filter(
-            lambda item: path.startswith(item[0] + "/"), self.mount_apps
-        ):
-            if isinstance(app, WSGIMiddleware) and scope["type"] != "http":
-                continue
-            subscope = copy.copy(scope)
-            subscope["path"] = path[len(path_prefix) :]
-            subscope["root_path"] = root_path + path_prefix
-            try:
-                await app(subscope, subreceive, subsend)
-                return
-            except NoMatchFound:
-                if has_received:  # has call received
-                    raise HTTPException(404)
-            except HTTPException as e:
-                if e.status_code != 404 or has_received:
-                    raise e
 
         handler: typing.Optional[ASGIApp] = None
 
@@ -348,3 +294,50 @@ class Index:
                 return
 
         await self.asgiapp(scope, receive, send)
+
+
+class Dispatcher:
+    def __init__(
+        self,
+        default_app: ASGIApp,
+        *apps: typing.Tuple[str, ASGIApp],
+        handle404: ASGIApp = Response(b"", 404),
+    ) -> None:
+        self.default_app = default_app
+        for prefix, app in apps:
+            if prefix == "":  # Allow mount app in prefix ""
+                continue
+            assert prefix.startswith("/"), "prefix must be start with '/'"
+            assert not prefix.endswith("/"), "prefix can't end with '/'"
+        self.apps = apps
+        self.handle404 = handle404
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        path = scope["path"]
+        root_path = scope.get("root_path", "")
+        has_received = False
+
+        async def subreceive() -> Message:
+            nonlocal has_received
+            has_received = True
+            return await receive()
+
+        async def subsend(message: Message) -> None:
+            if message["type"] == "http.response.start" and message["status"] == 404:
+                raise NoMatchFound()
+            await send(message)
+
+        # Call into a submounted app, if one exists.
+        for path_prefix, app in filter(
+            lambda item: path.startswith(item[0]), self.apps
+        ):
+            subscope = copy.copy(scope)
+            subscope["path"] = path[len(path_prefix) :]
+            subscope["root_path"] = root_path + path_prefix
+            try:
+                return await app(subscope, subreceive, subsend)
+            except NoMatchFound:
+                if has_received:  # has call received
+                    return await self.handle404(scope, receive, send)
+
+        await self.default_app(scope, receive, send)

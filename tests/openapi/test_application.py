@@ -11,7 +11,10 @@ from indexpy.openapi.application import OpenAPI
 
 
 def test_openapi_page():
-    app = Index(mount_apps=[("/openapi", OpenAPI("Title", "description", "1.0"))])
+    app = Index()
+    app.router.extend(
+        SubRoutes("/openapi", OpenAPI("Title", "description", "1.0").routes)
+    )
 
     @app.router.http("/hello", method="get")
     async def hello(request):

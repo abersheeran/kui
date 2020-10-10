@@ -4,13 +4,14 @@ from typing import cast, List, Dict, Any, Sequence
 
 from starlette.endpoints import Request, Response
 
-from ..types import Scope, Receive, Send, TypedDict, Literal
-from ..routing import NoMatchFound
+from ..types import TypedDict, Literal
+from ..routing import HttpRoute
 from ..http.responses import (
     JSONResponse,
     YAMLResponse,
     HTMLResponse,
 )
+from ..concurrency import make_async
 from ..applications import Index
 
 from .schema import schema_parameters, schema_request_body, schema_response
@@ -143,19 +144,22 @@ class OpenAPI:
 
         return openapi
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or scope["path"] not in ("/", "/get"):
-            raise NoMatchFound()
-        request = Request(scope, receive, send)
-
-        if scope["path"] == "/get":
-            handler = getattr(self, "docs")
-        elif scope["path"] == "/":
-            handler = getattr(self, "template")
-        else:
-            raise NoMatchFound()
-        response = await handler(request)
-        await response(scope, receive, send)
+    @property
+    def routes(self) -> List[HttpRoute]:
+        return [
+            HttpRoute(
+                "/",
+                make_async(lambda request: self.template(request), only_mark=True),
+                name=None,
+                method="get",
+            ),
+            HttpRoute(
+                "/get",
+                make_async(lambda request: self.docs(request), only_mark=True),
+                name=None,
+                method="get",
+            ),
+        ]
 
     async def template(self, request: Request) -> Response:
         if self.html_template:
