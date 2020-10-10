@@ -26,7 +26,6 @@ nav:
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
   - Middleware: "middleware.md"
-  - Mount: "mount.md"
   - Command: "command.md"
   - OpenAPI: "openapi.md"
   - Background Task: "background.md"
