@@ -22,6 +22,7 @@ code, pre, .code {
     font-family: "Biaodian Pro Sans CNS", Menlo, Consolas, Courier, "Zhuyin Heiti", "Han Heiti", monospace;
 }
 .traceback-container {
+    max-width: 1000px;
     border: 1px solid #038BB8;
 }
 .traceback-title {
