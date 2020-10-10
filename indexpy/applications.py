@@ -28,7 +28,6 @@ from .http.responses import (
 from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -313,31 +312,32 @@ class Dispatcher:
         self.handle404 = handle404
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        path = scope["path"]
-        root_path = scope.get("root_path", "")
-        has_received = False
+        if scope["type"] in ("http", "websocket"):
+            path = scope["path"]
+            root_path = scope.get("root_path", "")
+            has_received = False
 
-        async def subreceive() -> Message:
-            nonlocal has_received
-            has_received = True
-            return await receive()
+            async def subreceive() -> Message:
+                nonlocal has_received
+                has_received = True
+                return await receive()
 
-        async def subsend(message: Message) -> None:
-            if message["type"] == "http.response.start" and message["status"] == 404:
-                raise NoMatchFound()
-            await send(message)
+            async def subsend(message: Message) -> None:
+                if message["type"] == "http.response.start" and message["status"] == 404:
+                    raise NoMatchFound()
+                await send(message)
 
-        # Call into a submounted app, if one exists.
-        for path_prefix, app in filter(
-            lambda item: path.startswith(item[0]), self.apps
-        ):
-            subscope = copy.copy(scope)
-            subscope["path"] = path[len(path_prefix) :]
-            subscope["root_path"] = root_path + path_prefix
-            try:
-                return await app(subscope, subreceive, subsend)
-            except NoMatchFound:
-                if has_received:  # has call received
-                    return await self.handle404(scope, receive, send)
+            # Call into a mounted app, if one exists.
+            for path_prefix, app in filter(
+                lambda item: path.startswith(item[0]), self.apps
+            ):
+                subscope = copy.copy(scope)
+                subscope["path"] = path[len(path_prefix):]
+                subscope["root_path"] = root_path + path_prefix
+                try:
+                    return await app(subscope, subreceive, subsend)
+                except NoMatchFound:
+                    if has_received:  # has call received
+                        return await self.handle404(scope, receive, send)
 
         await self.default_app(scope, receive, send)
