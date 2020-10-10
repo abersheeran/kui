@@ -29,7 +29,7 @@ jobs:
 
       - name: Build
         run: |
-          mkdocs-version build --minor --min-version=v0.10.0
+          mkdocs-version build --minor --min-version=v0.10.0 --version-regex="v(?P<version>.*)"
           echo index-py.abersheeran.com > site/CNAME
 
       - name: Deploy
