@@ -1,4 +1,3 @@
-import os
 import copy
 import typing
 import asyncio
@@ -20,11 +19,7 @@ from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
 from .http.debug import ServerErrorMiddleware
 from .http.request import Request
-from .http.responses import (
-    Response,
-    FileResponse,
-    RedirectResponse,
-)
+from .http.responses import Response, RedirectResponse
 from .http.exceptions import HTTPException, ExceptionMiddleware
 from .websocket.request import WebSocket
 
