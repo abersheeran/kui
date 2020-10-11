@@ -13,6 +13,9 @@ Index 内置了一些命令方便使用。
 
 使用 uvicorn 启动 Index，例如 `index-cli serve main:app`。
 
+!!! notice
+    此命令需要安装 [uvicorn](https://www.uvicorn.org/)。
+
 ### index-cli gunicorn
 
 #### `index-cli gunicorn start`
@@ -38,6 +41,9 @@ Options:
 
 假如你需要编写更多的 gunicorn 配置，可以使用 `-c` 来指定一个 `.py` 作为配置文件。详见 [gunicorn 文档](http://docs.gunicorn.org/en/latest/configure.html#configuration-file)
 
+!!! notice
+    此命令需要安装 [gunicorn](https://gunicorn.org/)。
+
 #### `index-cli gunicorn stop`
 
 当你使用 `index-cli gunicorn start -d` 在后台启动了 Index 时，可以在项目根目录下执行此命令去停止 Index。
@@ -57,10 +63,10 @@ Index 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令支
 在项目根目录下的 `commands.py` 里写入以下内容
 
 ```python
-from indexpy.cli import main
+from indexpy.cli import index_cli
 
 
-@main.command(help='Custom command')
+@index_cli.command(help='Custom command')
 def only_print():
     print('Custom command')
 ```

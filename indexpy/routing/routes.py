@@ -264,14 +264,6 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
                     response = await endpoint(request)
                     return response
                 return wrapper
-        or
-            def middleware(endpoint):
-                async def wrapper(request):
-                    response = await endpoint(request)
-                    return response
-                return wrapper
-
-            routes.http_middleware(middleware)
         """
         self._http_middlewares.append(middleware)
         return middleware
@@ -286,13 +278,6 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
                 async def wrapper(websocket):
                     await endpoint(websocket)
                 return wrapper
-        or
-            def middleware(endpoint):
-                async def wrapper(websocket):
-                    await endpoint(websocket)
-                return wrapper
-
-            routes.socket_middleware(middleware)
         """
         self._socket_middlewares.append(middleware)
         return middleware
@@ -307,13 +292,6 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
                 async def wrapper(scope, receive, send):
                     await endpoint(scope, receive, send)
                 return wrapper
-        or
-            def middleware(endpoint):
-                async def wrapper(scope, receive, send):
-                    await endpoint(scope, receive, send)
-                return wrapper
-
-            routes.asgi_middleware(middleware)
         """
         self._asgi_middlewares.append(middleware)
         return middleware

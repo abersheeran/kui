@@ -14,9 +14,7 @@ theme:
     tabs: true
 
 nav:
-  - 介绍: "index.md"
-  - 教程:
-      - 第一步: "firststep/index.md"
+  - 概览: "index.md"
   - Route: route.md
   - Application: application.md
   - Configuration:

@@ -174,9 +174,11 @@ assert app.router.url_for("hello-name", {"name": "Aber"}) == "/hello/Aber"
 !!! tip
     反向查找中，`websocket` 与 `http` 是互相独立的。通过 `protocol` 参数可以选择查找的路由，默认为 `http`。
 
-## Routes
+## 路由列表
 
-当需要把某一些路由归为一组时，可使用 `Routes` 对象。`Routes` 对象也拥有 `.http` 与 `.websocket` 方法，使用方法与 `app.router` 相同。
+### Routes
+
+当需要把某一些路由归为一组时，可使用 `Routes` 对象。`Routes` 对象也拥有 `.http`、`.websocket` 和 `.asgi` 方法，使用方法与 `app.router` 相同。
 
 `Routes` 继承自 `typing.List`，所以它允许你使用类似于 Django 一样的路由申明方式，示例如下。
 
@@ -201,36 +203,32 @@ app.router.extend(routes)
 !!! notice
     **不要忘记**使用 `app.router.extend(routes)` 将 `Routes` 对象注册进 `app.router` 中。
 
-并且，你可以为 `Routes` 设置 `namespace` 参数，这将在 `Routes` 对象的每个路由名称（如果有的话）前加上 `namespace:`，以此来避免不同名称空间内的路由名称冲突。
+#### 名称空间
 
-### 注册中间件
+你可以为 `Routes` 设置 `namespace` 参数，这将在 `Routes` 对象中包含的每个路由名称（如果有的话）前加上 `namespace:`，以此来避免不同名称空间内的路由名称冲突。
 
-通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例，关于中间件定义更详细的描述请查看[中间件章节](./middleware.md)。
+#### 注册中间件
+
+通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例，仅用于表示如何注册中间件，关于中间件定义更详细的描述请查看[中间件章节](./middleware.md)。
 
 ```python
-def http_only_print(endpoint):
-    async def wrapper(request):
-        print("http middleware start")
-        response = await endpoint(request)
-        print("http middleware end")
-        return response
-
-    return wrapper
+def one_http_middleware(endpoint):
+    ...
 
 
-def socket_only_print(endpoint):
-    async def wrapper(websocket):
-        print("socket middleware start")
-        await endpoint(websocket)
-        print("socket middleware end")
+def one_socket_middleware(endpoint):
+    ...
 
-    return wrapper
+
+def one_asgi_middleware(endpoint):
+    ...
 
 
 routes = Routes(
     ...,
-    http_middlewares=[http_only_print],
-    socket_middlewares=[socket_only_print],
+    http_middlewares=[one_http_middleware],
+    socket_middlewares=[one_socket_middleware],
+    asgi_middlewares=[one_asgi_middleware]
 )
 ```
 
@@ -241,27 +239,21 @@ routes = Routes(...)
 
 
 @routes.http_middleware
-def http_only_print(endpoint):
-    async def wrapper(request):
-        print("http middleware start")
-        response = convert(await endpoint(request))
-        print("http middleware end")
-        return response
-
-    return wrapper
+def one_http_middleware(endpoint):
+    ...
 
 
 @routes.socket_middleware
-def socket_only_print(endpoint):
-    async def wrapper(websocket):
-        print("socket middleware start")
-        await endpoint(websocket)
-        print("socket middleware end")
+def one_socket_middleware(endpoint):
+    ...
 
-    return wrapper
+
+@routes.asgi_middleware
+def one_asgi_middleware(endpoint):
+    ...
 ```
 
-### 子路由
+### SubRoutes
 
 `SubRoutes` 是 `Routes` 的子类，它允许你更简单的定义子路由，而不是在每个路由上增加一个前缀。它同样拥有 `Routes` 一样的路由注册方式与中间件注册方式。
 
@@ -275,7 +267,7 @@ subroutes = SubRoutes(
 ),
 ```
 
-### 文件路由
+### FileRoutes
 
 `FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。`__init__.py` 中名为 `HTTPMiddleware` 的对象将被展开为 HTTP 中间件，`SocketMiddleware` 将被展开为 WebSocket 中间件。除了 `__init__.py` 文件以外的 `.py` 文件中 名为 `HTTP` 的对象将被视为 HTTP 处理器，`Socket` 对象将被视为 WebSocket 处理器，名称为 `name` 的字符串将作为该文件对应的路由名称。
 
