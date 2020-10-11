@@ -4,9 +4,9 @@ import pytest
 from starlette.testclient import TestClient
 from pydantic import BaseModel
 
-from indexpy.applications import Index
+from indexpy.applications import Index, Dispatcher
 from indexpy.routing import Routes, SubRoutes, HttpRoute
-from indexpy.http.responses import convert
+from indexpy.http.responses import convert, HTMLResponse
 
 
 @pytest.fixture
@@ -82,3 +82,86 @@ def app():
 )
 def test_app_router_success_response(app: Index, method: str, path: str, resp: str):
     assert getattr(TestClient(app), method)(path).text == resp
+
+
+def test_dispather(app):
+    async def echo_body(scope, receive, send):
+        assert scope["type"] == "http"
+        body = b""
+        more_body = True
+        while more_body:
+            msg = await receive()
+            body += msg.get("body", b"")
+            more_body = msg.get("more_body", False)
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [
+                    (b"content-type", b"text/plain"),
+                    (b"Content-Length", str(len(body)).encode("latin1")),
+                ],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+    with TestClient(
+        Dispatcher(
+            app,
+            ("/echo", echo_body),
+            ("/sub", app),
+        )
+    ) as client:
+        assert client.get("/hello").text == "hello world"
+        assert client.get("/echo").text == "Not Found"
+        assert client.get("/echo/").text == ""
+        assert client.post("/echo/", data=b"echo").text == "echo"
+        assert client.get("/sub/hello").text == "hello world"
+
+
+def test_dispather_handle404(app):
+    async def echo_body(scope, receive, send):
+        assert scope["type"] == "http"
+        body = b""
+        more_body = True
+        while more_body:
+            msg = await receive()
+            body += msg.get("body", b"")
+            more_body = msg.get("more_body", False)
+        if scope["path"] == "/":
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 200,
+                    "headers": [
+                        (b"content-type", b"text/plain"),
+                        (b"Content-Length", str(len(body)).encode("latin1")),
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+        else:
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 404,
+                    "headers": [],
+                }
+            )
+            await send({"type": "http.response.body", "body": b""})
+
+    with TestClient(Dispatcher(app, ("/echo", echo_body))) as client:
+        assert client.get("/hello").text == "hello world"
+        assert client.get("/echo").status_code == 404
+        assert client.get("/echo/").status_code == 200
+        assert client.post("/echo/c").status_code == 404
+        assert client.post("/echo/c").text == ""
+
+    with TestClient(
+        Dispatcher(app, ("/echo", echo_body), handle404=HTMLResponse("404"))
+    ) as client:
+        assert client.get("/hello").text == "hello world"
+        assert client.get("/echo").status_code == 404
+        assert client.get("/echo/").status_code == 200
+        assert client.post("/echo/c").status_code == 200
+        assert client.post("/echo/c").text == "404"

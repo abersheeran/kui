@@ -45,12 +45,13 @@ from fastapi_app import app as fastapi_app
 
 application = Index()
 
-app = Dispatcher(application, [
+app = Dispatcher(
+    application,
     ("/django", WSGIMiddleware(django_app)),
     ("/django", WSGIMiddleware(other_django_app)),
     ("/some", fastapi_app),
-])
+)
 ```
 
 !!! notice
-    使用 `pip install a2wsgi` 安装 `a2wsgi`，就可以使用 `a2wsgi.WSGIMiddleware` 将一个 `WSGI` 应用转换为 `ASGI` 应用。
+    使用 `pip install a2wsgi` 安装 `a2wsgi`，可以使用 `a2wsgi.WSGIMiddleware` 将一个 `WSGI` 应用转换为 `ASGI` 应用。

@@ -176,7 +176,7 @@ class Index:
 
         middlewares = []
 
-        if config.ALLOWED_HOSTS != ["*"]:
+        if "*" in config.ALLOWED_HOSTS:
             middlewares.append(
                 Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
             )
@@ -271,26 +271,17 @@ class Index:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
 
-        if scope["type"] in ("http", "websocket"):  # Handle some special routes
+        if (
+            scope["type"] in ("http", "websocket")
+            and Config().FORCE_SSL
+            and scope["scheme"] in ("http", "ws")
+        ):  # Force jump to https/wss
             url = URL(scope=scope)
-            response: typing.Optional[Response] = None
-
-            # Force jump to https/wss
-            if Config().FORCE_SSL and scope["scheme"] in ("http", "ws"):
-                redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
-                netloc = url.hostname if url.port in (80, 443) else url.netloc
-                url = url.replace(scheme=redirect_scheme, netloc=netloc)
-                response = RedirectResponse(
-                    url, status_code=301
-                )  # for SEO, status code must be 301
-
-            if url.path == "/favicon.ico":
-                if os.path.exists(os.path.normpath("favicon.ico")):
-                    response = FileResponse("favicon.ico")
-
-            if response is not None:
-                await response(scope, receive, send)
-                return
+            redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
+            netloc = url.hostname if url.port in (80, 443) else url.netloc
+            url = url.replace(scheme=redirect_scheme, netloc=netloc)
+            response = RedirectResponse(url, status_code=301)
+            return await response(scope, receive, send)
 
         await self.asgiapp(scope, receive, send)
 
@@ -304,8 +295,6 @@ class Dispatcher:
     ) -> None:
         self.default_app = default_app
         for prefix, app in apps:
-            if prefix == "":  # Allow mount app in prefix ""
-                continue
             assert prefix.startswith("/"), "prefix must be start with '/'"
             assert not prefix.endswith("/"), "prefix can't end with '/'"
         self.apps = apps
@@ -323,16 +312,19 @@ class Dispatcher:
                 return await receive()
 
             async def subsend(message: Message) -> None:
-                if message["type"] == "http.response.start" and message["status"] == 404:
+                if (
+                    message["type"] == "http.response.start"
+                    and message["status"] == 404
+                ):
                     raise NoMatchFound()
                 await send(message)
 
             # Call into a mounted app, if one exists.
             for path_prefix, app in filter(
-                lambda item: path.startswith(item[0]), self.apps
+                lambda item: path.startswith(item[0] + "/"), self.apps
             ):
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix):]
+                subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     return await app(subscope, subreceive, subsend)
