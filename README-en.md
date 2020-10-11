@@ -49,8 +49,8 @@ Index.py implements the [ASGI3](http://asgi.readthedocs.io/en/latest/) interface
 - Flexible and efficient routing system (based on Radix Tree)
 - Automatically parse requests & generate documents (based on [pydantic](https://pydantic-docs.helpmanual.io/))
 - Visual API interface (based on ReDoc, optimized for fonts)
-- Very simple deployment (based on uvicorn and gunicorn)
-- Mount ASGI/WSGI applications (base on [a2wsgi](https://github.com/abersheeran/a2wsgi/))
+- Built-in deployment commands (based on uvicorn and gunicorn)
+- Mount ASGI/WSGI applications
 - Background tasks in process (based on [asyncio](https://docs.python.org/3/library/asyncio.html))
 - Any available ASGI ecosystem can be used
 
