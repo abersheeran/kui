@@ -1,12 +1,12 @@
 from click.testing import CliRunner
 
-from indexpy.cli import main
+from indexpy.cli import index_cli
 
 
 def test_custom_command():
-    @main.command(name="only-print")
+    @index_cli.command(name="only-print")
     def only_print():
         print("Custom command")
 
     cli = CliRunner()
-    assert cli.invoke(main, ["only-print"]).output == "Custom command\n"
+    assert cli.invoke(index_cli, ["only-print"]).output == "Custom command\n"

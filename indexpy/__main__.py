@@ -1,3 +1,3 @@
-from .cli import main
+from .cli import index_cli
 
-main()
+index_cli()
