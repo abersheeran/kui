@@ -1,6 +1,4 @@
-<h1 style="text-align: center;">
-<img style="max-width:60%;" src="https://raw.githubusercontent.com/abersheeran/index.py/master/docs/img/index-py.png" />
-</h1>
+![](https://raw.githubusercontent.com/abersheeran/index.py/master/docs/img/index-py.png")
 
 这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。Index.py 是率先使用 Radix Tree 进行路由查找的 Python web 框架。并借助 uvicorn 的强力驱动，拥有极高的裸性能。
 
