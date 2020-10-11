@@ -42,13 +42,13 @@ def execute(command: Union[List[str], str]) -> int:
 
 
 @click.group(help=f"Index.py {__version__}")
-def main():
+def index_cli():
     # set index logger level
     indexpy_logger = logging.getLogger("indexpy")
     indexpy_logger.setLevel(LOG_LEVELS[config.LOG_LEVEL])
 
 
-@main.command(help="use uvicorn to run Index.py")
+@index_cli.command(help="use uvicorn to run Index.py")
 @click.argument("application", default=lambda: config.APP)
 def serve(application):
     import uvicorn
@@ -115,6 +115,6 @@ def reload():
     execute(["kill -HUP", "`cat .pid`"])
 
 
-main.add_command(gunicorn, "gunicorn")
+index_cli.add_command(gunicorn, "gunicorn")
 
 import_module("commands")

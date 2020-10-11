@@ -15,10 +15,10 @@ packages = [
 ]
 readme = "README.md"
 repository = "https://github.com/abersheeran/index.py"
-version = "0.12.10"
+version = "0.13.0"
 
 [tool.poetry.scripts]
-index-cli = "indexpy.cli:main"
+index-cli = "indexpy.cli:index_cli"
 
 [tool.poetry.dependencies]
 python = "^3.6"
