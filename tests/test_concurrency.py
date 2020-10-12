@@ -3,7 +3,7 @@ import inspect
 
 import pytest
 
-from indexpy.concurrency import complicating, keepasync, make_async
+from indexpy.concurrency import complicating, keepasync
 
 
 @pytest.mark.asyncio
@@ -90,31 +90,3 @@ async def test_keepasync_subclass():
     await Sub().hello()
     await Sub().test()
     assert Sub.test.__name__ == "test"
-
-
-@pytest.mark.asyncio
-async def test_make_async():
-    @make_async
-    def hello():
-        return True
-
-    assert await hello()
-    assert asyncio.iscoroutinefunction(hello)
-
-    @make_async(only_mark=True)
-    def future():
-        return asyncio.sleep(0.001)
-
-    assert await future() is None
-    assert asyncio.iscoroutinefunction(future)
-
-
-@pytest.mark.asyncio
-async def test_make_async_annotation():
-    @make_async
-    def hello(request, name: int):
-        return True
-
-    sig = inspect.signature(hello)
-    assert [param_name for param_name in sig.parameters] == ["request", "name"]
-    assert sig.parameters["name"].annotation == int

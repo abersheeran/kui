@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Sequence, cast
 from starlette.endpoints import Request, Response
 
 from ..applications import Index
-from ..concurrency import make_async
 from ..http.responses import HTMLResponse, JSONResponse, YAMLResponse
 from ..routing import HttpRoute
 from ..types import Literal, TypedDict
@@ -140,35 +139,27 @@ class OpenAPI:
 
     @property
     def routes(self) -> List[HttpRoute]:
+        async def template(request: Request) -> Response:
+            if self.html_template:
+                return HTMLResponse(self.html_template)
+
+            with open(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "template.html"
+                )
+            ) as file:
+                DEFAULT_TEMPLATE = file.read()
+            return HTMLResponse(DEFAULT_TEMPLATE)
+
+        async def docs(request: Request) -> Response:
+            openapi = self.create_docs(request)
+            media_type = request.query_params.get("type") or self.media_type
+
+            if media_type == "json":
+                return JSONResponse(openapi)
+            return YAMLResponse(openapi)
+
         return [
-            HttpRoute(
-                "/",
-                make_async(lambda request: self.template(request), only_mark=True),
-                name=None,
-                method="get",
-            ),
-            HttpRoute(
-                "/get",
-                make_async(lambda request: self.docs(request), only_mark=True),
-                name=None,
-                method="get",
-            ),
+            HttpRoute("/", template, name=None, method="get"),
+            HttpRoute("/get", docs, name=None, method="get"),
         ]
-
-    async def template(self, request: Request) -> Response:
-        if self.html_template:
-            return HTMLResponse(self.html_template)
-
-        with open(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "template.html")
-        ) as file:
-            DEFAULT_TEMPLATE = file.read()
-        return HTMLResponse(DEFAULT_TEMPLATE)
-
-    async def docs(self, request: Request) -> Response:
-        openapi = self.create_docs(request)
-        media_type = request.query_params.get("type") or self.media_type
-
-        if media_type == "json":
-            return JSONResponse(openapi)
-        return YAMLResponse(openapi)
