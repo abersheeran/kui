@@ -6,37 +6,6 @@ import typing
 from starlette.concurrency import run_in_threadpool
 
 
-def make_async(
-    func: typing.Callable = None, *, only_mark: bool = False
-) -> typing.Callable:
-    """
-    always return a awaitable callable object
-    """
-
-    if only_mark and func is None:
-        return lambda func: make_async(func, only_mark=True)
-
-    if func is None:
-        raise ValueError("`func` must be not None")
-
-    if asyncio.iscoroutinefunction(func):
-        return func
-
-    if only_mark:
-
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs) -> typing.Any:
-            return await func(*args, **kwargs)  # type: ignore
-
-    else:
-
-        @functools.wraps(func)
-        async def wrapper(*args, **kwargs) -> typing.Any:
-            return await run_in_threadpool(func, *args, **kwargs)  # type: ignore
-
-    return wrapper
-
-
 def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable]:
     """
     always return a awaitable callable object
