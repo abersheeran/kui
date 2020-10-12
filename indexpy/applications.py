@@ -1,5 +1,5 @@
-import asyncio
 import copy
+import inspect
 import logging
 import traceback
 import typing
@@ -62,20 +62,18 @@ class Lifespan:
         Run any `.on_startup` event handlers.
         """
         for handler in self.on_startup:
-            if asyncio.iscoroutinefunction(handler):
-                await handler()
-            else:
-                handler()
+            result = handler()
+            if inspect.isawaitable(result):
+                await result
 
     async def shutdown(self) -> None:
         """
         Run any `.on_shutdown` event handlers.
         """
         for handler in self.on_shutdown:
-            if asyncio.iscoroutinefunction(handler):
-                await handler()
-            else:
-                handler()
+            result = handler()
+            if inspect.isawaitable(result):
+                await result
 
     async def lifespan(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
