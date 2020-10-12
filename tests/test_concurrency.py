@@ -3,7 +3,7 @@ import inspect
 
 import pytest
 
-from indexpy.concurrency import make_async, complicating, keepasync
+from indexpy.concurrency import complicating, keepasync, make_async
 
 
 @pytest.mark.asyncio

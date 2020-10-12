@@ -1,12 +1,12 @@
 from functools import wraps
 
 import pytest
-from starlette.testclient import TestClient
 from pydantic import BaseModel
+from starlette.testclient import TestClient
 
-from indexpy.applications import Index, Dispatcher
-from indexpy.routing import Routes, SubRoutes, HttpRoute
-from indexpy.http.responses import convert, HTMLResponse
+from indexpy.applications import Dispatcher, Index
+from indexpy.http.responses import HTMLResponse, convert
+from indexpy.routing import HttpRoute, Routes, SubRoutes
 
 
 @pytest.fixture

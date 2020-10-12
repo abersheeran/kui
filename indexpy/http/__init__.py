@@ -1,9 +1,8 @@
-from .view import HTTPView
 from .background import BackgroundTask, BackgroundTasks
-from .middleware import MiddlewareMixin
 from .exceptions import HTTPException
+from .middleware import MiddlewareMixin
 from .request import Request
-
+from .view import HTTPView
 
 __all__ = [
     "HTTPView",

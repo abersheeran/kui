@@ -1,26 +1,26 @@
-import copy
-import typing
 import asyncio
+import copy
 import logging
 import traceback
-from dataclasses import dataclass
+import typing
 
-from starlette.status import WS_1001_GOING_AWAY
+from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
+from pydantic.dataclasses import dataclass
 from starlette.datastructures import URL
-from starlette.websockets import WebSocketClose
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from jinja2 import Environment, ChoiceLoader, FileSystemLoader, PackageLoader
+from starlette.status import WS_1001_GOING_AWAY
+from starlette.websockets import WebSocketClose
 
-from .types import Scope, Receive, Send, ASGIApp, Message, Literal
 from .config import Config
-from .routing.routes import Router, BaseRoute, NoMatchFound
 from .http import responses
 from .http.debug import ServerErrorMiddleware
+from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
-from .http.responses import Response, RedirectResponse
-from .http.exceptions import HTTPException, ExceptionMiddleware
+from .http.responses import RedirectResponse, Response
+from .routing.routes import BaseRoute, NoMatchFound, Router
+from .types import ASGIApp, Literal, Message, Receive, Scope, Send
 from .websocket.request import WebSocket
 
 logger = logging.getLogger(__name__)
@@ -122,6 +122,10 @@ class Index:
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
+        middlewares: typing.List[Middleware] = [],
+        exception_handlers: typing.Dict[
+            typing.Union[int, typing.Type[Exception]], typing.Callable
+        ] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
         self.factory_class = factory_class
@@ -145,13 +149,11 @@ class Index:
 
         # Shallow copy list to prevent memory leak.
         self.lifespan = Lifespan(
-            on_startup=list(on_startup), on_shutdown=list(on_shutdown)
+            on_startup=copy.copy(on_startup), on_shutdown=copy.copy(on_shutdown)
         )
 
-        self.user_middlewares: typing.List[Middleware] = []
-        self.exception_handlers: typing.Dict[
-            typing.Union[int, typing.Type[Exception]], typing.Callable
-        ] = {}
+        self.user_middlewares = copy.copy(middlewares)
+        self.exception_handlers = copy.copy(exception_handlers)
 
         self.asgiapp: ASGIApp = self.build_app()
 
@@ -239,9 +241,6 @@ class Index:
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
         App without ASGI middleware.
-
-        For lifespan, call Index directly.
-        For http/websocket, find the appropriate subapp, or Index itself.
         """
         if scope["type"] == "lifespan":
             return await self.lifespan(scope, receive, send)

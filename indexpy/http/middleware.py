@@ -1,9 +1,8 @@
 import typing
 
 from ..concurrency import keepasync
-from .responses import Response, convert
 from .request import Request
-
+from .responses import Response, convert
 
 MiddlewareMeta = keepasync("process_request", "process_response", "process_exception")
 

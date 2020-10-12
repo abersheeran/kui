@@ -1,10 +1,10 @@
 import asyncio
 
 import pytest
+from starlette.testclient import TestClient
 
 from indexpy.http.request import ClientDisconnect, Request, State
 from indexpy.http.responses import JSONResponse, Response
-from starlette.testclient import TestClient
 
 
 def test_request_url():

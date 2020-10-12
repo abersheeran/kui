@@ -2,8 +2,8 @@ import json
 import typing
 
 from starlette import status
-from ..types import Message, Literal
 
+from ..types import Literal, Message
 from .request import WebSocket
 
 

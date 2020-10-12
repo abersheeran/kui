@@ -2,19 +2,19 @@ import sys
 from types import TracebackType
 from typing import (
     Any,
-    Type,
-    Tuple,
+    Awaitable,
     Callable,
     Iterable,
     MutableMapping,
     Optional,
-    Awaitable,
+    Tuple,
+    Type,
 )
 
 if sys.version_info[:2] < (3, 8):
-    from typing_extensions import TypedDict, Literal, Final, final
+    from typing_extensions import Final, Literal, TypedDict, final
 else:  # pragma: no cover
-    from typing import TypedDict, Literal, Final, final
+    from typing import Final, Literal, TypedDict, final
 
 __all__ = [
     "Scope",

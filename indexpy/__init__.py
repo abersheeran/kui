@@ -1,8 +1,8 @@
 import sys
 
+from .applications import Dispatcher, Index
+from .config import Config, here
 from .utils import State
-from .applications import Index, Dispatcher
-from .config import here, Config
 
 __all__ = ["Index", "Dispatcher", "Config", "g"]
 

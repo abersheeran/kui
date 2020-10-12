@@ -7,9 +7,9 @@ import typing
 
 from starlette.concurrency import run_in_threadpool
 
-from indexpy.types import ASGIApp, Message, Receive, Scope, Send
 from indexpy.http.request import Request
-from indexpy.http.responses import Response, HTMLResponse, PlainTextResponse
+from indexpy.http.responses import HTMLResponse, PlainTextResponse, Response
+from indexpy.types import ASGIApp, Message, Receive, Scope, Send
 
 STYLES = """
 :root {

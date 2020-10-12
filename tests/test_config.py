@@ -1,4 +1,4 @@
-from indexpy.config import UpperDict, Config, ConfigError
+from indexpy.config import Config, ConfigError, UpperDict
 
 
 def test_config():

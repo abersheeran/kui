@@ -1,13 +1,13 @@
 from http import HTTPStatus
 
-from starlette.testclient import TestClient
 from pydantic import BaseModel
+from starlette.testclient import TestClient
 
 from indexpy import Index
-from indexpy.routing import SubRoutes, HttpRoute
 from indexpy.http import HTTPView
 from indexpy.openapi import describe
 from indexpy.openapi.application import OpenAPI
+from indexpy.routing import HttpRoute, SubRoutes
 
 
 def test_openapi_page():

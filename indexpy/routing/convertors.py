@@ -1,5 +1,5 @@
-import re
 import math
+import re
 import typing
 import uuid
 from decimal import Decimal

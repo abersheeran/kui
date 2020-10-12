@@ -1,8 +1,8 @@
 import os
-import sys
-import time
 import signal
 import subprocess
+import sys
+import time
 
 
 def execute(*commands):

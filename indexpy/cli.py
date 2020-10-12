@@ -1,20 +1,17 @@
+import logging
 import os
+import signal
+import subprocess
 import sys
 import time
-import signal
-import logging
-import subprocess
-from typing import List, Union
 from multiprocessing import cpu_count
+from typing import List, Union
 
 import click
 
-from .utils import import_module
-from .config import here, LOG_LEVELS, Config
-
-
 from .__version__ import __version__
-
+from .config import LOG_LEVELS, Config, here
+from .utils import import_module
 
 config = Config()
 

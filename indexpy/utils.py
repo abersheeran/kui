@@ -1,17 +1,11 @@
-import os
 import asyncio
-import threading
 import importlib
-from functools import partial
+import inspect
+import os
+import threading
+from functools import partial, update_wrapper
 from types import ModuleType
-from typing import (
-    TYPE_CHECKING,
-    Tuple,
-    Dict,
-    Any,
-    Optional,
-    Callable,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple
 
 
 class Singleton(type):
@@ -42,6 +36,8 @@ def import_module(name: str) -> Optional[ModuleType]:
 
 
 if TYPE_CHECKING:
+    # https://github.com/python/mypy/issues/5107
+    # for mypy check and IDE support
     cached_property = property
 else:
 
@@ -53,13 +49,16 @@ else:
         """
 
         def __init__(self, func: Callable) -> None:
-            self.__doc__ = getattr(func, "__doc__")
             self.func = func
+            update_wrapper(self, func)
 
-        def __get__(self, obj: Any, cls: Optional[type] = None) -> Any:
+        def __get__(self, obj: Any, cls: Any) -> Any:
             if obj is None:
                 return self
-            value = obj.__dict__[self.func.__name__] = self.func(obj)
+            result = self.func(obj)
+            if inspect.isawaitable(result):
+                result = asyncio.ensure_future(result)
+            value = obj.__dict__[self.func.__name__] = result
             return value
 
 

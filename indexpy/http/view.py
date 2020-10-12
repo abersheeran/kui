@@ -1,13 +1,13 @@
-import typing
 import functools
 import logging
-from inspect import signature, isclass
+import typing
+from inspect import isclass, signature
 
 from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
-from .responses import Response
 from .request import Request
+from .responses import Response
 
 HTTP_METHOD_NAMES = [
     "get",

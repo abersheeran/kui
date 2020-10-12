@@ -1,7 +1,6 @@
 import asyncio
 
 import pytest
-
 from starlette import status
 from starlette.concurrency import run_until_first_complete
 from starlette.testclient import TestClient

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, List, Dict, Optional, Union, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import yaml
 from pydantic import BaseModel

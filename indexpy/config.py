@@ -1,12 +1,12 @@
-import os
 import json
-import typing
 import logging
+import os
+import typing
 
 import yaml
 
-from .utils import Singleton
 from .types import final
+from .utils import Singleton
 
 __all__ = ["Config"]
 

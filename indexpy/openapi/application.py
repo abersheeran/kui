@@ -1,21 +1,15 @@
 import os
 from copy import deepcopy
-from typing import cast, List, Dict, Any, Sequence
+from typing import Any, Dict, List, Sequence, cast
 
 from starlette.endpoints import Request, Response
 
-from ..types import TypedDict, Literal
-from ..routing import HttpRoute
-from ..http.responses import (
-    JSONResponse,
-    YAMLResponse,
-    HTMLResponse,
-)
-from ..concurrency import make_async
 from ..applications import Index
-
+from ..concurrency import make_async
+from ..http.responses import HTMLResponse, JSONResponse, YAMLResponse
+from ..routing import HttpRoute
+from ..types import Literal, TypedDict
 from .schema import schema_parameters, schema_request_body, schema_response
-
 
 Tag = TypedDict("Tag", {"description": str, "paths": Sequence[str]})
 

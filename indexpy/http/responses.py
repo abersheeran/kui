@@ -1,22 +1,21 @@
-import typing
-import functools
 import asyncio
+import functools
+import typing
 
-import yaml
 import jinja2
-from starlette.responses import (
-    Response,
-    HTMLResponse,
-    PlainTextResponse,
-    JSONResponse,
-    RedirectResponse,
-    StreamingResponse,
-    FileResponse,
-)
+import yaml
 from starlette.background import BackgroundTask
+from starlette.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 
-from ..types import Scope, Receive, Send
-
+from ..types import Receive, Scope, Send
 
 __all__ = [
     "automatic",

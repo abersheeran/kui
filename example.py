@@ -1,7 +1,7 @@
-import os
 import asyncio
+import os
 
-from indexpy import Index, Config
+from indexpy import Config, Index
 from indexpy.http.responses import EventResponse
 
 os.environ["INDEX_DEBUG"] = "on"

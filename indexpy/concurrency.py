@@ -1,7 +1,7 @@
 import asyncio
-import typing
-import inspect
 import functools
+import inspect
+import typing
 
 from starlette.concurrency import run_in_threadpool
 

@@ -1,10 +1,7 @@
 import json
-from typing import (
-    Any,
-    AsyncIterator,
-)
+from typing import Any, AsyncIterator
 
-from starlette.types import Message, Scope, Send, Receive
+from starlette.types import Message, Receive, Scope, Send
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 from ..http.request import HTTPConnection

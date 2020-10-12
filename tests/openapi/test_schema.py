@@ -1,9 +1,10 @@
 import json
-from typing import Union, List
+from typing import List, Union
 
 import pytest
-from indexpy.openapi.schema import replace_definitions
 from pydantic import BaseModel
+
+from indexpy.openapi.schema import replace_definitions
 
 
 class Foo(BaseModel):

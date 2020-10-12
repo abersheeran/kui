@@ -1,9 +1,9 @@
 import pytest
+from pydantic import BaseModel
+from starlette.testclient import TestClient
 
 from indexpy import Index
 from indexpy.http import HTTPView
-from starlette.testclient import TestClient
-from pydantic import BaseModel
 
 
 @pytest.fixture
