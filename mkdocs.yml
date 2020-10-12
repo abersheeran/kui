@@ -15,8 +15,8 @@ theme:
 
 nav:
   - 概览: "index.md"
-  - Route: route.md
   - Application: application.md
+  - Route: route.md
   - Configuration:
       - Introduction: "config/index.md"
       - Built-in List: "config/list.md"
@@ -27,8 +27,6 @@ nav:
   - Command: "command.md"
   - OpenAPI: "openapi.md"
   - Background Task: "background.md"
-  - 设计与原理:
-      - 异步与并发: "knowledge/concurrency.md"
 
 markdown_extensions:
   - markdown.extensions.codehilite:

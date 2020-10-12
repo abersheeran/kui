@@ -31,6 +31,19 @@
 !!! notice
     Index 内置的 `jinja_env` 默认开启了 `enable_async` 选项，这意味着你可以传入 `async def` 定义的异步函数。但在模板中，可以像调用普通函数一样调用它——异步等待是自动的。
 
+### `factory_class`
+
+通过读取此属性，你可以获取到当前 Index 实例下，所有 `Request`、`WebSocket` 的类定义。需要实例化这些对象时，推荐从 `scope["app"]factory_class` 中读取它们的类定义。
+
+### `router`
+
+所有的路由最终都将归入此路由对象中，此对象有四个方法：
+
+- `append`：追加一个新路由到路由树中。
+- `extend`：追加一个列表的新路由到路由树中。
+- `search`：为请求寻找一个合适的 `endpoint` 并返回路径参数。
+- `url_for`：通过路由名称与路径参数反向构建完整的 URL path。
+
 ## Dispatcher
 
 `Dispatcher` 可以用于组合多个 ASGI 应用。以下为一个简单的用例，当一个新的请求 `/django/admin/` 到达 `app` 时，按照顺序依次调用 `django_app`、`other_django_app`，第一个非 404 的响应将会作为最后的结果返回给客户端。如果所有的 Application 都返回 404 响应且未读取请求体，则最终由 `application` 来处理此次请求；如果有任意一个 Application 读取了请求体且返回 404 响应，则会调用 `handle404` 返回响应（默认是一个空内容的 404 响应，你可以在参数里覆盖它）。

@@ -74,6 +74,12 @@ app.router.append(
 )
 ```
 
+#### HttpRoute
+
+#### SocketRoute
+
+#### ASGIRoute
+
 ### 列表式注册
 
 Index 同样支持类似于 Django 的列表式写法：
