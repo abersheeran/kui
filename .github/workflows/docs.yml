@@ -7,6 +7,8 @@ on:
     paths:
       - 'mkdocs.yml'
       - 'docs/**'
+    tags:
+      - "*"
 
 jobs:
   build-and-deploy:
