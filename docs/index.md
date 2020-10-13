@@ -52,3 +52,9 @@ Index.py 并不是一个全然从零开始的框架，它有许多部分依赖�
 - 如果需要使用 `starlette` 的 `TestClient` 用于测试，应使用 `pip install -U index.py[test]` 安装。
 
 但如果你是一个初学者，在学习阶段直接使用 `pip install -U index.py[full]` 安装所有的依赖包即可。
+
+## 交流平台
+
+- Tencent QQ：<a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=VFkXYkAhLRqOdgaCVasgfGO25dfApJEB&jump_from=webapi">1082721927</a>
+
+- Gitter：[https://gitter.im/Indexpy/community](https://gitter.im/Indexpy/community)

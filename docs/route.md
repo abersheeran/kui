@@ -76,9 +76,31 @@ app.router.append(
 
 #### HttpRoute
 
+```python
+HttpRoute(path: str, endpoint: Any, name: Optional[str] = "", method: str = "")
+```
+
+- `name` 用于为路由指定名称，`name` 为 `None` 时，此路由将没有名称；`name` 为 `""` 时，将自动读取 `endpoint.__name__` 作为路由名称。
+
+- `method` 用于为 `endpoint` 指定一个允许的 HTTP Method，必须是小写的有效的 HTTP Method 名称。但仅在 `endpoint` 是函数时需要指定此参数。
+
 #### SocketRoute
 
+```python
+SocketRoute(path: str, endpoint: Any, name: Optional[str] = "")
+```
+
+所有参数的作用与 `HttpRoute` 相同。
+
 #### ASGIRoute
+
+```python
+ASGIRoute(path: str, endpoint: Any, name: Optional[str] = "", type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket"), root_path: str = "")
+```
+
+- `type` 用于为此路由指定允许接受的请求类型，默认为 `http`、`websocket` 两种。
+
+- `root_path` 用于挂载此路由的应用到指定的 `root_path` 下。
 
 ### 列表式注册
 

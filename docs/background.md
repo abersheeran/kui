@@ -29,9 +29,6 @@ async def signup(request):
     return JSONResponse({'status': 'Signup successful'}, background=task)
 ```
 
-!!! notice
-    如果无法使用 `async def` 定义需要在后台执行的函数，请使用 [`@make_async`](./knowledge/concurrency.md#make_async) 进行包装。
-
 ## 多后台任务
 
 如果需要顺序的执行多个后台任务(执行顺序由添加顺序决定，先添加、先执行)，需要使用 `BackgroundTasks` 代替 `BackgroundTask`，它们的工作原理是一样的。
