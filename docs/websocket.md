@@ -48,8 +48,62 @@ async def simple_echo(websocket):
 
 每个 WebSocket 连接都会对应一个 `indexpy.websocket.request.WebSocket` 对象，它拥有一对 `receive`/`send` 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。
 
-- `receive_byte`/`send_byte`: 接收/发送 `bytes` 类型的数据
+- `receive_bytes`/`send_bytes`: 接收/发送 `bytes` 类型的数据
 
 - `receive_text`/`send_text`: 接收/发送 `text` 类型的数据
 
 - `receive_json`/`send_json`: 接收/发送 `bytes`/`text` 类型的数据，但以 JSON 格式作为中转。这意味着你可以直接发送/接收任何能被 `json.dumps`/`json.loads` 解析的对象。
+
+除此之外，WebSocket 对象还拥有 Request 对象相同的部分属性。
+
+### URL
+
+通过 `request.url` 可以获取到请求路径。该属性是一个类似于字符串的对象，它公开了可以从URL中解析出的所有组件。
+
+例如：`request.url.path`, `request.url.port`, `request.url.scheme`
+
+### Path Parameters
+
+`request.path_params` 是一个字典，包含所有解析出的路径参数。
+
+### Headers
+
+`request.headers` 是一个大小写无关的多值字典(multi-dict)。但通过 `request.headers.keys()`/`request.headers.items()` 取出来的 `key` 均为小写。
+
+### Query Parameters
+
+`request.query_params` 是一个不可变的多值字典(multi-dict)。
+
+例如：`request.query_params['search']`
+
+### Client Address
+
+`request.client` 是一个 `namedtuple`，定义为 `namedtuple("Address", ["host", "port"])`。
+
+获取客户端 hostname 或 IP 地址: `request.client.host`。
+
+获取客户端在当前连接中使用的端口: `request.client.port`。
+
+!!!notice
+    元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。
+
+### Cookies
+
+`request.cookies` 是一个标准字典，定义为 `Dict[str, str]`。
+
+例如：`request.cookies.get('mycookie')`
+
+!!!notice
+    你没办法从`request.cookies`里读取到无效的 cookie (RFC2109)
+
+### State
+
+某些情况下需要储存一些额外的自定义信息到 `request` 中，可以使用 `request.state` 用于存储。
+
+```python
+request.state.user = User(name="Alice")  # 写
+
+user_name = request.state.user.name  # 读
+
+del request.state.user  # 删
+```
