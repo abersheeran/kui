@@ -109,20 +109,17 @@ OpenAPI 的 Tags 是一个有用的功能，在 Index 里，你可以通过如�
 `tags` 参数必须是一个 `dict` 类型，键为标签名。值需要包含 `description`，用于描述此标签；`paths` 是 URL 列表，如果 URL 包含路径参数，直接使用不带 `:type` 的字符串即可。
 
 ```python
-app.mount_asgi(
-    "/openapi",
-    OpenAPI(
-        "index.py example",
-        "just a example, power by index.py",
-        __version__,
-        tags={
-            "something": {
-                "description": "test over two tags in one path",
-                "paths": ["/about/", "/file", "/"],
-            },
-            "about": {"description": "about page", "paths": ["/about/", "/about/me"]},
-            "file": {"description": "get/upload file api", "paths": ["/file"]},
+OpenAPI(
+    "index.py example",
+    "just a example, power by index.py",
+    "v1",
+    tags={
+        "something": {
+            "description": "test over two tags in one path",
+            "paths": ["/about/", "/file", "/"],
         },
-    )
+        "about": {"description": "about page", "paths": ["/about/", "/about/me"]},
+        "file": {"description": "get/upload file api", "paths": ["/file"]},
+    },
 )
 ```
