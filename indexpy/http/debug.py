@@ -23,7 +23,7 @@ code, pre, .code {
 }
 .traceback-container {
     max-width: 1000px;
-    border: 1px solid #038BB8;
+    border: 3px solid #038BB8;
 }
 .traceback-title {
     background-color: #038BB8;
@@ -69,19 +69,24 @@ code, pre, .code {
     margin: 0px;
     color: #191f21;
     font-size: 17px;
-    border-top: 1px solid #038BB8;
+    border-top: 2px solid #038BB8;
+    background-color: lightgoldenrodyellow;
 }
 .source {
-  font-size: small;
+    font-size: small;
+    background-color: lavender;
+    padding: 1em 0;
 }
 table {
     width: 100%;
     border-spacing: 0px;
     padding: 0 10px;
-    margin-top: 25px;
 }
 table pre {
     white-space: pre-wrap;
+}
+table tr {
+    max-width: 100%;
 }
 table td {
     padding: 10px;
@@ -89,9 +94,6 @@ table td {
 }
 table tr td:nth-child(1) {
     padding-left: 0px;
-}
-table tr td:nth-last-child(1) {
-    background-color: #f7f7f7;
 }
 """
 
@@ -103,11 +105,10 @@ TEMPLATE = """
         </style>
         <title>Index.py Debugger</title>
     </head>
-    <body>
+    <body style="max-width: 1000px; margin: 0 auto 3em; min-height: calc(100vh - 3em + 1px);">
         <h1>500 Server Error</h1>
-        <h2>{error}</h2>
         <div class="traceback-container">
-            <p class="traceback-title">Traceback</p>
+            <p class="traceback-title">{error}</p>
             <div>{exc_html}</div>
         </div>
     </body>
@@ -225,7 +226,6 @@ class ServerErrorMiddleware:
         )
         _locals_vars = frame.frame.f_locals.copy()
         locals_var = VARS.format(
-            title="locals",
             vars="".join(
                 [
                     "<tr><td><pre>{name}</pre></td><td><pre>{value}</pre></td></tr>".format(
