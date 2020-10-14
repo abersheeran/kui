@@ -151,3 +151,8 @@ def app(router):
 )
 def test_router_success_respond(app, protocol, path, text):
     assert TestClient(app).get(path).text == text
+
+
+def test_router_websocket(app):
+    with TestClient(app).websocket_connect("/socket_view"):
+        pass
