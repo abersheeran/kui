@@ -32,7 +32,7 @@ def websocket_session(view: typing.Any) -> ASGIApp:
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         websocket = current_app.factory_class.websocket(scope, receive, send)
-        await view(websocket)(scope, receive, send)
+        await view(websocket)
 
     return _
 
