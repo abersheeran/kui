@@ -9,7 +9,7 @@ from pathlib import Path
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert
 from indexpy.http.view import only_allow
-from indexpy.types import ASGIApp, Literal, Receive, Scope, Send
+from indexpy.types import ASGIApp, Literal, Receive, Scope, Send, LOWER_HTTP_METHODS
 from indexpy.utils import superclass
 
 from .convertors import Convertor, compile_path
@@ -84,9 +84,9 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
-    method: InitVar[str] = ""
+    method: InitVar[Literal["", LOWER_HTTP_METHODS]] = ""
 
-    def __post_init__(self, method: str) -> None:  # type: ignore
+    def __post_init__(self, method: Literal["", LOWER_HTTP_METHODS]) -> None:  # type: ignore
         super().__post_init__()
 
         self.endpoint = complicating(self.endpoint)
@@ -168,7 +168,11 @@ class RouteRegisterMixin:
             self.append(route)
 
     def http(
-        self, path: str, *, name: str = "", method: str = ""
+        self,
+        path: str,
+        *,
+        name: str = "",
+        method: Literal["", LOWER_HTTP_METHODS] = "",
     ) -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(HttpRoute(path, endpoint, name, method))`

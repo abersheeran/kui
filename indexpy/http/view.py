@@ -6,6 +6,7 @@ from inspect import isclass, signature
 from pydantic import BaseModel, ValidationError
 
 from ..concurrency import keepasync
+from ..types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
 from .request import Request
 from .responses import Response
 
@@ -149,7 +150,7 @@ class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
 
 class HTTPView(metaclass=ViewMeta):  # type: ignore
     if typing.TYPE_CHECKING:
-        __methods__: typing.List[str]
+        __methods__: typing.List[UPPER_HTTP_METHODS]
 
     def __init__(self, request: Request) -> None:
         self.request = request
@@ -186,7 +187,9 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         )
 
 
-def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callable:
+def only_allow(
+    method: LOWER_HTTP_METHODS, func: typing.Callable = None
+) -> typing.Callable:
     """
     Only allow the function to accept one type of request
 
@@ -205,7 +208,6 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
         return lambda func: only_allow(method, func)
 
     func = parse_params(func)
-    setattr(func, "__method__", method.upper())
 
     @functools.wraps(func)
     async def wrapper(*args, **kwargs) -> typing.Any:
@@ -222,4 +224,5 @@ def only_allow(method: str = "", func: typing.Callable = None) -> typing.Callabl
             status_code = 405
         return Response(status_code=status_code)
 
+    setattr(wrapper, "__method__", method.upper())
     return wrapper

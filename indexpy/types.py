@@ -17,16 +17,6 @@ else:  # pragma: no cover
     from typing import Final, Literal, TypedDict, final
 
 __all__ = [
-    "Scope",
-    "Message",
-    "Receive",
-    "Send",
-    "ASGIApp",
-    "ExcInfo",
-    "Environ",
-    "StartResponse",
-    "WSGIApp",
-] + [
     # built-in types
     "TypedDict",
     "Literal",
@@ -53,3 +43,25 @@ Environ = MutableMapping[str, Any]
 StartResponse = Callable[[str, Iterable[Tuple[str, str]], Optional[ExcInfo]], None]
 
 WSGIApp = Callable[[Environ, StartResponse], Iterable[bytes]]
+
+__all__ += [
+    "Scope",
+    "Message",
+    "Receive",
+    "Send",
+    "ASGIApp",
+    "ExcInfo",
+    "Environ",
+    "StartResponse",
+    "WSGIApp",
+]
+
+LOWER_HTTP_METHODS = Literal[
+    "get", "post", "put", "patch", "delete", "head", "options", "trace"
+]
+
+UPPER_HTTP_METHODS = Literal[
+    "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE"
+]
+
+__all__ += ["LOWER_HTTP_METHODS", "UPPER_HTTP_METHODS"]
