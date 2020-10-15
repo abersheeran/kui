@@ -129,4 +129,5 @@ class WebSocket(HTTPConnection):
             await self.send({"type": "websocket.send", "bytes": text.encode("utf-8")})
 
     async def close(self, code: int = 1000) -> None:
-        await self.send({"type": "websocket.close", "code": code})
+        if self.application_state != WebSocketState.DISCONNECTED:
+            await self.send({"type": "websocket.close", "code": code})

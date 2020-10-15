@@ -325,6 +325,21 @@ def test_duplicate_close():
         return asgi
 
     client = TestClient(app)
+    with client.websocket_connect("/"):
+        pass
+
+
+def test_duplicate_close_error():
+    def app(scope):
+        async def asgi(receive, send):
+            websocket = WebSocket(scope, receive=receive, send=send)
+            await websocket.accept()
+            await websocket.close()
+            await websocket.send({"type": "websocket.close", "code": 1000})
+
+        return asgi
+
+    client = TestClient(app)
     with pytest.raises(RuntimeError):
         with client.websocket_connect("/"):
             pass
