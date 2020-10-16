@@ -13,8 +13,8 @@
 <img src="https://github.com/abersheeran/index.py/workflows/Test/badge.svg" alt="Github Action Test" />
 </a>
 
-<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3A%22Build+setup.py%22">
-<img src="https://github.com/abersheeran/index.py/workflows/Build%20setup.py/badge.svg" alt="Build setup.py" />
+<a href="https://github.com/abersheeran/index.py/actions?query=workflow%3AOnPush">
+<img src="https://github.com/abersheeran/index.py/workflows/OnPush/badge.svg" alt="OnPush" />
 </a>
 </p>
 
