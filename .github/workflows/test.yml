@@ -6,15 +6,15 @@ on:
       - master
     tags-ignore:
       - "v*"
-    paths-ignore:
-      - "docs/**"
-      - "mkdocs.yml"
+    paths:
+      - "**.py"
+      - "!indexpy/__version__.py"
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - "docs/**"
-      - "mkdocs.yml"
+    paths:
+      - "**.py"
+      - "!indexpy/__version__.py"
 
 jobs:
   tests:
