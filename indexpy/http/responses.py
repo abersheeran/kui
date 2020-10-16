@@ -45,7 +45,7 @@ class TemplateResponse(Response):
     ):
         if "request" not in context:
             raise ValueError('context must include "request".')
-        self.env: jinja2.Environment = context["request"].scope["app"].jinja_env
+        self.env: jinja2.Environment = context["request"]["app"].jinja_env
         self.template = self.env.get_template(name)
         self.context = context
         super().__init__(None, status_code, headers, media_type, background)

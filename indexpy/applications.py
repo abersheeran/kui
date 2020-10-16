@@ -26,18 +26,6 @@ from .websocket.request import WebSocket
 logger = logging.getLogger(__name__)
 
 
-def try_html(request: Request) -> typing.Optional[Response]:
-    """
-    try find html through TemplateResponse
-    """
-    try:
-        return responses.TemplateResponse(
-            request["path"] + ".html", {"request": request}
-        )
-    except LookupError:
-        return None
-
-
 class Lifespan:
     def __init__(
         self,
@@ -109,6 +97,18 @@ class Lifespan:
 class FactoryClass:
     http: typing.Type[Request] = Request
     websocket: typing.Type[WebSocket] = WebSocket
+
+
+def _try_html(request: Request) -> typing.Optional[Response]:
+    """
+    try find html through TemplateResponse
+    """
+    try:
+        return responses.TemplateResponse(
+            request["path"] + ".html", {"request": request}
+        )
+    except LookupError:
+        return None
 
 
 class Index:
@@ -251,7 +251,7 @@ class Index:
         except NoMatchFound:
             if scope["type"] == "http" and self.try_html:
                 # only html, no middleware/background tasks or other anything
-                handler = try_html(self.factory_class.http(scope, receive, send))
+                handler = _try_html(self.factory_class.http(scope, receive, send))
 
         if handler is None:
             if scope["type"] == "http":
@@ -316,7 +316,7 @@ class Dispatcher:
                 lambda item: path.startswith(item[0] + "/"), self.apps
             ):
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix) :]
+                subscope["path"] = path[len(path_prefix):]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     return await app(subscope, subreceive, subsend)
