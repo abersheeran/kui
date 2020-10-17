@@ -6,10 +6,10 @@ from dataclasses import InitVar, asdict, dataclass
 from functools import update_wrapper, wraps
 from pathlib import Path
 
+from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert
 from indexpy.http.view import only_allow
-from indexpy.types import ASGIApp, Literal, Receive, Scope, Send, LOWER_HTTP_METHODS
 from indexpy.utils import superclass
 
 from .convertors import Convertor, compile_path
@@ -47,7 +47,7 @@ def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
         root_path = scope.get("root_path", "")
 
         subscope = copy.copy(scope)
-        subscope["path"] = path[len(path_prefix) :]
+        subscope["path"] = path[len(path_prefix):]
         subscope["root_path"] = root_path + path_prefix
         await asgi(subscope, receive, send)
 
@@ -229,7 +229,7 @@ class RouteRegisterMixin:
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union["BaseRoute", "Routes", "FileRoutes"],
+        *iterable: typing.Union[BaseRoute, typing.List[BaseRoute]],
         namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],

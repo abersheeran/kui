@@ -316,7 +316,7 @@ class Dispatcher:
                 lambda item: path.startswith(item[0] + "/"), self.apps
             ):
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix):]
+                subscope["path"] = path[len(path_prefix) :]
                 subscope["root_path"] = root_path + path_prefix
                 try:
                     return await app(subscope, subreceive, subsend)

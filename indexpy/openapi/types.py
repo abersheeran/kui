@@ -1,9 +1,9 @@
-from starlette.datastructures import UploadFile
+from starlette.datastructures import UploadFile as _UploadFile
 
 
-class File(UploadFile):
+class UploadFile(_UploadFile):
     """
-    Starlette UploadFile
+    wrap starlette UploadFile for pydantic
     """
 
     @classmethod

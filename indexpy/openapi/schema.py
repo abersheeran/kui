@@ -1,11 +1,11 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Tuple, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import yaml
 from pydantic import BaseModel
 
-from ..types import Literal
-from .types import File
+from indexpy.types import Literal
+
+from .types import UploadFile
 
 
 def schema_parameter(
@@ -40,7 +40,7 @@ def schema_request_body(body: BaseModel = None) -> Tuple[Optional[Dict], Dict]:
     definitions = _schema.pop("definitions", {})
 
     for field in body.__fields__.values():
-        if issubclass(field.type_, File):
+        if issubclass(field.type_, UploadFile):
             return {
                 "required": True,
                 "content": {"multipart/form-data": {"schema": _schema}},
@@ -52,9 +52,9 @@ def schema_request_body(body: BaseModel = None) -> Tuple[Optional[Dict], Dict]:
     }, definitions
 
 
-def schema_response(model: Union[BaseModel, str]) -> Tuple[Dict, Dict]:
-    if isinstance(model, str):
-        return yaml.safe_load(model.strip()), {}
-    schema = deepcopy(model.schema())
+def schema_response(content: Union[BaseModel, Dict]) -> Tuple[Dict, Dict]:
+    if isinstance(content, dict):
+        return content, {}
+    schema = deepcopy(content.schema())
     definitions = schema.pop("definitions", {})
     return {"application/json": {"schema": schema}}, definitions

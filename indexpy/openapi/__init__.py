@@ -1,7 +1,7 @@
+from .functions import describe_response
 from .application import OpenAPI
-from .functions import describe
 
 __all__ = [
-    "describe",
+    "describe_response",
     "OpenAPI",
 ]

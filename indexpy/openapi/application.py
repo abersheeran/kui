@@ -1,13 +1,13 @@
 import os
 from copy import deepcopy
-from typing import Any, Dict, List, Sequence, cast
+from typing import Any, Dict, List, Sequence
 
 from starlette.endpoints import Request, Response
 
-from ..applications import Index
-from ..http.responses import HTMLResponse, JSONResponse, YAMLResponse
-from ..routing import HttpRoute
-from ..types import Literal, TypedDict
+from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
+from indexpy.routing import HttpRoute
+from indexpy.types import Literal, TypedDict
+
 from .schema import schema_parameter, schema_request_body, schema_response
 
 Tag = TypedDict("Tag", {"description": str, "paths": Sequence[str]})
@@ -50,7 +50,7 @@ class OpenAPI:
                 else:
                     self.path2tag[path] = [tag_name]
 
-    def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
+    def _generate_paths(self, app, definitions: dict) -> Dict[str, Any]:
         result = {}
 
         for path_format, endpoint in app.router.http_tree.iterator():
@@ -116,7 +116,7 @@ class OpenAPI:
             _ = responses[int(status)] = {"description": content["description"]}
             if content["model"] is None:
                 continue
-            _["content"], _definitions = schema_response(content["model"])
+            _["content"], _definitions = schema_response(content["content"])
             definitions.update(_definitions)
         if responses:
             result["responses"] = responses
@@ -135,9 +135,7 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = self._generate_paths(
-            cast(Index, request["app"]), definitions
-        )
+        openapi["paths"] = self._generate_paths(request["app"], definitions)
         openapi["definitions"] = definitions
         return openapi
 

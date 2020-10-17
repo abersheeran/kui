@@ -5,7 +5,7 @@ from starlette.testclient import TestClient
 
 from indexpy import Index
 from indexpy.http import HTTPView
-from indexpy.openapi import describe
+from indexpy.openapi import describe_response
 from indexpy.openapi.application import OpenAPI
 from indexpy.routing import HttpRoute, SubRoutes
 
@@ -34,7 +34,7 @@ def test_openapi_page():
 
     @app.router.http("/http-view")
     class HTTPClass(HTTPView):
-        @describe(
+        @describe_response(
             HTTPStatus.OK,
             """
             text/html:
@@ -49,7 +49,7 @@ def test_openapi_page():
             ......
             """
 
-        @describe(HTTPStatus.CREATED, Path)
+        @describe_response(HTTPStatus.CREATED, Path)
         async def post(self):
             """
             ...
@@ -57,7 +57,7 @@ def test_openapi_page():
             ......
             """
 
-        @describe(HTTPStatus.NO_CONTENT)
+        @describe_response(HTTPStatus.NO_CONTENT)
         async def delete(self):
             """
             ...

@@ -2,10 +2,11 @@ import asyncio
 import http
 import typing
 
-from ..types import ASGIApp, Message, Receive, Scope, Send
+from indexpy.types import ASGIApp, Message, Receive, Scope, Send
+from indexpy.openapi.functions import ParamsValidationError
+
 from .request import Request
 from .responses import JSONResponse, PlainTextResponse, Response
-from .view import ParamsValidationError
 
 
 class HTTPException(Exception):
@@ -92,12 +93,14 @@ class ExceptionMiddleware:
                 response = handler(request, exc)
             await response(scope, receive, sender)
 
-    def http_exception(self, request: Request, exc: HTTPException) -> Response:
+    @staticmethod
+    def http_exception(request: Request, exc: HTTPException) -> Response:
         if exc.status_code in {204, 304}:
             return Response(b"", status_code=exc.status_code)
         return PlainTextResponse(exc.detail, status_code=exc.status_code)
 
+    @staticmethod
     def params_validation_error(
-        self, request: Request, exc: ParamsValidationError
+        request: Request, exc: ParamsValidationError
     ) -> Response:
         return JSONResponse(exc.ve.errors(), status_code=400)

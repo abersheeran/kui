@@ -1,7 +1,7 @@
 from .background import BackgroundTask, BackgroundTasks
+from .request import Request
 from .exceptions import HTTPException
 from .middleware import MiddlewareMixin
-from .request import Request
 from .view import HTTPView
 
 __all__ = [

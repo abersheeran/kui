@@ -6,6 +6,7 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 
 ```python
 from indexpy import Index
+from indexpy.routing import SubRoutes
 from indexpy.openapi import OpenAPI
 
 app = Index()
@@ -54,8 +55,7 @@ async def get(request):
 
 ```python
 from indexpy.http import HTTPView
-from indexpy.http.responses import TemplateResponse
-from indexpy.openapi import describe
+from indexpy.openapi import describe_response
 from pydantic import BaseModel, Field
 
 
@@ -77,13 +77,9 @@ class MessageResponse(BaseModel):
 
 
 class HTTP(HTTPView):
-    @describe(
+    @describe_response(
         200,
-        """
-        text/html:
-            schema:
-                type: string
-        """,
+        content={"text/html": {"schema": {"type": "string"}}},
     )
     async def get(self, query: Hello):
         """
@@ -91,8 +87,8 @@ class HTTP(HTTPView):
         """
         return f"welcome, {query.name}."
 
-    @describe(200, MessageResponse)
-    @describe(201, None)
+    @describe_response(200, content=MessageResponse)
+    @describe_response(201)
     async def post(self, body: Message):
         """
         echo your message
