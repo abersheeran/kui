@@ -43,7 +43,6 @@ test = ["requests"] # include all dependencies for test
 black = {version = "*", allow-prereleases = true}
 coverage = {extras = ["toml"], version = "^5.2"}
 flake8 = "*"
-isort = "*"
 mypy = {version = "*", allow-prereleases = true}
 pytest = "^5.4.2"
 pytest-asyncio = "^0.12"
