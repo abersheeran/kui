@@ -74,7 +74,7 @@ class YAMLResponse(Response):
     media_type = "text/yaml"
 
     def render(self, content: typing.Any) -> bytes:
-        return yaml.dump(content, indent=2).encode("utf8")
+        return yaml.dump(content, indent=2, allow_unicode=True).encode("utf8")
 
 
 class EventResponse(Response):
