@@ -29,13 +29,14 @@ app.router.extend(
 例如：
 
 ```python
-async def get(request):
+async def handler(request):
     """
-    获取用户信息
+    api summary
 
-    此接口用于获取用户信息，然后我就不知道该编什么话了，总之这一段都是接口描述，而空的一行的上面是接口标题。
+    api description..........................
+    .........................................
+    .........................................
     """
-    ...
 ```
 
 ### 请求
@@ -46,7 +47,38 @@ async def get(request):
 
 ### 响应
 
-为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递 OpenAPI 文档字符串（当你不想返回一个 application/json 类型的响应时）。
+为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
+
+```python
+def describe_response(
+    status: typing.Union[int, HTTPStatus],
+    description: str = "",
+    *,
+    content: typing.Union[typing.Type[BaseModel], dict] = None,
+    headers: dict = None,
+    links: dict = None,
+)
+```
+
+该函数的四个参数均对应[ OpenAPI 规范](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject)里的同名字段。`status` 则为该 Response Object 对应的 HTTP 状态码。
+
+除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。
+
+```python
+RESPONSES = {
+    404: {"description": "Item not found"},
+    403: {"description": "Not enough privileges"},
+    302: {"description": "The item was moved"},
+}
+
+
+@describe_responses(RESPONSES)
+@describe_response(204, "No Content")
+def handler(request):
+    """
+    .................
+    """
+```
 
 !!! notice
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
