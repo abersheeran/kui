@@ -19,20 +19,38 @@ def describe_response(
     links: typing.Any = None,
 ) -> typing.Callable[[T], T]:
     """
-    bind status => response description in http handler
+    describe a response in HTTP view function
+
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject
     """
     status = int(status)
 
     def decorator(func: T) -> T:
         if hasattr(func, "__responses__"):
-            getattr(func, "__responses__")[status] = {"content": content}
+            getattr(func, "__responses__")[status] = {"description": description}
         else:
-            setattr(func, "__responses__", {status: {"content": content}})
+            setattr(func, "__responses__", {status: {"description": description}})
 
-        getattr(func, "__responses__")[status]["description"] = description
-        getattr(func, "__responses__")[status]["headers"] = headers
-        getattr(func, "__responses__")[status]["links"] = links
+        if content is not None:
+            getattr(func, "__responses__")[status]["content"] = content
+        if headers is not None:
+            getattr(func, "__responses__")[status]["headers"] = headers
+        if links is not None:
+            getattr(func, "__responses__")[status]["links"] = links
 
+        return func
+
+    return decorator
+
+
+def describe_responses(responses: typing.Dict[int, dict]) -> typing.Callable[[T], T]:
+    """
+    describe responses in HTTP view function
+    """
+
+    def decorator(func: T) -> T:
+        for status, descriptions in responses.items():
+            func = describe_response(status, **descriptions)(func)
         return func
 
     return decorator
