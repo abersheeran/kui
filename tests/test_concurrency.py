@@ -63,6 +63,28 @@ async def test_complicating_4():
 
 
 @pytest.mark.asyncio
+async def test_complicating_5():
+    args = ("hello", "test")
+
+    class AlwaysAsyncMeta(type):
+        def __new__(cls: type, clsname, bases, namespace):
+            for name in args:
+                if name not in namespace:
+                    continue
+                if name == "test":
+                    assert namespace[name] is complicating(namespace[name])
+                namespace[name] = complicating(namespace[name])
+            return type.__new__(cls, clsname, bases, namespace)
+
+    class Test(metaclass=AlwaysAsyncMeta):
+        def hello(self):
+            pass
+
+        async def test(self):
+            pass
+
+
+@pytest.mark.asyncio
 async def test_keepasync():
     class Test(metaclass=keepasync("hello", "test")):
         def hello(self):
