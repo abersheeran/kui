@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel
 
@@ -9,7 +9,7 @@ from .types import UploadFile
 
 
 def schema_parameter(
-    m: Optional[BaseModel],
+    m: Optional[Type[BaseModel]],
     position: Literal["path", "query", "header", "cookie"],
 ) -> List[Dict[str, Any]]:
     result = []
@@ -32,27 +32,25 @@ def schema_parameter(
     return result
 
 
-def schema_request_body(body: BaseModel = None) -> Tuple[Optional[Dict], Dict]:
+def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], Dict]:
     if body is None:
         return None, {}
 
     _schema: Dict = deepcopy(body.schema())
     definitions = _schema.pop("definitions", {})
+    content_type = "application/json"
 
     for field in body.__fields__.values():
         if issubclass(field.type_, UploadFile):
-            return {
-                "required": True,
-                "content": {"multipart/form-data": {"schema": _schema}},
-            }, definitions
+            content_type = "multipart/form-data"
 
     return {
         "required": True,
-        "content": {"application/json": {"schema": _schema}},
+        "content": {content_type: {"schema": _schema}},
     }, definitions
 
 
-def schema_response(content: Union[BaseModel, Dict]) -> Tuple[Dict, Dict]:
+def schema_response(content: Union[Type[BaseModel], Dict]) -> Tuple[Dict, Dict]:
     if isinstance(content, dict):
         return content, {}
     schema = deepcopy(content.schema())

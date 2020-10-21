@@ -110,14 +110,13 @@ class OpenAPI:
             result["requestBody"] = request_body
         definitions.update(_definitions)
         # generate responses schmea
-        resps = getattr(func, "__resps__", {})
+        resps = getattr(func, "__responses__", {})
         responses: Dict[int, Any] = {}
-        for status, content in resps.items():
-            _ = responses[int(status)] = {"description": content["description"]}
-            if content["model"] is None:
-                continue
-            _["content"], _definitions = schema_response(content["content"])
-            definitions.update(_definitions)
+        for status, info in resps.items():
+            _ = responses[int(status)] = dict(info)
+            if _.get("content") is not None:
+                _["content"], _definitions = schema_response(_["content"])
+                definitions.update(_definitions)
         if responses:
             result["responses"] = responses
         # set path tags

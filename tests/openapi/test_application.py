@@ -21,7 +21,7 @@ def test_openapi_page():
         """
         hello
 
-        hello description
+        接口描述
         """
         pass
 
@@ -36,11 +36,11 @@ def test_openapi_page():
     class HTTPClass(HTTPView):
         @describe_response(
             HTTPStatus.OK,
-            """
-            text/html:
-                schema:
-                    type: string
-            """,
+            content={
+                "text/html": {
+                    "schema": {"type": "string"},
+                }
+            },
         )
         async def get(self):
             """
@@ -49,7 +49,7 @@ def test_openapi_page():
             ......
             """
 
-        @describe_response(HTTPStatus.CREATED, Path)
+        @describe_response(HTTPStatus.CREATED, content=Path)
         async def post(self):
             """
             ...
@@ -85,7 +85,108 @@ def test_openapi_page():
     client = TestClient(app)
     assert client.get("/openapi/get").status_code == 200
     openapi_docs_text = client.get("/openapi/get").text
-    assert "/http-view" in openapi_docs_text
-    assert "/path/{name}" in openapi_docs_text
-    assert "/middleware/path/{name}" in openapi_docs_text
-    assert "/middleware/http-view" in openapi_docs_text
+
+    assert (
+        openapi_docs_text
+        == """definitions: {}
+info:
+  description: description
+  title: Title
+  version: '1.0'
+openapi: 3.0.0
+paths:
+  /hello:
+    get:
+      description: 接口描述
+      summary: hello
+  /http-view:
+    delete:
+      description: '......'
+      responses:
+        204:
+          description: ''
+      summary: '...'
+    get:
+      description: '......'
+      responses:
+        200:
+          content: &id001
+            text/html:
+              schema:
+                type: string
+          description: ''
+      summary: '...'
+    post:
+      description: '......'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                properties:
+                  name:
+                    title: Name
+                    type: string
+                required:
+                - name
+                title: Path
+                type: object
+          description: ''
+      summary: '...'
+  /middleware/http-view:
+    delete:
+      description: '......'
+      responses:
+        204:
+          description: ''
+      summary: '...'
+    get:
+      description: '......'
+      responses:
+        200:
+          content: *id001
+          description: ''
+      summary: '...'
+    post:
+      description: '......'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                properties:
+                  name:
+                    title: Name
+                    type: string
+                required:
+                - name
+                title: Path
+                type: object
+          description: ''
+      summary: '...'
+  /middleware/path/{name}:
+    get:
+      parameters:
+      - description: ''
+        in: path
+        name: name
+        required: true
+        schema:
+          title: Name
+          type: string
+  /path/{name}:
+    get:
+      parameters:
+      - description: ''
+        in: path
+        name: name
+        required: true
+        schema:
+          title: Name
+          type: string
+servers:
+- description: Current server
+  url: http://testserver
+tags: []
+"""
+    )

@@ -14,9 +14,9 @@ def describe_response(
     status: typing.Union[int, HTTPStatus],
     description: str = "",
     *,
-    content: typing.Any = None,
-    headers: typing.Any = None,
-    links: typing.Any = None,
+    content: typing.Union[typing.Type[BaseModel], dict] = None,
+    headers: dict = None,
+    links: dict = None,
 ) -> typing.Callable[[T], T]:
     """
     describe a response in HTTP view function
@@ -26,17 +26,19 @@ def describe_response(
     status = int(status)
 
     def decorator(func: T) -> T:
-        if hasattr(func, "__responses__"):
-            getattr(func, "__responses__")[status] = {"description": description}
+        if not hasattr(func, "__responses__"):
+            responses: typing.Dict[int, typing.Dict[str, typing.Any]] = {}
+            setattr(func, "__responses__", responses)
         else:
-            setattr(func, "__responses__", {status: {"description": description}})
+            responses = getattr(func, "__responses__")
+        responses[status] = {"description": description}
 
         if content is not None:
-            getattr(func, "__responses__")[status]["content"] = content
+            responses[status]["content"] = content
         if headers is not None:
-            getattr(func, "__responses__")[status]["headers"] = headers
+            responses[status]["headers"] = headers
         if links is not None:
-            getattr(func, "__responses__")[status]["links"] = links
+            responses[status]["links"] = links
 
         return func
 
@@ -49,8 +51,8 @@ def describe_responses(responses: typing.Dict[int, dict]) -> typing.Callable[[T]
     """
 
     def decorator(func: T) -> T:
-        for status, descriptions in responses.items():
-            func = describe_response(status, **descriptions)(func)
+        for status, info in responses.items():
+            func = describe_response(status, **info)(func)
         return func
 
     return decorator
