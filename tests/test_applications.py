@@ -20,9 +20,10 @@ def app():
     class Name(BaseModel):
         name: str
 
-    @app.router.http("/path/{name}", method="get")
-    async def path(request, path: Name):
-        return f"path {path.name}"
+    class T:
+        @app.router.http("/path/{name}", method="get")
+        async def path(request, path: Name):
+            return f"path {path.name}"
 
     def http_middleware(endpoint):
         @wraps(endpoint)
