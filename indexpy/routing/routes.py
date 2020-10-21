@@ -47,7 +47,7 @@ def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
         root_path = scope.get("root_path", "")
 
         subscope = copy.copy(scope)
-        subscope["path"] = path[len(path_prefix):]
+        subscope["path"] = path[len(path_prefix) :]
         subscope["root_path"] = root_path + path_prefix
         await asgi(subscope, receive, send)
 
