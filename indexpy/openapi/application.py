@@ -21,13 +21,18 @@ class OpenAPI:
         version: str,
         *,
         tags: Dict[str, Tag] = {},
+        template_name: Literal["redoc", "swagger"] = "swagger",
         template: str = "",
         media_type: Literal["yaml", "json"] = "yaml",
-    ):
-        """
-        media_type: yaml or json
-        """
-        assert media_type in ("yaml", "json"), "media_type must in 'yaml' or 'json'"
+    ) -> None:
+        if template == "":
+            with open(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), f"{template_name}.html"
+                ),
+                encoding="utf8",
+            ) as file:
+                template = file.read()
 
         self.html_template = template
         self.media_type = media_type
@@ -141,20 +146,11 @@ class OpenAPI:
     @property
     def routes(self) -> List[HttpRoute]:
         async def template(request: Request) -> Response:
-            if self.html_template:
-                return HTMLResponse(self.html_template)
-
-            with open(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), "template.html"
-                )
-            ) as file:
-                DEFAULT_TEMPLATE = file.read()
-            return HTMLResponse(DEFAULT_TEMPLATE)
+            return HTMLResponse(self.html_template)
 
         async def docs(request: Request) -> Response:
             openapi = self.create_docs(request)
-            media_type = request.query_params.get("type") or self.media_type
+            media_type = request.query_params.get("type", self.media_type)
 
             if media_type == "json":
                 return JSONResponse(openapi)
