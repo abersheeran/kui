@@ -83,8 +83,8 @@ def test_openapi_page():
     app.router.extend(middleware_routes)
 
     client = TestClient(app)
-    assert client.get("/openapi/get").status_code == 200
-    openapi_docs_text = client.get("/openapi/get").text
+    assert client.get("/openapi/docs").status_code == 200
+    openapi_docs_text = client.get("/openapi/docs").text
 
     assert (
         openapi_docs_text

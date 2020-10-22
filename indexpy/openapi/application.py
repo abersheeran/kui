@@ -157,6 +157,6 @@ class OpenAPI:
             return YAMLResponse(openapi)
 
         return [
-            HttpRoute("/", template, name=None, method="get"),
-            HttpRoute("/get", docs, name=None, method="get"),
+            HttpRoute("/", template, method="get"),
+            HttpRoute("/docs", docs, method="get"),
         ]
