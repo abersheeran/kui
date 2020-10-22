@@ -24,6 +24,8 @@ def describe_response(
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject
     """
     status = int(status)
+    if not description:
+        description = HTTPStatus(status).description
 
     def decorator(func: T) -> T:
         if not hasattr(func, "__responses__"):

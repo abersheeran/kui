@@ -104,7 +104,7 @@ paths:
       description: '......'
       responses:
         204:
-          description: ''
+          description: Request fulfilled, nothing follows
       summary: '...'
     get:
       description: '......'
@@ -114,7 +114,7 @@ paths:
             text/html:
               schema:
                 type: string
-          description: ''
+          description: Request fulfilled, document follows
       summary: '...'
     post:
       description: '......'
@@ -131,21 +131,21 @@ paths:
                 - name
                 title: Path
                 type: object
-          description: ''
+          description: Document created, URL follows
       summary: '...'
   /middleware/http-view:
     delete:
       description: '......'
       responses:
         204:
-          description: ''
+          description: Request fulfilled, nothing follows
       summary: '...'
     get:
       description: '......'
       responses:
         200:
           content: *id001
-          description: ''
+          description: Request fulfilled, document follows
       summary: '...'
     post:
       description: '......'
@@ -162,7 +162,7 @@ paths:
                 - name
                 title: Path
                 type: object
-          description: ''
+          description: Document created, URL follows
       summary: '...'
   /middleware/path/{name}:
     get:
