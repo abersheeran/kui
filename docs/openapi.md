@@ -62,7 +62,11 @@ def describe_response(
 
 该函数的四个参数均对应[ OpenAPI 规范](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject)里的同名字段。`status` 则为该 Response Object 对应的 HTTP 状态码。
 
-除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。
+!!! notice
+
+    如果 `description` 的值为默认的 `""`，则会使用 `http` 标准库中的 `HTTPStatus(status).description` 作为默认的描述。
+
+除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。字典以 `status` 为键，以 OpenAPI Response Object 的四个属性作为可选的值（其中 `description` 为必选）。
 
 ```python
 RESPONSES = {
