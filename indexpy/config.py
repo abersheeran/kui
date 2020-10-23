@@ -18,8 +18,6 @@ LOG_LEVELS = {
     "debug": logging.DEBUG,
 }
 
-here = os.getcwd()
-
 
 class ConfigError(Exception):
     pass
@@ -161,15 +159,13 @@ class Config(UpperDict, metaclass=Singleton):
         return value
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
-        if name == "_UpperDict__dict":
-            return super().__setattr__(name, value)
         raise ConfigError("Modifying the attribute value of Config is not allowed.")
 
     def __delattr__(self, name: str) -> None:
-        raise ConfigError("Modifying the attribute value of Config is not allowed.")
+        raise ConfigError("Deleting the attribute value of Config is not allowed.")
 
     def __delitem__(self, key: str) -> None:
-        raise ConfigError("Modifying the attribute value of Config is not allowed.")
+        raise ConfigError("Deleting the attribute value of Config is not allowed.")
 
     def __setitem__(self, key: str, value: typing.Any) -> None:
         key = key.upper()

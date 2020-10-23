@@ -10,7 +10,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .config import LOG_LEVELS, Config, here
+from .config import LOG_LEVELS, Config
 from .utils import import_module
 
 config = Config()
@@ -83,9 +83,9 @@ def start(workers, worker_class, daemon, configuration, application):
         "gunicorn"
         + f" -k {worker_class}"
         + f" --bind {config.HOST}:{config.PORT}"
-        + f" --chdir {here}"
+        + f" --chdir {os.getcwd()}"
         + f" --workers {workers}"
-        + f" --pid {os.path.join(here, '.pid')}"
+        + f" --pid {os.path.join(os.getcwd(), '.pid')}"
         + f" --log-level {config.LOG_LEVEL}"
     )
     args = command.split(" ")
