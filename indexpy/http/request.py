@@ -3,7 +3,7 @@ import json
 import typing
 from http import cookies as http_cookies
 
-from starlette.datastructures import URL, Address, Headers, QueryParams, State
+from starlette.datastructures import URL, Address, Headers, QueryParams
 from starlette.formparsers import (
     FormData,
     FormParser,
@@ -12,8 +12,8 @@ from starlette.formparsers import (
 )
 from starlette.requests import SERVER_PUSH_HEADERS_TO_COPY, ClientDisconnect
 
-from ..types import Message, Receive, Scope, Send
-from ..utils import cached_property
+from indexpy.types import Message, Receive, Scope, Send
+from indexpy.utils import cached_property, State
 
 
 def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:

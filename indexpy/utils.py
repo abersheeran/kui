@@ -92,12 +92,9 @@ class State(dict):
     An object that can be used to store arbitrary state.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.sync_lock = threading.Lock()
-        self.async_lock = asyncio.Lock()
-
     def __enter__(self):
+        if not hasattr(self, "sync_lock"):
+            self.sync_lock = threading.Lock()
         self.sync_lock.acquire()
         return self
 
@@ -105,6 +102,8 @@ class State(dict):
         self.sync_lock.release()
 
     async def __aenter__(self):
+        if not hasattr(self, "async_lock"):
+            self.async_lock = asyncio.Lock()
         await self.async_lock.acquire()
         return self
 
