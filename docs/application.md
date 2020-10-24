@@ -5,35 +5,21 @@
 !!! tip
     通过 `scope["app"]`、`request["app"]` 或 `websocket["app"]` 可以获取到正在使用的 `Index` 对象。
 
-### `__init__`
-
 它有许多初始化参数，可用于控制一些 Application 内的程序逻辑。
 
-- **`templates: typing.Iterable[str] = ()`**：此参数用于控制 Index 去哪些地方寻找模板。
+- **`templates = Jinja2Template("templates")`**：此参数用于控制 `indexpy.http.responses.TemplateResponse` 的具体行为。
 
-    1. 模板在项目内：使用相对路径即可。
-    2. 需要使用其他包里的模板（例如 `site-packages` 里的包）：使用 `package:path` 的格式。
+- **`on_startup: typing.List[typing.Callable] = []`**：服务启动后自动调用的函数列表。
 
-- **`try_html: bool = True`**：寻找不到路由时，自动尝试使用同名模板。默认开启。
+- **`on_shutdown: typing.List[typing.Callable] = []`**：服务关闭前自动调用的函数列表。
 
-- **`on_startup: typing.List[typing.Callable]`**：服务启动后自动调用的函数列表；默认为空。
+- **`routes: typing.List[BaseRoute] = []`**：路由列表。
 
-- **`on_shutdown: typing.List[typing.Callable]`**：服务关闭前自动调用的函数列表；默认为空。
+- **`middlewares: typing.List[Middleware] = []`**：挂载于 Index 对象上 ASGI 中间件列表。
+
+- **`exception_handlers = {}`**：处理异常的函数字典。键为 `int` 或 `Exception` 实例，值为对应的函数（定义可参考[自定义异常处理](./http.md#_8)）。
 
 - **`factory_class: FactoryClass`**：通过覆盖此参数，可以自定义整个 Index 作用域中使用的 `Request` 类与 `WebSocket` 类。
-
-### `jinja_env`
-
-此属性是一个 `jinja2.Environment` 对象，`TemplateResponse` 将使用它对模板进行寻找、渲染。
-
-通过读写它的 [`globals`](https://jinja.palletsprojects.com/en/2.11.x/api/#jinja2.Environment.globals) 对象，可以把函数或者变量注入全局。
-
-!!! notice
-    Index 内置的 `jinja_env` 默认开启了 `enable_async` 选项，这意味着你可以传入 `async def` 定义的异步函数。但在模板中，可以像调用普通函数一样调用它——异步等待是自动的。
-
-### `factory_class`
-
-通过读取此属性，你可以获取到当前 Index 实例下，所有 `Request`、`WebSocket` 的类定义。需要实例化这些对象时，推荐从 `scope["app"]factory_class` 中读取它们的类定义。
 
 ### `router`
 

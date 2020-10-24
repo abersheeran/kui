@@ -1,10 +1,8 @@
 import copy
 import inspect
-import logging
 import traceback
 import typing
 
-from jinja2 import ChoiceLoader, Environment, FileSystemLoader, PackageLoader
 from pydantic.dataclasses import dataclass
 from starlette.datastructures import URL
 from starlette.middleware import Middleware
@@ -13,17 +11,15 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.websockets import WebSocketClose
 
-from .config import Config
-from .http import responses
+from .conf import Config
 from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
-from .http.responses import RedirectResponse, Response
+from .http.responses import Response, RedirectResponse
+from .http.templates import BaseTemplates, Jinja2Templates
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .types import ASGIApp, Literal, Message, Receive, Scope, Send
 from .websocket.request import WebSocket
-
-logger = logging.getLogger(__name__)
 
 
 class Lifespan:
@@ -99,24 +95,12 @@ class FactoryClass:
     websocket: typing.Type[WebSocket] = WebSocket
 
 
-def _try_html(request: Request) -> typing.Optional[Response]:
-    """
-    try find html through TemplateResponse
-    """
-    try:
-        return responses.TemplateResponse(
-            request["path"] + ".html", {"request": request}
-        )
-    except LookupError:
-        return None
-
-
 class Index:
     def __init__(
         self,
         *,
-        templates: typing.Iterable[str] = (),
-        try_html: bool = True,
+        debug: bool = Config().DEBUG,
+        templates: BaseTemplates = Jinja2Templates("templates"),
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
@@ -126,24 +110,10 @@ class Index:
         ] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
+        self.__debug = debug
         self.factory_class = factory_class
         self.router = Router(routes)
-
-        templates_loaders: typing.List[
-            typing.Union[FileSystemLoader, PackageLoader]
-        ] = []
-        for template_path in templates:
-            if ":" in template_path:  # package: "package:path"
-                package_name, package_path = template_path.split(":", maxsplit=1)
-                templates_loaders.append(PackageLoader(package_name, package_path))
-            else:  # normal: "path"
-                templates_loaders.append(FileSystemLoader(template_path))
-
-        self.jinja_env = Environment(
-            loader=ChoiceLoader(templates_loaders),
-            enable_async=True,
-        )
-        self.try_html = try_html
+        self.templates = templates
 
         # Shallow copy list to prevent memory leak.
         self.lifespan = Lifespan(
@@ -154,6 +124,10 @@ class Index:
         self.exception_handlers = copy.copy(exception_handlers)
 
         self.asgiapp: ASGIApp = self.build_app()
+
+    @property
+    def debug(self) -> bool:
+        return self.__debug
 
     def rebuild_app(self) -> None:
         self.asgiapp = self.build_app()
@@ -171,13 +145,13 @@ class Index:
 
         middlewares = []
 
-        if "*" in config.ALLOWED_HOSTS:
+        if "*" not in config.ALLOWED_HOSTS:
             middlewares.append(
                 Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
             )
 
         middlewares.append(
-            Middleware(ServerErrorMiddleware, handler=error_handler, debug=config.DEBUG)
+            Middleware(ServerErrorMiddleware, handler=error_handler, debug=self.debug)
         )
 
         if (
@@ -249,9 +223,7 @@ class Index:
             path_params, handler = self.router.search(scope["type"], scope["path"])
             scope["path_params"] = path_params
         except NoMatchFound:
-            if scope["type"] == "http" and self.try_html:
-                # only html, no middleware/background tasks or other anything
-                handler = _try_html(self.factory_class.http(scope, receive, send))
+            pass
 
         if handler is None:
             if scope["type"] == "http":
@@ -321,7 +293,7 @@ class Dispatcher:
                 try:
                     return await app(subscope, subreceive, subsend)
                 except NoMatchFound:
-                    if has_received:  # has call received
+                    if has_received:
                         return await self.handle404(scope, receive, send)
 
         await self.default_app(scope, receive, send)

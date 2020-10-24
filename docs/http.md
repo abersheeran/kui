@@ -187,13 +187,92 @@ del request.state.user  # 删
 
 在 `index.http.repsonses` 里内置的可用对象如下：
 
-### [Response](https://www.starlette.io/responses/#response)
+### Response
 
-### [HTMLResponse](https://www.starlette.io/responses/#htmlresponse)
+签名：`Response(content, status_code=200, headers=None, media_type=None, background=None)`
 
-### [PlainTextResponse](https://www.starlette.io/responses/#plaintextresponse)
+* `content` - 作为响应内容的 `str` 或 `bytes` 对象。
+* `status_code` - HTTP 状态码。
+* `headers` - 字符串字典。
+* `media_type` - 响应内容的[ MIME 类型](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types)。例如：`"text/html"`。
 
-### [JSONResponse](https://www.starlette.io/responses/#jsonresponse)
+`Response` 将自动包含 Content-Length 标头。 它还将包含一个基于 media_type 的 Content-Type 标头，并为文本类型附加一个字符集。
+
+实例化 `Response` 后，可以通过将其作为 ASGI 应用程序实例进行调用来发送响应。
+
+```python
+from indexpy.http.responses import Response
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    response = Response('Hello, world!', media_type='text/plain')
+    await response(scope, receive, send)
+```
+
+#### Set Cookie
+
+`Response` 提供 `set_cookie` 方法以允许你设置 cookies。
+
+签名：`Response.set_cookie(key, value="", max_age=None, expires=None, path="/", domain=None, secure=False, httponly=False, samesite="lax")`
+
+* `key: str`，将成为 Cookie 的键。
+* `value: str = ""`，将是 Cookie 的值。
+* `max_age: Optional[int]`，以秒为单位定义 Cookie 的生存期。非正整数会立即丢弃 Cookie。
+* `expires: Optional[int]`，它定义 Cookie 过期之前的秒数。
+* `path: str = "/"`，它指定 Cookie 将应用到的路由的子集。
+* `domain: Optional[str]`，用于指定 Cookie 对其有效的域。
+* `secure: bool = False`，指示仅当使用 HTTPS 协议发出请求时，才会将 Cookie 发送到服务器。
+* `httponly: bool = False`，指示无法通过 Javascript 通过 `Document.cookie` 属性、`XMLHttpRequest` 或 `Request` 等 API 来访问 Cookie。
+* `samesite: str = "lax"`，用于指定 Cookie 的相同网站策略。有效值为 `"lax"`，`"strict"` 和 `"none"`。
+
+#### Delete Cookie
+
+`Response` 也提供了 `delete_cookie` 方法指定已设置的 Cookie 过期。
+
+签名: `Response.delete_cookie(key, path='/', domain=None)`
+
+### HTMLResponse
+
+接受 `str` 或 `bytes` 并返回 HTML 响应。
+
+```python
+from indexpy.http.responses import HTMLResponse
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    response = HTMLResponse('<html><body><h1>Hello, world!</h1></body></html>')
+    await response(scope, receive, send)
+```
+
+### PlainTextResponse
+
+接受 `str` 或 `bytes` 并返回纯文本响应。
+
+```python
+from indexpy.http.responses import PlainTextResponse
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    response = PlainTextResponse('Hello, world!')
+    await response(scope, receive, send)
+```
+
+### JSONResponse
+
+接受一些数据并返回一个 `application/json` 编码的响应。
+
+```python
+from indexpy.http.responses import JSONResponse
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    response = JSONResponse({'hello': 'world'})
+    await response(scope, receive, send)
+```
 
 #### 自定义序列化方法
 
@@ -232,15 +311,64 @@ class CustomizeJSONResponse(_JSONResponse):
         ).encode("utf-8")
 ```
 
-### [RedirectResponse](https://www.starlette.io/responses/#redirectresponse)
+### RedirectResponse
 
-### [StreamingResponse](https://www.starlette.io/responses/#streamingresponse)
+返回 HTTP 重定向。默认情况下使用 307 状态代码。
 
-### [FileResponse](https://www.starlette.io/responses/#fileresponse)
+```python
+from indexpy.http.responses import PlainTextResponse, RedirectResponse
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    if scope['path'] != '/':
+        response = RedirectResponse(url='/')
+    else:
+        response = PlainTextResponse('Hello, world!')
+    await response(scope, receive, send)
+```
+
+### StreamingResponse
+
+接受一个异步生成器或普通生成器/迭代器，流式传输响应主体。
+
+```python
+import asyncio
+
+from indexpy.http.responses import StreamingResponse
+
+
+async def slow_numbers(minimum, maximum):
+    yield('<html><body><ul>')
+    for number in range(minimum, maximum + 1):
+        yield '<li>%d</li>' % number
+        await asyncio.sleep(0.5)
+    yield('</ul></body></html>')
+
+
+async def app(scope, receive, send):
+    assert scope['type'] == 'http'
+    generator = slow_numbers(1, 10)
+    response = StreamingResponse(generator, media_type='text/html')
+    await response(scope, receive, send)
+```
+
+### FileResponse
+
+异步传输文件作为响应。
+
+与其他响应类型相比，采用不同的参数进行实例化：
+
+* `path` - 要流式传输的文件的文件路径。
+* `headers` - 与 `Response` 中的 `headers` 参数的作用相同。
+* `media_type` - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。
+* `filename` - 如果设置此参数，它将包含在响应的 `Content-Disposition` 中。
+
+`FileResponse` 将自动设置适当的 `Content-Length`、`Last-Modified` 和 `ETag` 标头。
 
 ### TemplateResponse
 
-Index 提供了使用 Jinja2 的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（寻找路径由 Index 的 `templates` 参数进行配置）
+Index 提供了便捷的使用模板的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（具体行为由 Index 的 `templates` 参数进行控制）
 
 ```python
 from indexpy.http import HTTPView
@@ -252,29 +380,17 @@ class HTTP(HTTPView):
         return TemplateResponse("chat.html", {"request": self.request})
 ```
 
-`TemplateResponse` 使用的 `jinja2.Environment` 来自于 `Index().jinja_env`，通过更改、覆盖等方式，你可以自由的控制 `TemplateResponse`。
-
-例子：
-
-```python
-from datetime import datetime
-from indexpy import Index
-
-app = Index()
-app.jinja_env.globals["now"] = datetime.now
-```
-
 ### YAMLResponse
 
 YAMLResponse 与 JSONResponse 的使用方法相同。
 
 唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
-### EventResponse
+### ServerSendEventResponse
 
-通过 `EventResponse` 可以返回一个 [Server Sent Events | MDN文档](https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events) 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。
+通过 `ServerSendEventResponse` 可以返回一个 [Server Sent Events](https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events) 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。
 
-`EventResponse` 除了可以接受诸如 `status_code`、`headers` 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 `yield` 的每一条消息都需要为合规的 Server-Sent Event 消息（`str` 类型），否则会出现不可预料的错误。
+`ServerSendEventResponse` 除了可以接受诸如 `status_code`、`headers` 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 `yield` 的每一条消息都需要为合规的 Server-Sent Event 消息（`str` 类型），否则会出现不可预料的错误。
 
 如下是一个每隔一秒发送一条 hello 消息、一共发送一百零一条消息的样例。
 
@@ -416,9 +532,3 @@ def not_found(request: Request, exc: HTTPException) -> Response:
 def value_error(request: Request, exc: ValueError) -> Response:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 ```
-
-!!!notice
-    如果是捕捉 HTTP 状态码，则会捕捉 `indexpy.http.HTTPException`。
-
-!!!tip
-    在此可以捕捉包括挂载到 Index 中的其他 app 的异常。而中间件中仅能处理通过中间件的异常。

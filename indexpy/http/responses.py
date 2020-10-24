@@ -2,7 +2,6 @@ import asyncio
 import functools
 import typing
 
-import jinja2
 import yaml
 from starlette.background import BackgroundTask
 from starlette.responses import (
@@ -15,7 +14,7 @@ from starlette.responses import (
     StreamingResponse,
 )
 
-from ..types import Receive, Scope, Send
+from indexpy.types import Receive, Scope, Send
 
 __all__ = [
     "automatic",
@@ -28,46 +27,24 @@ __all__ = [
     "StreamingResponse",
     "FileResponse",
     "TemplateResponse",
+    "ServerSendEventResponse",
 ]
 
 
-class TemplateResponse(Response):
-    media_type = "text/html"
+def TemplateResponse(
+    name: str,
+    context: dict,
+    status_code: int = 200,
+    headers: dict = None,
+    media_type: str = None,
+    background: BackgroundTask = None,
+) -> Response:
+    if "request" not in context:
+        raise ValueError('context must include a "request" key')
 
-    def __init__(
-        self,
-        name: str,
-        context: dict,
-        status_code: int = 200,
-        headers: dict = None,
-        media_type: str = None,
-        background: BackgroundTask = None,
-    ):
-        if "request" not in context:
-            raise ValueError('context must include "request".')
-        self.env: jinja2.Environment = context["request"]["app"].jinja_env
-        self.template = self.env.get_template(name)
-        self.context = context
-        super().__init__(None, status_code, headers, media_type, background)
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if self.env.enable_async:  # type: ignore
-            content = await self.template.render_async(self.context)
-        else:
-            content = self.template.render(self.context)
-        self.body = self.render(content)
-        self.headers.setdefault("content-length", str(len(self.body)))
-
-        extensions = self.context.get("request", {}).get("extensions", {})
-        if "http.response.template" in extensions:
-            await send(
-                {
-                    "type": "http.response.template",
-                    "template": self.template,
-                    "context": self.context,
-                }
-            )
-        await super().__call__(scope, receive, send)
+    return context["request"]["app"].templates.TemplateResponse(
+        name, context, headers, media_type, background
+    )
 
 
 class YAMLResponse(Response):
@@ -77,7 +54,7 @@ class YAMLResponse(Response):
         return yaml.dump(content, indent=2, allow_unicode=True).encode("utf8")
 
 
-class EventResponse(Response):
+class ServerSendEventResponse(Response):
     r"""
     Server send event Response 🔗[MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
 
