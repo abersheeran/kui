@@ -1,5 +1,4 @@
 import functools
-import logging
 import typing
 
 from indexpy.concurrency import keepasync
@@ -19,8 +18,6 @@ HTTP_METHOD_NAMES = [
     "options",
     "trace",
 ]
-
-logger = logging.getLogger(__name__)
 
 
 class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
