@@ -1,4 +1,3 @@
-import logging
 import os
 import signal
 import subprocess
@@ -10,7 +9,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .config import LOG_LEVELS, Config
+from .conf import Config
 from .utils import import_module
 
 config = Config()
@@ -40,9 +39,7 @@ def execute(command: Union[List[str], str]) -> int:
 
 @click.group(help=f"Index.py {__version__}")
 def index_cli():
-    # set index logger level
-    indexpy_logger = logging.getLogger("indexpy")
-    indexpy_logger.setLevel(LOG_LEVELS[config.LOG_LEVEL])
+    pass
 
 
 @index_cli.command(help="use uvicorn to run Index.py")
@@ -66,7 +63,7 @@ def gunicorn():
     pass
 
 
-@gunicorn.command()
+@gunicorn.command(help="Run gunicorn")
 @click.option("--workers", "-w", default=cpu_count())
 @click.option("--worker-class", "-k", default="uvicorn.workers.UvicornWorker")
 @click.option("--daemon", "-d", default=False, is_flag=True)
@@ -77,7 +74,7 @@ def gunicorn():
 )
 @click.argument("application", default=lambda: config.APP)
 def start(workers, worker_class, daemon, configuration, application):
-    from gunicorn.app.wsgiapp import run
+    from gunicorn.app.wsgiapp import run as run_gunicorn
 
     command = (
         "gunicorn"
@@ -99,15 +96,15 @@ def start(workers, worker_class, daemon, configuration, application):
     args.append(application)
 
     sys.argv = args
-    run()
+    run_gunicorn()
 
 
-@gunicorn.command("")
+@gunicorn.command(help="Stop daemon gunicorn processes")
 def stop():
     execute(["kill -TERM", "`cat .pid`"])
 
 
-@gunicorn.command()
+@gunicorn.command(help="Reload daemon gunicorn processes")
 def reload():
     execute(["kill -HUP", "`cat .pid`"])
 

@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import typing
 
@@ -9,14 +8,6 @@ from .types import final
 from .utils import Singleton
 
 __all__ = ["Config"]
-
-LOG_LEVELS = {
-    "critical": logging.CRITICAL,
-    "error": logging.ERROR,
-    "warning": logging.WARNING,
-    "info": logging.INFO,
-    "debug": logging.DEBUG,
-}
 
 
 class ConfigError(Exception):
@@ -107,7 +98,8 @@ class Config(UpperDict, metaclass=Singleton):
         self["cors_max_age"] = 600
 
     def __init__(self) -> None:
-        super().__init__({})
+        super().__init__()
+        super().__setattr__("__editable__", True)
         self.setdefaults()
         # read config from file
         self.import_from_file()
@@ -168,6 +160,9 @@ class Config(UpperDict, metaclass=Singleton):
         raise ConfigError("Deleting the attribute value of Config is not allowed.")
 
     def __setitem__(self, key: str, value: typing.Any) -> None:
+        if not self.__editable__:
+            raise ConfigError("Modifying the attribute value of Config is not allowed.")
+
         key = key.upper()
 
         if key == "DEBUG":
