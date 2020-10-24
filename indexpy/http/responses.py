@@ -3,7 +3,6 @@ import functools
 import typing
 
 import yaml
-from starlette.background import BackgroundTask
 from starlette.responses import (
     FileResponse,
     HTMLResponse,
@@ -15,6 +14,8 @@ from starlette.responses import (
 )
 
 from indexpy.types import Receive, Scope, Send
+
+from .background import BackgroundTask
 
 __all__ = [
     "automatic",
@@ -43,7 +44,7 @@ def TemplateResponse(
         raise ValueError('context must include a "request" key')
 
     return context["request"]["app"].templates.TemplateResponse(
-        name, context, headers, media_type, background
+        name, context, status_code, headers, media_type, background
     )
 
 
