@@ -5,7 +5,7 @@ from starlette.testclient import TestClient
 
 from indexpy import Index
 from indexpy.http import HTTPView
-from indexpy.openapi import describe_response
+from indexpy.openapi import describe_response, describe_extra_docs
 from indexpy.openapi.application import OpenAPI
 from indexpy.routing import HttpRoute, SubRoutes
 
@@ -66,10 +66,21 @@ def test_openapi_page():
             """
 
     def just_middleware(endpoint):
-        async def w(c):
-            return await endpoint(c)
-
-        return w
+        describe_extra_docs(
+            endpoint,
+            {
+                "parameters": [
+                    {
+                        "name": "Authoritarian",
+                        "in": "header",
+                        "description": "JWT Token",
+                        "required": True,
+                        "schema": {"type": "string"},
+                    }
+                ]
+            },
+        )
+        return endpoint
 
     middleware_routes = SubRoutes(
         "/middleware",
@@ -86,9 +97,7 @@ def test_openapi_page():
     assert client.get("/openapi/docs").status_code == 200
     openapi_docs_text = client.get("/openapi/docs").text
 
-    assert (
-        openapi_docs_text
-        == """definitions: {}
+    _ = """definitions: {}
 info:
   description: description
   title: Title
@@ -102,15 +111,23 @@ paths:
   /http-view:
     delete:
       description: '......'
+      parameters: &id001
+      - description: JWT Token
+        in: header
+        name: Authoritarian
+        required: true
+        schema:
+          type: string
       responses:
         204:
           description: Request fulfilled, nothing follows
       summary: '...'
     get:
       description: '......'
+      parameters: *id001
       responses:
         200:
-          content: &id001
+          content: &id002
             text/html:
               schema:
                 type: string
@@ -118,6 +135,7 @@ paths:
       summary: '...'
     post:
       description: '......'
+      parameters: *id001
       responses:
         201:
           content:
@@ -136,19 +154,22 @@ paths:
   /middleware/http-view:
     delete:
       description: '......'
+      parameters: *id001
       responses:
         204:
           description: Request fulfilled, nothing follows
       summary: '...'
     get:
       description: '......'
+      parameters: *id001
       responses:
         200:
-          content: *id001
+          content: *id002
           description: Request fulfilled, document follows
       summary: '...'
     post:
       description: '......'
+      parameters: *id001
       responses:
         201:
           content:
@@ -174,6 +195,13 @@ paths:
         schema:
           title: Name
           type: string
+      - &id003
+        description: JWT Token
+        in: header
+        name: Authoritarian
+        required: true
+        schema:
+          type: string
   /path/{name}:
     get:
       parameters:
@@ -184,9 +212,10 @@ paths:
         schema:
           title: Name
           type: string
+      - *id003
 servers:
 - description: Current server
   url: http://testserver
 tags: []
 """
-    )
+    assert openapi_docs_text == _

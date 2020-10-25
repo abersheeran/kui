@@ -8,6 +8,7 @@ from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
 from indexpy.routing import HttpRoute
 from indexpy.types import Literal, TypedDict
 
+from .functions import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response
 
 Tag = TypedDict("Tag", {"description": str, "paths": Sequence[str]})
@@ -55,11 +56,11 @@ class OpenAPI:
                 else:
                     self.path2tag[path] = [tag_name]
 
-    def _generate_paths(self, app, definitions: dict) -> Dict[str, Any]:
+    def _generate_paths(self, app: Any, definitions: dict) -> Dict[str, Any]:
         result = {}
 
         for path_format, endpoint in app.router.http_tree.iterator():
-            path_docs = self._generate_path(endpoint, path_format, definitions)
+            path_docs = self._generate_path(endpoint.__raw__, path_format, definitions)
             if not path_docs:
                 continue
             result[path_format] = path_docs
@@ -99,25 +100,27 @@ class OpenAPI:
                     "description": "\n".join(doc.splitlines()[1:]).strip(),
                 }
             )
-        # generate params schmea
-        params = getattr(func, "__params__", {})
+        # generate params schema
+        __parameters__ = getattr(func, "__parameters__", {})
         parameters = (
-            schema_parameter(params.get("path"), "path")
-            + schema_parameter(params.get("query"), "query")
-            + schema_parameter(params.get("header"), "header")
-            + schema_parameter(params.get("cookie"), "cookie")
+            schema_parameter(__parameters__.get("path"), "path")
+            + schema_parameter(__parameters__.get("query"), "query")
+            + schema_parameter(__parameters__.get("header"), "header")
+            + schema_parameter(__parameters__.get("cookie"), "cookie")
         )
         if parameters:
             result["parameters"] = parameters
-        # generate request body schmea
-        request_body, _definitions = schema_request_body(params.get("body"))
+        # generate request body schema
+        request_body, _definitions = schema_request_body(
+            getattr(func, "__request_body__", None)
+        )
         if request_body:
             result["requestBody"] = request_body
         definitions.update(_definitions)
-        # generate responses schmea
-        resps = getattr(func, "__responses__", {})
+        # generate responses schema
+        __responses__ = getattr(func, "__responses__", {})
         responses: Dict[int, Any] = {}
-        for status, info in resps.items():
+        for status, info in __responses__.items():
             _ = responses[int(status)] = dict(info)
             if _.get("content") is not None:
                 _["content"], _definitions = schema_response(_["content"])
@@ -127,8 +130,8 @@ class OpenAPI:
         # set path tags
         if result and path in self.path2tag:
             result["tags"] = self.path2tag[path]
-
-        return result
+        # merge user custom operation info
+        return merge_openapi_info(result, getattr(func, "__extra_docs__", {}))
 
     def create_docs(self, request: Request) -> dict:
         openapi: dict = deepcopy(self.openapi)

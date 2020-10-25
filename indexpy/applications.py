@@ -17,6 +17,7 @@ from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
 from .http.responses import Response, RedirectResponse
 from .http.templates import BaseTemplates, Jinja2Templates
+from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .types import ASGIApp, Literal, Message, Receive, Scope, Send
 from .websocket.request import WebSocket
@@ -117,7 +118,8 @@ class Index:
 
         # Shallow copy list to prevent memory leak.
         self.lifespan = Lifespan(
-            on_startup=copy.copy(on_startup), on_shutdown=copy.copy(on_shutdown)
+            on_startup=copy.copy(on_startup) + [only_allow.clear],
+            on_shutdown=copy.copy(on_shutdown),
         )
 
         self.user_middlewares = copy.copy(middlewares)

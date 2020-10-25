@@ -3,7 +3,7 @@ import importlib
 import os
 import typing
 from dataclasses import InitVar, asdict, dataclass
-from functools import update_wrapper, wraps
+from functools import update_wrapper
 from pathlib import Path
 
 from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
@@ -17,23 +17,23 @@ from .tree import RadixTree
 
 
 def request_response(view: typing.Any) -> ASGIApp:
-    @wraps(view)
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         request = current_app.factory_class.http(scope, receive, send)
         response = convert(await view(request))
         await response(scope, receive, send)
 
+    setattr(_, "__raw__", view)
     return _
 
 
 def websocket_session(view: typing.Any) -> ASGIApp:
-    @wraps(view)
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         websocket = current_app.factory_class.websocket(scope, receive, send)
         await view(websocket)
 
+    setattr(_, "__raw__", view)
     return _
 
 
@@ -41,7 +41,6 @@ def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
     assert path_prefix.startswith("/"), "path_prefix must be start with '/'"
     assert not path_prefix.endswith("/"), "path_prefix can't end with '/'"
 
-    @wraps(asgi)
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         path = scope["path"]
         root_path = scope.get("root_path", "")
@@ -51,6 +50,7 @@ def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
         subscope["root_path"] = root_path + path_prefix
         await asgi(subscope, receive, send)
 
+    setattr(_, "__raw__", asgi)
     return _
 
 
@@ -88,7 +88,6 @@ class HttpRoute(BaseRoute):
 
     def __post_init__(self, method: Literal["", LOWER_HTTP_METHODS]) -> None:  # type: ignore
         super().__post_init__()
-
         self.endpoint = complicating(self.endpoint)
 
         if not (
@@ -111,7 +110,8 @@ class HttpRoute(BaseRoute):
             endpoint = self.endpoint
             for middleware in getattr(routes, "_http_middlewares"):
                 endpoint = middleware(endpoint)
-            self.endpoint = update_wrapper(endpoint, self.endpoint)
+            if not (endpoint is self.endpoint):
+                self.endpoint = update_wrapper(endpoint, self.endpoint)
 
 
 @dataclass
@@ -121,7 +121,8 @@ class SocketRoute(BaseRoute):
             endpoint = self.endpoint
             for middleware in getattr(routes, "_socket_middlewares"):
                 endpoint = middleware(endpoint)
-            self.endpoint = update_wrapper(endpoint, self.endpoint)
+            if not (endpoint is self.endpoint):
+                self.endpoint = update_wrapper(endpoint, self.endpoint)
 
 
 @dataclass
@@ -140,7 +141,8 @@ class ASGIRoute(BaseRoute):
             endpoint = self.endpoint
             for middleware in getattr(routes, "_asgi_middlewares"):
                 endpoint = middleware(endpoint)
-            self.endpoint = update_wrapper(endpoint, self.endpoint)
+            if not (endpoint is self.endpoint):
+                self.endpoint = update_wrapper(endpoint, self.endpoint)
 
 
 T = typing.TypeVar("T")

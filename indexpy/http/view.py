@@ -4,6 +4,7 @@ import typing
 from indexpy.concurrency import keepasync
 from indexpy.openapi.functions import bound_params, parse_params
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
+from indexpy.utils import cached
 
 from .request import Request
 from .responses import Response
@@ -81,6 +82,7 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         )
 
 
+@cached
 def only_allow(
     method: LOWER_HTTP_METHODS, func: typing.Callable = None
 ) -> typing.Callable:

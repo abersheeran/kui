@@ -7,7 +7,7 @@ from pydantic import BaseModel, ValidationError
 
 from indexpy.http import Request
 
-T = typing.TypeVar("T")
+T = typing.TypeVar("T", bound=typing.Callable)
 
 
 def describe_response(
@@ -21,7 +21,7 @@ def describe_response(
     """
     describe a response in HTTP view function
 
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject
     """
     status = int(status)
     if not description:
@@ -60,12 +60,38 @@ def describe_responses(responses: typing.Dict[int, dict]) -> typing.Callable[[T]
     return decorator
 
 
-class ParamsValidationError(Exception):
-    def __init__(self, validation_error: ValidationError) -> None:
-        self.ve = validation_error
+def merge_openapi_info(
+    operation_info: typing.Dict[str, typing.Any],
+    more_info: typing.Dict[str, typing.Any],
+) -> typing.Dict[str, typing.Any]:
+    for key, value in more_info.items():
+        if key in operation_info:
+            if isinstance(operation_info[key], typing.Sequence):
+                operation_info[key] = _ = list(operation_info[key])
+                _.extend(value)
+                continue
+            elif isinstance(operation_info[key], dict):
+                operation_info[key] = merge_openapi_info(operation_info[key], value)
+                continue
+        operation_info[key] = value
+    return operation_info
 
 
-def parse_params(function: typing.Callable) -> typing.Callable:
+def describe_extra_docs(handler: T, info: typing.Dict[str, typing.Any]) -> T:
+    """
+    describe more openapi info in HTTP handler
+
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject
+    """
+    if isclass(handler):
+        for method in getattr(handler, "__methods__"):
+            setattr(getattr(handler, method.lower()), "__extra_docs__", info)
+    else:
+        setattr(handler, "__extra_docs__", info)
+    return handler
+
+
+def parse_params(function: T) -> T:
     """
     parse function params "path", "query", "header", "cookie", "body"
     """
@@ -86,7 +112,7 @@ def parse_params(function: typing.Callable) -> typing.Callable:
             + "You should inherit `pydantic.BaseModel`."
         )
 
-    __params__ = {
+    params = {
         param_name: sig.parameters[param_name].annotation
         for param_name in param_names
         if (
@@ -94,69 +120,72 @@ def parse_params(function: typing.Callable) -> typing.Callable:
             and issubclass(sig.parameters[param_name].annotation, BaseModel)
         )
     }
-    if __params__:
-        setattr(function, "__params__", __params__)
+    if "body" in params:
+        setattr(function, "__request_body__", params.pop("body"))
+    if params:
+        setattr(function, "__parameters__", params)
     return function
 
 
-def merge_list(
-    raw: typing.List[typing.Tuple[str, str]]
-) -> typing.Dict[str, typing.Union[typing.List[str], str]]:
+def _merge_multi_value(raw_list):
     """
     If there are values with the same key value, they are merged into a List.
     """
-    d: typing.Dict[str, typing.Union[typing.List[str], str]] = {}
-    for k, v in raw:
-        if k in d:
-            if isinstance(d[k], list):
-                typing.cast(typing.List, d[k]).append(v)
-            else:
-                d[k] = [typing.cast(str, d[k]), v]
-        else:
+    d = {}
+    for k, v in raw_list:
+        if k not in d:
             d[k] = v
+            continue
+        if isinstance(d[k], list):
+            d[k].append(v)
+        else:
+            d[k] = [d[k], v]
     return d
+
+
+class ParamsValidationError(Exception):
+    def __init__(self, validation_error: ValidationError) -> None:
+        self.ve = validation_error
 
 
 async def bound_params(handler: typing.Callable, request: Request) -> typing.Callable:
     """
     bound parameters "path", "query", "header", "cookie", "body" to the view function
     """
-    if isclass(handler):
+    parameters = getattr(handler, "__parameters__", None)
+    request_body = getattr(handler, "__request_body__", None)
+    if not (parameters or request_body):
         return handler
 
-    __params__ = getattr(handler, "__params__", None)
-    if not __params__:
-        return handler
-
-    params: typing.Dict[str, BaseModel] = {}
+    kwargs: typing.Dict[str, BaseModel] = {}
 
     try:
         # try to get parameters model and parse
-        if "path" in __params__:
-            params["path"] = __params__["path"](**request.path_params)
+        if "path" in parameters:
+            kwargs["path"] = parameters["path"](**request.path_params)
 
-        if "query" in __params__:
-            params["query"] = __params__["query"](
-                **merge_list(request.query_params.multi_items())
+        if "query" in parameters:
+            kwargs["query"] = parameters["query"](
+                **_merge_multi_value(request.query_params.multi_items())
             )
 
-        if "header" in __params__:
-            params["header"] = __params__["header"](
-                **merge_list(request.headers.items())
+        if "header" in parameters:
+            kwargs["header"] = parameters["header"](
+                **_merge_multi_value(request.headers.items())
             )
 
-        if "cookie" in __params__:
-            params["cookie"] = __params__["cookie"](**request.cookies)
+        if "cookie" in parameters:
+            kwargs["cookie"] = parameters["cookie"](**request.cookies)
 
         # try to get body model and parse
-        if "body" in __params__:
+        if request_body:
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:
                 _body_data = await request.form()
-            params["body"] = __params__["body"](**_body_data)
+            kwargs["body"] = request_body(**_body_data)
 
     except ValidationError as e:
         raise ParamsValidationError(e)
 
-    return functools.partial(handler, **params)
+    return functools.partial(handler, **kwargs)

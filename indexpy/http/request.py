@@ -12,7 +12,7 @@ from starlette.formparsers import (
 )
 from starlette.requests import SERVER_PUSH_HEADERS_TO_COPY, ClientDisconnect
 
-from indexpy.types import Message, Receive, Scope, Send
+from indexpy.types import Message, Receive, Scope, Send, UPPER_HTTP_METHODS
 from indexpy.utils import cached_property, State
 
 
@@ -137,7 +137,7 @@ class Request(HTTPConnection):
         self._is_disconnected = False
 
     @property
-    def method(self) -> str:
+    def method(self) -> UPPER_HTTP_METHODS:
         return self.scope["method"]
 
     async def stream(self) -> typing.AsyncGenerator[bytes, None]:
