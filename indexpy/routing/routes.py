@@ -75,6 +75,16 @@ class BaseRoute:
     def extend_middlewares(self, routes: typing.List["BaseRoute"]) -> None:
         raise NotImplementedError()
 
+    def _extend_middlewares(
+        self, middlewares: typing.Iterable[typing.Callable]
+    ) -> None:
+        endpoint = self.endpoint
+        for middleware in middlewares:
+            self.endpoint = middleware(endpoint)
+            if not (endpoint is self.endpoint):
+                self.endpoint = update_wrapper(self.endpoint, endpoint)
+            endpoint = self.endpoint
+
     def __post_init__(self) -> None:
         if not self.path.startswith("/"):
             raise ValueError("Route path must start with '/'")
@@ -106,23 +116,13 @@ class HttpRoute(BaseRoute):
                 raise ValueError("View class can't be marked with method")
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if getattr(routes, "_http_middlewares", None):
-            endpoint = self.endpoint
-            for middleware in getattr(routes, "_http_middlewares"):
-                endpoint = middleware(endpoint)
-            if not (endpoint is self.endpoint):
-                self.endpoint = update_wrapper(endpoint, self.endpoint)
+        self._extend_middlewares(getattr(routes, "_http_middlewares", []))
 
 
 @dataclass
 class SocketRoute(BaseRoute):
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if getattr(routes, "_socket_middlewares", None):
-            endpoint = self.endpoint
-            for middleware in getattr(routes, "_socket_middlewares"):
-                endpoint = middleware(endpoint)
-            if not (endpoint is self.endpoint):
-                self.endpoint = update_wrapper(endpoint, self.endpoint)
+        self._extend_middlewares(getattr(routes, "_socket_middlewares", []))
 
 
 @dataclass
@@ -137,12 +137,7 @@ class ASGIRoute(BaseRoute):
             self.endpoint = subpath_asgi(root_path, self.endpoint)
 
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        if hasattr(routes, "_asgi_middlewares"):
-            endpoint = self.endpoint
-            for middleware in getattr(routes, "_asgi_middlewares"):
-                endpoint = middleware(endpoint)
-            if not (endpoint is self.endpoint):
-                self.endpoint = update_wrapper(endpoint, self.endpoint)
+        self._extend_middlewares(getattr(routes, "_asgi_middlewares", []))
 
 
 T = typing.TypeVar("T")
