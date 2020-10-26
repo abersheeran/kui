@@ -1,4 +1,4 @@
-Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。这与 Index 核心并不是强耦合的，所以你可以选择使用，也可以选择不使用。
+Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。
 
 ## 显示 OpenAPI 文档
 
@@ -39,36 +39,51 @@ async def handler(request):
     """
 ```
 
-### 请求
+### 描述请求参数
 
-对于所有可处理 HTTP 请求的方法，均可以接受五种参数：`path`、`body`、`query`、`header`、`cookie`。
-
-使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。
-
-### 响应
-
-为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。既可以使用 models 描述响应(仅支持 application/json)，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
+对于所有可处理 HTTP 请求的方法，均可以接受五种参数：`path`、`body`、`query`、`header`、`cookie`。使用继承自 `pydantic.BaseModel` 的类作为类型注解即可做到自动参数校验以及生成请求格式文档。例如：
 
 ```python
-def describe_response(
-    status: typing.Union[int, HTTPStatus],
-    description: str = "",
-    *,
-    content: typing.Union[typing.Type[BaseModel], dict] = None,
-    headers: dict = None,
-    links: dict = None,
-)
+from pydantic import BaseModel
+
+
+class PageQuery(BaseModel):
+    page_num: int
+    page_size: int
+
+
+async def getlist(request, query: PageQuery):
+    ...
 ```
 
-该函数的四个参数均对应[ OpenAPI 规范](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#responseObject)里的同名字段。`status` 则为该 Response Object 对应的 HTTP 状态码。
+### 描述响应结果
+
+为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
+
+其中，`content` 既可以使用 `pydantic.BaseModel` 描述响应(仅支持 application/json)，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
 
 !!! notice
 
-    如果 `description` 的值为默认的 `""`，则会使用 `http` 标准库中的 `HTTPStatus(status).description` 作为默认的描述。
+    如果 `description` 的值为默认的 `""`，则会使用 `http` 标准库中的 `HTTPStatus(status).description` 作为描述。
+
+```python
+from http import HTTPStatus
+
+from indexpy.openapi import describe_response
+
+
+@describe_response(HTTPStatus.NO_CONTENT)
+def handler(request):
+    """
+    .................
+    """
+```
 
 除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。字典以 `status` 为键，以 OpenAPI Response Object 的四个属性作为可选的值（其中 `description` 为必选）。
 
 ```python
+from indexpy.openapi import describe_responses
+
 RESPONSES = {
     404: {"description": "Item not found"},
     403: {"description": "Not enough privileges"},
@@ -87,51 +102,35 @@ def handler(request):
 !!! notice
     此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
 
-### 样例
+## 描述额外的 OpenAPI 文档
+
+作为一个 Web 项目，在中间件中读取请求信息并作限制是很常见的，例如读取 JWT 用作鉴权。在每个视图都增加 `header` 参数是不现实的，这时候 `describe_extra_docs` 就派上用场了。
+
+!!! tip
+
+    `describe_extra_docs` 增加的内容，不仅限于 `parameters`，任何描述都会被合并进原本的文档里。具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
 
 ```python
-from indexpy.http import HTTPView
-from indexpy.openapi import describe_response
-from pydantic import BaseModel, Field
-
-
-class Hello(BaseModel):
-    name: str = "Aber"
-
-
-class Message(BaseModel):
-    """your message"""
-
-    name: str = Field(..., description="your name")
-    text: str = Field(..., description="what are you want to say?")
-
-
-class MessageResponse(BaseModel):
-    """message response"""
-
-    message: Message
-
-
-class HTTP(HTTPView):
-    @describe_response(
-        200,
-        content={"text/html": {"schema": {"type": "string"}}},
+def judge_jwt(endpoint):
+    describe_extra_docs(
+        endpoint,
+        {
+            "parameters": [
+                {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "JWT Token",
+                    "required": True,
+                    "schema": {"type": "string"},
+                }
+            ]
+        },
     )
-    async def get(self, query: Hello):
-        """
-        welcome page
-        """
-        return f"welcome, {query.name}."
 
-    @describe_response(200, content=MessageResponse)
-    @describe_response(201)
-    async def post(self, body: Message):
-        """
-        echo your message
+    async def judge(request):
+        ...
 
-        just echo your message.
-        """
-        return {"message": body.dict()}, 200, {"server": "index.py"}
+    return judge
 ```
 
 ## Tags
@@ -150,8 +149,14 @@ OpenAPI(
             "description": "test over two tags in one path",
             "paths": ["/about/", "/file", "/"],
         },
-        "about": {"description": "about page", "paths": ["/about/", "/about/me"]},
-        "file": {"description": "get/upload file api", "paths": ["/file"]},
+        "about": {
+            "description": "about page",
+            "paths": ["/about/", "/about/me"],
+        },
+        "file": {
+            "description": "get/upload file api",
+            "paths": ["/file"],
+        },
     },
 )
 ```
