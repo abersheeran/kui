@@ -71,7 +71,7 @@ def test_openapi_page():
             {
                 "parameters": [
                     {
-                        "name": "Authoritarian",
+                        "name": "Authorization",
                         "in": "header",
                         "description": "JWT Token",
                         "required": True,
@@ -114,7 +114,7 @@ paths:
       parameters: &id001
       - description: JWT Token
         in: header
-        name: Authoritarian
+        name: Authorization
         required: true
         schema:
           type: string
@@ -198,7 +198,7 @@ paths:
       - &id003
         description: JWT Token
         in: header
-        name: Authoritarian
+        name: Authorization
         required: true
         schema:
           type: string
