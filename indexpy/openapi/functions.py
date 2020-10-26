@@ -161,21 +161,22 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
 
     try:
         # try to get parameters model and parse
-        if "path" in parameters:
-            kwargs["path"] = parameters["path"](**request.path_params)
+        if parameters:
+            if "path" in parameters:
+                kwargs["path"] = parameters["path"](**request.path_params)
 
-        if "query" in parameters:
-            kwargs["query"] = parameters["query"](
-                **_merge_multi_value(request.query_params.multi_items())
-            )
+            if "query" in parameters:
+                kwargs["query"] = parameters["query"](
+                    **_merge_multi_value(request.query_params.multi_items())
+                )
 
-        if "header" in parameters:
-            kwargs["header"] = parameters["header"](
-                **_merge_multi_value(request.headers.items())
-            )
+            if "header" in parameters:
+                kwargs["header"] = parameters["header"](
+                    **_merge_multi_value(request.headers.items())
+                )
 
-        if "cookie" in parameters:
-            kwargs["cookie"] = parameters["cookie"](**request.cookies)
+            if "cookie" in parameters:
+                kwargs["cookie"] = parameters["cookie"](**request.cookies)
 
         # try to get body model and parse
         if request_body:
