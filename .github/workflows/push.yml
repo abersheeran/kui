@@ -72,7 +72,7 @@ jobs:
 
       - name: Build
         run: |
-          mkdocs-version build --minor --min-version=v0.10.0 --version-regex="v(?P<version>.*)"
+          mkdocs-version build --minor --min-version=v0.11.0 --version-regex="v(?P<version>.*)"
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
