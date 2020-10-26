@@ -2,7 +2,7 @@ Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的
 
 ## 显示 OpenAPI 文档
 
-将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。
+将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
 
 ```python
 from indexpy import Index
@@ -12,11 +12,17 @@ from indexpy.openapi import OpenAPI
 app = Index()
 
 app.router.extend(
-    SubRoutes("/openapi", OpenAPI("Title", "description", "1.0").routes)
+    SubRoutes(
+        "/openapi",
+        OpenAPI("Title", "description", "1.0").routes,
+        namespace="openapi",
+    )
 )
 ```
 
-启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
+默认的文档模板使用 [swagger](https://swagger.io/tools/swagger-ui/)，如果你更喜欢 [redoc](https://github.com/Redocly/redoc) 的样式，可以通过更改 `template_name` 来达到目的，例如：`OpenAPI(..., template_name="redoc")`。
+
+不仅如此，你还可以通过使用 `template` 参数来控制显示自己的喜欢的任何模板，只需要把模板的完整内容作为字符串传给 `template` 参数即可。
 
 ## 接口描述
 
