@@ -1,17 +1,36 @@
 import asyncio
-import os
 
-from indexpy import Config, Index
-from indexpy.http.responses import EventResponse
+from indexpy import Index
+from indexpy.__version__ import __version__
+from indexpy.routing import Routes, SubRoutes
+from indexpy.http.responses import ServerSendEventResponse
+from indexpy.openapi import OpenAPI, describe_response
 
-os.environ["INDEX_DEBUG"] = "on"
-Config().import_from_environ()
-
-app = Index()
+app = Index(
+    debug=True,
+    routes=Routes(
+        SubRoutes(
+            "/openapi",
+            OpenAPI(
+                "Index.py Example",
+                "Just a simple example, and for display debug page.",
+                __version__,
+            ).routes,
+            namespace="openapi",
+        )
+    ),
+)
 
 
 @app.router.http("/", method="get")
+@describe_response(
+    200,
+    content={"text/plain": {"schema": {"type": "string"}}},
+)
 async def homepage(request):
+    """
+    Homepage
+    """
     return "hello, index.py"
 
 
@@ -21,10 +40,28 @@ async def exc(rq):
 
 
 @app.router.http("/message", method="get")
+@describe_response(
+    200,
+    content={"text/event-stream": {"schema": {"type": "string"}}},
+)
 async def message(request):
+    """
+    Message
+
+    For testing server send event response
+    """
+
     async def message_gen():
         for _ in range(101):
             await asyncio.sleep(1)
-            yield "event: message\r\ndata: {'name': 'Aber', 'body': 'hello'}"
+            yield "\r\n".join(
+                map(
+                    lambda line: line.strip(),
+                    f"""id:{_}
+                    event: message
+                    data: {{'name': 'Aber', 'body': 'hello'}}
+                    """.splitlines(),
+                )
+            )
 
-    return EventResponse(message_gen())
+    return ServerSendEventResponse(message_gen())
