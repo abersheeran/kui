@@ -109,3 +109,19 @@ jobs:
           CODING_REPOSITORY: aber/github/index.py
           CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
           CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
+
+      - name: Push to Gitee
+        run: |
+          remote_repo="https://${GITEE_USERNAME}:${GITEE_PASSWORD}@gitee.com/${GITEE_REPOSITORY}.git"
+
+          git remote add gitee "${remote_repo}"
+          git show-ref # useful for debugging
+          git branch --verbose
+
+          # publish all
+          git push --all --force gitee
+          git push --tags --force gitee
+        env:
+          GITEE_REPOSITORY: abersheeran/index.py
+          GITEE_USERNAME: ${{ secrets.GITEE_USERNAME }}
+          GITEE_PASSWORD: ${{ secrets.GITEE_PASSWORD }}
