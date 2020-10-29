@@ -86,13 +86,12 @@ def append(
     return append(new_node, path_format[length:], param_convertors)
 
 
-def search(
-    point: TreeNode, path: str, params: Dict[str, str]
-) -> Optional[Tuple[Dict[str, str], TreeNode]]:
+def search(point: TreeNode, path: str) -> Optional[Tuple[Dict[str, str], TreeNode]]:
     """
     Find a suitable route
     """
     stack: List[Tuple[str, TreeNode]] = [(path, point)]
+    params: Dict[str, Any] = {}
 
     while stack:
         path, point = stack.pop(len(stack) - 1)
@@ -142,7 +141,7 @@ class RadixTree:
     def search(
         self, path: str
     ) -> Union[Tuple[Dict[str, Any], ASGIApp], Tuple[None, None]]:
-        result = search(self.root, path, {})
+        result = search(self.root, path)
         if result is None:
             return None, None
 
