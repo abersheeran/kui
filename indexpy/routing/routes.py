@@ -354,18 +354,22 @@ class FileRoutes(typing.List[BaseRoute]):
             get_response = getattr(module, "HTTP", None)
             serve_socket = getattr(module, "Socket", None)
             if get_response:
+                _get_response = get_response
                 for deep in range(len(path_list), 0, -1):
                     _module = importlib.import_module(".".join(path_list[:deep]))
                     if not hasattr(_module, "HTTPMiddleware"):
                         continue
                     get_response = getattr(_module, "HTTPMiddleware")(get_response)
+                update_wrapper(get_response, _get_response)
                 self.append(HttpRoute(url_path, get_response, url_name))
             if serve_socket:
+                _serve_socket = serve_socket
                 for deep in range(len(path_list), 0, -1):
                     _module = importlib.import_module(".".join(path_list[:deep]))
                     if not hasattr(_module, "SocketMiddleware"):
                         continue
                     serve_socket = getattr(_module, "SocketMiddleware")(serve_socket)
+                update_wrapper(serve_socket, _serve_socket)
                 self.append(SocketRoute(url_path, serve_socket, url_name))
 
         self.namespace = namespace
