@@ -102,6 +102,9 @@ def is_compliant(path: str) -> bool:
             unclosed_count += 1
         elif c == "}":
             unclosed_count -= 1
+        # count("}") > count("{")
+        if unclosed_count < 0:
+            return False
     return unclosed_count == 0
 
 
