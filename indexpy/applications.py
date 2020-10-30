@@ -252,22 +252,31 @@ class Index:
         await self.asgiapp(scope, receive, send)
 
 
+@dataclass
+class MountApp:
+    prefix: str
+    app: ASGIApp
+    host: typing.Optional[str] = None
+
+
 class Dispatcher:
     def __init__(
         self,
         default_app: ASGIApp,
-        *apps: typing.Tuple[str, ASGIApp],
+        *apps: MountApp,
         handle404: ASGIApp = Response(b"", 404),
     ) -> None:
         self.default_app = default_app
-        for prefix, app in apps:
-            assert prefix.startswith("/"), "prefix must be start with '/'"
-            assert not prefix.endswith("/"), "prefix can't end with '/'"
+        for mounted in apps:
+            assert mounted.prefix.startswith("/"), "prefix must be start with '/'"
+            assert not mounted.prefix.endswith("/"), "prefix can't end with '/'"
         self.apps = apps
         self.handle404 = handle404
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] in ("http", "websocket"):
+            raw_host: bytes = [kv[1] for kv in scope["headers"] if kv[0] == b"host"][0]
+            host = raw_host.decode("latin1")
             path = scope["path"]
             root_path = scope.get("root_path", "")
             has_received = False
@@ -286,14 +295,20 @@ class Dispatcher:
                 await send(message)
 
             # Call into a mounted app, if one exists.
-            for path_prefix, app in filter(
-                lambda item: path.startswith(item[0] + "/"), self.apps
+            for mounted in filter(
+                lambda item: (
+                    path.startswith(item.prefix + "/")
+                    and (item.host is None or item.host == host)
+                ),
+                self.apps,
             ):
+                # This is a bug for mypy, so ignore it.
+                application: ASGIApp = mounted.app  # type: ignore
                 subscope = copy.copy(scope)
-                subscope["path"] = path[len(path_prefix) :]
-                subscope["root_path"] = root_path + path_prefix
+                subscope["path"] = path[len(mounted.prefix) :]
+                subscope["root_path"] = root_path + mounted.prefix
                 try:
-                    return await app(subscope, subreceive, subsend)
+                    return await application(subscope, subreceive, subsend)
                 except NoMatchFound:
                     if has_received:
                         return await self.handle404(scope, receive, send)

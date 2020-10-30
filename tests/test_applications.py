@@ -4,7 +4,7 @@ import pytest
 from pydantic import BaseModel
 from starlette.testclient import TestClient
 
-from indexpy.applications import Dispatcher, Index
+from indexpy.applications import Index, Dispatcher, MountApp
 from indexpy.http.responses import HTMLResponse, convert
 from indexpy.routing import HttpRoute, Routes, SubRoutes
 
@@ -109,8 +109,8 @@ def test_dispather(app):
     with TestClient(
         Dispatcher(
             app,
-            ("/echo", echo_body),
-            ("/sub", app),
+            MountApp("/echo", echo_body),
+            MountApp("/sub", app),
         )
     ) as client:
         assert client.get("/hello").text == "hello world"
@@ -151,7 +151,7 @@ def test_dispather_handle404(app):
             )
             await send({"type": "http.response.body", "body": b""})
 
-    with TestClient(Dispatcher(app, ("/echo", echo_body))) as client:
+    with TestClient(Dispatcher(app, MountApp("/echo", echo_body))) as client:
         assert client.get("/hello").text == "hello world"
         assert client.get("/echo").status_code == 404
         assert client.get("/echo/").status_code == 200
@@ -159,7 +159,7 @@ def test_dispather_handle404(app):
         assert client.post("/echo/c").text == ""
 
     with TestClient(
-        Dispatcher(app, ("/echo", echo_body), handle404=HTMLResponse("404"))
+        Dispatcher(app, MountApp("/echo", echo_body), handle404=HTMLResponse("404"))
     ) as client:
         assert client.get("/hello").text == "hello world"
         assert client.get("/echo").status_code == 404
