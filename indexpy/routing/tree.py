@@ -94,7 +94,7 @@ def search(point: TreeNode, path: str) -> Optional[Tuple[Dict[str, str], TreeNod
     params: Dict[str, Any] = {}
 
     while stack:
-        path, point = stack.pop(len(stack) - 1)
+        path, point = stack.pop()
 
         if point.re_pattern is None:
             length = len(point.characters)
@@ -161,7 +161,7 @@ class RadixTree:
         stack: List[Tuple[str, TreeNode]] = [(self.root.characters, self.root)]
 
         while stack:
-            characters, point = stack.pop(len(stack) - 1)
+            characters, point = stack.pop()
             for node in point.next_nodes:
                 if node.re_pattern is not None:
                     stack.append((f"{characters}{{{node.characters}}}", node))
