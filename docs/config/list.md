@@ -8,7 +8,7 @@
 
 ### DEBUG
 
-**默认值:** `False`
+**默认值:** `True`
 
 在环境变量里 `INDEX_DEBUG` 为 `"on"` 或者 `"True"` 时，`DEBUG` 为真；该值同样可以在配置文件中指定。
 
@@ -21,16 +21,6 @@
 ### LOG_LEVEL
 
 **默认值:** `"info"`
-
-`log_level` 有五个可用值, 下面是它与 `logging` 的等级对应表
-
-log_level   | logging
----         | ---
-"critical"  | logging.CRITICAL
-"error"     | logging.ERROR
-"warning"   | logging.WARNING
-"info"      | logging.INFO
-"debug"     | logging.DEBUG
 
 ### HOST
 
