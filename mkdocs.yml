@@ -21,12 +21,12 @@ nav:
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
   - Middleware: "middleware.md"
+  - OpenAPI: "openapi.md"
+  - Background Task: "background.md"
   - Command: "command.md"
   - Configuration:
     - Introduction: "config/index.md"
     - Built-in List: "config/list.md"
-  - OpenAPI: "openapi.md"
-  - Background Task: "background.md"
 
 markdown_extensions:
   - markdown.extensions.codehilite:
