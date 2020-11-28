@@ -9,10 +9,8 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .conf import Config
+from .conf import serve_config
 from .utils import import_module
-
-config = Config()
 
 
 def execute(command: Union[List[str], str]) -> int:
@@ -42,23 +40,23 @@ def index_cli():
     pass
 
 
-@index_cli.command(help="use uvicorn to run Index.py")
-@click.argument("application", default=lambda: config.APP)
+@index_cli.command(help="use uvicorn to run Index.py application")
+@click.argument("application", default=lambda: serve_config.APP)
 def serve(application):
     import uvicorn
 
     uvicorn.run(
         application,
-        host=config.HOST,
-        port=config.PORT,
-        log_level=config.LOG_LEVEL,
+        host=serve_config.HOST,
+        port=serve_config.PORT,
+        log_level=serve_config.LOG_LEVEL,
         interface="asgi3",
         lifespan="on",
-        reload=config.AUTORELOAD,
+        reload=serve_config.AUTORELOAD,
     )
 
 
-@click.group(help="use gunicorn to run Index.py")
+@click.group(help="use gunicorn to run Index.py application")
 def gunicorn():
     pass
 
@@ -72,23 +70,23 @@ def gunicorn():
     "-c",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
-@click.argument("application", default=lambda: config.APP)
+@click.argument("application", default=lambda: serve_config.APP)
 def start(workers, worker_class, daemon, configuration, application):
     from gunicorn.app.wsgiapp import run as run_gunicorn
 
     command = (
         "gunicorn"
         + f" -k {worker_class}"
-        + f" --bind {config.HOST}:{config.PORT}"
+        + f" --bind {serve_config.HOST}:{serve_config.PORT}"
         + f" --chdir {os.getcwd()}"
         + f" --workers {workers}"
         + f" --pid {os.path.join(os.getcwd(), '.pid')}"
-        + f" --log-level {config.LOG_LEVEL}"
+        + f" --log-level {serve_config.LOG_LEVEL}"
     )
     args = command.split(" ")
     if daemon:
         args.extend("-D --log-file log.index".split(" "))
-    if config.AUTORELOAD:
+    if serve_config.AUTORELOAD:
         args.append("--reload")
     if configuration:
         args.append("-c")

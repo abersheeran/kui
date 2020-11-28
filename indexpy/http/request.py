@@ -2,6 +2,7 @@ import asyncio
 import json
 import typing
 from http import cookies as http_cookies
+from contextvars import ContextVar
 
 from starlette.datastructures import URL, Address, Headers, QueryParams
 from starlette.formparsers import (
@@ -221,3 +222,6 @@ class Request(HTTPConnection):
             await self._send(
                 {"type": "http.response.push", "path": path, "headers": raw_headers}
             )
+
+
+request: ContextVar[Request] = ContextVar("Request")

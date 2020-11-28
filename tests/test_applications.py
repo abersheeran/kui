@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy.applications import Index, Dispatcher, MountApp
-from indexpy.http.responses import HTMLResponse, convert
+from indexpy.http.responses import HTMLResponse, convert_response
 from indexpy.routing import HttpRoute, Routes, SubRoutes
 
 
@@ -28,7 +28,7 @@ def app():
     def http_middleware(endpoint):
         @wraps(endpoint)
         async def wrapper(request):
-            response = convert(await endpoint(request))
+            response = convert_response(await endpoint(request))
             response.body += b"; http middleware"
             return response
 

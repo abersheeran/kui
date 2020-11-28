@@ -4,22 +4,19 @@ import traceback
 import typing
 
 from pydantic.dataclasses import dataclass
-from starlette.datastructures import URL
 from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.websockets import WebSocketClose
 
-from .conf import Config
+from .types import ASGIApp, Literal, Message, Receive, Scope, Send
+from .utils import State
+from .routing.routes import BaseRoute, NoMatchFound, Router
 from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
-from .http.responses import Response, RedirectResponse
+from .http.responses import Response
 from .http.templates import BaseTemplates, Jinja2Templates
 from .http.view import only_allow
-from .routing.routes import BaseRoute, NoMatchFound, Router
-from .types import ASGIApp, Literal, Message, Receive, Scope, Send
 from .websocket.request import WebSocket
 
 
@@ -100,7 +97,7 @@ class Index:
     def __init__(
         self,
         *,
-        debug: bool = Config().DEBUG,
+        debug: bool = False,
         templates: BaseTemplates = Jinja2Templates("templates"),
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
@@ -112,6 +109,7 @@ class Index:
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
         self.__debug = debug
+        self.state = State()
         self.factory_class = factory_class
         self.router = Router(routes)
         self.templates = templates
@@ -135,7 +133,6 @@ class Index:
         self.asgiapp = self.build_app()
 
     def build_app(self) -> ASGIApp:
-        config = Config()
         error_handler = None
         exception_handlers = {}
 
@@ -147,34 +144,10 @@ class Index:
 
         middlewares = []
 
-        if "*" not in config.ALLOWED_HOSTS:
-            middlewares.append(
-                Middleware(TrustedHostMiddleware, allowed_hosts=config.ALLOWED_HOSTS)
-            )
-
         middlewares.append(
             Middleware(ServerErrorMiddleware, handler=error_handler, debug=self.debug)
         )
-
-        if (
-            config.CORS_ALLOW_ORIGIN_REGEX is not None
-            or len(config.CORS_ALLOW_ORIGINS) > 0
-        ):
-            middlewares.append(
-                Middleware(
-                    CORSMiddleware,
-                    allow_origins=config.CORS_ALLOW_ORIGINS,
-                    allow_methods=config.CORS_ALLOW_METHODS,
-                    allow_headers=config.CORS_ALLOW_HEADERS,
-                    allow_credentials=config.CORS_ALLOW_CREDENTIALS,
-                    allow_origin_regex=config.CORS_ALLOW_ORIGIN_REGEX,
-                    expose_headers=config.CORS_EXPOSE_HEADERS,
-                    max_age=config.CORS_MAX_AGE,
-                )
-            )
-
         middlewares += self.user_middlewares
-
         middlewares.append(Middleware(ExceptionMiddleware, handlers=exception_handlers))
 
         app = self.app
@@ -236,18 +209,6 @@ class Index:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
-
-        if (
-            scope["type"] in ("http", "websocket")
-            and Config().FORCE_SSL
-            and scope["scheme"] in ("http", "ws")
-        ):  # Force jump to https/wss
-            url = URL(scope=scope)
-            redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
-            netloc = url.hostname if url.port in (80, 443) else url.netloc
-            url = url.replace(scheme=redirect_scheme, netloc=netloc)
-            response = RedirectResponse(url, status_code=301)
-            return await response(scope, receive, send)
 
         await self.asgiapp(scope, receive, send)
 

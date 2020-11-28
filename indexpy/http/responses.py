@@ -19,6 +19,7 @@ from .background import BackgroundTask
 
 __all__ = [
     "automatic",
+    "convert_response",
     "Response",
     "HTMLResponse",
     "PlainTextResponse",
@@ -135,7 +136,7 @@ class ServerSendEventResponse(Response):
             )
 
 
-def convert(response: typing.Any) -> Response:
+def convert_response(response: typing.Any) -> Response:
     """
     shortcut for automatic
 

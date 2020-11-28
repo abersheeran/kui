@@ -2,7 +2,7 @@ import typing
 
 from ..concurrency import keepasync
 from .request import Request
-from .responses import Response, convert
+from .responses import Response, convert_response
 
 MiddlewareMeta = keepasync("process_request", "process_response", "process_exception")
 
@@ -30,7 +30,7 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
                 if response is None:
                     raise exc
 
-        response = convert(response)
+        response = convert_response(response)
 
         response = await self.process_response(request, response)
 

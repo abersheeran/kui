@@ -1,5 +1,6 @@
 import json
 import os
+import pprint
 import typing
 
 import yaml
@@ -7,7 +8,7 @@ import yaml
 from .types import final
 from .utils import Singleton
 
-__all__ = ["Config"]
+__all__ = ["serve_config"]
 
 
 class ConfigError(Exception):
@@ -26,7 +27,7 @@ class UpperDict(dict):
             self[key] = value
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4)
+        return pprint.pformat(self, indent=4)
 
     def __setitem__(self, key: str, value: typing.Any) -> None:
         key = key.upper()
@@ -34,7 +35,7 @@ class UpperDict(dict):
         if isinstance(value, dict):
             if key in self.keys():
                 for k, v in value.items():
-                    super().__setitem__(k.upper(), v)
+                    self[k.upper()] = v
             else:
                 super().__setitem__(key, UpperDict(value))
         else:
@@ -58,7 +59,7 @@ class UpperDict(dict):
 
 
 @final
-class Config(UpperDict, metaclass=Singleton):
+class ServeConfig(UpperDict, metaclass=Singleton):
     ENV: str
     DEBUG: bool
     APP: str
@@ -66,50 +67,28 @@ class Config(UpperDict, metaclass=Singleton):
     PORT: int
     LOG_LEVEL: str
     AUTORELOAD: bool
-    # middleware
-    FORCE_SSL: bool
-    ALLOWED_HOSTS: typing.Sequence[str]
-    CORS_ALLOW_ORIGINS: typing.Sequence[str]
-    CORS_ALLOW_METHODS: typing.Sequence[str]
-    CORS_ALLOW_HEADERS: typing.Sequence[str]
-    CORS_ALLOW_CREDENTIALS: bool
-    CORS_ALLOW_ORIGIN_REGEX: typing.Optional[str]
-    CORS_EXPOSE_HEADERS: typing.Sequence[str]
-    CORS_MAX_AGE: int
 
     def setdefaults(self) -> None:
-        """set default value"""
+        """set default values"""
 
         self["env"] = "dev"
-        self["debug"] = False
+        self["debug"] = True
         self["host"] = "127.0.0.1"
         self["port"] = 4190
         self["log_level"] = "info"
         self["autoreload"] = True
-        # middleware
-        self["force_ssl"] = False
-        self["allowed_hosts"] = ["*"]
-        self["cors_allow_origins"] = ()
-        self["cors_allow_methods"] = ("GET",)
-        self["cors_allow_headers"] = ()
-        self["cors_allow_credentials"] = False
-        self["cors_allow_origin_regex"] = None
-        self["cors_expose_headers"] = ()
-        self["cors_max_age"] = 600
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *args, **kwargs) -> None:
         super().__setattr__("__editable__", True)
         self.setdefaults()
-        # read config from file
         self.import_from_file()
-        # read config from environ
         self.import_from_environ()
+        super().__setattr__("__editable__", False)
 
     def import_from_file(self) -> None:
         filename = None
 
-        for _filename in ["index.json", "index.yaml", "index.yml"]:
+        for _filename in ("index.json", "index.yaml", "index.yml"):
             if os.path.exists(os.path.normpath(_filename)):
                 if filename is not None:
                     raise ConfigFileError(
@@ -156,24 +135,13 @@ class Config(UpperDict, metaclass=Singleton):
     def __delattr__(self, name: str) -> None:
         raise ConfigError("Deleting the attribute value of Config is not allowed.")
 
-    def __delitem__(self, key: str) -> None:
-        raise ConfigError("Deleting the attribute value of Config is not allowed.")
-
     def __setitem__(self, key: str, value: typing.Any) -> None:
         if not self.__editable__:
             raise ConfigError("Modifying the attribute value of Config is not allowed.")
-
-        key = key.upper()
-
-        if key == "DEBUG":
-            value = bool(value)
-        elif key == "PORT":
-            value = int(value)
-        elif key == "ALLOWED_HOSTS":
-            value = list(value)
-            value.append("testserver")
-
         super().__setitem__(key, value)
+
+    def __delitem__(self, key: str) -> None:
+        raise ConfigError("Deleting the attribute value of Config is not allowed.")
 
     def get(self, key, default=None) -> typing.Any:
         key = key.upper()
@@ -182,3 +150,6 @@ class Config(UpperDict, metaclass=Singleton):
         if value is ...:
             value = super().get(key, default)
         return value
+
+
+serve_config = ServeConfig()

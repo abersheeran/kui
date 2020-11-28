@@ -8,7 +8,7 @@ from pathlib import Path
 
 from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
 from indexpy.concurrency import complicating
-from indexpy.http.responses import convert
+from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
 from indexpy.utils import superclass
 
@@ -20,7 +20,7 @@ def request_response(view: typing.Any) -> ASGIApp:
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         current_app = scope["app"]
         request = current_app.factory_class.http(scope, receive, send)
-        response = convert(await view(request))
+        response = convert_response(await view(request))
         await response(scope, receive, send)
 
     setattr(_, "__raw__", view)

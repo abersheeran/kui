@@ -1,9 +1,13 @@
 import typing
 
+from indexpy.concurrency import keepasync
+
 from .request import WebSocket
 
+MiddlewareMeta = keepasync("before_accept", "after_close")
 
-class MiddlewareMixin:
+
+class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
 
     mounts: typing.Sequence[typing.Callable] = ()
 

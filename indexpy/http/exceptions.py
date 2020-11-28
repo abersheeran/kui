@@ -2,8 +2,9 @@ import asyncio
 import http
 import typing
 
+from pydantic import ValidationError
+
 from indexpy.types import ASGIApp, Message, Receive, Scope, Send
-from indexpy.openapi.functions import ParamsValidationError
 
 from .request import Request
 from .responses import JSONResponse, PlainTextResponse, Response
@@ -19,6 +20,11 @@ class HTTPException(Exception):
     def __repr__(self) -> str:
         class_name = self.__class__.__name__
         return f"{class_name}(status_code={self.status_code!r}, detail={self.detail!r})"
+
+
+class ParamsValidationError(Exception):
+    def __init__(self, validation_error: ValidationError) -> None:
+        self.ve = validation_error
 
 
 class ExceptionMiddleware:
@@ -103,4 +109,4 @@ class ExceptionMiddleware:
     def params_validation_error(
         request: Request, exc: ParamsValidationError
     ) -> Response:
-        return JSONResponse(exc.ve.errors(), status_code=400)
+        return JSONResponse(exc.ve.errors(), status_code=422)
