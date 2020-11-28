@@ -9,7 +9,7 @@ from starlette.status import WS_1001_GOING_AWAY
 from starlette.websockets import WebSocketClose
 
 from .types import ASGIApp, Literal, Message, Receive, Scope, Send
-from .utils import State
+from .utils import State, cached_property
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
@@ -109,7 +109,6 @@ class Index:
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
         self.__debug = debug
-        self.state = State()
         self.factory_class = factory_class
         self.router = Router(routes)
         self.templates = templates
@@ -128,6 +127,10 @@ class Index:
     @property
     def debug(self) -> bool:
         return self.__debug
+
+    @cached_property
+    def state(self) -> State:
+        return State()
 
     def rebuild_app(self) -> None:
         self.asgiapp = self.build_app()
