@@ -19,10 +19,6 @@ Index 在启动时将从环境变量里读取 `INDEX_DEBUG` 和 `INDEX_ENV` 两�
 # overwrite default value to this program
 app: "example:app"
 port: 4918
-allowed_hosts: ["localhost"]
-cors_allow_origins: ["*"]
-cors_allow_methods: ["GET"]
-cors_allow_credentials: false
 
 # use in development
 dev:
@@ -33,13 +29,12 @@ dev:
 # use in production
 pro:
   "host": "0.0.0.0"
-  "port": "41900"
+  "port": 41900
   "log_level": "warning"
 
 # use in test
 test:
   log_level: "debug"
-
 ```
 
 ## 什么是配置隔离？

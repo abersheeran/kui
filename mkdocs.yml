@@ -17,14 +17,14 @@ nav:
   - 概览: "index.md"
   - Application: application.md
   - Route: route.md
-  - Configuration:
-      - Introduction: "config/index.md"
-      - Built-in List: "config/list.md"
   - HTTP: "http.md"
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
   - Middleware: "middleware.md"
   - Command: "command.md"
+  - Configuration:
+    - Introduction: "config/index.md"
+    - Built-in List: "config/list.md"
   - OpenAPI: "openapi.md"
   - Background Task: "background.md"
 
