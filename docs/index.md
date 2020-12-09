@@ -4,7 +4,7 @@
 
 到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 [Django](https://www.djangoproject.com/)。
 
-如果你对本框架后续发展有任何的想法，欢迎访问 [Github](https://github.com/abersheeran/index.py) 提 issue。
+如果你对本框架后续发展有任何的想法，欢迎访问 [Github Issues](https://github.com/abersheeran/index.py/issues) 反馈；如果你有需要与其他人共同分享、讨论的事情，欢迎访问 [Github Discussions](https://github.com/abersheeran/index.py/discussions)。
 
 ## 设计灵感
 
@@ -52,9 +52,3 @@ Index.py 并不是一个全然从零开始的框架，它有许多部分依赖�
 - 如果需要使用 `starlette` 的 `TestClient` 用于测试，应使用 `pip install -U index.py[test]` 安装。
 
 但如果你是一个初学者，在学习阶段直接使用 `pip install -U index.py[full]` 安装所有的依赖包即可。
-
-## 交流平台
-
-- Tencent QQ：<a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=VFkXYkAhLRqOdgaCVasgfGO25dfApJEB&jump_from=webapi">1082721927</a>
-
-- Gitter：[https://gitter.im/Indexpy/community](https://gitter.im/Indexpy/community)
