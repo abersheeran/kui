@@ -1,3 +1,4 @@
+import inspect
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
@@ -41,7 +42,7 @@ def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], D
     content_type = "application/json"
 
     for field in body.__fields__.values():
-        if issubclass(field.type_, UploadFile):
+        if inspect.isclass(field.type_) and issubclass(field.type_, UploadFile):
             content_type = "multipart/form-data"
 
     return {
