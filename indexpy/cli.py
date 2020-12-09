@@ -45,6 +45,8 @@ def index_cli():
 def serve(application):
     import uvicorn
 
+    sys.path.insert(0, os.getcwd())
+
     uvicorn.run(
         application,
         host=serve_config.HOST,
