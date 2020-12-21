@@ -93,20 +93,20 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
         # try to get parameters model and parse
         if parameters:
             if "path" in parameters:
-                kwargs["path"] = parameters["path"](**request.path_params)
+                kwargs["path"] = parameters["path"].parse_obj(request.path_params)
 
             if "query" in parameters:
-                kwargs["query"] = parameters["query"](
-                    **_merge_multi_value(request.query_params.multi_items())
+                kwargs["query"] = parameters["query"].parse_obj(
+                    _merge_multi_value(request.query_params.multi_items())
                 )
 
             if "header" in parameters:
-                kwargs["header"] = parameters["header"](
-                    **_merge_multi_value(request.headers.items())
+                kwargs["header"] = parameters["header"].parse_obj(
+                    _merge_multi_value(request.headers.items())
                 )
 
             if "cookie" in parameters:
-                kwargs["cookie"] = parameters["cookie"](**request.cookies)
+                kwargs["cookie"] = parameters["cookie"].parse_obj(request.cookies)
 
         # try to get body model and parse
         if request_body:
@@ -114,7 +114,7 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
                 _body_data = await request.json()
             else:
                 _body_data = await request.form()
-            kwargs["body"] = request_body(**_body_data)
+            kwargs["body"] = request_body.parse_obj(_body_data)
 
     except ValidationError as e:
         raise ParamsValidationError(e)
