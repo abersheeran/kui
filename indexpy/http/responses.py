@@ -16,6 +16,8 @@ from starlette.responses import (
 from indexpy.types import Receive, Scope, Send
 
 from .background import BackgroundTask
+from .templates import BaseTemplates
+
 
 __all__ = [
     "automatic",
@@ -44,7 +46,13 @@ def TemplateResponse(
     if "request" not in context:
         raise ValueError('context must include a "request" key')
 
-    return context["request"]["app"].templates.TemplateResponse(
+    templates: BaseTemplates = context["request"]["app"].templates
+    if templates is None:
+        raise RuntimeError(
+            "You must assign a value to `app.templates` to use TemplateResponse"
+        )
+
+    return templates.TemplateResponse(
         name, context, status_code, headers, media_type, background
     )
 

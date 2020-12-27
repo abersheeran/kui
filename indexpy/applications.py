@@ -15,7 +15,7 @@ from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
 from .http.responses import Response
-from .http.templates import BaseTemplates, Jinja2Templates
+from .http.templates import BaseTemplates
 from .http.view import only_allow
 from .websocket.request import WebSocket
 
@@ -98,7 +98,7 @@ class Index:
         self,
         *,
         debug: bool = False,
-        templates: BaseTemplates = Jinja2Templates("templates"),
+        templates: typing.Optional[BaseTemplates] = None,
         on_startup: typing.List[typing.Callable] = [],
         on_shutdown: typing.List[typing.Callable] = [],
         routes: typing.List[BaseRoute] = [],
