@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy import Index
-from indexpy.http import HTTPView
+from indexpy.http import HTTPView, Exclusive
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def app():
                 return self.request.method
             return self.request.method + " " + self.request.path_params["name"]
 
-        async def post(self, path: Path):
+        async def post(self, path: Path = Exclusive("path")):
             if not self.request.path_params:
                 return self.request.method
             return self.request.method + " " + path.name
