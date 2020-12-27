@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy.applications import Index, Dispatcher, MountApp
+from indexpy.http import Path, Exclusive
 from indexpy.http.responses import HTMLResponse, convert_response
 from indexpy.routing import HttpRoute, Routes, SubRoutes
 
@@ -22,8 +23,8 @@ def app():
 
     class T:
         @app.router.http("/path/{name}", method="get")
-        async def path(request, path: Name):
-            return f"path {path.name}"
+        async def path(request, name: str = Path(...)):
+            return f"path {name}"
 
     def http_middleware(endpoint):
         @wraps(endpoint)
@@ -37,7 +38,7 @@ def app():
     def only_empty(request):
         return b""
 
-    def get_path(request, path: Name):
+    def get_path(request, path: Name = Exclusive("path")):
         return request.url.path
 
     def holiday(request):

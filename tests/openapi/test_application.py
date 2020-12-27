@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy import Index
-from indexpy.http import HTTPView
+from indexpy.http import HTTPView, Path
 from indexpy.openapi import describe_response, describe_extra_docs
 from indexpy.openapi.application import OpenAPI
 from indexpy.routing import HttpRoute, SubRoutes
@@ -25,11 +25,11 @@ def test_openapi_page():
         """
         pass
 
-    class Path(BaseModel):
+    class Username(BaseModel):
         name: str
 
     @app.router.http("/path/{name}", method="get")
-    async def path(request, path: Path):
+    async def path(request, name: str = Path(...)):
         pass
 
     @app.router.http("/http-view")
@@ -49,7 +49,7 @@ def test_openapi_page():
             ......
             """
 
-        @describe_response(HTTPStatus.CREATED, content=Path)
+        @describe_response(HTTPStatus.CREATED, content=Username)
         async def post(self):
             """
             ...
@@ -147,7 +147,7 @@ paths:
                     type: string
                 required:
                 - name
-                title: Path
+                title: Username
                 type: object
           description: Document created, URL follows
       summary: '...'
@@ -181,7 +181,7 @@ paths:
                     type: string
                 required:
                 - name
-                title: Path
+                title: Username
                 type: object
           description: Document created, URL follows
       summary: '...'

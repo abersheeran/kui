@@ -2,63 +2,81 @@ import functools
 import typing
 from inspect import signature
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, create_model
 
 from indexpy.concurrency import keepasync
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
 from indexpy.utils import cached
+from indexpy.http.exceptions import ParamsValidationError
+from indexpy.http.request import Request
+from indexpy.http.responses import Response
 
-from .exceptions import ParamsValidationError
-from .request import Request
-from .responses import Response
+from .fields import PathInfo, QueryInfo, HeaderInfo, CookieInfo, BodyInfo, ExclusiveInfo
 
 T = typing.TypeVar("T", bound=typing.Callable)
 
-HTTP_METHOD_NAMES = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options",
-    "trace",
-]
-
 
 def parse_params(function: T) -> T:
-    """
-    parse function params "path", "query", "header", "cookie", "body"
-    """
-    param_names = ("path", "query", "header", "cookie", "body")
+
     sig = signature(function)
 
-    incorrect_keys = [
-        param_name
-        for param_name in param_names
-        if (
-            param_name in sig.parameters
-            and not issubclass(sig.parameters[param_name].annotation, BaseModel)
-        )
-    ]
-    if incorrect_keys:
-        raise TypeError(
-            f"Params {incorrect_keys} annotation is incorrect in `{function.__name__}`. "
-            + "You should inherit `pydantic.BaseModel`."
-        )
+    __parameters__ = {}
+    __exclusive_models__ = {}
+    path: typing.Dict[str, typing.Any] = {}
+    query: typing.Dict[str, typing.Any] = {}
+    header: typing.Dict[str, typing.Any] = {}
+    cookie: typing.Dict[str, typing.Any] = {}
+    body: typing.Dict[str, typing.Any] = {}
 
-    params = {
-        param_name: sig.parameters[param_name].annotation
-        for param_name in param_names
-        if (
-            param_name in sig.parameters
-            and issubclass(sig.parameters[param_name].annotation, BaseModel)
-        )
-    }
-    if "body" in params:
-        setattr(function, "__request_body__", params.pop("body"))
-    if params:
-        setattr(function, "__parameters__", params)
+    for name, param in sig.parameters.items():
+        default = param.default
+        annotation = param.annotation
+
+        if isinstance(default, QueryInfo):
+            _type_ = query
+        elif isinstance(default, HeaderInfo):
+            _type_ = header
+        elif isinstance(default, CookieInfo):
+            _type_ = cookie
+        elif isinstance(default, BodyInfo):
+            _type_ = body
+        elif isinstance(default, PathInfo):
+            _type_ = path
+        elif isinstance(default, ExclusiveInfo):
+            if not issubclass(annotation, BaseModel):
+                raise TypeError(
+                    "The exclusive type must be a subclass of `pydantic.BaseModel`"
+                )
+            __parameters__[default.name] = annotation
+            __exclusive_models__[annotation] = name
+            continue
+        else:
+            continue
+
+        if annotation != param.empty:
+            _type_[name] = (annotation, default)
+        else:
+            _type_[name] = default
+
+    __locals__ = locals()
+    for key in filter(
+        lambda key: bool(__locals__[key]), ("path", "query", "header", "cookie", "body")
+    ):
+        if key in __parameters__:
+            raise RuntimeError(
+                f'Exclusive("{key}") and {key.capitalize()} cannot be used at the same time'
+            )
+        __parameters__[key] = create_model("temporary_model", **locals()[key])  # type: ignore
+
+    if "body" in __parameters__:
+        setattr(function, "__request_body__", __parameters__.pop("body"))
+
+    if __parameters__:
+        setattr(function, "__parameters__", __parameters__)
+
+    if __exclusive_models__:
+        setattr(function, "__exclusive_models__", __exclusive_models__)
+
     return function
 
 
@@ -84,6 +102,7 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
     """
     parameters = getattr(handler, "__parameters__", None)
     request_body = getattr(handler, "__request_body__", None)
+    exclusive_models = getattr(handler, "__exclusive_models__", {})
     if not (parameters or request_body):
         return handler
 
@@ -93,33 +112,69 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
         # try to get parameters model and parse
         if parameters:
             if "path" in parameters:
-                kwargs["path"] = parameters["path"].parse_obj(request.path_params)
+                _data_model = parameters["path"]
+                _data = _data_model.parse_obj(request.path_params)
+                if _data.__class__.__name__ == "temporary_model":
+                    kwargs.update(_data.dict())
+                else:
+                    kwargs[exclusive_models[_data_model]] = _data
 
             if "query" in parameters:
-                kwargs["query"] = parameters["query"].parse_obj(
+                _data_model = parameters["query"]
+                _data = _data_model.parse_obj(
                     _merge_multi_value(request.query_params.multi_items())
                 )
+                if _data.__class__.__name__ == "temporary_model":
+                    kwargs.update(_data.dict())
+                else:
+                    kwargs[exclusive_models[_data_model]] = _data
 
             if "header" in parameters:
-                kwargs["header"] = parameters["header"].parse_obj(
+                _data_model = parameters["header"]
+                _data = _data_model.parse_obj(
                     _merge_multi_value(request.headers.items())
                 )
+                if _data.__class__.__name__ == "temporary_model":
+                    kwargs.update(_data.dict())
+                else:
+                    kwargs[exclusive_models[_data_model]] = _data
 
             if "cookie" in parameters:
-                kwargs["cookie"] = parameters["cookie"].parse_obj(request.cookies)
+                _data_model = parameters["cookie"]
+                _data = _data_model.parse_obj(request.cookies)
+                if _data.__class__.__name__ == "temporary_model":
+                    kwargs.update(_data.dict())
+                else:
+                    kwargs[exclusive_models[_data_model]] = _data
 
         # try to get body model and parse
         if request_body:
             if request.headers.get("Content-Type") == "application/json":
                 _body_data = await request.json()
             else:
-                _body_data = await request.form()
-            kwargs["body"] = request_body.parse_obj(_body_data)
+                _body_data = _merge_multi_value((await request.form()).multi_items())
+            _data = request_body.parse_obj(_body_data)
+            if _data.__class__.__name__ == "temporary_model":
+                kwargs.update(_data.dict())
+            else:
+                kwargs[exclusive_models[request_body]] = _data
 
     except ValidationError as e:
         raise ParamsValidationError(e)
 
     return functools.partial(handler, **kwargs)
+
+
+HTTP_METHOD_NAMES = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
 
 
 class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
@@ -166,13 +221,8 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         return await handler()
 
     async def http_method_not_allowed(self) -> Response:
-        if self.request.method not in ("GET", "HEAD"):
-            status_code = 405
-        else:
-            status_code = 404
-
         return Response(
-            status_code=status_code,
+            status_code=405,
             headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"},
         )
 
@@ -215,11 +265,8 @@ def only_allow(
 
         if request.method == "OPTIONS":
             return Response(headers={"Allow": method, "Content-Length": "0"})
-        elif request.method in ("GET", "HEAD"):
-            status_code = 404
-        else:
-            status_code = 405
-        return Response(status_code=status_code)
+
+        return Response(status_code=405)
 
     setattr(wrapper, "__method__", method.upper())
     return wrapper
