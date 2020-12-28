@@ -7,15 +7,17 @@
 
 它有许多初始化参数，可用于控制一些 Application 内的程序逻辑。
 
-- **`templates = Jinja2Template("templates")`**：此参数用于控制 `indexpy.http.responses.TemplateResponse` 的具体行为。
+- **`debug: bool = False`**, 用于设置是否使用调试模式下的 `Index`。
 
-- **`on_startup: typing.List[typing.Callable] = []`**：服务启动后自动调用的函数列表。
+- **`templates = None`**：此参数用于控制 `indexpy.http.responses.TemplateResponse` 的具体行为。
 
-- **`on_shutdown: typing.List[typing.Callable] = []`**：服务关闭前自动调用的函数列表。
+- **`on_startup: List[Callable] = []`**：服务启动后自动调用的函数列表。
 
-- **`routes: typing.List[BaseRoute] = []`**：路由列表。
+- **`on_shutdown: List[Callable] = []`**：服务关闭前自动调用的函数列表。
 
-- **`middlewares: typing.List[Middleware] = []`**：挂载于 Index 对象上 ASGI 中间件列表。
+- **`routes: List[BaseRoute] = []`**：路由列表。
+
+- **`middlewares: List[Middleware] = []`**：挂载于 Index 对象上 ASGI 中间件列表。
 
 - **`exception_handlers = {}`**：处理异常的函数字典。键为 `int` 或 `Exception` 实例，值为对应的函数（定义可参考[自定义异常处理](./http.md#_8)）。
 
@@ -27,7 +29,7 @@
 
 - `append`：追加一个新路由到路由树中。
 - `extend`：追加一个列表的新路由到路由树中。
-- `search`：为请求寻找一个合适的 `endpoint` 并返回路径参数。
+- `search`：为请求寻找一个合适的 `endpoint` 并同时返回路径参数字典。
 - `url_for`：通过路由名称与路径参数反向构建完整的 URL path。
 
 ## Dispatcher

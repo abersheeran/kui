@@ -1,4 +1,4 @@
-Index 的路由与 Python 传统的 web 框架不同，传统框架的路由寻找方式大多为穷举遍历，虽然实现简单，但效率较低。而 Index 基于 [Radix Tree](https://en.wikipedia.org/wiki/Radix_tree)，即灵活又高效。
+Index 的路由基于 [Radix Tree](https://en.wikipedia.org/wiki/Radix_tree)。
 
 ## 基本用法
 
@@ -227,9 +227,6 @@ routes = Routes(
 
 app.router.extend(routes)
 ```
-
-!!! notice
-    **不要忘记**使用 `app.router.extend(routes)` 将 `Routes` 对象注册进 `app.router` 中。
 
 #### 名称空间
 
