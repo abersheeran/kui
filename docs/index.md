@@ -32,23 +32,12 @@ pip install -U git+https://github.com/abersheeran/index.py@setup.py
 pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
 ```
 
-### 必须依赖
+## 依赖
 
 Index.py 并不是一个全然从零开始的框架，它有许多部分依赖于众多优秀的第三方库与 Python 标准库。
 
 - [Starlette](https://www.starlette.io/)：提供了 Request、Response、Background Task、TestClient 等功能。
-- [PyYAML](https://github.com/yaml/pyyaml)：为 YAMLResponse 以及配置文件读取提供了 yaml 的读写支持。
-- [Jinja2](https://jinja.palletsprojects.com/)：使用 Jinja2 作为默认的模板引擎。
-- [Python-multipart](https://github.com/andrew-d/python-multipart)：为流式上传文件提供了支持。
 - [Pydantic](https://pydantic-docs.helpmanual.io/)：为自动生成 OpenAPI 文档以及请求参数解析提供了支持。
+- [Python-multipart](https://github.com/andrew-d/python-multipart)：为流式上传文件提供了支持。
 - [Click](https://click.palletsprojects.com/en/7.x/)：为 `index-cli` 命令提供支持。
-
-### 可选依赖
-
-- 如果需要使用 `index-cli serve`，应使用 `pip install -U uvicorn` 安装 [Uvicorn](https://www.uvicorn.org/)。
-
-- 如果需要使用 `index-cli gunicorn`，应使用 `pip install -U uvicorn gunicorn` 安装 [Gunicorn](https://gunicorn.org/)。
-
-- 如果需要使用 `starlette` 的 `TestClient` 用于测试，应使用 `pip install -U index.py[test]` 安装。
-
-但如果你是一个初学者，在学习阶段直接使用 `pip install -U index.py[full]` 安装所有的依赖包即可。
+- [PyYAML](https://github.com/yaml/pyyaml)：为 YAMLResponse 以及配置文件读取提供了 yaml 的读写支持。
