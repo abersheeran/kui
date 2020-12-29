@@ -9,25 +9,24 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .conf import serve_config
+from .conf import serve_config, ConfigError
 from .utils import import_module
 
 
 def execute(command: Union[List[str], str]) -> int:
     if isinstance(command, str):
-        command = [command]
+        command = command.split(" ")
 
     click.echo("Execute command: ", nl=False)
     click.secho(" ".join(command), fg="green")
 
-    process = subprocess.Popen(" ".join(command), shell=True)
+    process = subprocess.Popen(command, shell=False)
 
-    def sigterm_handler(signo, frame):
+    def sigint_handler(signo, frame):
         process.terminate()
         process.wait()
 
-    signal.signal(signal.SIGINT, sigterm_handler)
-    signal.signal(signal.SIGTERM, sigterm_handler)
+    signal.signal(signal.SIGINT, sigint_handler)
 
     while process.poll() is None:
         time.sleep(1)
@@ -40,26 +39,55 @@ def index_cli():
     pass
 
 
-@index_cli.command(help="use uvicorn to run Index.py application")
-@click.argument("application", default=lambda: serve_config.APP)
-def serve(application):
+try:
     import uvicorn
+except ImportError:
+    pass
+else:
 
-    sys.path.insert(0, os.getcwd())
+    @click.command(help="use uvicorn to run Index.py application")
+    @click.argument("application", default=lambda: serve_config.APP)
+    def uvicorn_cli(application):
+        sys.path.insert(0, os.getcwd())
 
-    uvicorn.run(
-        application,
-        host=serve_config.HOST,
-        port=serve_config.PORT,
-        log_level=serve_config.LOG_LEVEL,
-        interface="asgi3",
-        lifespan="on",
-        reload=serve_config.AUTORELOAD,
-    )
+        if serve_config.BIND.startswith("unix:"):
+            unix_path = serve_config.BIND[5:]
+            bind_config = {
+                "uds": os.path.abspath(
+                    os.path.normpath(
+                        "/" + unix_path.lstrip("/")
+                        if unix_path.startswith("/")
+                        else unix_path
+                    )
+                )
+            }
+            if serve_config.AUTORELOAD:
+                click.secho(
+                    "Reload option doesnt work with unix sockets in uvicorn: https://github.com/encode/uvicorn/issues/722",
+                    fg="yellow",
+                )
+        elif serve_config.BIND.startswith("fd://"):
+            raise ConfigError("Unsupport bind fd:// when using `index-cli uvicorn`")
+        else:
+            if ":" in serve_config.BIND:
+                host, port = serve_config.BIND.split(":")
+                bind_config = {"host": host, "port": int(port)}
+            else:
+                bind_config = {"host": serve_config.BIND}
 
+        uvicorn.run(
+            application,
+            **bind_config,
+            log_level=serve_config.LOG_LEVEL,
+            interface="asgi3",
+            lifespan="on",
+            reload=serve_config.AUTORELOAD,
+        )
+
+    index_cli.add_command(uvicorn_cli, "uvicorn")
 
 try:
-    from gunicorn.app.wsgiapp import run as run_gunicorn_process_by_sys_argv
+    import gunicorn
 except ImportError:
     pass
 else:
@@ -67,12 +95,12 @@ else:
 
     def read_gunicorn_master_pid(pid_file: str = MASTER_PID_FILE) -> int:
         try:
-            with open(os.path.join(os.getcwd(), MASTER_PID_FILE)) as file:
+            with open(os.path.join(os.getcwd(), pid_file), "r") as file:
                 return int(file.read())
         except FileNotFoundError:
             sys.exit(
                 (
-                    f'File "{MASTER_PID_FILE}" not found, '
+                    f'File "{pid_file}" not found, '
                     + "please make sure you have started gunicorn using the "
                     + "`index-cli gunicorn start --daemon ...`."
                 )
@@ -96,7 +124,7 @@ else:
         command = (
             "gunicorn"
             + f" -k {worker_class}"
-            + f" --bind {serve_config.HOST}:{serve_config.PORT}"
+            + f" --bind {serve_config.BIND}"
             + f" --chdir {os.getcwd()}"
             + f" --workers {workers}"
             + f" --pid {MASTER_PID_FILE}"
@@ -112,8 +140,7 @@ else:
             args.append(configuration.strip())
         args.append(application)
 
-        sys.argv = args
-        run_gunicorn_process_by_sys_argv()
+        execute(args)
 
     # Gunicorn signal handler
     # https://docs.gunicorn.org/en/stable/signals.html
@@ -131,16 +158,21 @@ else:
     def stop(force):
         os.kill(read_gunicorn_master_pid(), signal.SIGINT if force else signal.SIGTERM)
 
-    @gunicorn_cli.command(help="Reload gunicorn processes")
-    @click.option("--gracefully", default=False, is_flag=True)
-    def reload(gracefully):
+    @gunicorn_cli.command(help="Reload configuration and recreate worker processes")
+    def reload():
+        os.kill(read_gunicorn_master_pid(), signal.SIGHUP)
+
+    @gunicorn_cli.command(help="Restart gunicorn master processes and worker processes")
+    @click.option("--force-stop", "-f", default=False, is_flag=True)
+    def restart(force_stop):
         oldpid = read_gunicorn_master_pid()
 
-        if not gracefully:
-            return os.kill(oldpid, signal.SIGHUP)
-
         os.kill(oldpid, signal.SIGUSR2)
-        os.kill(oldpid, signal.SIGWINCH)
+        # Waiting for starting new master process and worker processes
+        while not os.path.exists(os.path.join(os.getcwd(), MASTER_PID_FILE + ".2")):
+            time.sleep(0.5)
+        # Stop old master process and worker processes
+        os.kill(oldpid, signal.SIGINT if force_stop else signal.SIGTERM)
 
     index_cli.add_command(gunicorn_cli, "gunicorn")
 

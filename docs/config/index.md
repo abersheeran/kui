@@ -1,6 +1,6 @@
 Index 允许你使用配置文件来配置 `index-cli serve` / `index-cli gunicorn start` 等命令。在 Python 代码里，你可以使用 `indexpy.conf.serve_config` 读取配置，所有配置都是大小写无关的，`serve_config.KEY` 等价于 `serve_config.Key` 和 `serve_config.key`。
 
-在命令启动时，它将自动从环境变量与项目根目录下 `index.yaml` / `index.yml` / `index.json` 里读取配置。
+在命令启动时，它将自动从环境变量与项目根目录下 `indexpy.yaml` / `indexpy.yml` / `indexpy.json` 里读取配置。
 
 ## 环境变量
 
@@ -18,19 +18,16 @@ Index 在启动时将从环境变量里读取 `INDEX_DEBUG` 和 `INDEX_ENV` 两�
 ```yaml
 # overwrite default value to this program
 app: "example:app"
-port: 4918
 
 # use in development
 dev:
-  "host": "localhost"
-  "debug": true
-  "log_level": "debug"
+  bind: "localhost:8000"
+  debug: true
+  log_level: "debug"
 
 # use in production
 pro:
-  "host": "0.0.0.0"
-  "port": 41900
-  "log_level": "warning"
+  log_level: "warning"
 
 # use in test
 test:
@@ -45,4 +42,4 @@ test:
 
 当你指定 `ENV` 的值为 `"pro"` 时, 在使用 `serve_config.DEBUG` 的时候，它将先从 `"pro"` 中查找 `"debug"`（不分大小写）。当没有找到时，继续向上查找。然而这份配置文件并没有在根配置中指定 `"debug"`，所以 `serve_config.DEBUG` 会使用默认值 `False`。
 
-其他的配置同理。
+其他的配置同理。 

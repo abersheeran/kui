@@ -15,10 +15,6 @@ class ConfigError(Exception):
     pass
 
 
-class ConfigFileError(ConfigError):
-    pass
-
-
 class UpperDict(dict):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -63,8 +59,7 @@ class ServeConfig(UpperDict, metaclass=Singleton):
     ENV: str
     DEBUG: bool
     APP: str
-    HOST: str
-    PORT: int
+    BIND: str
     LOG_LEVEL: str
     AUTORELOAD: bool
 
@@ -73,8 +68,7 @@ class ServeConfig(UpperDict, metaclass=Singleton):
 
         self["env"] = "dev"
         self["debug"] = True
-        self["host"] = "127.0.0.1"
-        self["port"] = 4190
+        self["bind"] = "127.0.0.1:4190"
         self["log_level"] = "info"
         self["autoreload"] = True
 
@@ -88,10 +82,10 @@ class ServeConfig(UpperDict, metaclass=Singleton):
     def import_from_file(self) -> None:
         filename = None
 
-        for _filename in ("index.json", "index.yaml", "index.yml"):
+        for _filename in ("indexpy.json", "indexpy.yaml", "indexpy.yml"):
             if os.path.exists(os.path.normpath(_filename)):
                 if filename is not None:
-                    raise ConfigFileError(
+                    raise FileExistsError(
                         f"`{filename}` and `{_filename}` cannot be used at the same project."
                     )
                 filename = _filename
