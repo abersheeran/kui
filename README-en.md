@@ -35,7 +35,7 @@ English
 <img src="https://img.shields.io/pypi/pyversions/index.py" alt="PyPI - Python Version" />
 </p>
 
-An easy-to-use asynchronous web framework based on Radix Tree.
+An easy-to-use high-performance asynchronous web framework.
 
 <a href="https://index-py.abersheeran.com">Index.py Documentation</a>
 
@@ -67,7 +67,7 @@ pip install -U git+https://github.com/abersheeran/index.py@setup.py
 
 ## Quick start
 
-Write the following code to a `.py` file and execute it directly, visit `http://127.0.0.1:4190`.
+Write the following code to the `main.py` file, use `pip install index.py uvicorn` to install `uvicorn` and `index.py`, and then execute `index-cli uvicorn main:app` to start an efficient Web service now.
 
 ```python
 from indexpy import Index
@@ -79,10 +79,4 @@ app = Index()
 @app.router.http("/", method="get")
 async def homepage(request):
     return "hello, index.py"
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, interface="asgi3", port=4190)
 ```

@@ -36,7 +36,7 @@
 <img src="https://img.shields.io/pypi/pyversions/index.py" alt="PyPI - Python Version" />
 </p>
 
-一个基于 Radix Tree 的高性能 web 框架。
+一个易用的高性能异步 web 框架。
 
 <a href="https://index-py.abersheeran.com">Index.py 文档</a>
 
@@ -74,7 +74,7 @@ pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
 
 ## Quick start
 
-向一个 `.py` 文件写入如下代码并直接执行它，访问 `http://127.0.0.1:4190`。
+向 `main.py` 文件写入如下代码，使用 `pip install index.py uvicorn` 安装 `uvicorn` 和 `index.py`，接下来执行 `index-cli uvicorn main:app` 就可以启动一个高效的 Web 服务了。
 
 ```python
 from indexpy import Index
@@ -86,10 +86,4 @@ app = Index()
 @app.router.http("/", method="get")
 async def homepage(request):
     return "hello, index.py"
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, interface="asgi3", port=4190)
 ```
