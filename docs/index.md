@@ -1,6 +1,6 @@
 # ![](./img/index-py.png)
 
-这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。Index.py 是率先使用 Radix Tree 进行路由查找的 Python web 框架。并借助 uvicorn 的强力驱动，拥有极高的裸性能。
+这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。Index.py 拥有极高的裸性能，[比 aiohttp、fastapi 更快](https://github.com/the-benchmarker/web-frameworks)。
 
 到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 [Django](https://www.djangoproject.com/)。
 
@@ -10,7 +10,7 @@
 
 名称来源于 kennethreitz 的[同名项目](https://github.com/kennethreitz-archive/index.py)，但随着各种想法的发展……逐渐偏离原本的设计。
 
-## 安装
+## 安装方法
 
 Index.py 要求 Python 的版本至少是 3.6，对系统无要求。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。
 
@@ -32,7 +32,7 @@ pip install -U git+https://github.com/abersheeran/index.py@setup.py
 pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
 ```
 
-## 依赖
+## 必须的依赖
 
 Index.py 并不是一个全然从零开始的框架，它有许多部分依赖于众多优秀的第三方库与 Python 标准库。
 

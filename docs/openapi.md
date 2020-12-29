@@ -61,7 +61,7 @@ async def getlist(
     ...
 ```
 
-而你也可以通过使用继承自 `pydantic.BaseModel` 的类作为类型注解来描述同一类型的全部参数，通过类的继承可以做到复用参数。
+而你也可以通过使用继承自 `pydantic.BaseModel` 的类作为类型注解来描述同一类型的全部参数，通过类的继承可以做到复用参数。`Exclusive` 接受五种请求参数的全小写字符串作为参数，分别代表对应五种请求参数的独占模式。下例与上例是等价的。
 
 ```python
 from pydantic import BaseModel
