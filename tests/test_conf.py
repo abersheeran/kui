@@ -5,7 +5,6 @@ from indexpy.conf import serve_config, ConfigError, UpperDict
 
 def test_config():
     assert isinstance(serve_config.DEBUG, bool)
-    assert isinstance(serve_config.PORT, int)
 
 
 def test_upper_dict():

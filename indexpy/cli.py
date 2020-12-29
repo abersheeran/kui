@@ -88,6 +88,7 @@ else:
 
 try:
     import gunicorn
+    del gunicorn
 except ImportError:
     pass
 else:
