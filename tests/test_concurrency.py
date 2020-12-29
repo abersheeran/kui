@@ -43,16 +43,6 @@ async def test_complicating_2():
 
 @pytest.mark.asyncio
 async def test_complicating_3():
-    @asyncio.coroutine
-    def t():
-        pass
-
-    await t()
-    assert complicating(t) is t
-
-
-@pytest.mark.asyncio
-async def test_complicating_4():
     def func():
         """t"""
 
@@ -63,7 +53,7 @@ async def test_complicating_4():
 
 
 @pytest.mark.asyncio
-async def test_complicating_5():
+async def test_complicating_4():
     args = ("hello", "test")
 
     class AlwaysAsyncMeta(type):
