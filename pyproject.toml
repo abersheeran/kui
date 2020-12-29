@@ -5,7 +5,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-description = "An easy-to-use asynchronous web framework based on ASGI."
+description = "An easy-to-use high-performance asynchronous web framework."
 documentation = "https://index-py.abersheeran.com/"
 homepage = "https://github.com/abersheeran/index.py"
 license = "Apache-2.0"
