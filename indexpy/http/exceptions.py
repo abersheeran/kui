@@ -1,13 +1,15 @@
 import asyncio
 import http
 import typing
+import json
 
 from pydantic import ValidationError
+from pydantic.json import pydantic_encoder
 
 from indexpy.types import ASGIApp, Message, Receive, Scope, Send
 
 from .request import Request
-from .responses import JSONResponse, PlainTextResponse, Response
+from .responses import Response, PlainTextResponse
 
 
 class HTTPException(Exception):
@@ -22,9 +24,15 @@ class HTTPException(Exception):
         return f"{class_name}(status_code={self.status_code!r}, detail={self.detail!r})"
 
 
-class ParamsValidationError(Exception):
+class RequestValidationError(Exception):
     def __init__(self, validation_error: ValidationError) -> None:
-        self.ve = validation_error
+        self.validation_error = validation_error
+
+    def errors(self) -> typing.List[typing.Dict[str, typing.Any]]:
+        return self.validation_error.errors()
+
+    def json(self, *, indent: typing.Union[None, int, str] = 2) -> str:
+        return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
 
 
 class ExceptionMiddleware:
@@ -35,7 +43,7 @@ class ExceptionMiddleware:
             typing.Type[Exception], typing.Callable
         ] = {
             HTTPException: self.http_exception,
-            ParamsValidationError: self.params_validation_error,
+            RequestValidationError: self.request_validation_error,
         }
         if handlers is not None:
             for key, value in handlers.items():
@@ -106,7 +114,7 @@ class ExceptionMiddleware:
         return PlainTextResponse(exc.detail, status_code=exc.status_code)
 
     @staticmethod
-    def params_validation_error(
-        request: Request, exc: ParamsValidationError
+    def request_validation_error(
+        request: Request, exc: RequestValidationError
     ) -> Response:
-        return JSONResponse(exc.ve.errors(), status_code=422)
+        return Response(exc.json(), status_code=422, media_type="application/json")

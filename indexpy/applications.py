@@ -145,17 +145,17 @@ class Index:
             else:
                 exception_handlers[key] = value
 
-        middlewares = []
-
-        middlewares.append(
-            Middleware(ServerErrorMiddleware, handler=error_handler, debug=self.debug)
-        )
-        middlewares += self.user_middlewares
-        middlewares.append(Middleware(ExceptionMiddleware, handlers=exception_handlers))
-
         app = self.app
 
-        for cls, options in reversed(middlewares):
+        for cls, options in reversed(
+            [
+                Middleware(
+                    ServerErrorMiddleware, handler=error_handler, debug=self.debug
+                ),
+                *self.user_middlewares,
+                Middleware(ExceptionMiddleware, handlers=exception_handlers),
+            ]
+        ):
             app = cls(app=app, **options)
         return app
 
