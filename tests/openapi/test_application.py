@@ -1,3 +1,4 @@
+from typing import List
 from http import HTTPStatus
 
 from pydantic import BaseModel
@@ -17,6 +18,7 @@ def test_openapi_page():
     )
 
     @app.router.http("/hello", method="get")
+    @describe_response(200, content=List[str])
     async def hello(request):
         """
         hello
@@ -107,6 +109,16 @@ paths:
   /hello:
     get:
       description: 接口描述
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                title: ParsingModel[List[str]]
+                type: array
+          description: Request fulfilled, document follows
       summary: hello
   /http-view:
     delete:

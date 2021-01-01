@@ -1,3 +1,6 @@
+import dataclasses
+from typing import Optional
+
 from indexpy.types import Literal
 
 from pydantic.fields import FieldInfo
@@ -23,8 +26,8 @@ class BodyInfo(FieldInfo):
     pass
 
 
+@dataclasses.dataclass
 class ExclusiveInfo:
-    __slots__ = ("name",)
-
-    def __init__(self, name: Literal["path", "query", "header", "cookie", "body"]):
-        self.name = name
+    name: Literal["path", "query", "header", "cookie", "body"]
+    title: Optional[str] = None
+    description: Optional[str] = None

@@ -3,25 +3,25 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy import Index
-from indexpy.http import HTTPView, Exclusive
+from indexpy.http import HTTPView, Path, Exclusive
 
 
 @pytest.fixture
 def app():
     app = Index()
 
-    class Path(BaseModel):
+    class Name(BaseModel):
         name: str = None
 
     @app.router.http("/cat", name=None)
     @app.router.http("/cat/{name}")
     class Cat(HTTPView):
-        async def get(self):
+        async def get(self, name: str = Path(None)):
             if not self.request.path_params:
                 return self.request.method
-            return self.request.method + " " + self.request.path_params["name"]
+            return self.request.method + " " + name
 
-        async def post(self, path: Path = Exclusive("path")):
+        async def post(self, path: Name = Exclusive("path", title="Cat Name")):
             if not self.request.path_params:
                 return self.request.method
             return self.request.method + " " + path.name

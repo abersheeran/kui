@@ -379,10 +379,19 @@ def Body(
     )
 
 
-def Exclusive(name: Literal["path", "query", "header", "cookie", "body"]) -> Any:
+def Exclusive(
+    name: Literal["path", "query", "header", "cookie", "body"],
+    *,
+    title: str = None,
+    description: str = None,
+) -> Any:
     """
     Mark the type model of this parameter to accept all the data of the specified parameter.
+
+    :param name: mark exclusive parameter types
+    :param title: can be any string, used in the schema
+    :param description: can be any string, used in the schema
     """
     if name not in ("path", "query", "header", "cookie", "body"):
         raise ValueError('name must be in "path", "query", "header", "cookie", "body"')
-    return ExclusiveInfo(name)
+    return ExclusiveInfo(name, title, description)

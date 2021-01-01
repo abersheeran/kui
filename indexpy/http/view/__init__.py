@@ -1,13 +1,13 @@
 import functools
 import typing
-from inspect import signature
+from inspect import signature, isclass
 
 from pydantic import BaseModel, ValidationError, create_model
 
 from indexpy.concurrency import keepasync
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
 from indexpy.utils import cached
-from indexpy.http.exceptions import ParamsValidationError
+from indexpy.http.exceptions import RequestValidationError
 from indexpy.http.request import Request
 from indexpy.http.responses import Response
 
@@ -16,8 +16,19 @@ from .fields import PathInfo, QueryInfo, HeaderInfo, CookieInfo, BodyInfo, Exclu
 T = typing.TypeVar("T", bound=typing.Callable)
 
 
-def parse_params(function: T) -> T:
+def create_model_config(title: str = None, description: str = None):
+    class ExclusiveModelConfig:
+        @staticmethod
+        def schema_extra(schema, model) -> None:
+            if title is not None:
+                schema["title"] = title
+            if description is not None:
+                schema["description"] = description
 
+    return ExclusiveModelConfig
+
+
+def parse_params(function: T) -> T:
     sig = signature(function)
 
     __parameters__ = {}
@@ -43,12 +54,16 @@ def parse_params(function: T) -> T:
         elif isinstance(default, PathInfo):
             _type_ = path
         elif isinstance(default, ExclusiveInfo):
-            if not issubclass(annotation, BaseModel):
-                raise TypeError(
-                    "The exclusive type must be a subclass of `pydantic.BaseModel`"
+            if isclass(annotation) and issubclass(annotation, BaseModel):
+                model = annotation
+            else:
+                model = create_model(
+                    "temporary_exclusive_model",
+                    __config__=create_model_config(default.title, default.description),
+                    __root__=(annotation, ...),
                 )
-            __parameters__[default.name] = annotation
-            __exclusive_models__[annotation] = name
+            __parameters__[default.name] = model
+            __exclusive_models__[model] = name
             continue
         else:
             continue
@@ -106,46 +121,31 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
     if not (parameters or request_body):
         return handler
 
+    data: typing.List[typing.Any] = []
     kwargs: typing.Dict[str, BaseModel] = {}
 
     try:
         # try to get parameters model and parse
         if parameters:
             if "path" in parameters:
-                _data_model = parameters["path"]
-                _data = _data_model.parse_obj(request.path_params)
-                if _data.__class__.__name__ == "temporary_model":
-                    kwargs.update(_data.dict())
-                else:
-                    kwargs[exclusive_models[_data_model]] = _data
+                data.append(parameters["path"].parse_obj(request.path_params))
 
             if "query" in parameters:
-                _data_model = parameters["query"]
-                _data = _data_model.parse_obj(
-                    _merge_multi_value(request.query_params.multi_items())
+                data.append(
+                    parameters["query"].parse_obj(
+                        _merge_multi_value(request.query_params.multi_items())
+                    )
                 )
-                if _data.__class__.__name__ == "temporary_model":
-                    kwargs.update(_data.dict())
-                else:
-                    kwargs[exclusive_models[_data_model]] = _data
 
             if "header" in parameters:
-                _data_model = parameters["header"]
-                _data = _data_model.parse_obj(
-                    _merge_multi_value(request.headers.items())
+                data.append(
+                    parameters["header"].parse_obj(
+                        _merge_multi_value(request.headers.items())
+                    )
                 )
-                if _data.__class__.__name__ == "temporary_model":
-                    kwargs.update(_data.dict())
-                else:
-                    kwargs[exclusive_models[_data_model]] = _data
 
             if "cookie" in parameters:
-                _data_model = parameters["cookie"]
-                _data = _data_model.parse_obj(request.cookies)
-                if _data.__class__.__name__ == "temporary_model":
-                    kwargs.update(_data.dict())
-                else:
-                    kwargs[exclusive_models[_data_model]] = _data
+                data.append(parameters["cookie"].parse_obj(request.cookies))
 
         # try to get body model and parse
         if request_body:
@@ -153,15 +153,18 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
                 _body_data = await request.json()
             else:
                 _body_data = _merge_multi_value((await request.form()).multi_items())
-            _data = request_body.parse_obj(_body_data)
-            if _data.__class__.__name__ == "temporary_model":
-                kwargs.update(_data.dict())
-            else:
-                kwargs[exclusive_models[request_body]] = _data
+            data.append(request_body.parse_obj(_body_data))
 
     except ValidationError as e:
-        raise ParamsValidationError(e)
+        raise RequestValidationError(e)
 
+    for _data in data:
+        if _data.__class__.__name__ == "temporary_model":
+            kwargs.update(_data.dict())
+        elif _data.__class__.__name__ == "temporary_exclusive_model":
+            kwargs[exclusive_models[_data.__class__]] = _data.__root__
+        else:
+            kwargs[exclusive_models[_data.__class__]] = _data
     return functools.partial(handler, **kwargs)
 
 
