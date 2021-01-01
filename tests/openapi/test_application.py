@@ -1,6 +1,8 @@
+import sys
 from typing import List
 from http import HTTPStatus
 
+import pytest
 from pydantic import BaseModel
 from starlette.testclient import TestClient
 
@@ -11,6 +13,10 @@ from indexpy.openapi.application import OpenAPI
 from indexpy.routing import HttpRoute, SubRoutes
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 7),
+    reason="The str behavior of typing.List has changed after 3.7",
+)
 def test_openapi_page():
     app = Index()
     app.router.extend(
