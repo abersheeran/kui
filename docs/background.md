@@ -58,3 +58,10 @@ async def send_admin_notification(username):
     tasks.add_task(send_admin_notification, username=username)
     return JSONResponse({'status': 'Signup successful'}, background=tasks)
 ```
+
+## 同步任务
+
+以上的用法都仅限于使用 `async def` 定义的异步函数，如果你想在后台运行同步 IO 的任务函数，你应该使用 [`asyncio.loop.run_in_executor`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor) 对同步函数进行改造，让它变成一个异步函数。
+
+!!! tip
+    在 Python 3.9 与 3.9 以上的版本，你还可以使用 [`asyncio.to_thread`](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread) 来改造同步函数，它允许你传递关键词参数，而不是像 [`asyncio.loop.run_in_executor`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor) 一样只能传递位置参数。
