@@ -294,11 +294,35 @@ subroutes = SubRoutes(
 
 ### FileRoutes
 
-`FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。`__init__.py` 中名为 `HTTPMiddleware` 的对象将被展开为 HTTP 中间件，`SocketMiddleware` 将被展开为 WebSocket 中间件。除了 `__init__.py` 文件以外的 `.py` 文件中 名为 `HTTP` 的对象将被视为 HTTP 处理器，`Socket` 对象将被视为 WebSocket 处理器，名称为 `name` 的字符串将作为该文件对应的路由名称。
+!!! notice ""
+    这也是 Index.py 此项目的命名来源之一。
+
+`FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。
+
+#### 中间件定义
+
+`__init__.py` 中名为 `HTTPMiddleware` 的对象将被作为 HTTP 中间件、`SocketMiddleware` 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。
+
+#### 处理器定义
+
+除了 `__init__.py` 文件以外的 `.py` 文件中，名为 `HTTP` 的对象（任何可调用对象均可，函数、类等）将被视为 HTTP 处理器，名为 `Socket` 的对象（任何可调用对象均可，函数、类等）将被视为 WebSocket 处理器。
+
+#### 路由名称
+
+在文件中定义名称为 `name` 的字符串将作为该文件对应的路由名称。
+
+`FileRoutes` 同样拥有 `namespace` 参数，并且拥有同样的作用。
+
+#### 映射规则
+
+`module/filename.py` 文件将对应路由 `/filename`，`module/dirname/filename.py` 将对应 `/dirname/filename`，以此类推。
 
 文件映射有一个特殊规则：`module/**/index.py` 将负责处理 `/**/` 路径的内容。
 
-你可以将文件名或文件夹名修改为 `module/{name}.py` 以此接受路径参数；可以为 `FileRoutes` 设置 `suffix` 参数，给每个路由加上后缀，譬如 `suffix=".php"` 这将使路径看起来很像 PHP；`FileRoutes` 同样拥有 `namespace` 参数，并且拥有同样的作用。
+!!! tip
+    你可以将文件名或文件夹名修改为 `module/{name}.py` 以此接受路径参数。
+
+可以为 `FileRoutes` 设置 `suffix` 参数，给每个路由加上后缀，譬如 `suffix=".php"` 这将使路径看起来很像 PHP 😀。
 
 ### 路由组合
 

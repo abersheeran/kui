@@ -104,7 +104,7 @@ else:
                 (
                     f'File "{pid_file}" not found, '
                     + "please make sure you have started gunicorn using the "
-                    + "`index-cli gunicorn start --daemon ...`."
+                    + "`index-cli gunicorn start ...`."
                 )
             )
 

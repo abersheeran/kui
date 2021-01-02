@@ -81,7 +81,7 @@ async def getlist(request, query: PageQuery = Exclusive("query")):
 
 为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
 
-其中，`content` 既可以使用 `pydantic.BaseModel` 描述响应(仅支持 application/json)，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
+其中，`content` 既可以使用类型对象或 `pydantic.BaseModel` 的派生子类描述响应，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
 
 !!! notice
 
