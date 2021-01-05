@@ -368,17 +368,30 @@ async def app(scope, receive, send):
 
 ### TemplateResponse
 
-Index 提供了便捷的使用模板的方法。如下代码将会自动在项目下寻找对应的模板进行渲染。（具体行为由 Index 的 `templates` 参数进行控制）
+`TemplateResponse` 是 `app.templates.TemplateResponse` 的一个快捷方式。
+
+### Jinja2 模板引擎
+
+Index 内置了对 Jinja2 模板的支持，只要你安装了 `jinja2` 模块，就能从 `indexpy.http.templates` 中导出 `Jinja2Templates`。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。
 
 ```python
-from indexpy.http import HTTPView
+from indexpy import Index
 from indexpy.http.responses import TemplateResponse
+from indexpy.http.templates import Jinja2Templates
+
+app = Index(templates=Jinja2Templates("templates"))
 
 
-class HTTP(HTTPView):
-    def get(self):
-        return TemplateResponse("chat.html", {"request": self.request})
+@app.router.http("/", method="get")
+async def homepage(request):
+    return TemplateResponse("homepage.html", context={"request": request})
 ```
+
+如果你要使用某个模块下的指定文件夹中的模板文件，可以使用 `Jinja2Templates("module_name:dirname")`。你还可以传递多个目录让 Jinja2 按照顺序依次查找，直到找到第一个可用的模板，例如：`Jinja2Templates("templates", "module_name:dirname")`。
+
+### 其他模板引擎
+
+通过继承 `indexpy.http.templates.BaseTemplates` 并实现 `TemplateResponse` 方法，你可以实现自己的模板引擎类。
 
 ### YAMLResponse
 

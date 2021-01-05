@@ -25,3 +25,27 @@ def logger_on_startup():
 def logger_on_shutdown():
     logger.info("Called on shutdown")
 ```
+
+也可以在创建 `Index` 对象时作为参数传递，以下程序与上等价。
+
+```python
+import logging
+
+from indexpy import Index
+
+logger = logging.getLogger("example")
+
+
+def logger_on_startup():
+    logger.info("Called on startup")
+
+
+def logger_on_shutdown():
+    logger.info("Called on shutdown")
+
+
+app = Index(
+    on_startup=[logger_on_startup],
+    on_shutdown=[logger_on_shutdown],
+)
+```

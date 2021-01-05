@@ -9,7 +9,7 @@
 
 - **`debug: bool = False`**, 用于设置是否使用调试模式下的 `Index`。
 
-- **`templates = None`**：此参数用于控制 `indexpy.http.responses.TemplateResponse` 的具体行为。
+- **`templates: Optional[BaseTemplates] = None`**：此参数用于控制 `indexpy.http.responses.TemplateResponse` 的具体行为。
 
 - **`on_startup: List[Callable] = []`**：服务启动后自动调用的函数列表。
 
