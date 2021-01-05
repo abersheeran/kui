@@ -276,17 +276,17 @@ async def app(scope, receive, send):
 
 #### 自定义序列化方法
 
-很多时候，Python 内置的 `json` 标准库无法满足实际项目的序列化需求，这时候就需要自定义一个 `JSONResponse` 来使用了。
+很多时候，Python 内置的 `json` 标准库无法满足实际项目的序列化需求，可以通过覆盖 `JSONResponse.json_convert` 来自定义序列化方法。
 
 ```python
 import json
 import decimal
 import datetime
 
-from indexpy.http.responses import JSONResponse as _JSONResponse
+from indexpy.http.responses import JSONResponse
 
 
-def json_encoder(obj):
+def custom_convert(obj):
     if isinstance(obj, datetime.datetime):
         return obj.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -299,16 +299,7 @@ def json_encoder(obj):
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 
-class CustomizeJSONResponse(_JSONResponse):
-    def render(self, content) -> bytes:
-        return json.dumps(
-            content,
-            ensure_ascii=False,
-            allow_nan=False,
-            indent=None,
-            separators=(",", ":"),
-            default=json_encoder,
-        ).encode("utf-8")
+JSONResponse.json_convert = custom_convert
 ```
 
 ### RedirectResponse

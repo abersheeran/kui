@@ -1,12 +1,12 @@
 import asyncio
 import functools
 import typing
+import json
 
 import yaml
 from starlette.responses import (
     FileResponse,
     HTMLResponse,
-    JSONResponse,
     PlainTextResponse,
     RedirectResponse,
     Response,
@@ -55,6 +55,21 @@ def TemplateResponse(
     return templates.TemplateResponse(
         name, context, status_code, headers, media_type, background
     )
+
+
+class JSONResponse(Response):
+    media_type = "application/json"
+    json_convert: typing.Optional[typing.Callable[[typing.Any], typing.Any]] = None
+
+    def render(self, content: typing.Any) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+            default=self.json_convert,
+        ).encode("utf-8")
 
 
 class YAMLResponse(Response):
