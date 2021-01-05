@@ -1,4 +1,4 @@
-Index 允许你使用配置文件来配置 `index-cli serve` / `index-cli gunicorn start` 等命令。在 Python 代码里，你可以使用 `indexpy.conf.serve_config` 读取配置，所有配置都是大小写无关的，`serve_config.KEY` 等价于 `serve_config.Key` 和 `serve_config.key`。
+Index 允许你使用配置文件来配置 `index-cli uvicorn` / `index-cli gunicorn` 等命令的行为。在 Python 代码里，你可以使用 `indexpy.conf.serve_config` 读取配置，所有配置都是大小写无关的，`serve_config.KEY` 等价于 `serve_config.Key` 和 `serve_config.key`。
 
 在命令启动时，它将自动从环境变量与项目根目录下 `indexpy.yaml` / `indexpy.yml` / `indexpy.json` 里读取配置。
 
