@@ -93,6 +93,12 @@ class Cat(HTTPView):
 
 `request.headers` 是一个大小写无关的多值字典(multi-dict)。但通过 `request.headers.keys()`/`request.headers.items()` 取出来的 `key` 均为小写。
 
+#### Accept
+
+通过读取 `request.accepted_types` 属性你可以获取客户端接收的全部响应类型。
+
+通过调用 `request.accepts` 函数你可以判断客户端接受什么样的响应类型。例如：`request.accepts("text/html")`。
+
 ### Query Parameters
 
 `request.query_params` 是一个不可变的多值字典(multi-dict)。
@@ -123,11 +129,13 @@ class Cat(HTTPView):
 
 有几种方法可以读到请求体内容：
 
-- `await request.body()`：返回一个 `bytes`。
+- `await request.body`：返回一个 `bytes`。
 
-- `await request.form()`：将 `body` 作为表单进行解析并返回结果（多值字典）。
+- `await request.form`：将 `body` 作为表单进行解析并返回结果（多值字典）。
 
-- `await request.json()`：将 `body` 作为 JSON 字符串解析并返回结果。
+- `await request.json`：将 `body` 作为 JSON 字符串解析并返回结果。
+
+- `await request.data`: 将 `body` 根据 `content_type` 提供的信息进行解析。
 
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
@@ -140,13 +148,13 @@ async def post(request):
     ...
 ```
 
-如果你直接使用了 `request.stream()` 去读取数据，那么请求体将不会缓存在内存中。其后任何对 `.body()`/`.form()`/`.json()` 的调用都将抛出错误。
+如果你直接使用了 `request.stream()` 去读取数据，那么请求体将不会缓存在内存中。其后任何对 `.body`/`.form`/`.json` 的调用都将抛出错误。
 
 在某些情况下，例如长轮询或流式响应，你可能需要确定客户端是否已断开连接。可以使用 `disconnected = await request.is_disconnected()` 确定此状态。
 
 ### Request Files
 
-通过 `await request.form()` 可以解析通过 `multipart/form-data` 格式接收到的表单，包括文件。
+通过 `await request.form` 可以解析通过 `multipart/form-data` 格式接收到的表单，包括文件。
 
 文件将被包装为 `starlette.datastructures.UploadFile` 对象，它有如下属性：
 
@@ -164,7 +172,7 @@ async def post(request):
 下面是一个读取原始文件名称和内容的例子：
 
 ```python
-form = await request.form()
+form = await request.form
 filename = form["upload_file"].filename
 contents = await form["upload_file"].read()
 ```

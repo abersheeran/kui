@@ -22,7 +22,7 @@ async def send_welcome_email(email: str, username: str) -> None:
 
 @app.router.http("/signup", method="get")
 async def signup(request):
-    data = await request.json()
+    data = await request.json
     username = data['username']
     email = data['email']
     task = BackgroundTask(send_welcome_email, email=email, username=username)
@@ -50,7 +50,7 @@ async def send_admin_notification(username):
 
 
 @app.router.http("/signup", method="get")
-    data = await request.json()
+    data = await request.json
     username = data['username']
     email = data['email']
     tasks = BackgroundTasks()

@@ -13,11 +13,17 @@ from .responses import Response, PlainTextResponse
 
 
 class HTTPException(Exception):
-    def __init__(self, status_code: int, detail: str = None) -> None:
-        if detail is None:
-            detail = http.HTTPStatus(status_code).phrase
+    def __init__(
+        self,
+        status_code: int,
+        content: typing.Any = None,
+        headers: dict = None,
+        media_type: str = None,
+    ) -> None:
         self.status_code = status_code
-        self.detail = detail
+        self.content = content or http.HTTPStatus(status_code).description
+        self.headers = headers
+        self.media_type = media_type
 
     def __repr__(self) -> str:
         class_name = self.__class__.__name__
@@ -110,8 +116,14 @@ class ExceptionMiddleware:
     @staticmethod
     def http_exception(request: Request, exc: HTTPException) -> Response:
         if exc.status_code in {204, 304}:
-            return Response(b"", status_code=exc.status_code)
-        return PlainTextResponse(exc.detail, status_code=exc.status_code)
+            return Response(b"", status_code=exc.status_code, headers=exc.headers)
+
+        return Response(
+            content=exc.content,
+            status_code=exc.status_code,
+            headers=exc.headers,
+            media_type=exc.media_type,
+        )
 
     @staticmethod
     def request_validation_error(

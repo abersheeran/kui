@@ -2,6 +2,7 @@ import functools
 import typing
 from inspect import signature, isclass
 
+from starlette.datastructures import FormData
 from pydantic import BaseModel, ValidationError, create_model
 
 from indexpy.concurrency import keepasync
@@ -149,10 +150,9 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
 
         # try to get body model and parse
         if request_body:
-            if request.headers.get("Content-Type") == "application/json":
-                _body_data = await request.json()
-            else:
-                _body_data = _merge_multi_value((await request.form()).multi_items())
+            _body_data = await request.data()
+            if isinstance(_body_data, FormData):
+                _body_data = _merge_multi_value(_body_data.multi_items())
             data.append(request_body.parse_obj(_body_data))
 
     except ValidationError as e:

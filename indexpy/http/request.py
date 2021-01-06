@@ -125,6 +125,56 @@ async def empty_send(message: Message) -> None:
     raise RuntimeError("Send channel has not been made available")
 
 
+class MediaType:
+    params: typing.Dict[bytes, bytes]
+    main_type: str
+    sub_type: str
+
+    def __init__(self, media_type_raw_line: str) -> None:
+        full_type, self.params = parse_options_header(media_type_raw_line)
+        self.main_type, _, self.sub_type = full_type.decode("ascii").partition("/")
+
+    def __str__(self) -> str:
+        params_str = "".join(
+            "; %s=%s" % (k, v.decode("ascii")) for k, v in self.params.items()
+        )
+        return "%s%s%s" % (
+            self.main_type,
+            ("/%s" % self.sub_type) if self.sub_type else "",
+            params_str,
+        )
+
+    def __repr__(self) -> str:
+        return "<%s: %s>" % (self.__class__.__qualname__, self)
+
+    @property
+    def is_all_types(self) -> bool:
+        return self.main_type == "*" and self.sub_type == "*"
+
+    def match(self, other: str) -> bool:
+        if self.is_all_types:
+            return True
+        other = MediaType(other)
+        if self.main_type == other.main_type and self.sub_type in {"*", other.sub_type}:
+            return True
+        return False
+
+
+class ContentType:
+    def __init__(self, content_type: str, options: typing.Dict[str, str]) -> None:
+        self.type = content_type
+        self.options = options
+
+    def __str__(self) -> str:
+        return self.type
+
+    def __repr__(self) -> str:
+        return self.type + "".join(f"; {k}={v}" for k, v in self.params.items())
+
+    def __eq__(self, other: str) -> bool:
+        return self.type == other
+
+
 class Request(HTTPConnection):
     def __init__(
         self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send
@@ -140,9 +190,33 @@ class Request(HTTPConnection):
     def method(self) -> UPPER_HTTP_METHODS:
         return self.scope["method"]
 
+    @cached_property
+    def content_type(self) -> ContentType:
+        """
+        return content-type and options
+        """
+        full_type, options = parse_options_header(self.headers.get("Content-Type"))
+        return ContentType(
+            full_type.decode("ascii"),
+            {k.decode("ascii"): v.decode("ascii") for k, v in options.items()},
+        )
+
+    @cached_property
+    def accepted_types(self) -> typing.List[MediaType]:
+        return [
+            MediaType(token)
+            for token in self.headers.get("Accept", "*/*").split(",")
+            if token.strip()
+        ]
+
+    def accepts(self, media_type: str) -> bool:
+        return any(
+            accepted_type.match(media_type) for accepted_type in self.accepted_types
+        )
+
     async def stream(self) -> typing.AsyncGenerator[bytes, None]:
-        if hasattr(self, "_body"):
-            yield self._body
+        if "body" in self.__dict__ and self.body.done():
+            yield await self.body
             yield b""
             return
 
@@ -163,36 +237,39 @@ class Request(HTTPConnection):
                 raise ClientDisconnect()
         yield b""
 
+    @cached_property
     async def body(self) -> bytes:
-        if not hasattr(self, "_body"):
-            chunks = []
-            async for chunk in self.stream():
-                chunks.append(chunk)
-            self._body = b"".join(chunks)
-        return self._body
+        chunks = []
+        async for chunk in self.stream():
+            chunks.append(chunk)
+        return b"".join(chunks)
 
+    @cached_property
     async def json(self) -> typing.Any:
-        if not hasattr(self, "_json"):
-            body = await self.body()
-            self._json = json.loads(body)
-        return self._json
+        body = await self.body
+        return json.loads(body)
 
+    @cached_property
     async def form(self) -> FormData:
-        if not hasattr(self, "_form"):
-            assert (
-                parse_options_header is not None
-            ), "The `python-multipart` library must be installed to use form parsing."
-            content_type_header = self.headers.get("Content-Type")
-            content_type, options = parse_options_header(content_type_header)
-            if content_type == b"multipart/form-data":
-                multipart_parser = MultiPartParser(self.headers, self.stream())
-                self._form = await multipart_parser.parse()
-            elif content_type == b"application/x-www-form-urlencoded":
-                form_parser = FormParser(self.headers, self.stream())
-                self._form = await form_parser.parse()
-            else:
-                self._form = FormData()
-        return self._form
+        if self.content_type == "multipart/form-data":
+            multipart_parser = MultiPartParser(self.headers, self.stream())
+            return await multipart_parser.parse()
+        if self.content_type == "application/x-www-form-urlencoded":
+            form_parser = FormParser(self.headers, self.stream())
+            return await form_parser.parse()
+        return FormData()
+
+    async def data(self) -> typing.Any:
+        content_type = self.content_type
+        if content_type == b"application/json":
+            return await request.json
+        elif str(content_type) in (
+            "multipart/form-data",
+            "application/x-www-form-urlencoded",
+        ):
+            return await request.form
+        # TODO
+        # raise a HTTPException
 
     async def close(self) -> None:
         if hasattr(self, "_form"):

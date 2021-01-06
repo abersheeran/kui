@@ -115,7 +115,7 @@ def test_dispather(app):
         )
     ) as client:
         assert client.get("/hello").text == "hello world"
-        assert client.get("/echo").text == "Not Found"
+        assert client.get("/echo").text == "Nothing matches the given URI"
         assert client.get("/echo/").text == ""
         assert client.post("/echo/", data=b"echo").text == "echo"
         assert client.get("/sub/hello").text == "hello world"

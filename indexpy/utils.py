@@ -5,7 +5,7 @@ import os
 import threading
 from functools import partial, update_wrapper
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar, Generic
 
 
 class Singleton(type):
@@ -127,16 +127,14 @@ class State(dict):
 T = TypeVar("T")
 
 
-class cached:
+class cached(Generic[T]):
     def __init__(self, handler: Callable[..., T]) -> None:
         update_wrapper(self, handler)
         self.handler = handler
         self.__caches: Dict[Any, Any] = {}
 
     def __call__(self, *args: Any, **kwargs: Any) -> T:
-        key = tuple(
-            [id(value) for value in args] + [id(value) for value in kwargs.values()]
-        )
+        key = tuple([value for value in args] + [value for value in kwargs.values()])
         if key not in self.__caches:
             self.__caches[key] = self.handler(*args, **kwargs)
         return self.__caches[key]

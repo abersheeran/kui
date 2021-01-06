@@ -70,7 +70,7 @@ def test_request_client():
 def test_request_body():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        body = await request.body()
+        body = await request.body
         response = JSONResponse({"body": body.decode()})
         await response(scope, receive, send)
 
@@ -110,7 +110,7 @@ def test_request_stream():
 def test_request_form_urlencoded():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        form = await request.form()
+        form = await request.form
         response = JSONResponse({"form": dict(form)})
         await response(scope, receive, send)
 
@@ -123,7 +123,7 @@ def test_request_form_urlencoded():
 def test_request_body_then_stream():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        body = await request.body()
+        body = await request.body
         chunks = b""
         async for chunk in request.stream():
             chunks += chunk
@@ -143,7 +143,7 @@ def test_request_stream_then_body():
         async for chunk in request.stream():
             chunks += chunk
         try:
-            body = await request.body()
+            body = await request.body
         except RuntimeError:
             body = b"<stream consumed>"
         response = JSONResponse({"body": body.decode(), "stream": chunks.decode()})
@@ -158,7 +158,7 @@ def test_request_stream_then_body():
 def test_request_json():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        data = await request.json()
+        data = await request.json
         response = JSONResponse({"json": data})
         await response(scope, receive, send)
 
@@ -187,7 +187,7 @@ def test_request_without_setting_receive():
     async def app(scope, receive, send):
         request = Request(scope)
         try:
-            data = await request.json()
+            data = await request.json
         except RuntimeError:
             data = "Receive channel not available"
         response = JSONResponse({"json": data})
@@ -206,7 +206,7 @@ def test_request_disconnect():
 
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        await request.body()
+        await request.body
 
     async def receiver():
         return {"type": "http.disconnect"}
@@ -228,7 +228,7 @@ def test_request_is_disconnected():
         nonlocal disconnected_after_response
 
         request = Request(scope, receive)
-        await request.body()
+        await request.body
         disconnected = await request.is_disconnected()
         response = JSONResponse({"disconnected": disconnected})
         await response(scope, receive, send)
@@ -396,7 +396,7 @@ def test_cookies_invalid(set_cookie, expected):
 def test_chunked_encoding():
     async def app(scope, receive, send):
         request = Request(scope, receive)
-        body = await request.body()
+        body = await request.body
         response = JSONResponse({"body": body.decode()})
         await response(scope, receive, send)
 
