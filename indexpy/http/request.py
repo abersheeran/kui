@@ -43,88 +43,6 @@ def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:
     return cookie_dict
 
 
-class HTTPConnection(typing.Mapping):
-    """
-    A base class for incoming HTTP connections, that is used to provide
-    any functionality that is common to both `Request` and `WebSocket`.
-    """
-
-    def __init__(self, scope: Scope) -> None:
-        assert scope["type"] in ("http", "websocket")
-        self.scope = scope
-
-    def __getitem__(self, key: str) -> str:
-        return self.scope[key]
-
-    def __iter__(self) -> typing.Iterator[str]:
-        return iter(self.scope)
-
-    def __len__(self) -> int:
-        return len(self.scope)
-
-    @cached_property
-    def client(self) -> Address:
-        host, port = self.scope.get("client") or (None, None)
-        return Address(host=host, port=port)
-
-    @cached_property
-    def url(self) -> URL:
-        return URL(scope=self.scope)
-
-    @cached_property
-    def base_url(self) -> URL:
-        base_url_scope = dict(self.scope)
-        base_url_scope["path"] = "/"
-        base_url_scope["query_string"] = b""
-        base_url_scope["root_path"] = base_url_scope.get(
-            "app_root_path", base_url_scope.get("root_path", "")
-        )
-        return URL(scope=base_url_scope)
-
-    @cached_property
-    def path_params(self) -> typing.Dict[str, typing.Any]:
-        return self.scope.get("path_params", {})
-
-    @cached_property
-    def headers(self) -> Headers:
-        return Headers(scope=self.scope)
-
-    @cached_property
-    def query_params(self) -> QueryParams:
-        return QueryParams(self.scope["query_string"])
-
-    @cached_property
-    def cookies(self) -> typing.Dict[str, str]:
-        cookies: typing.Dict[str, str] = {}
-        cookie_header = self.headers.get("cookie")
-
-        if cookie_header:
-            cookies = cookie_parser(cookie_header)
-        return cookies
-
-    @cached_property
-    def session(self) -> typing.Dict[str, typing.Any]:
-        assert (
-            "session" in self.scope
-        ), "`starlette.middleware.sessions.SessionMiddleware` must be installed to access request.session"
-        return self.scope["session"]
-
-    @cached_property
-    def state(self) -> State:
-        # Ensure 'state' has an empty dict if it's not already populated.
-        self.scope.setdefault("state", {})
-        # Create a state instance with a reference to the dict in which it should store info
-        return State(self.scope["state"])
-
-
-async def empty_receive() -> Message:
-    raise RuntimeError("Receive channel has not been made available")
-
-
-async def empty_send(message: Message) -> None:
-    raise RuntimeError("Send channel has not been made available")
-
-
 class MediaType:
     params: typing.Dict[bytes, bytes]
     main_type: str
@@ -177,20 +95,51 @@ class ContentType:
         return self.type == other
 
 
-class Request(HTTPConnection):
-    def __init__(
-        self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send
-    ):
-        super().__init__(scope)
-        assert scope["type"] == "http"
-        self._receive = receive
-        self._send = send
-        self._stream_consumed = False
-        self._is_disconnected = False
+class HTTPConnection(typing.Mapping):
+    """
+    A base class for incoming HTTP connections, that is used to provide
+    any functionality that is common to both `Request` and `WebSocket`.
+    """
 
-    @property
-    def method(self) -> UPPER_HTTP_METHODS:
-        return self.scope["method"]
+    def __init__(self, scope: Scope) -> None:
+        assert scope["type"] in ("http", "websocket")
+        self.scope = scope
+
+    def __getitem__(self, key: str) -> str:
+        return self.scope[key]
+
+    def __iter__(self) -> typing.Iterator[str]:
+        return iter(self.scope)
+
+    def __len__(self) -> int:
+        return len(self.scope)
+
+    @cached_property
+    def client(self) -> Address:
+        host, port = self.scope.get("client") or (None, None)
+        return Address(host=host, port=port)
+
+    @cached_property
+    def url(self) -> URL:
+        return URL(scope=self.scope)
+
+    @cached_property
+    def base_url(self) -> URL:
+        base_url_scope = dict(self.scope)
+        base_url_scope["path"] = "/"
+        base_url_scope["query_string"] = b""
+        base_url_scope["root_path"] = base_url_scope.get(
+            "app_root_path", base_url_scope.get("root_path", "")
+        )
+        return URL(scope=base_url_scope)
+
+    @cached_property
+    def path_params(self) -> typing.Dict[str, typing.Any]:
+        return self.scope.get("path_params", {})
+
+    @cached_property
+    def headers(self) -> Headers:
+        return Headers(scope=self.scope)
 
     @cached_property
     def content_type(self) -> ContentType:
@@ -215,6 +164,57 @@ class Request(HTTPConnection):
         return any(
             accepted_type.match(media_type) for accepted_type in self.accepted_types
         )
+
+    @cached_property
+    def query_params(self) -> QueryParams:
+        return QueryParams(self.scope["query_string"])
+
+    @cached_property
+    def cookies(self) -> typing.Dict[str, str]:
+        cookies: typing.Dict[str, str] = {}
+        cookie_header = self.headers.get("cookie")
+
+        if cookie_header:
+            cookies = cookie_parser(cookie_header)
+        return cookies
+
+    @cached_property
+    def session(self) -> typing.Dict[str, typing.Any]:
+        assert (
+            "session" in self.scope
+        ), "`starlette.middleware.sessions.SessionMiddleware` must be installed to access request.session"
+        return self.scope["session"]
+
+    @cached_property
+    def state(self) -> State:
+        # Ensure 'state' has an empty dict if it's not already populated.
+        self.scope.setdefault("state", {})
+        # Create a state instance with a reference to the dict in which it should store info
+        return State(self.scope["state"])
+
+
+async def empty_receive() -> Message:
+    raise RuntimeError("Receive channel has not been made available")
+
+
+async def empty_send(message: Message) -> None:
+    raise RuntimeError("Send channel has not been made available")
+
+
+class Request(HTTPConnection):
+    def __init__(
+        self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send
+    ):
+        super().__init__(scope)
+        assert scope["type"] == "http"
+        self._receive = receive
+        self._send = send
+        self._stream_consumed = False
+        self._is_disconnected = False
+
+    @property
+    def method(self) -> UPPER_HTTP_METHODS:
+        return self.scope["method"]
 
     async def stream(self) -> typing.AsyncGenerator[bytes, None]:
         if "body" in self.__dict__ and self.__dict__["body"].done():
