@@ -136,12 +136,12 @@ class MediaType:
 
     def __str__(self) -> str:
         params_str = "".join(
-            "; %s=%s" % (k, v.decode("ascii")) for k, v in self.params.items()
+            f"; {k.decode('ascii')}={v.decode('ascii')}" for k, v in self.params.items()
         )
-        return "%s%s%s" % (
-            self.main_type,
-            ("/%s" % self.sub_type) if self.sub_type else "",
-            params_str,
+        return (
+            str(self.main_type)
+            + ((f"/{self.sub_type}") if self.sub_type else "")
+            + str(params_str)
         )
 
     def __repr__(self) -> str:
@@ -154,10 +154,10 @@ class MediaType:
     def match(self, other: str) -> bool:
         if self.is_all_types:
             return True
-        other = MediaType(other)
-        if self.main_type == other.main_type and self.sub_type in {"*", other.sub_type}:
-            return True
-        return False
+        other_media_type = MediaType(other)
+        return self.main_type == other_media_type.main_type and (
+            self.sub_type in {"*", other_media_type.sub_type}
+        )
 
 
 class ContentType:
@@ -169,9 +169,11 @@ class ContentType:
         return self.type
 
     def __repr__(self) -> str:
-        return self.type + "".join(f"; {k}={v}" for k, v in self.params.items())
+        return self.type + "".join(f"; {k}={v}" for k, v in self.options.items())
 
-    def __eq__(self, other: str) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, str):
+            return NotImplemented
         return self.type == other
 
 
@@ -215,7 +217,7 @@ class Request(HTTPConnection):
         )
 
     async def stream(self) -> typing.AsyncGenerator[bytes, None]:
-        if "body" in self.__dict__ and self.body.done():
+        if "body" in self.__dict__ and self.__dict__["body"].done():
             yield await self.body
             yield b""
             return
@@ -262,18 +264,18 @@ class Request(HTTPConnection):
     async def data(self) -> typing.Any:
         content_type = self.content_type
         if content_type == b"application/json":
-            return await request.json
+            return await self.json
         elif str(content_type) in (
             "multipart/form-data",
             "application/x-www-form-urlencoded",
         ):
-            return await request.form
+            return await self.form
         # TODO
         # raise a HTTPException
 
     async def close(self) -> None:
-        if hasattr(self, "_form"):
-            await self._form.close()
+        if "form" in self.__dict__ and self.__dict__["form"].done():
+            await (await self.form).close()
 
     async def is_disconnected(self) -> bool:
         if not self._is_disconnected:
