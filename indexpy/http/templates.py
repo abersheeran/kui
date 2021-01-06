@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import typing
 from abc import ABCMeta, abstractmethod
 
 from indexpy.types import Receive, Scope, Send
 
-from .background import BackgroundTask
+if typing.TYPE_CHECKING:
+    from .background import BackgroundTask
+
 from .responses import Response
 
 

@@ -30,7 +30,7 @@ def complicating(func: typing.Callable) -> typing.Callable[..., typing.Awaitable
     return wrapper
 
 
-def keepasync(*args: str) -> typing.Callable[..., object]:
+def keepasync(*args: str) -> typing.Type[type]:
     """
     Ensure that the specified method must be an asynchronous function
 

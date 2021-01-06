@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import json
 import typing
 
 from starlette import status
 
-from ..types import Literal, Message
-from .request import WebSocket
+from indexpy.types import Literal, Message
+
+if typing.TYPE_CHECKING:
+    from .request import WebSocket
 
 
 class SocketView:

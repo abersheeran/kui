@@ -4,8 +4,8 @@ import pytest
 from pydantic import BaseModel
 from starlette.testclient import TestClient
 
-from indexpy.applications import Index, Dispatcher, MountApp
-from indexpy.http import Path, Exclusive
+from indexpy.applications import Dispatcher, Index, MountApp
+from indexpy.http import Exclusive, Path
 from indexpy.http.responses import HTMLResponse, convert_response
 from indexpy.routing import HttpRoute, Routes, SubRoutes
 

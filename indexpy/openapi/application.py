@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 import os
+import typing
 from copy import deepcopy
 from typing import Any, Dict, List, Sequence
 
-from starlette.endpoints import Request, Response
+if typing.TYPE_CHECKING:
+    from indexpy.applications import Index
+    from indexpy.http.request import Request
+    from indexpy.http.responses import Response
 
 from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
 from indexpy.routing import HttpRoute
@@ -51,21 +57,24 @@ class OpenAPI:
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
             for path in tag_info["paths"]:
-                if path in self.path2tag:
-                    self.path2tag[path].append(tag_name)
-                else:
-                    self.path2tag[path] = [tag_name]
+                self.path2tag.setdefault(path, []).append(tag_name)
 
-    def _generate_paths(self, app: Any, definitions: dict) -> Dict[str, Any]:
-        result = {}
-
-        for path_format, endpoint in app.router.http_tree.iterator():
-            path_docs = self._generate_path(endpoint.__raw__, path_format, definitions)
-            if not path_docs:
-                continue
-            result[path_format] = path_docs
-
-        return result
+    def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
+        return {
+            k: v
+            for k, v in filter(
+                lambda kv: bool(kv[1]),
+                [
+                    (
+                        path_format,
+                        self._generate_path(
+                            getattr(endpoint, "__raw__"), path_format, definitions
+                        ),
+                    )
+                    for path_format, endpoint in app.router.http_tree.iterator()
+                ],
+            )
+        }
 
     def _generate_path(self, view: Any, path: str, definitions: dict) -> Dict[str, Any]:
         result = {}
@@ -142,7 +151,7 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = self._generate_paths(request["app"], definitions)
+        openapi["paths"] = self._generate_paths(request.app, definitions)
         openapi["definitions"] = definitions
         return openapi
 

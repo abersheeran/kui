@@ -2,9 +2,9 @@ import asyncio
 
 from indexpy import Index
 from indexpy.__version__ import __version__
-from indexpy.routing import Routes, SubRoutes
 from indexpy.http.responses import ServerSendEventResponse
 from indexpy.openapi import OpenAPI, describe_response
+from indexpy.routing import Routes, SubRoutes
 
 app = Index(
     debug=True,

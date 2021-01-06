@@ -1,9 +1,9 @@
 import dataclasses
 from typing import Optional
 
-from indexpy.types import Literal
-
 from pydantic.fields import FieldInfo
+
+from indexpy.types import Literal
 
 
 class PathInfo(FieldInfo):

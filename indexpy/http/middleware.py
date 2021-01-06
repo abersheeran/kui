@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 import typing
 
-from ..concurrency import keepasync
-from .request import Request
+from indexpy.concurrency import keepasync
+
+if typing.TYPE_CHECKING:
+    from .request import Request
+
 from .responses import Response, convert_response
 
 MiddlewareMeta = keepasync("process_request", "process_response", "process_exception")

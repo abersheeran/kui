@@ -1,6 +1,6 @@
 import pytest
 
-from indexpy.conf import serve_config, ConfigError, UpperDict
+from indexpy.conf import ConfigError, UpperDict, serve_config
 
 
 def test_config():

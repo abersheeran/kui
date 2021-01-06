@@ -1,20 +1,10 @@
 import re
 from dataclasses import dataclass
-from typing import (
-    cast as typing_cast,
-    Any,
-    Dict,
-    Generator,
-    List,
-    Optional,
-    Pattern,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Generator, List, Optional, Pattern, Tuple, Union
+from typing import cast as typing_cast
 
 from ..types import ASGIApp
 from .convertors import Convertor, PathConvertor, compile_path
-
 
 EMPTY_TUPLE: tuple = tuple()
 

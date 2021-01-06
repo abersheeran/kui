@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import html
 import inspect
@@ -7,7 +9,9 @@ import typing
 
 from starlette.concurrency import run_in_threadpool
 
-from indexpy.http.request import Request
+if typing.TYPE_CHECKING:
+    from indexpy.http.request import Request
+
 from indexpy.http.responses import HTMLResponse, PlainTextResponse, Response
 from indexpy.types import ASGIApp, Message, Receive, Scope, Send
 

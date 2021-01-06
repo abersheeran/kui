@@ -5,7 +5,32 @@ import os
 import threading
 from functools import partial, update_wrapper
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar, Generic
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
+
+
+def pass_or_raise(condition: Any, exc: Union[str, BaseException]) -> None:
+    """
+    When the debug mode of Python is turned off, the `assert`
+    statement will be skipped. This function serves as a valid
+    substitute for `assert`.
+    """
+    if condition:
+        return
+
+    if isinstance(exc, str):
+        raise RuntimeError(exc)
+
+    raise exc
 
 
 class Singleton(type):

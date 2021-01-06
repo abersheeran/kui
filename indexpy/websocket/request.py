@@ -4,7 +4,7 @@ from typing import Any, AsyncIterator
 from starlette.types import Message, Receive, Scope, Send
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-from ..http.request import HTTPConnection
+from indexpy.http.request import HTTPConnection
 
 
 class WebSocket(HTTPConnection):

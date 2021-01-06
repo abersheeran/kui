@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import typing
 
 from indexpy.concurrency import keepasync
 
-from .request import WebSocket
+if typing.TYPE_CHECKING:
+    from .request import WebSocket
 
 MiddlewareMeta = keepasync("before_accept", "after_close")
 
@@ -11,17 +14,17 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
 
     mounts: typing.Sequence[typing.Callable] = ()
 
-    def __init__(self, get_response: typing.Callable) -> None:
-        self.get_response = self.mount_middleware(get_response)
+    def __init__(self, websocket_handler: typing.Callable) -> None:
+        self.websocket_handler = self.mount_middleware(websocket_handler)
 
-    def mount_middleware(self, get_response: typing.Callable) -> typing.Callable:
+    def mount_middleware(self, websocket_handler: typing.Callable) -> typing.Callable:
         for middleware in reversed(self.mounts):
-            get_response = middleware(get_response)
-        return get_response
+            websocket_handler = middleware(websocket_handler)
+        return websocket_handler
 
     async def __call__(self, websocket: WebSocket) -> None:
         await self.before_accept(websocket)
-        await self.get_response(websocket)
+        await self.websocket_handler(websocket)
         await self.after_close(websocket)
 
     async def before_accept(self, websocket: WebSocket) -> None:

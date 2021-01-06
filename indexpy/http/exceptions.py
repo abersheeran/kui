@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import asyncio
 import http
-import typing
 import json
+import typing
 
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
 from indexpy.types import ASGIApp, Message, Receive, Scope, Send
 
-from .request import Request
+if typing.TYPE_CHECKING:
+    from .request import Request
+
 from .responses import Response
 
 

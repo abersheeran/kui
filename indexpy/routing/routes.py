@@ -6,14 +6,17 @@ from dataclasses import InitVar, asdict, dataclass
 from functools import update_wrapper
 from pathlib import Path
 
-from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
-from indexpy.utils import superclass
+from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
+from indexpy.utils import pass_or_raise, superclass
 
-from .convertors import Convertor, compile_path
+from .convertors import compile_path
 from .tree import RadixTree
+
+if typing.TYPE_CHECKING:
+    from .convertors import Convertor
 
 
 def request_response(view: typing.Any) -> ASGIApp:
@@ -38,8 +41,14 @@ def websocket_session(view: typing.Any) -> ASGIApp:
 
 
 def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
-    assert path_prefix.startswith("/"), "path_prefix must be start with '/'"
-    assert not path_prefix.endswith("/"), "path_prefix can't end with '/'"
+    pass_or_raise(
+        path_prefix.startswith("/"),
+        ValueError("path_prefix must be start with '/'"),
+    )
+    pass_or_raise(
+        not path_prefix.endswith("/"),
+        ValueError("path_prefix can't end with '/'"),
+    )
 
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         path = scope["path"]

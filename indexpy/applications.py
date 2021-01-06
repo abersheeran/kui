@@ -8,15 +8,15 @@ from starlette.middleware import Middleware
 from starlette.status import WS_1001_GOING_AWAY
 from starlette.websockets import WebSocketClose
 
-from .types import ASGIApp, Literal, Message, Receive, Scope, Send
-from .utils import State, cached_property
-from .routing.routes import BaseRoute, NoMatchFound, Router
 from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
 from .http.responses import Response
 from .http.templates import BaseTemplates
 from .http.view import only_allow
+from .routing.routes import BaseRoute, NoMatchFound, Router
+from .types import ASGIApp, Literal, Message, Receive, Scope, Send
+from .utils import State, cached_property, pass_or_raise
 from .websocket.request import WebSocket
 
 
@@ -232,8 +232,14 @@ class Dispatcher:
     ) -> None:
         self.default_app = default_app
         for mounted in apps:
-            assert mounted.prefix.startswith("/"), "prefix must be start with '/'"
-            assert not mounted.prefix.endswith("/"), "prefix can't end with '/'"
+            pass_or_raise(
+                mounted.prefix.startswith("/"),
+                ValueError("prefix must be start with '/'"),
+            )
+            pass_or_raise(
+                not mounted.prefix.endswith("/"),
+                ValueError("prefix can't end with '/'"),
+            )
         self.apps = apps
         self.handle404 = handle404
 

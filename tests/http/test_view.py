@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from starlette.testclient import TestClient
 
 from indexpy import Index
-from indexpy.http import HTTPView, Path, Exclusive
+from indexpy.http import Exclusive, HTTPView, Path
 
 
 @pytest.fixture

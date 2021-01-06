@@ -1,18 +1,22 @@
+from __future__ import annotations
+
 import functools
 import typing
-from inspect import signature, isclass
+from inspect import isclass, signature
 
-from starlette.datastructures import FormData
 from pydantic import BaseModel, ValidationError, create_model
+from starlette.datastructures import FormData
 
 from indexpy.concurrency import keepasync
+from indexpy.http.exceptions import RequestValidationError
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
 from indexpy.utils import cached
-from indexpy.http.exceptions import RequestValidationError
-from indexpy.http.request import Request
-from indexpy.http.responses import Response
 
-from .fields import PathInfo, QueryInfo, HeaderInfo, CookieInfo, BodyInfo, ExclusiveInfo
+if typing.TYPE_CHECKING:
+    from indexpy.http.request import Request
+    from indexpy.http.responses import Response
+
+from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 
 T = typing.TypeVar("T", bound=typing.Callable)
 

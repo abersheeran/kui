@@ -1,10 +1,10 @@
 from typing import Any, Optional
 
-from pydantic.fields import Undefined, NoArgAnyCallable
+from pydantic.fields import NoArgAnyCallable, Undefined
 
 from indexpy.types import Literal
 
-from .fields import PathInfo, QueryInfo, HeaderInfo, CookieInfo, BodyInfo, ExclusiveInfo
+from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 
 __all__ = ["Path", "Query", "Header", "Cookie", "Body", "Exclusive"]
 

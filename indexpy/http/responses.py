@@ -1,7 +1,7 @@
 import asyncio
 import functools
-import typing
 import json
+import typing
 
 import yaml
 from starlette.responses import (
@@ -17,7 +17,6 @@ from indexpy.types import Receive, Scope, Send
 
 from .background import BackgroundTask
 from .templates import BaseTemplates
-
 
 __all__ = [
     "automatic",
@@ -46,7 +45,7 @@ def TemplateResponse(
     if "request" not in context:
         raise ValueError('context must include a "request" key')
 
-    templates: BaseTemplates = context["request"]["app"].templates
+    templates: BaseTemplates = context["request"].app.templates
     if templates is None:
         raise RuntimeError(
             "You must assign a value to `app.templates` to use TemplateResponse"

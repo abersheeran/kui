@@ -9,7 +9,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .conf import serve_config, ConfigError
+from .conf import ConfigError, serve_config
 from .utils import import_module
 
 

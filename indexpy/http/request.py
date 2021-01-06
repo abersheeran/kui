@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import typing
+from http import HTTPStatus
 from http import cookies as http_cookies
 
 from starlette.datastructures import URL, Address, Headers, QueryParams
@@ -12,8 +15,13 @@ from starlette.formparsers import (
 )
 from starlette.requests import SERVER_PUSH_HEADERS_TO_COPY, ClientDisconnect
 
-from indexpy.types import Message, Receive, Scope, Send, UPPER_HTTP_METHODS
-from indexpy.utils import cached_property, State
+from indexpy.types import UPPER_HTTP_METHODS, Message, Receive, Scope, Send
+from indexpy.utils import State, cached_property
+
+if typing.TYPE_CHECKING:
+    from indexpy.applications import Index
+
+from .exceptions import HTTPException
 
 
 def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:
@@ -113,6 +121,10 @@ class HTTPConnection(typing.Mapping):
 
     def __len__(self) -> int:
         return len(self.scope)
+
+    @property
+    def app(self) -> Index:
+        return self.scope["app"]
 
     @cached_property
     def client(self) -> Address:
@@ -270,8 +282,10 @@ class Request(HTTPConnection):
             "application/x-www-form-urlencoded",
         ):
             return await self.form
-        # TODO
-        # raise a HTTPException
+
+        # We can inherit this method in subclasses
+        # and catch this exception for custom processing
+        raise HTTPException(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
 
     async def close(self) -> None:
         if "form" in self.__dict__ and self.__dict__["form"].done():

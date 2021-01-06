@@ -1,6 +1,6 @@
 import sys
-from typing import List
 from http import HTTPStatus
+from typing import List
 
 import pytest
 from pydantic import BaseModel
@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 
 from indexpy import Index
 from indexpy.http import HTTPView, Path
-from indexpy.openapi import describe_response, describe_extra_docs
+from indexpy.openapi import describe_extra_docs, describe_response
 from indexpy.openapi.application import OpenAPI
 from indexpy.routing import HttpRoute, SubRoutes
 
