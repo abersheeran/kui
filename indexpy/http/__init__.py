@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .background import BackgroundTask, BackgroundTasks
 from .exceptions import HTTPException
 from .middleware import MiddlewareMixin
