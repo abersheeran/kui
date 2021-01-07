@@ -550,3 +550,6 @@ def not_found(request: Request, exc: HTTPException) -> Response:
 def value_error(request: Request, exc: ValueError) -> Response:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 ```
+
+!!! warning
+    你不能在这里使用 `request.body`/`.form`/`.json`/`.data` 等方法读取请求的内容。
