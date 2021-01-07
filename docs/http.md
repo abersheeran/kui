@@ -135,7 +135,7 @@ class Cat(HTTPView):
 
 - `await request.json`：将 `body` 作为 JSON 字符串解析并返回结果。
 
-- `await request.data`: 将 `body` 根据 `content_type` 提供的信息进行解析。
+- `await request.data`：将 `body` 根据 `content_type` 提供的信息进行解析。
 
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
@@ -494,7 +494,7 @@ def _error_json(error: Error, status: int = 400) -> Response:
     return JSONResponse(asdict(error), status)
 ```
 
-或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`（以上文中自定义 JSON 序列化为例）：
+或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`：
 
 ```python
 from indexpy.http.responses import automatic, Response
@@ -509,23 +509,29 @@ def _more_json(body: dict, status: int = 200, headers: dict = None) -> Response:
     return CustomizeJSONResponse(body, status, headers)
 ```
 
-### 默认响应
+### HTTP 异常
 
-当你需要返回一个 HTTP 状态码以及其默认的描述时，可以使用
+其参数签名是：`HTTPException(status_code: int, content: typing.Any = None, headers: dict = None, media_type: str = None)`
+
+你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index 知道该如何将它变成一个普通的响应对象）。如果你没有给出 `content`，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为值。
 
 ```python
-raise indexpy.http.HTTPException(CODE)
+from indexpy.http import HTTPException
+
+
+async def exc(request):
+    ...
+    raise HTTPException(400)
+    ...
 ```
-
-其好处在于你可以通过[自定义异常处理](#_8)来捕捉并自定义它们。
-
-例如：网站需要有统一的 404 页面。
 
 ## 自定义异常处理
 
 对于一些故意抛出的异常，Index 提供了方法进行统一处理。
 
-以下为样例：
+你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index 会使用你定义的函数而不是默认行为。
+
+你也可以捕捉其他继承自 `Exception` 的异常，通过自定义函数，返回指定的内容给客户端。
 
 ```python
 from indexpy import Index
