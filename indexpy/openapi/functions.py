@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+import sys
 import typing
 from http import HTTPStatus
 from inspect import isclass
 
 from pydantic import BaseModel, create_model
 from pydantic.typing import display_as_type
+
+if sys.version_info >= (3, 9):
+    from types import GenericAlias
+    from typing import _SpecialGenericAlias, _GenericAlias
+
+    GenericType = (GenericAlias, _SpecialGenericAlias, _GenericAlias)
+else:
+    from typing import _GenericAlias
+
+    GenericType = (_GenericAlias,)
+
 
 T = typing.TypeVar("T", bound=typing.Callable)
 
@@ -36,14 +48,16 @@ def describe_response(
         responses[status] = {"description": description}
 
         if content is not None:
-            if not isinstance(content, dict) and not (
-                isclass(content) and issubclass(content, BaseModel)
+            if isinstance(content, dict) or (
+                not isinstance(content, GenericType)
+                and isclass(content)
+                and issubclass(content, BaseModel)
             ):
+                responses[status]["content"] = content
+            else:
                 responses[status]["content"] = create_model(
                     f"ParsingModel[{display_as_type(content)}]", __root__=(content, ...)
                 )
-            else:
-                responses[status]["content"] = content
         if headers is not None:
             responses[status]["headers"] = headers
         if links is not None:
