@@ -44,6 +44,34 @@ class RequestValidationError(Exception):
     def json(self, *, indent: typing.Union[None, int, str] = 2) -> str:
         return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
 
+    @staticmethod
+    def schema() -> dict:
+        return {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "loc": {
+                        "title": "Loc",
+                        "description": "error field",
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "type": {
+                        "title": "Type",
+                        "description": "error type",
+                        "type": "string",
+                    },
+                    "msg": {
+                        "title": "Msg",
+                        "description": "error message",
+                        "type": "string",
+                    },
+                },
+                "required": ["loc", "type", "msg"],
+            },
+        }
+
 
 class ExceptionMiddleware:
     def __init__(self, app: ASGIApp, handlers: dict = None) -> None:

@@ -10,6 +10,7 @@ if typing.TYPE_CHECKING:
     from indexpy.http.request import Request
     from indexpy.http.responses import Response
 
+from indexpy.http.exceptions import RequestValidationError
 from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
 from indexpy.routing import HttpRoute
 from indexpy.types import Literal, TypedDict
@@ -140,6 +141,19 @@ class OpenAPI:
         # generate responses schema
         __responses__ = getattr(func, "__responses__", {})
         responses: Dict[int, Any] = {}
+        if result.get("parameters") or result.get("requestBody"):
+            responses.update(
+                {
+                    422: {
+                        "content": {
+                            "application/json": {
+                                "schema": RequestValidationError.schema()
+                            }
+                        },
+                        "description": "Failed to verify request parameters",
+                    }
+                }
+            )
         for status, info in __responses__.items():
             _ = responses[int(status)] = dict(info)
             if _.get("content") is not None:

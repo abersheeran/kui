@@ -220,6 +220,34 @@ paths:
         required: true
         schema:
           type: string
+      responses:
+        422:
+          content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    loc:
+                      description: error field
+                      items:
+                        type: string
+                      title: Loc
+                      type: array
+                    msg:
+                      description: error message
+                      title: Msg
+                      type: string
+                    type:
+                      description: error type
+                      title: Type
+                      type: string
+                  required:
+                  - loc
+                  - type
+                  - msg
+                  type: object
+                type: array
+          description: Failed to verify request parameters
   /path/{name}:
     get:
       parameters:
@@ -231,6 +259,34 @@ paths:
           title: Name
           type: string
       - *id003
+      responses:
+        422:
+          content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    loc:
+                      description: error field
+                      items:
+                        type: string
+                      title: Loc
+                      type: array
+                    msg:
+                      description: error message
+                      title: Msg
+                      type: string
+                    type:
+                      description: error type
+                      title: Type
+                      type: string
+                  required:
+                  - loc
+                  - type
+                  - msg
+                  type: object
+                type: array
+          description: Failed to verify request parameters
 servers:
 - description: Current server
   url: http://testserver
