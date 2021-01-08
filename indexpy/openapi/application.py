@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import typing
+import operator
+from functools import reduce
 from copy import deepcopy
 from typing import Any, Dict, List, Sequence
 
@@ -62,21 +64,15 @@ class OpenAPI:
                 self.path2tag.setdefault(path, []).append(tag_name)
 
     def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
-        return {
-            k: v
-            for k, v in filter(
-                lambda kv: bool(kv[1]),
-                [
-                    (
-                        path_format,
-                        self._generate_path(
-                            getattr(endpoint, "__raw__"), path_format, definitions
-                        ),
-                    )
-                    for path_format, endpoint in app.router.http_tree.iterator()
-                ],
-            )
-        }
+        generate_path_docs = lambda item: (
+            item[0],
+            self._generate_path(getattr(item[1], "__raw__"), item[0], definitions),
+        )
+        return dict(
+            app.router.http_tree.iterator()
+            | F(map, generate_path_docs)
+            | F(filter, lambda kv: bool(kv[1]))
+        )
 
     def _generate_path(self, view: Any, path: str, definitions: dict) -> Dict[str, Any]:
         """
@@ -121,16 +117,17 @@ class OpenAPI:
                     "description": "\n".join(doc.splitlines()[1:]).strip(),
                 }
             )
+
         # generate params schema
         __parameters__ = getattr(func, "__parameters__", {})
         parameters = (
-            schema_parameter(__parameters__.get("path"), "path")
-            + schema_parameter(__parameters__.get("query"), "query")
-            + schema_parameter(__parameters__.get("header"), "header")
-            + schema_parameter(__parameters__.get("cookie"), "cookie")
+            ["path", "query", "header", "cookie"]
+            | F(map, lambda key: schema_parameter(__parameters__.get(key), key))
+            | F(reduce, operator.add)
         )
         if parameters:
             result["parameters"] = parameters
+
         # generate request body schema
         request_body, _definitions = schema_request_body(
             getattr(func, "__request_body__", None)
@@ -138,22 +135,18 @@ class OpenAPI:
         if request_body:
             result["requestBody"] = request_body
         definitions.update(_definitions)
+
         # generate responses schema
         __responses__ = getattr(func, "__responses__", {})
         responses: Dict[int, Any] = {}
         if result.get("parameters") or result.get("requestBody"):
-            responses.update(
-                {
-                    422: {
-                        "content": {
-                            "application/json": {
-                                "schema": RequestValidationError.schema()
-                            }
-                        },
-                        "description": "Failed to verify request parameters",
-                    }
-                }
-            )
+            responses[422] = {
+                "content": {
+                    "application/json": {"schema": RequestValidationError.schema()}
+                },
+                "description": "Failed to verify request parameters",
+            }
+
         for status, info in __responses__.items():
             _ = responses[int(status)] = dict(info)
             if _.get("content") is not None:
@@ -161,9 +154,11 @@ class OpenAPI:
                 definitions.update(_definitions)
         if responses:
             result["responses"] = responses
+
         # set path tags
         if result and path in self.path2tag:
             result["tags"] = self.path2tag[path]
+
         # merge user custom operation info
         return merge_openapi_info(result, getattr(func, "__extra_docs__", {}))
 

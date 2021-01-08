@@ -4,10 +4,10 @@ import typing
 import pytest
 
 from indexpy.openapi.functions import (
+    GenericType,
     describe_response,
     describe_responses,
     merge_openapi_info,
-    GenericType,
 )
 
 
