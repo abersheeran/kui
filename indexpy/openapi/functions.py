@@ -9,14 +9,14 @@ from pydantic import BaseModel, create_model
 from pydantic.typing import display_as_type
 
 if sys.version_info >= (3, 9):
+    # https://www.python.org/dev/peps/pep-0585/
+
     from types import GenericAlias
-    from typing import _SpecialGenericAlias, _GenericAlias
 
-    GenericType = (GenericAlias, _SpecialGenericAlias, _GenericAlias)
+    GenericType = (GenericAlias, type(typing.List[str]))
 else:
-    from typing import _GenericAlias
 
-    GenericType = (_GenericAlias,)
+    GenericType = (type(typing.List[str]),)
 
 
 T = typing.TypeVar("T", bound=typing.Callable)
