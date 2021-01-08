@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
 from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
 from indexpy.routing import HttpRoute
 from indexpy.types import Literal, TypedDict
+from indexpy.utils import F
 
 from .functions import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response
@@ -77,23 +78,33 @@ class OpenAPI:
         }
 
     def _generate_path(self, view: Any, path: str, definitions: dict) -> Dict[str, Any]:
-        result = {}
+        """
+        Generate documents under a path
+        """
         if hasattr(view, "__methods__"):
-            for method in view.__methods__:  # type: ignore
-                if method == "OPTIONS":
-                    continue
-                method = method.lower()
-                method_docs = self._generate_method(
-                    getattr(view, method), path, definitions
-                )
-                if not method_docs:
-                    continue
-                result[method] = method_docs
+            generate_method_docs = lambda method: (
+                method,
+                self._generate_method(getattr(view, method), path, definitions),
+            )
+            return dict(
+                view.__methods__
+                | F(map, lambda method: method.lower())
+                | F(filter, lambda method: method != "options")
+                | F(map, generate_method_docs)
+                | F(filter, lambda method_and_docs: bool(method_and_docs[1]))
+            )
         elif hasattr(view, "__method__"):
-            method_docs = self._generate_method(view, path, definitions)
-            if method_docs:
-                result[view.__method__.lower()] = method_docs
-        return result
+            return dict(
+                [
+                    (
+                        view.__method__.lower(),
+                        self._generate_method(view, path, definitions),
+                    )
+                ]
+                | F(filter, lambda method_and_docs: bool(method_and_docs[1]))
+            )
+        else:
+            raise RuntimeError("Can only generate docs from HTTP handler")
 
     def _generate_method(
         self, func: object, path: str, definitions: dict

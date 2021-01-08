@@ -168,3 +168,16 @@ class cached(Generic[T]):
 
     def clear(self) -> None:
         self.__caches.clear()
+
+
+class F(partial):
+    """
+    example:
+
+        count = [1, 2, 3] | F(sum)
+    """
+
+    def __ror__(self, other: Any) -> Any:
+        if isinstance(other, tuple):
+            return self(*other)
+        return self(other)
