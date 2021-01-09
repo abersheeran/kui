@@ -12,7 +12,7 @@ from indexpy.concurrency import complicating
 from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
 from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
-from indexpy.utils import pass_or_raise, superclass
+from indexpy.utils import superclass
 
 from .convertors import compile_path
 from .tree import RadixTree
@@ -43,14 +43,10 @@ def websocket_session(view: typing.Any) -> ASGIApp:
 
 
 def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
-    pass_or_raise(
-        path_prefix.startswith("/"),
-        ValueError("path_prefix must be start with '/'"),
-    )
-    pass_or_raise(
-        not path_prefix.endswith("/"),
-        ValueError("path_prefix can't end with '/'"),
-    )
+    if not path_prefix.startswith("/"):
+        raise ValueError("path_prefix must be start with '/'")
+    if path_prefix.endswith("/"):
+        raise ValueError("path_prefix can't end with '/'")
 
     async def _(scope: Scope, receive: Receive, send: Send) -> None:
         path = scope["path"]
