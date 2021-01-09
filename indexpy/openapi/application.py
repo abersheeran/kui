@@ -91,15 +91,9 @@ class OpenAPI:
                 | F(filter, lambda method_and_docs: bool(method_and_docs[1]))
             )
         elif hasattr(view, "__method__"):
-            return dict(
-                [
-                    (
-                        view.__method__.lower(),
-                        self._generate_method(view, path, definitions),
-                    )
-                ]
-                | F(filter, lambda method_and_docs: bool(method_and_docs[1]))
-            )
+            return {
+                view.__method__.lower(): self._generate_method(view, path, definitions),
+            } | F(lambda d: {k: v for k, v in d.items() if v})
         else:
             raise RuntimeError("Can only generate docs from HTTP handler")
 
@@ -119,27 +113,25 @@ class OpenAPI:
             )
 
         # generate params schema
-        __parameters__ = getattr(func, "__parameters__", {})
         parameters = (
             ["path", "query", "header", "cookie"]
-            | F(map, lambda key: schema_parameter(__parameters__.get(key), key))
+            | F(map, lambda key: (getattr(func, "__parameters__", {}).get(key), key))
+            | F(map, lambda args: schema_parameter(*args))
             | F(reduce, operator.add)
         )
-        if parameters:
-            result["parameters"] = parameters
+        result["parameters"] = parameters
 
         # generate request body schema
         request_body, _definitions = schema_request_body(
             getattr(func, "__request_body__", None)
         )
-        if request_body:
-            result["requestBody"] = request_body
+        result["requestBody"] = request_body
         definitions.update(_definitions)
 
         # generate responses schema
         __responses__ = getattr(func, "__responses__", {})
         responses: Dict[int, Any] = {}
-        if result.get("parameters") or result.get("requestBody"):
+        if parameters or request_body:
             responses[422] = {
                 "content": {
                     "application/json": {"schema": RequestValidationError.schema()}
@@ -152,15 +144,18 @@ class OpenAPI:
             if _.get("content") is not None:
                 _["content"], _definitions = schema_response(_["content"])
                 definitions.update(_definitions)
-        if responses:
-            result["responses"] = responses
+
+        result["responses"] = responses
 
         # set path tags
         if result and path in self.path2tag:
             result["tags"] = self.path2tag[path]
 
         # merge user custom operation info
-        return merge_openapi_info(result, getattr(func, "__extra_docs__", {}))
+        return merge_openapi_info(
+            result | F(lambda d: {k: v for k, v in d.items() if v}),
+            getattr(func, "__extra_docs__", {}),
+        )
 
     def create_docs(self, request: Request) -> dict:
         openapi: dict = deepcopy(self.openapi)

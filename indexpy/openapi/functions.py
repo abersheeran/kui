@@ -5,9 +5,6 @@ import typing
 from http import HTTPStatus
 from inspect import isclass
 
-from pydantic import BaseModel, create_model
-from pydantic.typing import display_as_type
-
 if sys.version_info >= (3, 9):
     # https://www.python.org/dev/peps/pep-0585/
 
@@ -18,6 +15,10 @@ else:
 
     GenericType = (type(typing.List[str]),)
 
+from pydantic import BaseModel, create_model
+from pydantic.typing import display_as_type
+
+from indexpy.utils import F
 
 T = typing.TypeVar("T", bound=typing.Callable)
 
@@ -45,23 +46,28 @@ def describe_response(
             setattr(func, "__responses__", responses)
         else:
             responses = getattr(func, "__responses__")
-        responses[status] = {"description": description}
 
-        if content is not None:
-            if isinstance(content, dict) or (
+        if (
+            content is None
+            or isinstance(content, dict)
+            or (
                 not isinstance(content, GenericType)
                 and isclass(content)
                 and issubclass(content, BaseModel)
-            ):
-                responses[status]["content"] = content
-            else:
-                responses[status]["content"] = create_model(
-                    f"ParsingModel[{display_as_type(content)}]", __root__=(content, ...)
-                )
-        if headers is not None:
-            responses[status]["headers"] = headers
-        if links is not None:
-            responses[status]["links"] = links
+            )
+        ):
+            real_content = content
+        else:
+            real_content = create_model(
+                f"ParsingModel[{display_as_type(content)}]", __root__=(content, ...)
+            )
+
+        responses[status] = {
+            "description": description,
+            "content": real_content,
+            "headers": headers,
+            "links": links,
+        } | F(lambda d: {k: v for k, v in d.items() if v})
 
         return func
 

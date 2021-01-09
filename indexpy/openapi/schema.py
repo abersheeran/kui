@@ -15,24 +15,24 @@ def schema_parameter(
     m: Optional[Type[BaseModel]],
     position: Literal["path", "query", "header", "cookie"],
 ) -> List[Dict[str, Any]]:
-    result = []
 
-    if m is not None:
-        _schemas = deepcopy(m.schema())
-        properties: Dict[str, Any] = _schemas["properties"]
-        required = _schemas.get("required", ())
+    if m is None:
+        return []
 
-        for name, schema in properties.items():  # type: str, Dict[str, str]
-            result.append(
-                {
-                    "in": position,
-                    "name": name,
-                    "description": schema.pop("description", ""),
-                    "required": name in required,  # type: ignore
-                    "schema": schema,
-                }
-            )
-    return result
+    _schemas = deepcopy(m.schema())
+    properties: Dict[str, Any] = _schemas["properties"]
+    required = _schemas.get("required", ())
+
+    return [
+        {
+            "in": position,
+            "name": name,
+            "description": schema.pop("description", ""),
+            "required": name in required,  # type: ignore
+            "schema": schema,
+        }
+        for name, schema in properties.items()
+    ]
 
 
 def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], Dict]:
