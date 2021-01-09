@@ -7,32 +7,9 @@ import os
 import threading
 from functools import partial, update_wrapper
 from types import ModuleType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional, Tuple, TypeVar
 
-
-def pass_or_raise(condition: Any, exc: Union[str, BaseException]) -> None:
-    """
-    When the debug mode of Python is turned off, the `assert`
-    statement will be skipped. This function serves as a valid
-    substitute for `assert`.
-    """
-    if condition:
-        return
-
-    if isinstance(exc, str):
-        raise RuntimeError(exc)
-
-    raise exc
+T = TypeVar("T")
 
 
 class Singleton(type):
@@ -87,6 +64,28 @@ else:
                 result = asyncio.ensure_future(result)
             value = obj.__dict__[self.func.__name__] = result
             return value
+
+
+class ImmutableAttribute(Generic[T]):
+    """
+    Make an instance attribute immutable
+    """
+
+    def __init__(self, value: T) -> None:
+        self.__value = value
+
+    def __get__(self, object: Any, object_class: Any = None) -> T:
+        return self.__value
+
+    def __set__(self, object: Any, value: Any) -> None:
+        raise RuntimeError("Cannot modify immutable attribute")
+
+    def __delete__(self, object: Any) -> None:
+        raise RuntimeError("Cannot delete immutable attribute")
+
+
+def Immutable(value: T) -> T:
+    return ImmutableAttribute(value)  # type: ignore
 
 
 class superclass:
@@ -151,30 +150,9 @@ class State(dict):
         del self[name]
 
 
-T = TypeVar("T")
-
-
-class cached(Generic[T]):
-    def __init__(self, handler: Callable[..., T]) -> None:
-        update_wrapper(self, handler)
-        self.handler = handler
-        self.__caches: Dict[Any, Any] = {}
-
-    def __call__(self, *args: Any, **kwargs: Any) -> T:
-        key = tuple([value for value in args] + [value for value in kwargs.values()])
-        if key not in self.__caches:
-            self.__caches[key] = self.handler(*args, **kwargs)
-        return self.__caches[key]
-
-    def clear(self) -> None:
-        self.__caches.clear()
-
-
 class F(partial):
     """
-    example:
-
-        count = [1, 2, 3] | F(sum)
+    Python Pipe. e.g.`range(10) | F(filter, lambda x: x % 2) | F(sum)`
     """
 
     def __ror__(self, other: Any) -> Any:

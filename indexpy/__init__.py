@@ -1,5 +1,5 @@
 from __future__ import annotations
 
-from .applications import Dispatcher, Index
+from .applications import Index
 
-__all__ = ["Index", "Dispatcher"]
+__all__ = ["Index"]

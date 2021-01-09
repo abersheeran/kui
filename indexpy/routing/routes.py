@@ -383,7 +383,7 @@ class FileRoutes(typing.List[BaseRoute]):
 
 
 class Router(RouteRegisterMixin):
-    def __init__(self, routes: typing.List[BaseRoute] = list()) -> None:
+    def __init__(self, routes: typing.List[BaseRoute] = []) -> None:
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
 

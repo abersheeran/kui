@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import operator
 import os
 import typing
-import operator
-from functools import reduce
 from copy import deepcopy
+from functools import reduce
 from typing import Any, Dict, List, Sequence
 
 if typing.TYPE_CHECKING:
@@ -166,8 +166,8 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = self._generate_paths(request.app, definitions)
-        openapi["definitions"] = definitions
+        openapi["paths"] = deepcopy(self._generate_paths(request.app, definitions))
+        openapi["definitions"] = deepcopy(definitions)
         return openapi
 
     @property

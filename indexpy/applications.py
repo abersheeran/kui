@@ -3,7 +3,8 @@ from __future__ import annotations
 import copy
 import inspect
 import traceback
-import typing
+from functools import reduce
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from pydantic.dataclasses import dataclass
 from starlette.middleware import Middleware
@@ -13,26 +14,25 @@ from starlette.websockets import WebSocketClose
 from .http.debug import ServerErrorMiddleware
 from .http.exceptions import ExceptionMiddleware, HTTPException
 from .http.request import Request
-from .http.responses import Response
 from .http.templates import BaseTemplates
 from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
-from .types import ASGIApp, Literal, Message, Receive, Scope, Send
-from .utils import State, cached_property, pass_or_raise
+from .types import ASGIApp, Literal, Receive, Scope, Send
+from .utils import F, Immutable, State
 from .websocket.request import WebSocket
 
 
 class Lifespan:
     def __init__(
         self,
-        on_startup: typing.List[typing.Callable] = None,
-        on_shutdown: typing.List[typing.Callable] = None,
+        on_startup: List[Callable] = None,
+        on_shutdown: List[Callable] = None,
     ) -> None:
-        self.on_startup = on_startup or []
-        self.on_shutdown = on_shutdown or []
+        self.on_startup = Immutable(on_startup or [])
+        self.on_shutdown = Immutable(on_shutdown or [])
 
     def add_event_handler(
-        self, event_type: Literal["startup", "shutdown"], func: typing.Callable
+        self, event_type: Literal["startup", "shutdown"], func: Callable
     ) -> None:
         if event_type == "startup":
             self.on_startup.append(func)
@@ -59,7 +59,7 @@ class Lifespan:
             if inspect.isawaitable(result):
                 await result
 
-    async def lifespan(self, scope: Scope, receive: Receive, send: Send) -> None:
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
         Handle ASGI lifespan messages, which allows us to manage application
         startup and shutdown events.
@@ -84,15 +84,11 @@ class Lifespan:
             raise
         await send({"type": "lifespan.shutdown.complete"})
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        assert scope["type"] == "lifespan"
-        await self.lifespan(scope, receive, send)
-
 
 @dataclass
 class FactoryClass:
-    http: typing.Type[Request] = Request
-    websocket: typing.Type[WebSocket] = WebSocket
+    http: Type[Request] = Request
+    websocket: Type[WebSocket] = WebSocket
 
 
 class Index:
@@ -100,41 +96,33 @@ class Index:
         self,
         *,
         debug: bool = False,
-        templates: typing.Optional[BaseTemplates] = None,
-        on_startup: typing.List[typing.Callable] = [],
-        on_shutdown: typing.List[typing.Callable] = [],
-        routes: typing.List[BaseRoute] = [],
-        middlewares: typing.List[Middleware] = [],
-        exception_handlers: typing.Dict[
-            typing.Union[int, typing.Type[Exception]], typing.Callable
-        ] = {},
+        templates: Optional[BaseTemplates] = None,
+        on_startup: List[Callable] = [],
+        on_shutdown: List[Callable] = [],
+        routes: List[BaseRoute] = [],
+        middlewares: List[Middleware] = [],
+        exception_handlers: Dict[Union[int, Type[Exception]], Callable] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
-        self.__debug = debug
+
+        self.debug = Immutable(debug)
+        self.state = Immutable(State())
         self.factory_class = factory_class
         self.router = Router(routes)
         self.templates = templates
-
-        # Shallow copy list to prevent memory leak.
-        self.lifespan = Lifespan(
-            on_startup=copy.copy(on_startup) + [only_allow.clear],
-            on_shutdown=copy.copy(on_shutdown),
+        self.lifespan = Immutable(
+            Lifespan(
+                on_startup=[only_allow.clear] + copy.copy(on_startup),
+                on_shutdown=copy.copy(on_shutdown),
+            )
         )
-
         self.user_middlewares = copy.copy(middlewares)
         self.exception_handlers = copy.copy(exception_handlers)
 
+        # Initial ASGI application
         self.asgiapp: ASGIApp = self.build_app()
 
-    @property
-    def debug(self) -> bool:
-        return self.__debug
-
-    @cached_property
-    def state(self) -> State:
-        return State()
-
-    def rebuild_app(self) -> None:
+    def rebuild_asgiapp(self) -> None:
         self.asgiapp = self.build_app()
 
     def build_app(self) -> ASGIApp:
@@ -147,46 +135,42 @@ class Index:
             else:
                 exception_handlers[key] = value
 
-        app = self.app
+        application = ExceptionMiddleware(app=self.app, handlers=exception_handlers)
 
-        for cls, options in reversed(
-            [
-                Middleware(
-                    ServerErrorMiddleware, handler=error_handler, debug=self.debug
-                ),
-                *self.user_middlewares,
-                Middleware(ExceptionMiddleware, handlers=exception_handlers),
-            ]
-        ):
-            app = cls(app=app, **options)
-        return app
+        return ServerErrorMiddleware(
+            [F(cls, **options) for cls, options in reversed(self.user_middlewares)]
+            | F(lambda l: [application] + l)
+            | F(reduce, lambda app, middleware: middleware(app)),
+            handler=error_handler,
+            debug=self.debug,
+        )
 
-    def add_middleware(self, middleware_class: type, **options: typing.Any) -> None:
+    def add_middleware(self, middleware_class: type, **options: Any) -> None:
         self.user_middlewares.insert(0, Middleware(middleware_class, **options))
-        self.rebuild_app()
+        self.rebuild_asgiapp()
 
     def add_exception_handler(
         self,
-        exc_class_or_status_code: typing.Union[int, typing.Type[Exception]],
-        handler: typing.Callable,
+        exc_class_or_status_code: Union[int, Type[Exception]],
+        handler: Callable,
     ) -> None:
         self.exception_handlers[exc_class_or_status_code] = handler
-        self.rebuild_app()
+        self.rebuild_asgiapp()
 
     def exception_handler(
-        self, exc_class_or_status_code: typing.Union[int, typing.Type[Exception]]
-    ) -> typing.Callable:
-        def decorator(func: typing.Callable) -> typing.Callable:
+        self, exc_class_or_status_code: Union[int, Type[Exception]]
+    ) -> Callable:
+        def decorator(func: Callable) -> Callable:
             self.add_exception_handler(exc_class_or_status_code, func)
             return func
 
         return decorator
 
-    def on_startup(self, func: typing.Callable) -> typing.Callable:
+    def on_startup(self, func: Callable) -> Callable:
         self.lifespan.add_event_handler("startup", func)
         return func
 
-    def on_shutdown(self, func: typing.Callable) -> typing.Callable:
+    def on_shutdown(self, func: Callable) -> Callable:
         self.lifespan.add_event_handler("shutdown", func)
         return func
 
@@ -197,7 +181,7 @@ class Index:
         if scope["type"] == "lifespan":
             return await self.lifespan(scope, receive, send)
 
-        handler: typing.Optional[ASGIApp] = None
+        handler: Optional[ASGIApp] = None
 
         try:
             path_params, handler = self.router.search(scope["type"], scope["path"])
@@ -216,73 +200,3 @@ class Index:
         scope["app"] = self
 
         await self.asgiapp(scope, receive, send)
-
-
-@dataclass
-class MountApp:
-    prefix: str
-    app: ASGIApp
-    host: typing.Optional[str] = None
-
-
-class Dispatcher:
-    def __init__(
-        self,
-        default_app: ASGIApp,
-        *apps: MountApp,
-        handle404: ASGIApp = Response(b"", 404),
-    ) -> None:
-        self.default_app = default_app
-        for mounted in apps:
-            pass_or_raise(
-                mounted.prefix.startswith("/"),
-                ValueError("prefix must be start with '/'"),
-            )
-            pass_or_raise(
-                not mounted.prefix.endswith("/"),
-                ValueError("prefix can't end with '/'"),
-            )
-        self.apps = apps
-        self.handle404 = handle404
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] in ("http", "websocket"):
-            raw_host: bytes = [kv[1] for kv in scope["headers"] if kv[0] == b"host"][0]
-            host = raw_host.decode("latin1")
-            path = scope["path"]
-            root_path = scope.get("root_path", "")
-            has_received = False
-
-            async def subreceive() -> Message:
-                nonlocal has_received
-                has_received = True
-                return await receive()
-
-            async def subsend(message: Message) -> None:
-                if (
-                    message["type"] == "http.response.start"
-                    and message["status"] == 404
-                ):
-                    raise NoMatchFound()
-                await send(message)
-
-            # Call into a mounted app, if one exists.
-            for mounted in filter(
-                lambda item: (
-                    path.startswith(item.prefix + "/")
-                    and (item.host is None or item.host == host)
-                ),
-                self.apps,
-            ):
-                # This is a bug for mypy, so ignore it.
-                application: ASGIApp = mounted.app  # type: ignore
-                subscope = copy.copy(scope)
-                subscope["path"] = path[len(mounted.prefix) :]
-                subscope["root_path"] = root_path + mounted.prefix
-                try:
-                    return await application(subscope, subreceive, subsend)
-                except NoMatchFound:
-                    if has_received:
-                        return await self.handle404(scope, receive, send)
-
-        await self.default_app(scope, receive, send)

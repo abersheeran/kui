@@ -10,7 +10,6 @@ from starlette.datastructures import FormData
 from indexpy.concurrency import keepasync
 from indexpy.http.exceptions import RequestValidationError
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
-from indexpy.utils import cached
 
 if typing.TYPE_CHECKING:
     from indexpy.http.request import Request
@@ -18,7 +17,7 @@ if typing.TYPE_CHECKING:
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 
-T = typing.TypeVar("T", bound=typing.Callable)
+Callable = typing.TypeVar("Callable", bound=typing.Callable)
 
 
 def create_model_config(title: str = None, description: str = None):
@@ -33,7 +32,7 @@ def create_model_config(title: str = None, description: str = None):
     return ExclusiveModelConfig
 
 
-def parse_params(function: T) -> T:
+def parse_params(function: Callable) -> Callable:
     sig = signature(function)
 
     __parameters__ = {}
@@ -238,6 +237,25 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         return Response(
             headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"}
         )
+
+
+ReturnType = typing.TypeVar("ReturnType")
+
+
+class cached(typing.Generic[ReturnType]):
+    def __init__(self, handler: typing.Callable[..., ReturnType]) -> None:
+        functools.update_wrapper(self, handler)
+        self.handler = handler
+        self.__caches: typing.Dict[typing.Any, typing.Any] = {}
+
+    def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> ReturnType:
+        key = tuple([value for value in args] + [value for value in kwargs.values()])
+        if key not in self.__caches:
+            self.__caches[key] = self.handler(*args, **kwargs)
+        return self.__caches[key]
+
+    def clear(self) -> None:
+        self.__caches.clear()
 
 
 @cached
