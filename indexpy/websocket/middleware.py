@@ -7,7 +7,7 @@ from indexpy.concurrency import keepasync
 if typing.TYPE_CHECKING:
     from .request import WebSocket
 
-MiddlewareMeta = keepasync("before_accept", "after_close")
+MiddlewareMeta = keepasync("before_accept", "after_close", "catch_error")
 
 
 class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
@@ -24,7 +24,10 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
 
     async def __call__(self, websocket: WebSocket) -> None:
         await self.before_accept(websocket)
-        await self.websocket_handler(websocket)
+        try:
+            await self.websocket_handler(websocket)
+        except Exception as exc:
+            await self.catch_error(websocket, exc)
         await self.after_close(websocket)
 
     async def before_accept(self, websocket: WebSocket) -> None:
@@ -35,4 +38,9 @@ class MiddlewareMixin(metaclass=MiddlewareMeta):  # type: ignore
     async def after_close(self, websocket: WebSocket) -> None:
         """
         Called after the websocket handler has finished processing
+        """
+
+    async def catch_error(self, websocket: WebSocket, exception: Exception) -> None:
+        """
+        Called after the websocket handler raise Exception
         """
