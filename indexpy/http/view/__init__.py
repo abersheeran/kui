@@ -227,16 +227,11 @@ class HTTPView(metaclass=ViewMeta):  # type: ignore
         return await handler()
 
     async def http_method_not_allowed(self) -> Response:
-        return Response(
-            status_code=405,
-            headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"},
-        )
+        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
 
     async def options(self) -> Response:
         """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(
-            headers={"Allow": ", ".join(self.__methods__), "Content-Length": "0"}
-        )
+        return Response(headers={"Allow": ", ".join(self.__methods__)})
 
 
 ReturnType = typing.TypeVar("ReturnType")
@@ -289,9 +284,9 @@ def only_allow(
             return await handler(*args, **kwargs)
 
         if request.method == "OPTIONS":
-            return Response(headers={"Allow": method, "Content-Length": "0"})
+            return Response(headers={"Allow": method})
 
-        return Response(status_code=405)
+        return Response(status_code=405, headers={"Allow": method})
 
     setattr(wrapper, "__method__", method.upper())
     return wrapper
