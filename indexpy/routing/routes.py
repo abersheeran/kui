@@ -5,14 +5,14 @@ import importlib
 import os
 import typing
 from dataclasses import InitVar, asdict, dataclass
-from functools import update_wrapper
+from functools import update_wrapper, reduce
 from pathlib import Path
 
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
 from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
-from indexpy.utils import superclass
+from indexpy.utils import superclass, F
 
 from .convertors import compile_path
 from .tree import RadixTree
@@ -342,6 +342,14 @@ class FileRoutes(typing.List[BaseRoute]):
         ).parent
         assert dirpath.name == module_name
 
+        self.namespace = namespace
+
+        get_http_middleware = lambda module: getattr(module, "HTTPMiddleware", None)
+        get_socket_middleware = lambda module: getattr(module, "SocketMiddleware", None)
+        wrap_middleware = lambda handler, middleware: update_wrapper(
+            middleware(handler), handler
+        )
+
         for pypath in dirpath.glob("**/*.py"):
             relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
 
@@ -349,8 +357,10 @@ class FileRoutes(typing.List[BaseRoute]):
             path_list.insert(0, module_name)
 
             url_path = "/" + relpath
+
             if not allow_underline:
                 url_path = url_path.replace("_", "-")
+
             if url_path.endswith("/index"):
                 url_path = url_path[: -len("index")]
             else:
@@ -360,26 +370,33 @@ class FileRoutes(typing.List[BaseRoute]):
             url_name = getattr(module, "name", None)
             get_response = getattr(module, "HTTP", None)
             serve_socket = getattr(module, "Socket", None)
+
+            import_module = lambda deep: importlib.import_module(
+                ".".join(path_list[:deep])
+            )
+
             if get_response:
-                _get_response = get_response
-                for deep in range(len(path_list), 0, -1):
-                    _module = importlib.import_module(".".join(path_list[:deep]))
-                    if not hasattr(_module, "HTTPMiddleware"):
-                        continue
-                    get_response = getattr(_module, "HTTPMiddleware")(get_response)
-                update_wrapper(get_response, _get_response)
+                get_response = (
+                    range(len(path_list), 0, -1)
+                    | F(map, import_module)
+                    | F(map, get_http_middleware)
+                    | F(filter, lambda x: bool(x))
+                    | F(list)
+                    | F(lambda l: [get_response] + l)
+                    | F(reduce, wrap_middleware)
+                )
                 self.append(HttpRoute(url_path, get_response, url_name))
             if serve_socket:
-                _serve_socket = serve_socket
-                for deep in range(len(path_list), 0, -1):
-                    _module = importlib.import_module(".".join(path_list[:deep]))
-                    if not hasattr(_module, "SocketMiddleware"):
-                        continue
-                    serve_socket = getattr(_module, "SocketMiddleware")(serve_socket)
-                update_wrapper(serve_socket, _serve_socket)
+                serve_socket = (
+                    range(len(path_list), 0, -1)
+                    | F(map, import_module)
+                    | F(map, get_socket_middleware)
+                    | F(filter, lambda x: bool(x))
+                    | F(list)
+                    | F(lambda l: [serve_socket] + l)
+                    | F(reduce, wrap_middleware)
+                )
                 self.append(SocketRoute(url_path, serve_socket, url_name))
-
-        self.namespace = namespace
 
 
 class Router(RouteRegisterMixin):
