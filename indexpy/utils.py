@@ -153,9 +153,19 @@ class State(dict):
 class F(partial):
     """
     Python Pipe. e.g.`range(10) | F(filter, lambda x: x % 2) | F(sum)`
+
+    WRANING: There will be a small performance loss when building a
+    pipeline. Please do not use it in performance-sensitive locations.
     """
 
     def __ror__(self, other: Any) -> Any:
+        """
+        Implement pipeline operators `var | F(...)`
+        """
         if isinstance(other, tuple):
+            # This is to be able to accept such multi-parameter return
+            # values such as `return "hi", "pipe"` to be correctly mapped
+            # to multi-parameter functions.
             return self(*other)
+        # Naively call the curried function
         return self(other)
