@@ -7,7 +7,7 @@ import os
 import threading
 from functools import partial, update_wrapper
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -64,28 +64,6 @@ else:
                 result = asyncio.ensure_future(result)
             value = obj.__dict__[self.func.__name__] = result
             return value
-
-
-class ImmutableAttribute(Generic[T]):
-    """
-    Make an instance attribute immutable
-    """
-
-    def __init__(self, value: T) -> None:
-        self.__value = value
-
-    def __get__(self, object: Any, object_class: Any = None) -> T:
-        return self.__value
-
-    def __set__(self, object: Any, value: Any) -> None:
-        raise RuntimeError("Cannot modify immutable attribute")
-
-    def __delete__(self, object: Any) -> None:
-        raise RuntimeError("Cannot delete immutable attribute")
-
-
-def Immutable(value: T) -> T:
-    return ImmutableAttribute(value)  # type: ignore
 
 
 class superclass:

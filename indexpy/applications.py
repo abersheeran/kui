@@ -18,7 +18,7 @@ from .http.templates import BaseTemplates
 from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .types import ASGIApp, Literal, Receive, Scope, Send
-from .utils import F, Immutable, State
+from .utils import F, State, cached_property
 from .websocket.request import WebSocket
 
 
@@ -28,8 +28,8 @@ class Lifespan:
         on_startup: List[Callable] = None,
         on_shutdown: List[Callable] = None,
     ) -> None:
-        self.on_startup = Immutable(on_startup or [])
-        self.on_shutdown = Immutable(on_shutdown or [])
+        self.on_startup = on_startup or []
+        self.on_shutdown = on_shutdown or []
 
     def add_event_handler(
         self, event_type: Literal["startup", "shutdown"], func: Callable
@@ -105,22 +105,27 @@ class Index:
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
 
-        self.debug = Immutable(debug)
-        self.state = Immutable(State())
+        self.__debug = debug
         self.factory_class = factory_class
         self.router = Router(routes)
         self.templates = templates
-        self.lifespan = Immutable(
-            Lifespan(
-                on_startup=[only_allow.clear] + copy.copy(on_startup),
-                on_shutdown=copy.copy(on_shutdown),
-            )
+        self.lifespan = Lifespan(
+            on_startup=[only_allow.clear] + copy.copy(on_startup),
+            on_shutdown=copy.copy(on_shutdown),
         )
         self.user_middlewares = copy.copy(middlewares)
         self.exception_handlers = copy.copy(exception_handlers)
 
         # Initial ASGI application
         self.asgiapp: ASGIApp = self.build_app()
+
+    @property
+    def debug(self) -> bool:
+        return self.__debug
+
+    @cached_property
+    def state(self) -> State:
+        return State()
 
     def rebuild_asgiapp(self) -> None:
         self.asgiapp = self.build_app()
