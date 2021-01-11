@@ -11,7 +11,6 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .conf import ConfigError, serve_config
 from .utils import import_module
 
 
@@ -48,12 +47,13 @@ except ImportError:
 else:
 
     @click.command(help="use uvicorn to run Index.py application")
-    @click.argument("application", default=lambda: serve_config.APP)
+    @click.option("")
+    @click.argument("application")
     def uvicorn_cli(application):
         sys.path.insert(0, os.getcwd())
 
-        if serve_config.BIND.startswith("unix:"):
-            unix_path = serve_config.BIND[5:]
+        if BIND.startswith("unix:"):
+            unix_path = BIND[5:]
             bind_config = {
                 "uds": os.path.abspath(
                     os.path.normpath(
@@ -63,27 +63,27 @@ else:
                     )
                 )
             }
-            if serve_config.AUTORELOAD:
+            if AUTORELOAD:
                 click.secho(
                     "Reload option doesnt work with unix sockets in uvicorn: https://github.com/encode/uvicorn/issues/722",
                     fg="yellow",
                 )
-        elif serve_config.BIND.startswith("fd://"):
+        elif BIND.startswith("fd://"):
             raise ConfigError("Unsupport bind fd:// when using `index-cli uvicorn`")
         else:
-            if ":" in serve_config.BIND:
-                host, port = serve_config.BIND.split(":")
+            if ":" in BIND:
+                host, port = BIND.split(":")
                 bind_config = {"host": host, "port": int(port)}
             else:
-                bind_config = {"host": serve_config.BIND}
+                bind_config = {"host": BIND}
 
         uvicorn.run(
             application,
             **bind_config,
-            log_level=serve_config.LOG_LEVEL,
+            log_level=LOG_LEVEL,
             interface="asgi3",
             lifespan="on",
-            reload=serve_config.AUTORELOAD,
+            reload=AUTORELOAD,
         )
 
     index_cli.add_command(uvicorn_cli, "uvicorn")
@@ -123,21 +123,21 @@ else:
         "-c",
         type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     )
-    @click.argument("application", default=lambda: serve_config.APP)
+    @click.argument("application")
     def start(workers, worker_class, daemon, configuration, application):
         command = (
             "gunicorn"
             + f" -k {worker_class}"
-            + f" --bind {serve_config.BIND}"
+            + f" --bind {BIND}"
             + f" --chdir {os.getcwd()}"
             + f" --workers {workers}"
             + f" --pid {MASTER_PID_FILE}"
-            + f" --log-level {serve_config.LOG_LEVEL}"
+            + f" --log-level {LOG_LEVEL}"
         )
         args = command.split(" ")
         if daemon:
-            args.extend("-D --log-file log.index".split(" "))
-        if serve_config.AUTORELOAD:
+            args.extend("-D --log-file run.log".split(" "))
+        if AUTORELOAD:
             args.append("--reload")
         if configuration:
             args.append("-c")

@@ -5,7 +5,6 @@ import functools
 import json
 import typing
 
-import yaml
 from starlette.responses import (
     FileResponse,
     HTMLResponse,
@@ -27,7 +26,6 @@ __all__ = [
     "HTMLResponse",
     "PlainTextResponse",
     "JSONResponse",
-    "YAMLResponse",
     "RedirectResponse",
     "StreamingResponse",
     "FileResponse",
@@ -71,13 +69,6 @@ class JSONResponse(Response):
             separators=(",", ":"),
             default=self.json_convert,
         ).encode("utf-8")
-
-
-class YAMLResponse(Response):
-    media_type = "text/yaml"
-
-    def render(self, content: typing.Any) -> bytes:
-        return yaml.dump(content, indent=2, allow_unicode=True).encode("utf8")
 
 
 class ServerSendEventResponse(Response):

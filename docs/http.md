@@ -135,7 +135,7 @@ class Cat(HTTPView):
 
 - `await request.json`：将 `body` 作为 JSON 字符串解析并返回结果。
 
-- `await request.data`：将 `body` 根据 `content_type` 提供的信息进行解析。
+- `await request.data`：将 `body` 根据 `content_type` 提供的信息进行解析并返回。
 
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
@@ -391,12 +391,6 @@ async def homepage(request):
 #### 其他模板引擎
 
 通过继承 `indexpy.http.templates.BaseTemplates` 并实现 `TemplateResponse` 方法，你可以实现自己的模板引擎类。
-
-### YAMLResponse
-
-YAMLResponse 与 JSONResponse 的使用方法相同。
-
-唯一不同的是，一个返回 YAML 格式，一个返回 JSON 格式。
 
 ### ServerSendEventResponse
 

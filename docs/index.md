@@ -40,4 +40,3 @@ Index.py 并不是一个全然从零开始的框架，它有许多部分依赖�
 - [Pydantic](https://pydantic-docs.helpmanual.io/)：为自动生成 OpenAPI 文档以及请求参数解析提供了支持。
 - [Python-multipart](https://github.com/andrew-d/python-multipart)：为流式上传文件提供了支持。
 - [Click](https://click.palletsprojects.com/en/7.x/)：为 `index-cli` 命令提供支持。
-- [PyYAML](https://github.com/yaml/pyyaml)：为 YAMLResponse 以及配置文件读取提供了 yaml 的读写支持。
