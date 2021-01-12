@@ -23,9 +23,6 @@ nav:
   - OpenAPI: "openapi.md"
   - Background Task: "background.md"
   - Command: "command.md"
-  - Configuration:
-    - Introduction: "config/index.md"
-    - Built-in List: "config/list.md"
 
 markdown_extensions:
   - markdown.extensions.codehilite:
