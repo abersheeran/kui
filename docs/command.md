@@ -1,6 +1,6 @@
 ## 内置命令
 
-Index 内置了一些命令方便使用。
+Index-py 内置了一些命令方便使用。
 
 ### index-cli
 
@@ -11,7 +11,29 @@ Index 内置了一些命令方便使用。
 !!! notice
     此命令需要安装 [uvicorn](https://www.uvicorn.org/)。
 
-使用 uvicorn 启动 Index，例如 `index-cli uvicorn main:app`。
+```bash
+❯ index-cli uvicorn --help
+Usage: index-cli uvicorn [OPTIONS] APPLICATION
+
+  use uvicorn to run Index.py application
+
+Options:
+  --bind TEXT                     [default: 127.0.0.1:4190]
+  --autoreload / --no-autoreload  [default: True]
+  --log-level [critical|error|warning|info|debug]
+                                  [default: info]
+  --help                          Show this message and exit.
+```
+
+此命令可以便捷的使用 Uvicorn 启动 Index-py 项目。例如：`index-cli uvicorn main:app`。
+
+有三个选项可以使用：
+
+- `--bind`：指定绑定的地址，例如："0.0.0.0:80"、"unix:./uvicorn.sock"
+
+- `--autoreload / --no-autoreload`：指定 Python 文件变更时，是否自动重启服务。
+
+- `--log-level`：指定输出日志的最低等级。
 
 ### index-cli gunicorn
 
@@ -23,36 +45,43 @@ Index 内置了一些命令方便使用。
 通过 gunicorn 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 `uvicorn` 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。例如 `index-cli gunicorn start main:app`。
 
 ```
-❯ index-cli gunicorn --help
-Usage: index-cli gunicorn start [OPTIONS] [APPLICATION]
+❯ index-cli gunicorn start --help
+Usage: index-cli gunicorn start [OPTIONS] APPLICATION
 
   Run gunicorn
 
 Options:
+  --bind TEXT                     [default: 127.0.0.1:4190]
+  --autoreload / --no-autoreload  [default: False]
+  --log-level [critical|error|warning|info|debug]
+                                  [default: info]
   -w, --workers INTEGER
-  -k, --worker-class TEXT
-  -d, --daemon
+  -d, --daemon                    [default: False]
   -c, --configuration FILE
-  --help
+  --help                          Show this message and exit.
 ```
 
-你可以通过 `--workers` 选项指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。
+- `--bind`：指定绑定的地址，例如："0.0.0.0:80"、"unix:./uvicorn.sock"
 
-你可以通过 `--worker-class` 选项指定启动的 Worker Class，它默认使用 `uvicorn.workers.UvicornWorker`。
+- `--autoreload / --no-autoreload`：指定 Python 文件变更时，是否自动重启服务。
 
-如果使用了 `--daemon` 选项，Index 将在后台运行，运行日志写入项目根目录下的 `log.index` 里。
+- `--log-level`：指定输出日志的最低等级。
+
+- `--workers`：指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。
+
+如果使用了 `--daemon` 选项，Index-py 将在后台运行，运行日志写入项目根目录下的 `run.log` 里。
 
 假如你需要编写更多的 gunicorn 配置，可以使用 `-c` 来指定一个 `.py` 作为配置文件。具体配置详见 [gunicorn 文档](http://docs.gunicorn.org/en/latest/configure.html#configuration-file)。
 
 #### `index-cli gunicorn stop`
 
-当你使用 `index-cli gunicorn start` 在启动了 Index 时，可以在项目根目录下执行此命令去停止 Index。
+当你使用 `index-cli gunicorn start` 在启动了 Index-py 时，可以在项目根目录下执行此命令去停止 Index。
 
-你想强行
+你想强行停止，而不等待现存的所有请求结束之后再停止，则可以使用 `--force-stop` 选项。
 
 #### `index-cli gunicorn restart`
 
-当你使用 `index-cli gunicorn start` 在启动了 Index 时，可以在项目根目录下执行此命令去重启 Index。
+当你使用 `index-cli gunicorn start` 在启动了 Index-py 时，可以在项目根目录下执行此命令去重启 Index。
 
 #### `index-cli gunicorn reload`
 
@@ -70,7 +99,7 @@ Options:
 
 ## 自定义命令
 
-Index 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令支持。
+Index-py 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令支持。
 
 所以如果需要自定义命令，你只需要在项目根目录下新建一个 `commands.py` 文件，在其中按照 click 的规则编写自己的命令。
 

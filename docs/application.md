@@ -17,11 +17,11 @@
 
 - **`routes: List[BaseRoute] = []`**：路由列表。
 
-- **`middlewares: List[Middleware] = []`**：挂载于 Index 对象上 ASGI 中间件列表。
+- **`middlewares: List[Middleware] = []`**：挂载于 Index-py 对象上 ASGI 中间件列表。
 
 - **`exception_handlers = {}`**：处理异常的函数字典。键为 `int` 或 `Exception` 实例，值为对应的函数（定义可参考[自定义异常处理](./http.md#_8)）。
 
-- **`factory_class: FactoryClass`**：通过覆盖此参数，可以自定义整个 Index 作用域中使用的 `Request` 类与 `WebSocket` 类。
+- **`factory_class: FactoryClass`**：通过覆盖此参数，可以自定义整个 Index-py 作用域中使用的 `Request` 类与 `WebSocket` 类。
 
 ### `router`
 

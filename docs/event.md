@@ -1,7 +1,7 @@
-Index 允许注册若干个事件处理程序，以处理在应用程序启动之前或关闭时需要运行的代码。
+Index-py 允许注册若干个事件处理程序，以处理在应用程序启动之前或关闭时需要运行的代码。
 
-* `on_startup`: Index 启动之前运行的函数
-* `on_shutdown`: Index 关闭之前运行的函数
+* `on_startup`: Index-py 启动之前运行的函数
+* `on_shutdown`: Index-py 关闭之前运行的函数
 
 ## 注册事件
 

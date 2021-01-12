@@ -371,7 +371,7 @@ async def app(scope, receive, send):
 
 #### Jinja2 模板引擎
 
-Index 内置了对 Jinja2 模板的支持，只要你安装了 `jinja2` 模块，就能从 `indexpy.http.templates` 中导出 `Jinja2Templates`。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。
+Index-py 内置了对 Jinja2 模板的支持，只要你安装了 `jinja2` 模块，就能从 `indexpy.http.templates` 中导出 `Jinja2Templates`。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。
 
 ```python
 from indexpy import Index
@@ -422,12 +422,12 @@ async def message(request):
 
 ### 响应的简化写法
 
-为了方便使用，Index 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
+为了方便使用，Index-py 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
 
 !!! tip
     如果需要手动把函数的返回值转换为 `Response` 对象，则可以使用 `indexpy.http.responses.convert`。
 
-Index 内置了三个处理函数用于处理六种类型：
+Index-py 内置了三个处理函数用于处理六种类型：
 
 ```python
 @automatic.register(type(None))
@@ -507,7 +507,7 @@ def _more_json(body: dict, status: int = 200, headers: dict = None) -> Response:
 
 其参数签名是：`HTTPException(status_code: int, content: typing.Any = None, headers: dict = None, media_type: str = None)`
 
-你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index 知道该如何将它变成一个普通的响应对象）。如果你没有给出 `content`，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为值。
+你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 知道该如何将它变成一个普通的响应对象）。如果你没有给出 `content`，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为值。
 
 ```python
 from indexpy.http import HTTPException
@@ -521,9 +521,9 @@ async def exc(request):
 
 ## 自定义异常处理
 
-对于一些故意抛出的异常，Index 提供了方法进行统一处理。
+对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。
 
-你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index 会使用你定义的函数而不是默认行为。
+你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index-py 会使用你定义的函数而不是默认行为。
 
 你也可以捕捉其他继承自 `Exception` 的异常，通过自定义函数，返回指定的内容给客户端。
 

@@ -1,8 +1,8 @@
-Index 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。
+Index-py 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。
 
 ## 显示 OpenAPI 文档
 
-将 `indexpy.openapi.application.OpenAPI` 挂载进 index 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
+将 `indexpy.openapi.application.OpenAPI` 挂载进 Index-py 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
 
 ```python
 from indexpy import Index
@@ -79,7 +79,7 @@ async def getlist(request, query: PageQuery = Exclusive("query")):
 
 ### 描述响应结果
 
-为了描述不同状态码的响应结果，Index 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
+为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
 
 其中，`content` 既可以使用类型对象或 `pydantic.BaseModel` 的派生子类描述响应，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
 
@@ -156,7 +156,7 @@ def judge_jwt(endpoint):
 
 ## Tags
 
-OpenAPI 的 Tags 是一个有用的功能，在 Index 里，你可以通过如下方式来指定 URL 的分类标签。
+OpenAPI 的 Tags 是一个有用的功能，在 Index-py 里，你可以通过如下方式来指定 URL 的分类标签。
 
 `tags` 参数必须是一个 `dict` 类型，键为标签名。值需要包含 `description`，用于描述此标签；`paths` 是 URL 列表，如果 URL 包含路径参数，直接使用不带 `:type` 的字符串即可。
 
