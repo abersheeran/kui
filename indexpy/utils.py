@@ -140,10 +140,4 @@ class F(partial):
         """
         Implement pipeline operators `var | F(...)`
         """
-        if isinstance(other, tuple):
-            # This is to be able to accept such multi-parameter return
-            # values such as `return "hi", "pipe"` to be correctly mapped
-            # to multi-parameter functions.
-            return self(*other)
-        # Naively call the curried function
         return self(other)
