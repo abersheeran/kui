@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from indexpy.http.responses import Response
 
 from indexpy.http.exceptions import RequestValidationError
-from indexpy.http.responses import HTMLResponse, JSONResponse, YAMLResponse
+from indexpy.http.responses import HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute
 from indexpy.types import Literal, TypedDict
 from indexpy.utils import F
@@ -34,7 +34,6 @@ class OpenAPI:
         tags: Dict[str, Tag] = {},
         template_name: Literal["redoc", "swagger"] = "swagger",
         template: str = "",
-        media_type: Literal["yaml", "json"] = "yaml",
     ) -> None:
         if template == "":
             with open(
@@ -46,7 +45,6 @@ class OpenAPI:
                 template = file.read()
 
         self.html_template = template
-        self.media_type = media_type
 
         info = {"title": title, "description": description, "version": version}
         self.openapi = {
@@ -177,11 +175,7 @@ class OpenAPI:
 
         async def docs(request: Request) -> Response:
             openapi = self.create_docs(request)
-            media_type = request.query_params.get("type", self.media_type)
-
-            if media_type == "json":
-                return JSONResponse(openapi)
-            return YAMLResponse(openapi)
+            return JSONResponse(openapi)
 
         return [
             HttpRoute("/", template, method="get"),

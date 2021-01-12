@@ -1,10 +1,10 @@
-Index 的路由基于 [Radix Tree](https://en.wikipedia.org/wiki/Radix_tree)。
+Index-py 的路由基于 [Radix Tree](https://en.wikipedia.org/wiki/Radix_tree)。
 
 ## 基本用法
 
 ### 装饰器注册
 
-与 bottle/flask 之类的框架一样，Index 支持使用装饰器注册路由。下面的例子里，`name` 是路由名称，这在反向查找路由时会起到作用。
+与 bottle/flask 之类的框架一样，Index-py 支持使用装饰器注册路由。下面的例子里，`name` 是路由名称，这在反向查找路由时会起到作用。
 
 ```python
 from indexpy import Index
@@ -104,7 +104,7 @@ ASGIRoute(path: str, endpoint: Any, name: Optional[str] = "", type: typing.Conta
 
 ### 列表式注册
 
-Index 同样支持类似于 Django 的列表式写法：
+Index-py 同样支持类似于 Django 的列表式写法：
 
 ```python
 from indexpy import Index
@@ -338,7 +338,7 @@ Routes(
 
 > 当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。
 
-Index 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。
+Index-py 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index-py 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。
 
 ```python
 Routes(

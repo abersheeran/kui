@@ -1,6 +1,6 @@
 在传统的多线程 web 开发里，要正常的启动一个后台任务是十分困难的，想想线程安全和变量作用域之类的事情。饶是你经验丰富，解决这些问题依旧是痛苦的。
 
-在 Index 中你只需要一些 [`asyncio`](https://docs.python.org/3/library/asyncio.html) 的知识就可以做到轻松的启动后台任务。
+在 Index-py 中你只需要一些 [`asyncio`](https://docs.python.org/3/library/asyncio.html) 的知识就可以做到轻松的启动后台任务。
 
 ## 单一后台任务
 

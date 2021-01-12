@@ -1,4 +1,4 @@
-在了解 Index 的中间件注册方式之前，先看看本框架的中间件设计思路——每个中间件都是给 `endpoint` 的装饰器。事实上，Index 的中间都会在路由展开时以装饰器相同的方式层层包裹最终的 `endpoint`。如果你愿意手动为每个 `endpoint` 加上装饰器，那么你也可以不需要使用 Index 中间件。
+在了解 Index-py 的中间件注册方式之前，先看看本框架的中间件设计思路——每个中间件都是给 `endpoint` 的装饰器。事实上，Index-py 的中间都会在路由展开时以装饰器相同的方式层层包裹最终的 `endpoint`。如果你愿意手动为每个 `endpoint` 加上装饰器，那么你也可以不需要使用 Index-py 中间件。
 
 ## HTTP 中间件
 
@@ -103,9 +103,9 @@ def middleware(endpoint):
 
 ## ASGI 中间件
 
-在 Index 中，定义并使用 ASGI 中间件的方式有两种，一种是与 Starlette 相同的注册方式，将 ASGI 中间件注册给 Index 对象；另一种是将 ASGI 中间件注册给指定的 [`ASGIRoute`](./route.md#asgiroute)。这两种 ASGI 中间件的定义方法不同，使用方法不同，作用范围也不同。
+在 Index-py 中，定义并使用 ASGI 中间件的方式有两种，一种是与 Starlette 相同的注册方式，将 ASGI 中间件注册给 Index-py 对象；另一种是将 ASGI 中间件注册给指定的 [`ASGIRoute`](./route.md#asgiroute)。这两种 ASGI 中间件的定义方法不同，使用方法不同，作用范围也不同。
 
-### 附加给 Index 对象的 ASGI 中间件
+### 附加给 Index-py 对象的 ASGI 中间件
 
 就像[ Starlette 文档](https://www.starlette.io/middleware/)里的中间件一样，这一类的中间件定义，它的 `__init__` 签名必须为 `(self, app: ASGIApp, *args: Any, **kwargs: Any)`，`__call__` 必须是一个标准的 ASGI 接口。注册方式类似于如下代码：
 
