@@ -142,7 +142,6 @@ else:
     @click.argument("application")
     def start(
         workers: int,
-        worker_class: str,
         daemon: bool,
         configuration: str,
         application: str,
