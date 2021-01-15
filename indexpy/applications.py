@@ -143,9 +143,11 @@ class Index:
         application = ExceptionMiddleware(app=self.app, handlers=exception_handlers)
 
         return ServerErrorMiddleware(
-            [F(cls, **options) for cls, options in reversed(self.user_middlewares)]
-            | F(lambda l: [application] + l)
-            | F(reduce, lambda app, middleware: middleware(app)),
+            app=reduce(
+                lambda app, middleware: middleware(app),
+                [F(cls, **options) for cls, options in reversed(self.user_middlewares)],
+                application,
+            ),
             handler=error_handler,
             debug=self.debug,
         )

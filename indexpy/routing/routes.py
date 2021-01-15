@@ -376,25 +376,23 @@ class FileRoutes(typing.List[BaseRoute]):
             )
 
             if get_response:
-                get_response = (
+                get_response = reduce(
+                    wrap_middleware,
                     range(len(path_list), 0, -1)
                     | F(map, import_module)
                     | F(map, get_http_middleware)
-                    | F(filter, lambda x: bool(x))
-                    | F(list)
-                    | F(lambda l: [get_response] + l)
-                    | F(reduce, wrap_middleware)
+                    | F(filter, lambda x: bool(x)),
+                    get_response,
                 )
                 self.append(HttpRoute(url_path, get_response, url_name))
             if serve_socket:
-                serve_socket = (
+                serve_socket = reduce(
+                    wrap_middleware,
                     range(len(path_list), 0, -1)
                     | F(map, import_module)
                     | F(map, get_socket_middleware)
-                    | F(filter, lambda x: bool(x))
-                    | F(list)
-                    | F(lambda l: [serve_socket] + l)
-                    | F(reduce, wrap_middleware)
+                    | F(filter, lambda x: bool(x)),
+                    serve_socket,
                 )
                 self.append(SocketRoute(url_path, serve_socket, url_name))
 
