@@ -15,6 +15,7 @@ theme:
 
 nav:
   - 概览: "index.md"
+  - Application: application.md
   - Route: route.md
   - HTTP: "http.md"
   - WebSocket: "websocket.md"
