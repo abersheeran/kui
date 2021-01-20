@@ -96,6 +96,10 @@ class Cat(HTTPView):
 
 通过调用 `request.accepts` 函数你可以判断客户端接受什么样的响应类型。例如：`request.accepts("text/html")`。
 
+#### Content Type
+
+你可以使用 `request.content_type == "application/json"` 之类的语句来判断请求类型是否满足条件。不必考虑现实中的 HTTP 请求头 `Content-Type: application/json; charset=utf-8` 尾部的 `; charset=utf-8` 会影响判断的准确性，这类选项会被以字典形式解析到 `request.content_type.options`。
+
 ### Query Parameters
 
 `request.query_params` 是一个不可变的多值字典(multi-dict)。
@@ -520,9 +524,7 @@ async def exc(request):
 
 对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。
 
-你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index-py 会使用你定义的函数而不是默认行为。
-
-你也可以捕捉其他继承自 `Exception` 的异常，通过自定义函数，返回指定的内容给客户端。
+你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index-py 会使用你定义的函数而不是默认行为。你也可以捕捉其他继承自 `Exception` 的异常，通过自定义函数，返回指定的内容给客户端。
 
 ```python
 from indexpy import Index
@@ -540,6 +542,28 @@ def not_found(request: Request, exc: HTTPException) -> Response:
 @app.exception_handler(ValueError)
 def value_error(request: Request, exc: ValueError) -> Response:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
+```
+
+除了装饰器注册，你同样可以使用列表式的注册方式，下例与上例等价：
+
+```python
+from indexpy import Index
+from indexpy.http import HTTPException, Request
+from indexpy.http.responses import Response, PlainTextResponse
+
+
+def not_found(request: Request, exc: HTTPException) -> Response:
+    return PlainTextResponse("what do you want to do?", status_code=404)
+
+
+def value_error(request: Request, exc: ValueError) -> Response:
+    return PlainTextResponse("Something went wrong with the server.", status_code=500)
+
+
+app = Index(exception_handlers={
+    404: not_found,
+    ValueError: value_error,
+})
 ```
 
 !!! warning
