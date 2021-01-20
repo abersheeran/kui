@@ -54,6 +54,21 @@ def test_request_headers():
     }
 
 
+def test_request_content_type():
+    async def app(scope, receive, send):
+        request = Request(scope, receive)
+        assert request.content_type.options == {"charset": "utf-8"}
+        response = JSONResponse({"content-type": str(request.content_type)})
+        await response(scope, receive, send)
+
+    client = TestClient(app)
+    response = client.post(
+        "/",
+        headers={"content-type": "application/x-www-form-urlencoded; charset=utf-8"},
+    )
+    assert response.json() == {"content-type": "application/x-www-form-urlencoded"}
+
+
 def test_request_client():
     async def app(scope, receive, send):
         request = Request(scope, receive)
