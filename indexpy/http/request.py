@@ -275,7 +275,7 @@ class Request(HTTPConnection):
 
     async def data(self) -> typing.Any:
         content_type = self.content_type
-        if content_type == b"application/json":
+        if content_type == "application/json":
             return await self.json
         elif str(content_type) in (
             "multipart/form-data",
