@@ -71,12 +71,16 @@ Write the following code to the `main.py` file, use `pip install index.py uvicor
 
 ```python
 from indexpy import Index
+from indexpy.routing import HttpRoute
 
 
-app = Index()
-
-
-@app.router.http("/", method="get")
 async def homepage(request):
     return "hello, index.py"
+
+
+app = Index(
+    routes=[
+        HttpRoute("/", homepage, method="get"),
+    ]
+)
 ```

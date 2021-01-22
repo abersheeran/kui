@@ -78,12 +78,16 @@ pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
 
 ```python
 from indexpy import Index
+from indexpy.routing import HttpRoute
 
 
-app = Index()
-
-
-@app.router.http("/", method="get")
 async def homepage(request):
     return "hello, index.py"
+
+
+app = Index(
+    routes=[
+        HttpRoute("/", homepage, method="get"),
+    ]
+)
 ```
