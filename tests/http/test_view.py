@@ -10,6 +10,10 @@ from indexpy.http import Exclusive, HTTPView, Path
 def app():
     app = Index()
 
+    @app.router.http("/", method="get")
+    def homepage(request):
+        return ""
+
     class Name(BaseModel):
         name: str = None
 
@@ -35,3 +39,9 @@ def test_HTTPView(app):
     assert client.get("/cat/aoliao").text == "GET aoliao"
     assert client.post("/cat").text == "POST"
     assert client.post("/cat/aoliao").text == "POST aoliao"
+
+
+def test_function_view(app):
+    client = TestClient(app)
+    assert client.get("/").text == ""
+    assert client.post("/").status_code == 405

@@ -11,7 +11,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .utils import import_module, F
+from .utils import F, import_module
 
 
 def execute(command: Union[List[str], str]) -> int:

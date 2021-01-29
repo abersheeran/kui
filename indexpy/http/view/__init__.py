@@ -9,11 +9,11 @@ from starlette.datastructures import FormData
 
 from indexpy.concurrency import keepasync
 from indexpy.http.exceptions import RequestValidationError
+from indexpy.http.responses import Response
 from indexpy.types import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
 
 if typing.TYPE_CHECKING:
     from indexpy.http.request import Request
-    from indexpy.http.responses import Response
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 

@@ -5,14 +5,14 @@ import importlib
 import os
 import typing
 from dataclasses import InitVar, asdict, dataclass
-from functools import update_wrapper, reduce
+from functools import reduce, update_wrapper
 from pathlib import Path
 
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
 from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
-from indexpy.utils import superclass, F
+from indexpy.utils import F, superclass
 
 from .convertors import compile_path
 from .tree import RadixTree
