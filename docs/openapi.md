@@ -2,7 +2,7 @@ Index-py 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松
 
 ## 显示 OpenAPI 文档
 
-将 `indexpy.openapi.application.OpenAPI` 挂载进 Index-py 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
+将 `indexpy.openapi.application.OpenAPI` 挂载进 Index-py 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。当然，如果你不需要生成文档，仅仅只需要自动校验参数功能，这一步可以跳过。
 
 ```python
 from indexpy import Index
@@ -24,17 +24,40 @@ app.router.extend(
 
 不仅如此，你还可以通过使用 `template` 参数来控制显示自己的喜欢的任何模板，只需要把模板的完整内容作为字符串传给 `template` 参数即可。
 
+### API Tags
+
+OpenAPI 的 Tags 是一个有用的功能，在 Index-py 里，你可以通过如下方式来指定 URL 的分类标签。
+
+`tags` 参数必须是一个 `dict` 类型，键为标签名。值需要包含 `description`，用于描述此标签；`paths` 是 URL 列表，如果 URL 包含路径参数，直接使用不带 `:type` 的字符串即可。
+
+```python
+OpenAPI(
+    "index.py example",
+    "just a example, power by index.py",
+    "v1",
+    tags={
+        "something": {
+            "description": "test over two tags in one path",
+            "paths": ["/about/{username}", "/file", "/"],
+        },
+        "about": {
+            "description": "about page",
+            "paths": ["/about/", "/about/{username}"],
+        },
+    },
+)
+```
+
 ## 接口描述
 
-对于所有可处理 HTTP 请求的方法，它们的 `__doc__` 都会用于生成 OpenAPI 文档。
-
-第一行将被当作概要描述，所以尽量简明扼要，不要太长。
-
-空一行之后，后续的文字都会被当作详细介绍，被安置在 OpenAPI 文档中。
+对于所有可处理 HTTP 请求的方法，它们的 `__doc__` 都会用于生成 OpenAPI 文档。第一行将被当作概要描述，所以尽量简明扼要，不要太长。空一行之后，后续的文字都会被当作详细介绍，被安置在 OpenAPI 文档中。
 
 例如：
 
 ```python
+from indexpy.http import HTTPView
+
+
 async def handler(request):
     """
     api summary
@@ -43,11 +66,22 @@ async def handler(request):
     .........................................
     .........................................
     """
+
+
+class ClassHandler(HTTPView):
+    async def get(self):
+        """
+        api summary
+
+        api description..........................
+        .........................................
+        .........................................
+        """
 ```
 
-### 描述请求参数
+## 标注请求参数
 
-对于所有可处理 HTTP 请求的方法，均可以接受五种参数：`Path`、`Body`、`Query`、`Header`、`Cookie`。对参数进行类型标注，就做到自动参数校验以及生成请求格式文档。例如：
+先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为值，`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它是一个必须项，也就是客户端请求该接口时必须携带类似于 `?page_num=1&page_size=10` 的参数。
 
 ```python
 from indexpy.http import Query
@@ -77,7 +111,7 @@ async def getlist(request, query: PageQuery = Exclusive("query")):
     ...
 ```
 
-### 描述响应结果
+## 描述响应结果
 
 为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
 
@@ -152,32 +186,4 @@ def judge_jwt(endpoint):
         ...
 
     return judge
-```
-
-## Tags
-
-OpenAPI 的 Tags 是一个有用的功能，在 Index-py 里，你可以通过如下方式来指定 URL 的分类标签。
-
-`tags` 参数必须是一个 `dict` 类型，键为标签名。值需要包含 `description`，用于描述此标签；`paths` 是 URL 列表，如果 URL 包含路径参数，直接使用不带 `:type` 的字符串即可。
-
-```python
-OpenAPI(
-    "index.py example",
-    "just a example, power by index.py",
-    "v1",
-    tags={
-        "something": {
-            "description": "test over two tags in one path",
-            "paths": ["/about/", "/file", "/"],
-        },
-        "about": {
-            "description": "about page",
-            "paths": ["/about/", "/about/me"],
-        },
-        "file": {
-            "description": "get/upload file api",
-            "paths": ["/file"],
-        },
-    },
-)
 ```
