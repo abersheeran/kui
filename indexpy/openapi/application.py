@@ -62,13 +62,17 @@ class OpenAPI:
                 self.path2tag.setdefault(path, []).append(tag_name)
 
     def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
-        generate_path_docs = lambda item: (
-            item[0],
-            self._generate_path(getattr(item[1], "__raw__"), item[0], definitions),
+        generate_path_docs = lambda path_format, handler: (
+            path_format,
+            self._generate_path(
+                getattr(handler, "__raw__"),
+                path_format,
+                definitions,
+            ),
         )
         return dict(
             app.router.http_tree.iterator()
-            | F(map, generate_path_docs)
+            | F(map, lambda x: generate_path_docs(*x))
             | F(filter, lambda kv: bool(kv[1]))
         )
 
@@ -79,7 +83,11 @@ class OpenAPI:
         if hasattr(view, "__methods__"):
             generate_method_docs = lambda method: (
                 method,
-                self._generate_method(getattr(view, method), path, definitions),
+                self._generate_method(
+                    getattr(view, method),
+                    path,
+                    definitions,
+                ),
             )
             return dict(
                 view.__methods__
@@ -102,12 +110,11 @@ class OpenAPI:
 
         doc = func.__doc__
         if isinstance(doc, str):
-            doc = doc.strip()
             result.update(
-                {
-                    "summary": doc.splitlines()[0],
-                    "description": "\n".join(doc.splitlines()[1:]).strip(),
-                }
+                zip(
+                    ("summary", "description"),
+                    doc.strip().split("\n\n", 1) | F(map, lambda i: i.strip()),
+                )
             )
 
         # generate params schema
