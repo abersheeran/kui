@@ -110,11 +110,16 @@ def describe_extra_docs(handler: T, info: typing.Dict[str, typing.Any]) -> T:
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject
     """
-    __extra_docs__ = merge_openapi_info(getattr(handler, "__extra_docs__", {}), info)
-
     if isclass(handler):
         for method in getattr(handler, "__methods__"):
-            setattr(getattr(handler, method.lower()), "__extra_docs__", __extra_docs__)
+            handler_method = getattr(handler, method.lower())
+            __extra_docs__ = merge_openapi_info(
+                getattr(handler_method, "__extra_docs__", {}), info
+            )
+            setattr(handler_method, "__extra_docs__", __extra_docs__)
     else:
+        __extra_docs__ = merge_openapi_info(
+            getattr(handler, "__extra_docs__", {}), info
+        )
         setattr(handler, "__extra_docs__", __extra_docs__)
     return handler
