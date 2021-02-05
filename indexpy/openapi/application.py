@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import operator
-import os
 import typing
 from copy import deepcopy
 from functools import reduce
+from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
 if typing.TYPE_CHECKING:
@@ -32,17 +32,13 @@ class OpenAPI:
         version: str,
         *,
         tags: Dict[str, Tag] = {},
-        template_name: Literal["redoc", "swagger"] = "swagger",
+        template_name: Literal["redoc", "swagger", "reapidocs"] = "swagger",
         template: str = "",
     ) -> None:
         if template == "":
-            with open(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), f"{template_name}.html"
-                ),
-                encoding="utf8",
-            ) as file:
-                template = file.read()
+            template = (
+                Path(__file__).absolute().parent / f"{template_name}.html"
+            ).read_text(encoding="utf8")
 
         self.html_template = template
 
