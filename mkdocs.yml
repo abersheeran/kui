@@ -25,11 +25,10 @@ nav:
   - Command: "command.md"
 
 markdown_extensions:
-  - markdown.extensions.codehilite:
-      guess_lang: false
   - admonition
-  - codehilite
   - extra
+  - pymdownx.highlight
+  - pymdownx.superfences
 
 plugins:
   - search
