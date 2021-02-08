@@ -26,7 +26,9 @@ def shell(command: str) -> None:
 
 
 if __name__ == "__main__":
-    shell("black --check indexpy")
-    shell("flake8 indexpy --ignore W503,E203,E501,E731")
-    shell("mypy -p indexpy --ignore-missing-imports")
+    source_dirs = "indexpy tests"
+    shell(f"isort --check --diff --profile black --project=indexpy {source_dirs}")
+    shell(f"black --check --diff {source_dirs}")
+    shell(f"flake8 --ignore W503,E203,E501,E731 {source_dirs}")
+    shell(f"mypy --ignore-missing-imports {source_dirs}")
     shell("pytest --cov indexpy -s -o log_cli=true -o log_cli_level=DEBUG")

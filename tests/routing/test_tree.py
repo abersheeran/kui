@@ -66,7 +66,7 @@ def test_tree_fail_search(tree: RadixTree, path):
         "a",
     ],
 )
-def test_tree_fail_add(tree: RadixTree, path):
+def test_tree_fail_add(tree, path):
     with pytest.raises(ValueError):
         tree.append(path, ...)
 

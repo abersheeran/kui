@@ -38,10 +38,13 @@ serve = ["gunicorn", "uvicorn"] # for 'index-cli serve && index-cli gunicorn'
 test = ["requests"] # include all dependencies for test
 
 [tool.poetry.dev-dependencies]
-black = {version = "*", allow-prereleases = true}
-coverage = {extras = ["toml"], version = "^5.2"}
 flake8 = "*"
 mypy = {version = "*", allow-prereleases = true}
+
+black = {version = "*", allow-prereleases = true}
+isort = "*"
+
+# for tests
 pytest = "^5.4.2"
 pytest-asyncio = "^0.12"
 pytest-cov = "^2.8.1"
