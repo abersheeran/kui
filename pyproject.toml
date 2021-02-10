@@ -63,11 +63,11 @@ omit = ["*/.venv/*", "*/tests/*"]
 [tool.coverage.report]
 exclude_lines = [
   "pragma: no cover",
-  "def __repr__",
-  "raise AssertionError",
   "raise NotImplementedError",
   "if False:",
   "assert False",
+  "if typing.TYPE_CHECKING:",
+  "if TYPE_CHECKING:",
 ]
 show_missing = true
 skip_covered = true

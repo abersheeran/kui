@@ -39,6 +39,7 @@ def test_HTTPView(app):
     assert client.get("/cat/aoliao").text == "GET aoliao"
     assert client.post("/cat").text == "POST"
     assert client.post("/cat/aoliao").text == "POST aoliao"
+    assert client.patch("/cat").status_code == 405
 
 
 def test_function_view(app):
