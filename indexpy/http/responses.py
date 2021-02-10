@@ -95,7 +95,6 @@ class ServerSendEventResponse(Response):
         generator: typing.AsyncGenerator[str, None],
         status_code: int = 200,
         headers: dict = None,
-        media_type: str = None,
         background: BackgroundTask = None,
         *,
         ping_interval: int = 3,
@@ -105,7 +104,7 @@ class ServerSendEventResponse(Response):
         else:
             headers = dict(self.required_headers)
 
-        super().__init__(None, status_code, headers, media_type, background)
+        super().__init__(None, status_code, headers, background=background)
         self.generator = generator
         self.ping_interval = ping_interval
 
