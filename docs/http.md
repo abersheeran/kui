@@ -520,6 +520,18 @@ async def exc(request):
     ...
 ```
 
+有时候也许你想返回更多的信息，可以像使用 `Response` 一样为它传递 `content`、`headers` 或 `media_type` 参数来控制最终实际的响应对象。下面是一个简单的例子。
+
+```python
+from indexpy.http import HTTPException
+
+
+async def exc(request):
+    ...
+    raise HTTPException(405, headers={"Allow": "HEAD,GET,POST"})
+    ...
+```
+
 ## 自定义异常处理
 
 对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。
