@@ -31,4 +31,4 @@ if __name__ == "__main__":
     shell(f"black --check --diff {source_dirs}")
     shell(f"flake8 --ignore W503,E203,E501,E731 {source_dirs}")
     shell(f"mypy --ignore-missing-imports {source_dirs}")
-    shell("pytest --cov indexpy -s -o log_cli=true -o log_cli_level=DEBUG")
+    shell("pytest --cov indexpy -s -vv")
