@@ -57,8 +57,6 @@ else:
             update_wrapper(self, func)
 
         def __get__(self, obj: Any, cls: Any) -> Any:
-            if obj is None:
-                return self
             result = self.func(obj)
             if inspect.isawaitable(result):
                 result = asyncio.ensure_future(result)
@@ -77,8 +75,7 @@ class superclass:
     """
 
     def __init__(self, cls: type, instance: Any):
-        if cls not in instance.__class__.mro():
-            raise ValueError("`cls` must be in parent classes")
+        assert cls in instance.__class__.mro(), "`cls` must be in parent classes"
 
         self.__cls = cls
         self.__instance = instance

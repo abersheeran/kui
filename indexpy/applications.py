@@ -5,7 +5,7 @@ import dataclasses
 import inspect
 import traceback
 from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from pydantic.dataclasses import dataclass
 from starlette.middleware import Middleware
@@ -112,6 +112,9 @@ class Application:
         await self.app(scope, receive, send)
 
 
+CallableVar = TypeVar("CallableVar", bound=Callable)
+
+
 class Index(Application):
     def __init__(
         self,
@@ -156,13 +159,11 @@ class Index(Application):
             else:
                 exception_handlers[key] = value
 
-        application = ExceptionMiddleware(app=self.app, handlers=exception_handlers)
-
         return ServerErrorMiddleware(
             app=reduce(
                 lambda app, middleware: middleware(app),
                 [F(cls, **options) for cls, options in reversed(self.user_middlewares)],
-                application,
+                ExceptionMiddleware(app=self.app, handlers=exception_handlers),
             ),
             handler=error_handler,
             debug=self.debug,
@@ -182,18 +183,18 @@ class Index(Application):
 
     def exception_handler(
         self, exc_class_or_status_code: Union[int, Type[Exception]]
-    ) -> Callable:
-        def decorator(func: Callable) -> Callable:
+    ) -> Callable[[CallableVar], CallableVar]:
+        def decorator(func: CallableVar) -> CallableVar:
             self.add_exception_handler(exc_class_or_status_code, func)
             return func
 
         return decorator
 
-    def on_startup(self, func: Callable) -> Callable:
+    def on_startup(self, func: CallableVar) -> CallableVar:
         self.lifespan.on_startup.append(func)
         return func
 
-    def on_shutdown(self, func: Callable) -> Callable:
+    def on_shutdown(self, func: CallableVar) -> CallableVar:
         self.lifespan.on_shutdown.append(func)
         return func
 
