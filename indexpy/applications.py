@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import inspect
 import traceback
 from functools import reduce
@@ -17,47 +18,15 @@ from .http.request import Request
 from .http.templates import BaseTemplates
 from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
-from .types import ASGIApp, Literal, Receive, Scope, Send
+from .types import ASGIApp, Receive, Scope, Send
 from .utils import F, State, cached_property
 from .websocket.request import WebSocket
 
 
+@dataclasses.dataclass
 class Lifespan:
-    def __init__(
-        self,
-        on_startup: List[Callable] = None,
-        on_shutdown: List[Callable] = None,
-    ) -> None:
-        self.on_startup = on_startup or []
-        self.on_shutdown = on_shutdown or []
-
-    def add_event_handler(
-        self, event_type: Literal["startup", "shutdown"], func: Callable
-    ) -> None:
-        if event_type == "startup":
-            self.on_startup.append(func)
-        elif event_type == "shutdown":
-            self.on_shutdown.append(func)
-        else:
-            raise ValueError("event_type must be in ('startup', 'shutdown')")
-
-    async def startup(self) -> None:
-        """
-        Run any `.on_startup` event handlers.
-        """
-        for handler in self.on_startup:
-            result = handler()
-            if inspect.isawaitable(result):
-                await result
-
-    async def shutdown(self) -> None:
-        """
-        Run any `.on_shutdown` event handlers.
-        """
-        for handler in self.on_shutdown:
-            result = handler()
-            if inspect.isawaitable(result):
-                await result
+    on_startup: List[Callable] = dataclasses.field(default_factory=list)
+    on_shutdown: List[Callable] = dataclasses.field(default_factory=list)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
@@ -67,7 +36,10 @@ class Lifespan:
         message = await receive()
         assert message["type"] == "lifespan.startup"
         try:
-            await self.startup()
+            for handler in self.on_startup:
+                result = handler()
+                if inspect.isawaitable(result):
+                    await result
         except BaseException:
             msg = traceback.format_exc()
             await send({"type": "lifespan.startup.failed", "message": msg})
@@ -77,7 +49,10 @@ class Lifespan:
         message = await receive()
         assert message["type"] == "lifespan.shutdown"
         try:
-            await self.shutdown()
+            for handler in self.on_shutdown:
+                result = handler()
+                if inspect.isawaitable(result):
+                    await result
         except BaseException:
             msg = traceback.format_exc()
             await send({"type": "lifespan.shutdown.failed", "message": msg})
@@ -91,7 +66,53 @@ class FactoryClass:
     websocket: Type[WebSocket] = WebSocket
 
 
-class Index:
+class Application:
+    def __init__(
+        self,
+        *,
+        templates: Optional[BaseTemplates] = None,
+        routes: List[BaseRoute] = [],
+        factory_class: FactoryClass = FactoryClass(),
+    ) -> None:
+        self.factory_class = factory_class
+        self.templates = templates
+        self.router = Router(routes)
+
+    @cached_property
+    def state(self) -> State:
+        return State()
+
+    async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        App without ASGI middleware.
+        """
+        if scope["type"] == "lifespan":
+            raise NotImplementedError(
+                "Maybe you want to use `Index` replace `Application`"
+            )
+
+        handler: Optional[ASGIApp] = None
+
+        try:
+            path_params, handler = self.router.search(scope["type"], scope["path"])
+            scope["path_params"] = path_params
+        except NoMatchFound:
+            pass
+
+        if handler is None:
+            if scope["type"] == "http":
+                raise HTTPException(404)
+            handler = WebSocketClose(WS_1001_GOING_AWAY)
+
+        return await handler(scope, receive, send)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        scope["app"] = self
+
+        await self.app(scope, receive, send)
+
+
+class Index(Application):
     def __init__(
         self,
         *,
@@ -104,11 +125,10 @@ class Index:
         exception_handlers: Dict[Union[int, Type[Exception]], Callable] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
-
         self.__debug = debug
-        self.factory_class = factory_class
-        self.router = Router(routes)
-        self.templates = templates
+        super().__init__(
+            templates=templates, routes=routes, factory_class=factory_class
+        )
         self.lifespan = Lifespan(
             on_startup=[only_allow.clear] + copy.copy(on_startup),
             on_shutdown=copy.copy(on_shutdown),
@@ -122,10 +142,6 @@ class Index:
     @property
     def debug(self) -> bool:
         return self.__debug
-
-    @cached_property
-    def state(self) -> State:
-        return State()
 
     def rebuild_asgiapp(self) -> None:
         self.asgiapp = self.build_app()
@@ -174,34 +190,12 @@ class Index:
         return decorator
 
     def on_startup(self, func: Callable) -> Callable:
-        self.lifespan.add_event_handler("startup", func)
+        self.lifespan.on_startup.append(func)
         return func
 
     def on_shutdown(self, func: Callable) -> Callable:
-        self.lifespan.add_event_handler("shutdown", func)
+        self.lifespan.on_shutdown.append(func)
         return func
-
-    async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """
-        App without ASGI middleware.
-        """
-        if scope["type"] == "lifespan":
-            return await self.lifespan(scope, receive, send)
-
-        handler: Optional[ASGIApp] = None
-
-        try:
-            path_params, handler = self.router.search(scope["type"], scope["path"])
-            scope["path_params"] = path_params
-        except NoMatchFound:
-            pass
-
-        if handler is None:
-            if scope["type"] == "http":
-                raise HTTPException(404)
-            handler = WebSocketClose(WS_1001_GOING_AWAY)
-
-        return await handler(scope, receive, send)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
