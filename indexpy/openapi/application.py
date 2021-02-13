@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 from indexpy.http.exceptions import RequestValidationError
 from indexpy.http.responses import HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute
-from indexpy.types import Literal, TypedDict
+from indexpy.typing import Literal, TypedDict
 from indexpy.utils import F
 
 from .functions import merge_openapi_info

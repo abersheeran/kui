@@ -5,7 +5,7 @@ import typing
 
 from starlette import status
 
-from indexpy.types import Literal, Message
+from indexpy.typing import Literal, Message
 
 if typing.TYPE_CHECKING:
     from .request import WebSocket

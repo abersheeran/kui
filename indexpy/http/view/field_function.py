@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from pydantic.fields import NoArgAnyCallable, Undefined
 
-from indexpy.types import Literal
+from indexpy.typing import Literal
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 

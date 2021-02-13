@@ -8,7 +8,7 @@ import typing
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
-from indexpy.types import ASGIApp, Message, Receive, Scope, Send
+from indexpy.typing import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
     from .request import Request

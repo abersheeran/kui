@@ -18,7 +18,7 @@ from .http.request import Request
 from .http.templates import BaseTemplates
 from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
-from .types import ASGIApp, Receive, Scope, Send
+from .typing import ASGIApp, Receive, Scope, Send
 from .utils import F, State, cached_property
 from .websocket.request import WebSocket
 
@@ -196,6 +196,15 @@ class Index(Application):
     def on_shutdown(self, func: Callable) -> Callable:
         self.lifespan.on_shutdown.append(func)
         return func
+
+    async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        App without ASGI middleware.
+        """
+        if scope["type"] == "lifespan":
+            await self.lifespan(scope, receive, send)
+        else:
+            await super().app(scope, receive, send)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

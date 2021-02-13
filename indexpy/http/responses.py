@@ -14,7 +14,7 @@ from starlette.responses import (
     StreamingResponse,
 )
 
-from indexpy.types import Receive, Scope, Send
+from indexpy.typing import Receive, Scope, Send
 
 from .background import BackgroundTask
 from .templates import BaseTemplates

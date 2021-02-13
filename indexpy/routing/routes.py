@@ -11,7 +11,7 @@ from pathlib import Path
 from indexpy.concurrency import complicating
 from indexpy.http.responses import convert_response
 from indexpy.http.view import only_allow
-from indexpy.types import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
+from indexpy.typing import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
 from indexpy.utils import F, superclass
 
 from .convertors import compile_path

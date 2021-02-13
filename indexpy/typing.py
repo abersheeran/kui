@@ -15,16 +15,10 @@ from typing import (
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Final, Literal, TypedDict, final
-else:  # pragma: no cover
+else:
     from typing import Final, Literal, TypedDict, final
 
-__all__ = [
-    # built-in types
-    "TypedDict",
-    "Literal",
-    "Final",
-    "final",
-]
+__all__ = ["TypedDict", "Literal", "Final", "final"]  # built-in types
 
 # ASGI
 Scope = MutableMapping[str, Any]

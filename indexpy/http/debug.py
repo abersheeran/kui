@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from indexpy.http.request import Request
 
 from indexpy.http.responses import HTMLResponse, PlainTextResponse, Response
-from indexpy.types import ASGIApp, Message, Receive, Scope, Send
+from indexpy.typing import ASGIApp, Message, Receive, Scope, Send
 
 STYLES = """
 :root {

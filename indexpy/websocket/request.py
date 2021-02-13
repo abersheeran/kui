@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 from typing import Any, AsyncIterator
 
-from starlette.types import Message, Receive, Scope, Send
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 from indexpy.http.request import HTTPConnection
+from indexpy.typing import Message, Receive, Scope, Send
 
 
 class WebSocket(HTTPConnection):

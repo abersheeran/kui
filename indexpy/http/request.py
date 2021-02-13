@@ -11,7 +11,7 @@ from starlette.datastructures import URL, Address, Headers, QueryParams
 from starlette.formparsers import FormData, FormParser, MultiPartParser
 from starlette.requests import SERVER_PUSH_HEADERS_TO_COPY, ClientDisconnect
 
-from indexpy.types import UPPER_HTTP_METHODS, Message, Receive, Scope, Send
+from indexpy.typing import UPPER_HTTP_METHODS, Message, Receive, Scope, Send
 from indexpy.utils import State, cached_property
 
 if typing.TYPE_CHECKING:

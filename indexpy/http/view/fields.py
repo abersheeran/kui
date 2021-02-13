@@ -5,7 +5,7 @@ from typing import Optional
 
 from pydantic.fields import FieldInfo
 
-from indexpy.types import Literal
+from indexpy.typing import Literal
 
 
 class PathInfo(FieldInfo):
