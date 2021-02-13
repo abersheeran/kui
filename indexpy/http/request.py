@@ -3,16 +3,12 @@ from __future__ import annotations
 import asyncio
 import json
 import typing
+from cgi import parse_header
 from http import HTTPStatus
 from http import cookies as http_cookies
 
 from starlette.datastructures import URL, Address, Headers, QueryParams
-from starlette.formparsers import (
-    FormData,
-    FormParser,
-    MultiPartParser,
-    parse_options_header,
-)
+from starlette.formparsers import FormData, FormParser, MultiPartParser
 from starlette.requests import SERVER_PUSH_HEADERS_TO_COPY, ClientDisconnect
 
 from indexpy.types import UPPER_HTTP_METHODS, Message, Receive, Scope, Send
@@ -52,18 +48,16 @@ def cookie_parser(cookie_string: str) -> typing.Dict[str, str]:
 
 
 class MediaType:
-    params: typing.Dict[bytes, bytes]
+    params: typing.Dict[str, str]
     main_type: str
     sub_type: str
 
     def __init__(self, media_type_raw_line: str) -> None:
-        full_type, self.params = parse_options_header(media_type_raw_line)
-        self.main_type, _, self.sub_type = full_type.decode("ascii").partition("/")
+        full_type, self.params = parse_header(media_type_raw_line)
+        self.main_type, _, self.sub_type = full_type.partition("/")
 
     def __str__(self) -> str:
-        params_str = "".join(
-            f"; {k.decode('ascii')}={v.decode('ascii')}" for k, v in self.params.items()
-        )
+        params_str = "".join(f"; {k}={v}" for k, v in self.params.items())
         return (
             str(self.main_type)
             + ((f"/{self.sub_type}") if self.sub_type else "")
@@ -158,11 +152,8 @@ class HTTPConnection(typing.Mapping):
         """
         return content-type and options
         """
-        full_type, options = parse_options_header(self.headers.get("Content-Type"))
-        return ContentType(
-            full_type.decode("ascii"),
-            {k.decode("ascii"): v.decode("ascii") for k, v in options.items()},
-        )
+        full_type, options = parse_header(self.headers.get("Content-Type", ""))
+        return ContentType(full_type, {k: v for k, v in options.items()})
 
     @cached_property
     def accepted_types(self) -> typing.List[MediaType]:
