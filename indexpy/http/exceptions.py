@@ -1,37 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-import http
 import json
 import typing
 
+from baize.asgi import ASGIApp, HTTPException, Scope, Receive, Send
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
-
-from indexpy.typing import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
     from .request import Request
 
 from .responses import Response
-
-
-class HTTPException(Exception):
-    def __init__(
-        self,
-        status_code: int,
-        content: typing.Any = None,
-        headers: dict = None,
-        media_type: str = None,
-    ) -> None:
-        self.status_code = status_code
-        self.content = content or http.HTTPStatus(status_code).description
-        self.headers = headers
-        self.media_type = media_type
-
-    def __repr__(self) -> str:
-        class_name = self.__class__.__name__
-        return f"{class_name}(status_code={self.status_code!r})"
 
 
 class RequestValidationError(Exception):

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-import inspect
 import os
 import threading
-from functools import partial, update_wrapper
+from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -37,31 +36,6 @@ def import_module(name: str) -> Optional[ModuleType]:
     ):
         return importlib.import_module(name)
     return None  # nothing to do when module not be found
-
-
-if TYPE_CHECKING:
-    # https://github.com/python/mypy/issues/5107
-    # for mypy check and IDE support
-    cached_property = property
-else:
-
-    class cached_property:
-        """
-        A property that is only computed once per instance and then replaces
-        itself with an ordinary attribute. Deleting the attribute resets the
-        property.
-        """
-
-        def __init__(self, func: Callable) -> None:
-            self.func = func
-            update_wrapper(self, func)
-
-        def __get__(self, obj: Any, cls: Any) -> Any:
-            result = self.func(obj)
-            if inspect.isawaitable(result):
-                result = asyncio.ensure_future(result)
-            value = obj.__dict__[self.func.__name__] = result
-            return value
 
 
 class superclass:
