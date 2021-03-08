@@ -3,10 +3,7 @@ from __future__ import annotations
 import typing
 from abc import ABCMeta, abstractmethod
 
-from indexpy.typing import Receive, Scope, Send
-
-if typing.TYPE_CHECKING:
-    from .background import BackgroundTask
+from baize.asgi import Receive, Scope, Send
 
 from .responses import Response
 
@@ -20,7 +17,6 @@ class BaseTemplates(metaclass=ABCMeta):
         status_code: int = 200,
         headers: dict = None,
         media_type: str = None,
-        background: BackgroundTask = None,
     ) -> Response:
         """
         The subclass must override this method and return
@@ -45,12 +41,11 @@ else:
             status_code: int = 200,
             headers: dict = None,
             media_type: str = None,
-            background: BackgroundTask = None,
         ):
             self.env = env
             self.template = self.env.get_template(name)
             self.context = context
-            super().__init__(None, status_code, headers, media_type, background)
+            super().__init__(None, status_code, headers, media_type)
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
             if self.env.enable_async:  # type: ignore

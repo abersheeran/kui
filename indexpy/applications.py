@@ -20,7 +20,7 @@ from .http.view import only_allow
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .typing import ASGIApp, Receive, Scope, Send
 from .utils import F, State, cached_property
-from .websocket.request import WebSocket
+from .websocket import WebSocket
 
 
 @dataclasses.dataclass

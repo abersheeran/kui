@@ -3,8 +3,9 @@ from __future__ import annotations
 import typing
 from http import HTTPStatus
 
-from baize.asgi import Request as BaiZeRequest
-from baize.asgi import Scope, Receive, Send, empty_receive, empty_send
+from baize.asgi import Receive
+from baize.asgi import Request as BaiZeRequest, HTTPConnection as BaiZeHTTPConnection
+from baize.asgi import Scope, Send, empty_receive, empty_send
 from baize.utils import cached_property
 
 from indexpy.utils import State
@@ -15,7 +16,19 @@ if typing.TYPE_CHECKING:
 from .exceptions import HTTPException
 
 
-class Request(BaiZeRequest):
+class HTTPConnection(BaiZeHTTPConnection):
+    @cached_property
+    def state(self) -> State:
+        # Ensure 'state' has an empty dict if it's not already populated.
+        self._scope.setdefault("state", {})
+        # Create a state instance with a reference to the dict in which it should store info
+        return State(self._scope["state"])
+
+    def app(self) -> Index:
+        return self["app"]
+
+
+class Request(BaiZeRequest, HTTPConnection):
     def __init__(
         self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send
     ):
@@ -25,13 +38,6 @@ class Request(BaiZeRequest):
         self._send = send
         self._stream_consumed = False
         self._is_disconnected = False
-
-    @cached_property
-    def state(self) -> State:
-        return self.get("state", {})
-
-    def app(self) -> Index:
-        return self["app"]
 
     async def data(self) -> typing.Any:
         content_type = self.content_type
@@ -46,15 +52,3 @@ class Request(BaiZeRequest):
         # We can inherit this method in subclasses
         # and catch this exception for custom processing
         raise HTTPException(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
-
-    async def send_push_promise(self, path: str) -> None:
-        if "http.response.push" in self.scope.get("extensions", {}):
-            raw_headers = []
-            for name in SERVER_PUSH_HEADERS_TO_COPY:
-                for value in self.headers.getlist(name):
-                    raw_headers.append(
-                        (name.encode("latin-1"), value.encode("latin-1"))
-                    )
-            await self._send(
-                {"type": "http.response.push", "path": path, "headers": raw_headers}
-            )

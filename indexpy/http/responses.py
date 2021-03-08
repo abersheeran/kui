@@ -14,8 +14,6 @@ from baize.asgi import (
     StreamingResponse,
 )
 
-from .templates import BaseTemplates
-
 if typing.TYPE_CHECKING:
     from .request import Request
 
@@ -23,14 +21,14 @@ __all__ = [
     "automatic",
     "convert_response",
     "Response",
-    "HTMLResponse",
-    "PlainTextResponse",
-    "JSONResponse",
-    "RedirectResponse",
-    "StreamingResponse",
     "FileResponse",
-    "TemplateResponse",
+    "HTMLResponse",
+    "JSONResponse",
+    "PlainTextResponse",
+    "RedirectResponse",
     "SendEventResponse",
+    "StreamingResponse",
+    "TemplateResponse",
 ]
 
 

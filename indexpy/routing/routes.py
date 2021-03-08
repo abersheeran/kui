@@ -42,25 +42,6 @@ def websocket_session(view: typing.Any) -> ASGIApp:
     return _
 
 
-def subpath_asgi(path_prefix: str, asgi: ASGIApp) -> ASGIApp:
-    if not path_prefix.startswith("/"):
-        raise ValueError("path_prefix must be start with '/'")
-    if path_prefix.endswith("/"):
-        raise ValueError("path_prefix can't end with '/'")
-
-    async def _(scope: Scope, receive: Receive, send: Send) -> None:
-        path = scope["path"]
-        root_path = scope.get("root_path", "")
-
-        subscope = copy.copy(scope)
-        subscope["path"] = path[len(path_prefix) :]
-        subscope["root_path"] = root_path + path_prefix
-        await asgi(subscope, receive, send)
-
-    setattr(_, "__raw__", asgi)
-    return _
-
-
 class NoMatchFound(Exception):
     """
     Raised by `.search(path)` if no matching route exists.
@@ -132,21 +113,6 @@ class SocketRoute(BaseRoute):
         self._extend_middlewares(getattr(routes, "_socket_middlewares", []))
 
 
-@dataclass
-class ASGIRoute(BaseRoute):
-    # This is mypy error
-    type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket")  # type: ignore
-    root_path: InitVar[str] = ""
-
-    def __post_init__(self, root_path: str) -> None:  # type: ignore
-        super().__post_init__()
-        if root_path:
-            self.endpoint = subpath_asgi(root_path, self.endpoint)
-
-    def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
-        self._extend_middlewares(getattr(routes, "_asgi_middlewares", []))
-
-
 T = typing.TypeVar("T")
 
 
@@ -207,28 +173,6 @@ class RouteRegisterMixin:
 
         return register
 
-    def asgi(
-        self,
-        path: str,
-        *,
-        name: str = "",
-        type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket"),  # type: ignore
-        root_path: str = "",
-    ) -> typing.Callable[[T], T]:
-        """
-        shortcut for `self.append(ASGIRoute(path, endpoint, name, type))`
-
-        example:
-            @routes.asgi("/path", name="endpoint-name")
-            class Endpoint(HTTPView): ...
-        """
-
-        def register(endpoint: T) -> T:
-            self.append(ASGIRoute(path, endpoint, name, type, root_path))
-            return endpoint
-
-        return register
-
 
 class Routes(typing.List[BaseRoute], RouteRegisterMixin):
     def __init__(
@@ -237,13 +181,11 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
         namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
-        asgi_middlewares: typing.List[typing.Any] = [],
     ) -> None:
         super().__init__()
         self.namespace = namespace
         self._http_middlewares = copy.copy(http_middlewares)
         self._socket_middlewares = copy.copy(socket_middlewares)
-        self._asgi_middlewares = copy.copy(asgi_middlewares)
         for route in iterable:
             if not isinstance(route, typing.List):
                 self.append(route)
@@ -288,20 +230,6 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
                 return wrapper
         """
         self._socket_middlewares.append(middleware)
-        return middleware
-
-    def asgi_middleware(self, middleware: T) -> T:
-        """
-        append middleware in routes
-
-        example:
-            @routes.asgi_middleware
-            def middleware(endpoint):
-                async def wrapper(scope, receive, send):
-                    await endpoint(scope, receive, send)
-                return wrapper
-        """
-        self._asgi_middlewares.append(middleware)
         return middleware
 
 

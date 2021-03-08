@@ -4,7 +4,7 @@ import asyncio
 import json
 import typing
 
-from baize.asgi import ASGIApp, HTTPException, Scope, Receive, Send
+from baize.asgi import ASGIApp, HTTPException, Message, Receive, Scope, Send
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
@@ -131,10 +131,7 @@ class ExceptionMiddleware:
             return Response(b"", status_code=exc.status_code, headers=exc.headers)
 
         return Response(
-            content=exc.content,
-            status_code=exc.status_code,
-            headers=exc.headers,
-            media_type=exc.media_type,
+            content=exc.content, status_code=exc.status_code, headers=exc.headers
         )
 
     @staticmethod

@@ -7,13 +7,12 @@ import pprint
 import traceback
 import typing
 
-from starlette.concurrency import run_in_threadpool
+from baize.asgi import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
-    from indexpy.http.request import Request
+    from .request import Request
 
-from indexpy.http.responses import HTMLResponse, PlainTextResponse, Response
-from indexpy.typing import ASGIApp, Message, Receive, Scope, Send
+from .responses import HTMLResponse, PlainTextResponse, Response
 
 STYLES = """
 :root {
@@ -201,7 +200,9 @@ class ServerErrorMiddleware:
                     if asyncio.iscoroutinefunction(self.handler):
                         response = await self.handler(request, exc)
                     else:
-                        response = await run_in_threadpool(self.handler, request, exc)
+                        response = await asyncio.get_running_loop().run_in_executor(
+                            self.handler, request, exc
+                        )
 
                 await response(scope, receive, send)
 
