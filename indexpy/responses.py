@@ -14,8 +14,7 @@ from baize.asgi import (
     StreamingResponse,
 )
 
-if typing.TYPE_CHECKING:
-    from .request import Request
+from .requests import request
 
 __all__ = [
     "automatic",
@@ -33,7 +32,6 @@ __all__ = [
 
 
 def TemplateResponse(
-    request: Request,
     name: str,
     context: dict,
     status_code: int = 200,

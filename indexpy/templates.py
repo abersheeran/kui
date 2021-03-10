@@ -107,7 +107,6 @@ else:
             status_code: int = 200,
             headers: dict = None,
             media_type: str = None,
-            background: BackgroundTask = None,
         ) -> _Jinja2TemplateResponse:
 
             return _Jinja2TemplateResponse(
@@ -117,5 +116,4 @@ else:
                 status_code=status_code,
                 headers=headers,
                 media_type=media_type,
-                background=background,
             )

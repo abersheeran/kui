@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import sys
 from typing import Any, Optional
 
 from pydantic.fields import NoArgAnyCallable, Undefined
 
-from indexpy.typing import Literal
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 

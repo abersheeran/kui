@@ -24,7 +24,7 @@ index-cli = "indexpy.cli:index_cli"
 python = "^3.7"
 
 async-asgi-testclient = {version = "^1.4.6", optional = true}
-baize = {version = "^0.2.1", extras = ["multipart"]}
+baize = {version = "^0.3.0", extras = ["multipart"]}
 click = {version = "^7.1.2", optional = true}
 gunicorn = {version = "*", optional = true}
 pydantic = "^1.8"

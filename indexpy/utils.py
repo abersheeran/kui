@@ -4,9 +4,10 @@ import asyncio
 import importlib
 import os
 import threading
+from contextvars import ContextVar
 from functools import partial
 from types import ModuleType
-from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar, Generic
 
 T = TypeVar("T")
 
@@ -112,3 +113,47 @@ class F(partial):
         Implement pipeline operators `var | F(...)`
         """
         return self(other)
+
+
+if TYPE_CHECKING:
+    T = TypeVar("T")
+
+    def ContextVarBind(contextvar: ContextVar[T]) -> T:
+        raise NotImplementedError
+
+
+else:
+
+    class ContextVarBind:
+        def __init__(self, contextvar: ContextVar) -> None:
+            self.__contextvar = contextvar
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(self.__contextvar.get(), name)
+
+        def __setattr__(self, name: str, value: Any) -> None:
+            setattr(self.__contextvar.get(), name, value)
+
+        def __delattr__(self, name: str) -> None:
+            delattr(self.__contextvar.get(), name)
+
+
+class ImmutableAttribute(Generic[T]):
+    def __set_name__(self, owner: object, name: str) -> None:
+        self.public_name = name
+        self.private_name = "_" + name
+
+    def __get__(self, instance: object, cls: type = None) -> T:
+        return getattr(instance, self.private_name)
+
+    def __set__(self, instance: object, value: T) -> None:
+        if hasattr(instance, self.private_name):
+            raise RuntimeError(
+                f"{instance.__class__.__name__}.{self.public_name} is immuSchema"
+            )
+        setattr(instance, self.private_name, value)
+
+    def __delete__(self, instance: object) -> None:
+        raise RuntimeError(
+            f"{instance.__class__.__name__}.{self.public_name} is immuSchema"
+        )
