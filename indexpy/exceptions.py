@@ -4,12 +4,12 @@ import asyncio
 import json
 import typing
 
-from baize.asgi import ASGIApp, HTTPException, Message, Receive, Scope, Send
+from baize.asgi import HTTPException, Message
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
 if typing.TYPE_CHECKING:
-    from .request import Request
+    from .requests import Request
 
 from .responses import Response
 
@@ -54,8 +54,12 @@ class RequestValidationError(Exception):
 
 
 class ExceptionMiddleware:
-    def __init__(self, app: ASGIApp, handlers: dict = None) -> None:
-        self.app = app
+    def __init__(
+        self,
+        view: typing.Callable[[Request], typing.Awaitable[None]],
+        handlers: dict = None,
+    ) -> None:
+        self.view = view
         self._status_handlers: typing.Dict[int, typing.Callable] = {}
         self._exception_handlers: typing.Dict[
             typing.Type[Exception], typing.Callable
@@ -86,12 +90,9 @@ class ExceptionMiddleware:
                 return self._exception_handlers[cls]
         return None
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
+    async def __call__(self, request: Request) -> None:
         response_started = False
+        send = request._send
 
         async def sender(message: Message) -> None:
             nonlocal response_started
@@ -100,8 +101,10 @@ class ExceptionMiddleware:
                 response_started = True
             await send(message)
 
+        request._send = sender
+
         try:
-            await self.app(scope, receive, sender)
+            return await self.view(request)
         except Exception as exc:
             handler = None
 
@@ -118,12 +121,10 @@ class ExceptionMiddleware:
                 msg = "Caught handled exception, but response already started."
                 raise RuntimeError(msg) from exc
 
-            request = scope["app"].factory_class.http(scope, receive, send)
-            if asyncio.iscoroutinefunction(handler):
-                response = await handler(request, exc)
-            else:
-                response = handler(request, exc)
-            await response(scope, receive, sender)
+            response = handler(request, exc)
+            if asyncio.iscoroutine(response):
+                response = await response
+            return await response(request._send, request._receive, request._send)
 
     @staticmethod
     def http_exception(request: Request, exc: HTTPException) -> Response:

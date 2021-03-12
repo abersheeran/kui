@@ -3,9 +3,8 @@ from __future__ import annotations
 import dataclasses
 from typing import Optional
 
+from baize.typing import Literal
 from pydantic.fields import FieldInfo
-
-from indexpy.typing import Literal
 
 
 class PathInfo(FieldInfo):

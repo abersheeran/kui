@@ -1,21 +1,89 @@
 from __future__ import annotations
 
+import asyncio
 import functools
 import typing
+from itertools import groupby
 from inspect import isclass, signature
 
+from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
-from starlette.datastructures import FormData
 
-from indexpy.concurrency import keepasync
-from indexpy.http.exceptions import RequestValidationError
-from indexpy.http.responses import Response
-from indexpy.typing import LOWER_HTTP_METHODS, UPPER_HTTP_METHODS
+from indexpy.exceptions import RequestValidationError
+from indexpy.responses import Response, convert_response
 
 if typing.TYPE_CHECKING:
-    from indexpy.http.request import Request
+    from indexpy.requests import Request
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
+
+
+HTTP_METHOD_NAMES = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
+
+
+class ViewMeta(type):
+    def __init__(
+        cls,
+        name: str,
+        bases: typing.Tuple[type],
+        namespace: typing.Dict[str, typing.Any],
+    ):
+        for function_name in filter(
+            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
+        ):
+            function = namespace[function_name]
+            if asyncio.iscoroutinefunction(function):
+                raise TypeError(
+                    f"The function {function_name} should be defined using `async def`"
+                )
+            namespace[function_name] = parse_params(function)
+
+        setattr(
+            cls,
+            "__methods__",
+            [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)],
+        )
+
+        super().__init__(name, bases, namespace)
+
+
+class HTTPView(metaclass=ViewMeta):
+    if typing.TYPE_CHECKING:
+        __methods__: typing.List[str]
+
+    def __init__(self, request: Request) -> None:
+        self.request = request
+
+    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
+        return self.__impl__().__await__()
+
+    async def __impl__(self) -> Response:
+        # Try to dispatch to the right method; if a method doesn't exist,
+        # defer to the error handler.
+        handler = getattr(
+            self, self.request.method.lower(), self.http_method_not_allowed
+        )
+
+        handler = await bound_params(handler, self.request)
+
+        return convert_response(await handler())
+
+    async def http_method_not_allowed(self) -> Response:
+        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
+
+    async def options(self) -> Response:
+        """Handle responding to requests for the OPTIONS HTTP verb."""
+        return Response(headers={"Allow": ", ".join(self.__methods__)})
+
 
 Callable = typing.TypeVar("Callable", bound=typing.Callable)
 
@@ -99,20 +167,21 @@ def parse_params(function: Callable) -> Callable:
     return function
 
 
-def _merge_multi_value(raw_list):
+def _merge_multi_value(
+    items: typing.List[typing.Tuple[str, str]]
+) -> typing.Dict[str, typing.Union[str, typing.List[str]]]:
     """
     If there are values with the same key value, they are merged into a List.
     """
-    d = {}
-    for k, v in raw_list:
-        if k not in d:
-            d[k] = v
-            continue
-        if isinstance(d[k], list):
-            d[k].append(v)
-        else:
-            d[k] = [d[k], v]
-    return d
+    return {
+        k: v_list if len(v_list) > 1 else v_list[0]
+        for k, v_list in (
+            (k, list(v_iter))
+            for k, v_iter in (
+                lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
+            )(items, lambda kv: kv[0])
+        )
+    }
 
 
 async def bound_params(handler: typing.Callable, request: Request) -> typing.Callable:
@@ -169,124 +238,3 @@ async def bound_params(handler: typing.Callable, request: Request) -> typing.Cal
         else:
             kwargs[exclusive_models[_data.__class__]] = _data
     return functools.partial(handler, **kwargs)
-
-
-HTTP_METHOD_NAMES = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options",
-    "trace",
-]
-
-
-class ViewMeta(keepasync(*HTTP_METHOD_NAMES)):  # type: ignore
-    def __init__(
-        cls,
-        name: str,
-        bases: typing.Tuple[type],
-        namespace: typing.Dict[str, typing.Any],
-    ):
-        for function_name in filter(
-            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
-        ):
-            function = namespace[function_name]
-            namespace[function_name] = parse_params(function)
-
-        setattr(
-            cls,
-            "__methods__",
-            [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)],
-        )
-
-        super().__init__(name, bases, namespace)
-
-
-class HTTPView(metaclass=ViewMeta):  # type: ignore
-    if typing.TYPE_CHECKING:
-        __methods__: typing.List[UPPER_HTTP_METHODS]
-
-    def __init__(self, request: Request) -> None:
-        self.request = request
-
-    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
-        return self.__impl__().__await__()
-
-    async def __impl__(self) -> typing.Any:
-        # Try to dispatch to the right method; if a method doesn't exist,
-        # defer to the error handler.
-        handler = getattr(
-            self, self.request.method.lower(), self.http_method_not_allowed
-        )
-
-        handler = await bound_params(handler, self.request)
-
-        return await handler()
-
-    async def http_method_not_allowed(self) -> Response:
-        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
-
-    async def options(self) -> Response:
-        """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(headers={"Allow": ", ".join(self.__methods__)})
-
-
-ReturnType = typing.TypeVar("ReturnType")
-
-
-class cached(typing.Generic[ReturnType]):
-    def __init__(self, handler: typing.Callable[..., ReturnType]) -> None:
-        functools.update_wrapper(self, handler)
-        self.handler = handler
-        self.__caches: typing.Dict[typing.Any, typing.Any] = {}
-
-    def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> ReturnType:
-        key = tuple([value for value in args] + [value for value in kwargs.values()])
-        if key not in self.__caches:
-            self.__caches[key] = self.handler(*args, **kwargs)
-        return self.__caches[key]
-
-    def clear(self) -> None:
-        self.__caches.clear()
-
-
-@cached
-def only_allow(
-    method: LOWER_HTTP_METHODS, func: typing.Callable = None
-) -> typing.Callable:
-    """
-    Only allow the function to accept one type of request
-
-    example:
-        @only_allow("get")
-        async def handle(request):
-            ...
-    or
-        handle = only_allow("get", handle)
-    """
-
-    if method not in HTTP_METHOD_NAMES:
-        raise ValueError(f"method must be in {HTTP_METHOD_NAMES}")
-
-    if func is None:
-        return lambda func: only_allow(method, func)
-
-    func = parse_params(func)
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> typing.Any:
-        request = args[0]
-        if request.method.lower() == method.lower():
-            handler = await bound_params(func, request)  # type: ignore
-            return await handler(*args, **kwargs)
-
-        if request.method == "OPTIONS":
-            return Response(headers={"Allow": method})
-
-        return Response(status_code=405, headers={"Allow": method})
-
-    setattr(wrapper, "__method__", method.upper())
-    return wrapper

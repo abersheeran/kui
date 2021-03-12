@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel
 
-from indexpy.typing import Literal
+from baize.typing import Literal
 
 from .types import UploadFile
 

@@ -4,19 +4,20 @@ import copy
 import dataclasses
 import inspect
 import traceback
-from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from baize.asgi import Scope, Receive, Send, ASGIApp
+from baize.typing import Literal
+from baize.utils import cached_property
 from pydantic.dataclasses import dataclass
 
 from .debug import ServerErrorMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
 from .templates import BaseTemplates
 from .routing.routes import BaseRoute, NoMatchFound, Router
-from .requests import Request, WebSocket
+from .requests import Request, WebSocket, request_var, websocket_var
 from .responses import convert_response
-from .utils import State, cached_property
+from .utils import State
 
 
 @dataclasses.dataclass
@@ -79,16 +80,41 @@ class Application:
         return State()
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] == "lifespan":
+        scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]
+
+        if scope_type == "lifespan":
             raise NotImplementedError(
                 "Maybe you want to use `Index` replace `Application`"
             )
 
-        connection = getattr(self.factory_class, scope["type"])(scope, receive, send)
-        path_params, handler = self.router.search(scope["type"], scope["path"])
-        scope["path_params"] = path_params
-        response = convert_response(await handler(connection))
-        return await response(scope, receive, send)
+        return await getattr(self, scope_type)(
+            getattr(self.factory_class, scope_type)(scope, receive, send)
+        )
+
+    async def http(self, request: Request) -> None:
+        try:
+            token = request_var.set(request)
+            path_params, handler = self.router.search("http", request["path"])
+            request._scope["path_params"] = path_params
+        except NoMatchFound:
+            raise HTTPException(404)
+        else:
+            response = convert_response(await handler(request))
+            return await response(request._scope, request._receive, request._send)
+        finally:
+            request_var.reset(token)
+
+    async def websocket(self, websocket: WebSocket) -> None:
+        try:
+            token = websocket_var.set(websocket)
+            path_params, handler = self.router.search("websocket", websocket["path"])
+            websocket._scope["path_params"] = path_params
+        except NoMatchFound:
+            return await websocket.close(1001)
+        else:
+            return await handler(websocket)
+        finally:
+            websocket_var.reset(token)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
@@ -96,7 +122,7 @@ class Application:
         await self.app(scope, receive, send)
 
 
-C = TypeVar("C", bound=Callable)
+CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
 class Index(Application):
@@ -120,6 +146,37 @@ class Index(Application):
             on_shutdown=copy.copy(on_shutdown),
         )
         self.exception_handlers = copy.copy(exception_handlers)
+        self.asgiapp = self.build_app()
+
+    @property
+    def debug(self) -> bool:
+        return self.__dict__.get("debug", False)
+
+    @debug.setter
+    def debug(self, value: bool) -> None:
+        self.__dict__["debug"] = bool(value)
+        self.rebuild_app()
+
+    def rebuild_app(self) -> None:
+        self.asgiapp = self.build_app()
+
+    def build_app(self) -> ASGIApp:
+        error_handler = None
+        exception_handlers = {}
+
+        for key, value in self.exception_handlers.items():
+            if key in (500, Exception):
+                error_handler = value
+            else:
+                exception_handlers[key] = value
+
+        if not hasattr(self, "_http"):
+            self._http = self.http
+        self.http = ExceptionMiddleware(self._http, handlers=exception_handlers)
+
+        return ServerErrorMiddleware(
+            app=self.app, handler=error_handler, debug=self.debug
+        )
 
     def add_exception_handler(
         self,
@@ -127,22 +184,22 @@ class Index(Application):
         handler: Callable,
     ) -> None:
         self.exception_handlers[exc_class_or_status_code] = handler
-        self.rebuild_asgiapp()
+        self.rebuild_app()
 
     def exception_handler(
         self, exc_class_or_status_code: Union[int, Type[Exception]]
-    ) -> Callable[[C], C]:
-        def decorator(func: C) -> C:
+    ) -> Callable[[CallableObject], CallableObject]:
+        def decorator(func: CallableObject) -> CallableObject:
             self.add_exception_handler(exc_class_or_status_code, func)
             return func
 
         return decorator
 
-    def on_startup(self, func: C) -> C:
+    def on_startup(self, func: CallableObject) -> CallableObject:
         self.lifespan.on_startup.append(func)
         return func
 
-    def on_shutdown(self, func: C) -> C:
+    def on_shutdown(self, func: CallableObject) -> CallableObject:
         self.lifespan.on_shutdown.append(func)
         return func
 
@@ -154,3 +211,8 @@ class Index(Application):
             await self.lifespan(scope, receive, send)
         else:
             await super().app(scope, receive, send)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        scope["app"] = self
+
+        await self.asgiapp(scope, receive, send)

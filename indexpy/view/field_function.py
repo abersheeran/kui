@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-import sys
-from typing import Any, Optional
+from typing import Any, Optional, Type, Union
 
+from baize.typing import Literal
 from pydantic.fields import NoArgAnyCallable, Undefined
-
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 

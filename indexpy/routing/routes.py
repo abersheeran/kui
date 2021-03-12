@@ -4,21 +4,18 @@ import copy
 import importlib
 import os
 import typing
-from dataclasses import InitVar, asdict, dataclass
+from dataclasses import asdict, dataclass
 from functools import reduce, update_wrapper
 from pathlib import Path
 
-from indexpy.concurrency import complicating
-from indexpy.http.responses import convert_response
-from indexpy.http.view import only_allow
-from indexpy.typing import LOWER_HTTP_METHODS, ASGIApp, Literal, Receive, Scope, Send
+from baize.routing import compile_path, Convertor
+from baize.asgi import ASGIApp, Scope, Receive, Send
+from baize.typing import Literal
+
+from indexpy.responses import convert_response
 from indexpy.utils import F, superclass
 
-from .convertors import compile_path
 from .tree import RadixTree
-
-if typing.TYPE_CHECKING:
-    from .convertors import Convertor
 
 
 def request_response(view: typing.Any) -> ASGIApp:
@@ -82,27 +79,6 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
-    method: InitVar[Literal["", LOWER_HTTP_METHODS]] = ""
-
-    def __post_init__(self, method: Literal["", LOWER_HTTP_METHODS]) -> None:  # type: ignore
-        super().__post_init__()
-        self.endpoint = complicating(self.endpoint)
-
-        if not (
-            hasattr(self.endpoint, "__methods__")
-            or hasattr(self.endpoint, "__method__")
-        ):
-            if method == "":
-                raise ValueError("View function must be marked with method")
-            self.endpoint = only_allow(method, self.endpoint)
-        else:
-            if hasattr(self.endpoint, "__method__") and (
-                method.upper() not in (getattr(self.endpoint, "__method__"), "")
-            ):
-                raise ValueError("View function has been marked with method")
-            if hasattr(self.endpoint, "__methods__") and method != "":
-                raise ValueError("View class can't be marked with method")
-
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))
 
@@ -137,13 +113,7 @@ class RouteRegisterMixin:
 
             self.append(route)
 
-    def http(
-        self,
-        path: str,
-        *,
-        name: str = "",
-        method: Literal["", LOWER_HTTP_METHODS] = "",
-    ) -> typing.Callable[[T], T]:
+    def http(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
         shortcut for `self.append(HttpRoute(path, endpoint, name, method))`
 
@@ -153,7 +123,7 @@ class RouteRegisterMixin:
         """
 
         def register(endpoint: T) -> T:
-            self.append(HttpRoute(path, endpoint, name, method))
+            self.append(HttpRoute(path, endpoint, name))
             return endpoint
 
         return register
@@ -373,27 +343,9 @@ class Router(RouteRegisterMixin):
                 self.websocket_tree,
                 self.websocket_routes,
             )
-        elif isinstance(route, ASGIRoute):
-            if "http" in route.type:
-                self._append(
-                    route.path,
-                    route.endpoint,
-                    route.name,
-                    self.http_tree,
-                    self.http_routes,
-                )
-            if "websocket" in route.type:
-                self._append(
-                    route.path,
-                    route.endpoint,
-                    route.name,
-                    self.websocket_tree,
-                    self.websocket_routes,
-                )
         else:
             raise TypeError(
-                "Need type: `ASGIRoute`, `HttpRoute` or `SocketRoute`,"
-                + f" but got type: {type(route)}"
+                f"Need type: `HttpRoute` or `SocketRoute`, but got type: {type(route)}"
             )
 
     def search(

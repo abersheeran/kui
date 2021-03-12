@@ -11,7 +11,7 @@ from baize.asgi import (
     RedirectResponse,
     Response,
     SendEventResponse,
-    StreamingResponse,
+    StreamResponse,
 )
 
 from .requests import request
@@ -26,7 +26,7 @@ __all__ = [
     "PlainTextResponse",
     "RedirectResponse",
     "SendEventResponse",
-    "StreamingResponse",
+    "StreamResponse",
     "TemplateResponse",
 ]
 

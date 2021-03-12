@@ -10,7 +10,7 @@ import typing
 from baize.asgi import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
-    from .request import Request
+    from .requests import Request
 
 from .responses import HTMLResponse, PlainTextResponse, Response
 

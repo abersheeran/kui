@@ -12,8 +12,8 @@ from baize.utils import cached_property
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
 
-from .http import HTTPException
-from .utils import State, ContextVarBind
+from .exceptions import HTTPException
+from .utils import State, bind_contextvar
 
 
 class HTTPConnection(BaiZeHTTPConnection):
@@ -42,7 +42,7 @@ class Request(BaiZeRequest, HTTPConnection):
 
 request_var: ContextVar[Request] = ContextVar("request")
 
-request = ContextVarBind(request_var)
+request = bind_contextvar(request_var)
 
 
 class WebSocket(BaiZeWebSocket, HTTPConnection):
@@ -51,4 +51,4 @@ class WebSocket(BaiZeWebSocket, HTTPConnection):
 
 websocket_var: ContextVar[WebSocket] = ContextVar("websocket")
 
-websocket = ContextVarBind(websocket_var)
+websocket = bind_contextvar(websocket_var)

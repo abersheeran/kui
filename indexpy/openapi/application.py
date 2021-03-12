@@ -7,15 +7,15 @@ from functools import reduce
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
+from baize.typing import Literal, TypedDict
+
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
-    from indexpy.http.request import Request
-    from indexpy.http.responses import Response
+    from indexpy.requests import Request
 
-from indexpy.http.exceptions import RequestValidationError
-from indexpy.http.responses import HTMLResponse, JSONResponse
+from indexpy.exceptions import RequestValidationError
+from indexpy.responses import Response, HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute
-from indexpy.typing import Literal, TypedDict
 from indexpy.utils import F
 
 from .functions import merge_openapi_info

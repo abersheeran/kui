@@ -118,24 +118,26 @@ class F(partial):
 if TYPE_CHECKING:
     T = TypeVar("T")
 
-    def ContextVarBind(contextvar: ContextVar[T]) -> T:
+    def bind_contextvar(contextvar: ContextVar[T]) -> T:
         raise NotImplementedError
 
 
 else:
 
-    class ContextVarBind:
-        def __init__(self, contextvar: ContextVar) -> None:
-            self.__contextvar = contextvar
+    def bind_contextvar(contextvar):
+        class ContextVarBind:
+            __slots__ = ()
 
-        def __getattr__(self, name: str) -> Any:
-            return getattr(self.__contextvar.get(), name)
+            def __getattr__(self, name: str) -> Any:
+                return getattr(contextvar.get(), name)
 
-        def __setattr__(self, name: str, value: Any) -> None:
-            setattr(self.__contextvar.get(), name, value)
+            def __setattr__(self, name: str, value: Any) -> None:
+                setattr(contextvar.get(), name, value)
 
-        def __delattr__(self, name: str) -> None:
-            delattr(self.__contextvar.get(), name)
+            def __delattr__(self, name: str) -> None:
+                delattr(contextvar.get(), name)
+
+        return ContextVarBind()
 
 
 class ImmutableAttribute(Generic[T]):

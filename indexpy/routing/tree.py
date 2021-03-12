@@ -5,10 +5,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Pattern, Tuple, Union
 from typing import cast as typing_cast
 
-from ..typing import ASGIApp
-from .convertors import Convertor, PathConvertor, compile_path
-
-EMPTY_TUPLE: tuple = tuple()
+from baize.asgi import ASGIApp
+from baize.routing import Convertor, PathConvertor, compile_path
 
 
 @dataclass
@@ -17,14 +15,15 @@ class TreeNode:
     re_pattern: Optional[Pattern] = None
     next_nodes: Optional[List["TreeNode"]] = None
 
-    param_convertors: Optional[Dict[str, Convertor]] = None
-    endpoint: Optional[ASGIApp] = None
+    route: Optional[Tuple[str, Dict[str, Convertor], ASGIApp]] = None
 
 
 def find_common_prefix(x: str, y: str) -> str:
     """
     find the longest common prefix of x and y
     """
+    if not x or not y:
+        return ""
     for i in range(min(len(x), len(y))):
         if x[i] != y[i]:
             return x[:i]
@@ -45,8 +44,10 @@ def append(
     if point.next_nodes is None:
         point.next_nodes = list()
 
-    if path_format[0] == "{":
-        length = path_format.find("}") + 1
+    matched = re.match(r"{\w+}", path_format)
+
+    if path_format[0] == "{" and matched is not None:
+        length = matched.end()
         param_name = path_format[1 : length - 1]
         convertor = param_convertors[param_name]
         re_pattern = re.compile(convertor.regex)
@@ -54,9 +55,9 @@ def append(
             raise ValueError(
                 "`PathConvertor` is only allowed to appear at the end of path"
             )
-        for node in filter(
-            lambda node: node.re_pattern is not None, (point.next_nodes or EMPTY_TUPLE)
-        ):
+        for node in point.next_nodes or ():
+            if node.re_pattern is None:
+                continue
             if (node.re_pattern == re_pattern) != (node.characters == param_name):
                 raise ValueError(
                     "The same regular matching is used in the same position"
@@ -73,9 +74,9 @@ def append(
     if length == -1:
         length = len(path_format)
 
-    for node in filter(
-        lambda node: node.re_pattern is None, (point.next_nodes or EMPTY_TUPLE)
-    ):
+    for node in point.next_nodes or ():
+        if node.re_pattern is not None:
+            continue
         prefix = find_common_prefix(node.characters, path_format[:length])
         if prefix == "":
             continue
@@ -100,9 +101,6 @@ def append(
 
 
 def search(point: TreeNode, path: str) -> Optional[Tuple[Dict[str, str], TreeNode]]:
-    """
-    Find a suitable route
-    """
     stack: List[Tuple[str, TreeNode]] = [(path, point)]
     params: Dict[str, Any] = {}
 
@@ -123,15 +121,9 @@ def search(point: TreeNode, path: str) -> Optional[Tuple[Dict[str, str], TreeNod
 
         path = path[length:]
         if not path:  # path == "", found the first suitable route
-            [
-                params.pop(name)
-                for name in (
-                    set(params.keys()) - set((point.param_convertors or {}).keys())
-                )
-            ]
             return params, point
 
-        for node in point.next_nodes or EMPTY_TUPLE:
+        for node in point.next_nodes or ():
             stack.append((path, node))
 
     return None
@@ -147,12 +139,10 @@ class RadixTree:
         path_format, param_convertors = compile_path(path)
         point = append(self.root, path_format[1:], param_convertors)
 
-        if point.endpoint is not None:
+        if point.route is not None:
             raise ValueError(f"Routing conflict: {path}")
 
-        point.endpoint = endpoint
-        if param_convertors:
-            point.param_convertors = param_convertors
+        point.route = (path_format, param_convertors, endpoint)
 
     def search(
         self, path: str
@@ -162,27 +152,27 @@ class RadixTree:
             return None, None
 
         raw_params, node = result
-        if node.endpoint is None:
+        if node.route is None:
             return None, None
 
-        param_convertors = node.param_convertors or {}
+        param_convertors = node.route[1]
         return (
             {
-                name: param_convertors[name].convert(value)
+                name: param_convertors[name].to_python(value)
                 for name, value in raw_params.items()
+                if name in param_convertors
             },
-            node.endpoint,
+            node.route,
         )
 
     def iterator(self) -> Generator[Tuple[str, ASGIApp], None, None]:
-        stack: List[Tuple[str, TreeNode]] = [(self.root.characters, self.root)]
+        stack: List[TreeNode] = [self.root]
 
         while stack:
-            characters, point = stack.pop()
-            for node in point.next_nodes or EMPTY_TUPLE:
-                if node.re_pattern is not None:
-                    stack.append((f"{characters}{{{node.characters}}}", node))
-                else:
-                    stack.append((f"{characters}{node.characters}", node))
-            if point.endpoint:
-                yield characters, point.endpoint
+            point = stack.pop()
+            for node in point.next_nodes or ():
+                stack.append(node)
+            if point.route is None:
+                continue
+            path_format, _, endpoint = point.route
+            yield path_format, endpoint
