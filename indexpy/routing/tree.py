@@ -155,14 +155,14 @@ class RadixTree:
         if node.route is None:
             return None, None
 
-        param_convertors = node.route[1]
+        _, param_convertors, endpoint = node.route
         return (
             {
                 name: param_convertors[name].to_python(value)
                 for name, value in raw_params.items()
                 if name in param_convertors
             },
-            node.route,
+            endpoint,
         )
 
     def iterator(self) -> Generator[Tuple[str, ASGIApp], None, None]:

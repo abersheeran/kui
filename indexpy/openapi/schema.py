@@ -4,9 +4,8 @@ import inspect
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from pydantic import BaseModel
-
 from baize.typing import Literal
+from pydantic import BaseModel
 
 from .types import UploadFile
 

@@ -4,7 +4,7 @@ import asyncio
 import json
 import typing
 
-from baize.asgi import HTTPException, Message
+from baize.asgi import HTTPException, Message, PlainTextResponse
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
@@ -129,14 +129,16 @@ class ExceptionMiddleware:
     @staticmethod
     def http_exception(request: Request, exc: HTTPException) -> Response:
         if exc.status_code in {204, 304}:
-            return Response(b"", status_code=exc.status_code, headers=exc.headers)
+            return Response(status_code=exc.status_code, headers=exc.headers)
 
-        return Response(
-            content=exc.content, status_code=exc.status_code, headers=exc.headers
+        return PlainTextResponse(
+            content=exc.content,
+            status_code=exc.status_code,
+            headers=exc.headers and dict(exc.headers),
         )
 
     @staticmethod
     def request_validation_error(
         request: Request, exc: RequestValidationError
     ) -> Response:
-        return Response(exc.json(), status_code=422, media_type="application/json")
+        return PlainTextResponse(exc.json(), status_code=422, media_type="application/json")

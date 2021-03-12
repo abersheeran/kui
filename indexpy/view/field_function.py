@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional
 
 from baize.typing import Literal
 from pydantic.fields import NoArgAnyCallable, Undefined

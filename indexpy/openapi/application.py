@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     from indexpy.requests import Request
 
 from indexpy.exceptions import RequestValidationError
-from indexpy.responses import Response, HTMLResponse, JSONResponse
+from indexpy.responses import HTMLResponse, JSONResponse, Response
 from indexpy.routing import HttpRoute
 from indexpy.utils import F
 

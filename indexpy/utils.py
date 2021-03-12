@@ -7,7 +7,7 @@ import threading
 from contextvars import ContextVar
 from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar, Generic
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -116,7 +116,6 @@ class F(partial):
 
 
 if TYPE_CHECKING:
-    T = TypeVar("T")
 
     def bind_contextvar(contextvar: ContextVar[T]) -> T:
         raise NotImplementedError

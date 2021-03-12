@@ -22,8 +22,9 @@ class HTTPConnection(BaiZeHTTPConnection):
         self._scope.setdefault("state", {})
         return State(self._scope["state"])
 
+    @cached_property
     def app(self) -> Index:
-        return self["app"]
+        return self["app"]  # type: ignore
 
 
 class Request(BaiZeRequest, HTTPConnection):

@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 import functools
 import typing
-from itertools import groupby
 from inspect import isclass, signature
+from itertools import groupby
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
     from indexpy.requests import Request
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
-
 
 HTTP_METHOD_NAMES = [
     "get",
