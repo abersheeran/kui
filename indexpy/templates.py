@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 from baize.asgi import Receive, Scope, Send
 
+from .requests import request
 from .responses import Response
 
 
@@ -93,7 +94,7 @@ else:
         def get_env(self, loader: jinja2.BaseLoader) -> jinja2.Environment:
             @jinja2.contextfunction
             def url_for(context: dict, name: str, **path_params: typing.Any) -> str:
-                router = context["request"]["app"].router
+                router = request.app.router
                 return router.url_for(name, path_params)
 
             env = jinja2.Environment(loader=loader, enable_async=True, autoescape=True)
