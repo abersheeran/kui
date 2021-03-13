@@ -88,13 +88,17 @@ def _none(ret: typing.Type[None]) -> typing.NoReturn:
 @automatic.register(tuple)
 @automatic.register(list)
 @automatic.register(dict)
-def _json(body, status: int = 200, headers: dict = None) -> Response:
+def _json(
+    body, status: int = 200, headers: typing.Mapping[str, str] = None
+) -> Response:
     return JSONResponse(body, status, headers)
 
 
 @automatic.register(str)
 @automatic.register(bytes)
 def _plain_text(
-    body: typing.Union[str, bytes], status: int = 200, headers: dict = None
+    body: typing.Union[str, bytes],
+    status: int = 200,
+    headers: typing.Mapping[str, str] = None,
 ) -> Response:
     return PlainTextResponse(body, status, headers)

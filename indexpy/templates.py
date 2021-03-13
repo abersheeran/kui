@@ -46,7 +46,7 @@ else:
             self.env = env
             self.template = self.env.get_template(name)
             self.context = context
-            super().__init__(None, status_code, headers, media_type)
+            super().__init__(status_code, headers)
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
             if self.env.enable_async:  # type: ignore
@@ -56,15 +56,6 @@ else:
             self.body = self.render(content)
             self.headers["content-length"] = str(len(self.body))
 
-            extensions = self.context.get("request", {}).get("extensions", {})
-            if "http.response.template" in extensions:
-                await send(
-                    {
-                        "type": "http.response.template",
-                        "template": self.template,
-                        "context": self.context,
-                    }
-                )
             await super().__call__(scope, receive, send)
 
     class Jinja2Templates(BaseTemplates):
