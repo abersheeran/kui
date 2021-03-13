@@ -8,9 +8,7 @@ from baize.asgi import HTTPException, Message, PlainTextResponse
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
-if typing.TYPE_CHECKING:
-    from .requests import Request
-
+from .requests import request
 from .responses import Response
 
 
@@ -56,7 +54,7 @@ class RequestValidationError(Exception):
 class ExceptionMiddleware:
     def __init__(
         self,
-        view: typing.Callable[[Request], typing.Awaitable[None]],
+        view: typing.Callable[[], typing.Awaitable[None]],
         handlers: dict = None,
     ) -> None:
         self.view = view
@@ -90,7 +88,7 @@ class ExceptionMiddleware:
                 return self._exception_handlers[cls]
         return None
 
-    async def __call__(self, request: Request) -> None:
+    async def __call__(self) -> None:
         response_started = False
         send = request._send
 
@@ -104,7 +102,7 @@ class ExceptionMiddleware:
         request._send = sender
 
         try:
-            return await self.view(request)
+            return await self.view()
         except Exception as exc:
             handler = None
 
@@ -127,7 +125,7 @@ class ExceptionMiddleware:
             return await response(request._send, request._receive, request._send)
 
     @staticmethod
-    def http_exception(request: Request, exc: HTTPException) -> Response:
+    def http_exception(exc: HTTPException) -> Response:
         if exc.status_code in {204, 304}:
             return Response(status_code=exc.status_code, headers=exc.headers)
 
@@ -138,7 +136,7 @@ class ExceptionMiddleware:
         )
 
     @staticmethod
-    def request_validation_error(
-        request: Request, exc: RequestValidationError
-    ) -> Response:
-        return PlainTextResponse(exc.json(), status_code=422, media_type="application/json")
+    def request_validation_error(exc: RequestValidationError) -> Response:
+        return PlainTextResponse(
+            exc.json(), status_code=422, media_type="application/json"
+        )

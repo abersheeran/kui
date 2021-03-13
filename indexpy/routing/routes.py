@@ -95,10 +95,10 @@ T = typing.TypeVar("T")
 class RouteRegisterMixin:
     __slots__ = ()
 
-    def append(self, route: BaseRoute) -> None:
+    def __lt__(self, route: BaseRoute) -> None:
         raise NotImplementedError()
 
-    def extend(self, routes: typing.List[BaseRoute]) -> None:
+    def __lshift__(self, routes: typing.List[BaseRoute]) -> None:
         for route in routes:  # type: BaseRoute
             if isinstance(routes, Routes):
                 route.extend_middlewares(routes)
@@ -111,7 +111,7 @@ class RouteRegisterMixin:
             if getattr(routes, "namespace", None) and route.name:
                 route.name = getattr(routes, "namespace") + ":" + route.name
 
-            self.append(route)
+            self < route
 
     def http(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
@@ -123,7 +123,7 @@ class RouteRegisterMixin:
         """
 
         def register(endpoint: T) -> T:
-            self.append(HttpRoute(path, endpoint, name))
+            self < HttpRoute(path, endpoint, name)
             return endpoint
 
         return register
@@ -134,11 +134,11 @@ class RouteRegisterMixin:
 
         example:
             @routes.websocket("/path", name="endpoint-name")
-            async def endpoint(websocket): ...
+            class Endpoint(SocketView): ...
         """
 
         def register(endpoint: T) -> T:
-            self.append(SocketRoute(path, endpoint, name))
+            self < SocketRoute(path, endpoint, name)
             return endpoint
 
         return register
@@ -212,7 +212,6 @@ class SubRoutes(Routes):
         namespace: str = "",
         http_middlewares: typing.List[typing.Any] = [],
         socket_middlewares: typing.List[typing.Any] = [],
-        asgi_middlewares: typing.List[typing.Any] = [],
     ) -> None:
         if not prefix.startswith("/") or prefix.endswith("/"):
             raise ValueError("Mount prefix cannot end with '/' and must start with '/'")
@@ -222,7 +221,6 @@ class SubRoutes(Routes):
             namespace=namespace,
             http_middlewares=http_middlewares,
             socket_middlewares=socket_middlewares,
-            asgi_middlewares=asgi_middlewares,
         )
 
 

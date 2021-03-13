@@ -175,8 +175,8 @@ def _merge_multi_value(
     return {
         k: v_list if len(v_list) > 1 else v_list[0]
         for k, v_list in (
-            (k, list(v_iter))
-            for k, v_iter in (
+            (k, list(v for _, v in kv_iter))
+            for k, kv_iter in (
                 lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
             )(items, lambda kv: kv[0])
         )

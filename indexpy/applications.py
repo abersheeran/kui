@@ -13,7 +13,7 @@ from pydantic.dataclasses import dataclass
 
 from .debug import ServerErrorMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import Request, WebSocket, request_var, websocket_var
+from .requests import Request, WebSocket, request, request_var, websocket, websocket_var
 from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
@@ -87,34 +87,37 @@ class Application:
                 "Maybe you want to use `Index` replace `Application`"
             )
 
-        return await getattr(self, scope_type)(
-            getattr(self.factory_class, scope_type)(scope, receive, send)
-        )
+        if scope_type == "http":
+            connection = self.factory_class.http(scope, receive, send)
+            contextvar = request_var
+        elif scope_type == "websocket":
+            connection = self.factory_class.websocket(scope, receive, send)
+            contextvar = websocket_var
 
-    async def http(self, request: Request) -> None:
         try:
-            token = request_var.set(request)
+            token = contextvar.set(connection)
+            return await getattr(self, scope_type)(connection)
+        finally:
+            contextvar.reset(token)
+
+    async def http(self) -> None:
+        try:
             path_params, handler = self.router.search("http", request["path"])
             request._scope["path_params"] = path_params
         except NoMatchFound:
             raise HTTPException(404)
         else:
-            response = convert_response(await handler(request))
+            response = convert_response(await handler())
             return await response(request._scope, request._receive, request._send)
-        finally:
-            request_var.reset(token)
 
-    async def websocket(self, websocket: WebSocket) -> None:
+    async def websocket(self) -> None:
         try:
-            token = websocket_var.set(websocket)
             path_params, handler = self.router.search("websocket", websocket["path"])
             websocket._scope["path_params"] = path_params
         except NoMatchFound:
             return await websocket.close(1001)
         else:
-            return await handler(websocket)
-        finally:
-            websocket_var.reset(token)
+            return await handler()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
