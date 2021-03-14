@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, Generator, List, Optional, Pattern, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Pattern, Tuple, Union
 from typing import cast as typing_cast
 
-from baize.asgi import ASGIApp
 from baize.routing import Convertor, PathConvertor, compile_path
 
 
@@ -13,9 +12,9 @@ from baize.routing import Convertor, PathConvertor, compile_path
 class TreeNode:
     characters: str
     re_pattern: Optional[Pattern] = None
-    next_nodes: Optional[List["TreeNode"]] = None
+    next_nodes: Optional[List[TreeNode]] = None
 
-    route: Optional[Tuple[str, Dict[str, Convertor], ASGIApp]] = None
+    route: Optional[Tuple[str, Dict[str, Convertor], Callable]] = None
 
 
 def find_common_prefix(x: str, y: str) -> str:
@@ -83,12 +82,12 @@ def append(
         prefix_node = TreeNode(characters=prefix, next_nodes=[])
         point.next_nodes[node_index] = prefix_node
         node.characters = node.characters[len(prefix) :]
-        typing_cast(List, prefix_node.next_nodes).insert(0, node)
+        typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, node)
         if path_format[:length] == prefix:
             return append(prefix_node, path_format[length:], param_convertors)
 
         new_node = TreeNode(characters=path_format[len(prefix) : length])
-        typing_cast(List, prefix_node.next_nodes).insert(0, new_node)
+        typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
 
     new_node = TreeNode(characters=path_format[:length])
@@ -129,7 +128,7 @@ class RadixTree:
     def __init__(self) -> None:
         self.root = TreeNode("/")
 
-    def append(self, path: str, endpoint: ASGIApp) -> None:
+    def append(self, path: str, endpoint: Callable) -> None:
         if path[0] != "/":
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
@@ -142,7 +141,7 @@ class RadixTree:
 
     def search(
         self, path: str
-    ) -> Union[Tuple[Dict[str, Any], ASGIApp], Tuple[None, None]]:
+    ) -> Union[Tuple[Dict[str, Any], Callable], Tuple[None, None]]:
         result = search(self.root, path)
         if result is None:
             return None, None
@@ -161,7 +160,7 @@ class RadixTree:
             endpoint,
         )
 
-    def iterator(self) -> Generator[Tuple[str, ASGIApp], None, None]:
+    def iterator(self) -> Generator[Tuple[str, Callable], None, None]:
         stack: List[TreeNode] = [self.root]
 
         while stack:

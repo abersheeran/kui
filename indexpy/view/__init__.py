@@ -3,77 +3,53 @@ from __future__ import annotations
 import asyncio
 import functools
 import typing
-from inspect import isclass, signature
+from inspect import signature
 from itertools import groupby
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
 
 from indexpy.exceptions import RequestValidationError
+from indexpy.requests import request
 from indexpy.responses import Response, convert_response
-
-if typing.TYPE_CHECKING:
-    from indexpy.requests import Request
+from indexpy.utils import safe_issubclass
 
 from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
 
-HTTP_METHOD_NAMES = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options",
-    "trace",
-]
 
+class HTTPView:
+    HTTP_METHOD_NAMES = [
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]
 
-class ViewMeta(type):
-    def __init__(
-        cls,
-        name: str,
-        bases: typing.Tuple[type],
-        namespace: typing.Dict[str, typing.Any],
-    ):
-        for function_name in filter(
-            lambda key: key in HTTP_METHOD_NAMES, namespace.keys()
+    if typing.TYPE_CHECKING:
+        __methods__: typing.List[str]
+
+    def __init_subclass__(cls) -> None:
+        for function_name in (
+            key for key in cls.__dict__.keys() if key in cls.HTTP_METHOD_NAMES
         ):
-            function = namespace[function_name]
+            function = cls.__dict__[function_name]
             if asyncio.iscoroutinefunction(function):
                 raise TypeError(
                     f"The function {function_name} should be defined using `async def`"
                 )
-            namespace[function_name] = parse_params(function)
-
-        setattr(
-            cls,
-            "__methods__",
-            [m.upper() for m in HTTP_METHOD_NAMES if hasattr(cls, m)],
-        )
-
-        super().__init__(name, bases, namespace)
-
-
-class HTTPView(metaclass=ViewMeta):
-    if typing.TYPE_CHECKING:
-        __methods__: typing.List[str]
-
-    def __init__(self, request: Request) -> None:
-        self.request = request
+            cls.__dict__[function_name] = parse_params(function)
+        cls.__methods__ = [m.upper() for m in cls.HTTP_METHOD_NAMES if hasattr(cls, m)]
 
     def __await__(self) -> typing.Generator[typing.Any, None, Response]:
         return self.__impl__().__await__()
 
     async def __impl__(self) -> Response:
-        # Try to dispatch to the right method; if a method doesn't exist,
-        # defer to the error handler.
-        handler = getattr(
-            self, self.request.method.lower(), self.http_method_not_allowed
-        )
-
-        handler = await bound_params(handler, self.request)
-
+        handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
+        handler = await bound_params(handler, request)
         return convert_response(await handler())
 
     async def http_method_not_allowed(self) -> Response:
@@ -114,18 +90,8 @@ def parse_params(function: Callable) -> Callable:
         default = param.default
         annotation = param.annotation
 
-        if isinstance(default, QueryInfo):
-            _type_ = query
-        elif isinstance(default, HeaderInfo):
-            _type_ = header
-        elif isinstance(default, CookieInfo):
-            _type_ = cookie
-        elif isinstance(default, BodyInfo):
-            _type_ = body
-        elif isinstance(default, PathInfo):
-            _type_ = path
-        elif isinstance(default, ExclusiveInfo):
-            if isclass(annotation) and issubclass(annotation, BaseModel):
+        if isinstance(default, ExclusiveInfo):
+            if safe_issubclass(annotation, BaseModel):
                 model = annotation
             else:
                 model = create_model(
@@ -136,6 +102,17 @@ def parse_params(function: Callable) -> Callable:
             __parameters__[default.name] = model
             __exclusive_models__[model] = name
             continue
+
+        if isinstance(default, QueryInfo):
+            _type_ = query
+        elif isinstance(default, HeaderInfo):
+            _type_ = header
+        elif isinstance(default, CookieInfo):
+            _type_ = cookie
+        elif isinstance(default, BodyInfo):
+            _type_ = body
+        elif isinstance(default, PathInfo):
+            _type_ = path
         else:
             continue
 
@@ -183,15 +160,16 @@ def _merge_multi_value(
     }
 
 
-async def bound_params(handler: typing.Callable, request: Request) -> typing.Callable:
+async def bound_params(handler: typing.Callable) -> typing.Callable:
     """
     bound parameters "path", "query", "header", "cookie", "body" to the view function
     """
     parameters = getattr(handler, "__parameters__", None)
     request_body = getattr(handler, "__request_body__", None)
-    exclusive_models = getattr(handler, "__exclusive_models__", {})
     if not (parameters or request_body):
         return handler
+
+    exclusive_models = getattr(handler, "__exclusive_models__", {})
 
     data: typing.List[typing.Any] = []
     kwargs: typing.Dict[str, BaseModel] = {}

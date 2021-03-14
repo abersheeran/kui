@@ -6,8 +6,16 @@ import os
 import threading
 from contextvars import ContextVar
 from functools import partial
+from inspect import isclass
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Tuple, TypeVar, Union
+
+
+def safe_issubclass(
+    __cls: type, __class_or_tuple: Union[type, Tuple[Union[type, Tuple[Any, ...]], ...]]
+) -> bool:
+    return isclass(__cls) and issubclass(__cls, __class_or_tuple)
+
 
 T = TypeVar("T")
 
@@ -37,30 +45,6 @@ def import_module(name: str) -> Optional[ModuleType]:
     ):
         return importlib.import_module(name)
     return None  # nothing to do when module not be found
-
-
-class superclass:
-    """
-    Call the method of the specified parent class. The usage is similar
-    to `super`, but the difference from `super` is that `superclass`
-    only looks for methods in the specified parent class.
-
-    example:
-        superclass(Class, obj).function(...)
-    """
-
-    def __init__(self, cls: type, instance: Any):
-        assert cls in instance.__class__.mro(), "`cls` must be in parent classes"
-
-        self.__cls = cls
-        self.__instance = instance
-
-    def __getattr__(self, name: str) -> Callable[..., Any]:
-        if not hasattr(self.__cls, name):
-            raise AttributeError(name)
-
-        func = getattr(self.__cls, name)
-        return partial(func, self.__instance)
 
 
 class State(dict):

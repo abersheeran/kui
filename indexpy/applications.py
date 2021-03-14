@@ -4,7 +4,7 @@ import copy
 import dataclasses
 import inspect
 import traceback
-from typing import Callable, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
 from baize.asgi import ASGIApp, Receive, Scope, Send
 from baize.typing import Literal
@@ -22,8 +22,8 @@ from .utils import State
 
 @dataclasses.dataclass
 class Lifespan:
-    on_startup: List[Callable] = dataclasses.field(default_factory=list)
-    on_shutdown: List[Callable] = dataclasses.field(default_factory=list)
+    on_startup: List[Callable[[], Any]] = dataclasses.field(default_factory=list)
+    on_shutdown: List[Callable[[], Any]] = dataclasses.field(default_factory=list)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """
@@ -63,72 +63,10 @@ class FactoryClass:
     websocket: Type[WebSocket] = WebSocket
 
 
-class Application:
-    def __init__(
-        self,
-        *,
-        templates: Optional[BaseTemplates] = None,
-        routes: List[BaseRoute] = [],
-        factory_class: FactoryClass = FactoryClass(),
-    ) -> None:
-        self.factory_class = factory_class
-        self.templates = templates
-        self.router = Router(routes)
-
-    @cached_property
-    def state(self) -> State:
-        return State()
-
-    async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
-        scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]
-
-        if scope_type == "lifespan":
-            raise NotImplementedError(
-                "Maybe you want to use `Index` replace `Application`"
-            )
-
-        if scope_type == "http":
-            connection = self.factory_class.http(scope, receive, send)
-            contextvar = request_var
-        elif scope_type == "websocket":
-            connection = self.factory_class.websocket(scope, receive, send)
-            contextvar = websocket_var
-
-        try:
-            token = contextvar.set(connection)
-            return await getattr(self, scope_type)(connection)
-        finally:
-            contextvar.reset(token)
-
-    async def http(self) -> None:
-        try:
-            path_params, handler = self.router.search("http", request["path"])
-            request._scope["path_params"] = path_params
-        except NoMatchFound:
-            raise HTTPException(404)
-        else:
-            response = convert_response(await handler())
-            return await response(request._scope, request._receive, request._send)
-
-    async def websocket(self) -> None:
-        try:
-            path_params, handler = self.router.search("websocket", websocket["path"])
-            websocket._scope["path_params"] = path_params
-        except NoMatchFound:
-            return await websocket.close(1001)
-        else:
-            return await handler()
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        scope["app"] = self
-
-        await self.app(scope, receive, send)
-
-
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
-class Index(Application):
+class Index:
     def __init__(
         self,
         *,
@@ -141,13 +79,10 @@ class Index(Application):
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
         self.debug = debug
-        super().__init__(
-            templates=templates, routes=routes, factory_class=factory_class
-        )
-        self.lifespan = Lifespan(
-            on_startup=copy.copy(on_startup),
-            on_shutdown=copy.copy(on_shutdown),
-        )
+        self.factory_class = factory_class
+        self.templates = templates
+        self.router = Router(routes)
+        self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
         self.exception_handlers = copy.copy(exception_handlers)
         self.asgiapp = self.build_app()
 
@@ -206,14 +141,47 @@ class Index(Application):
         self.lifespan.on_shutdown.append(func)
         return func
 
+    @cached_property
+    def state(self) -> State:
+        return State()
+
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """
-        App without ASGI middleware.
-        """
-        if scope["type"] == "lifespan":
-            await self.lifespan(scope, receive, send)
+        scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]
+
+        if scope_type == "lifespan":
+            return await self.lifespan(scope, receive, send)
+
+        if scope_type == "http":
+            connection = self.factory_class.http(scope, receive, send)
+            contextvar = request_var
+        elif scope_type == "websocket":
+            connection = self.factory_class.websocket(scope, receive, send)
+            contextvar = websocket_var
+
+        try:
+            token = contextvar.set(connection)
+            return await getattr(self, scope_type)(connection)
+        finally:
+            contextvar.reset(token)
+
+    async def http(self) -> None:
+        try:
+            path_params, handler = self.router.search("http", request["path"])
+            request._scope["path_params"] = path_params
+        except NoMatchFound:
+            raise HTTPException(404)
         else:
-            await super().app(scope, receive, send)
+            response = convert_response(await handler())
+            return await response(request._scope, request._receive, request._send)
+
+    async def websocket(self) -> None:
+        try:
+            path_params, handler = self.router.search("websocket", websocket["path"])
+            websocket._scope["path_params"] = path_params
+        except NoMatchFound:
+            return await websocket.close(1001)
+        else:
+            return await handler()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
