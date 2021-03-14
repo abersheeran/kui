@@ -30,7 +30,7 @@ class RequestValidationError(Exception):
                 "type": "object",
                 "properties": {
                     "loc": {
-                        "title": "Loc",
+                        "title": "Location",
                         "description": "error field",
                         "type": "array",
                         "items": {"type": "string"},
@@ -41,7 +41,7 @@ class RequestValidationError(Exception):
                         "type": "string",
                     },
                     "msg": {
-                        "title": "Msg",
+                        "title": "Message",
                         "description": "error message",
                         "type": "string",
                     },

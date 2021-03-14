@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import html
 import inspect
 import pprint
@@ -11,8 +10,9 @@ from baize.asgi import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
     from .requests import Request
+    from .responses import Response
 
-from .responses import HTMLResponse, PlainTextResponse, Response
+from .responses import HTMLResponse, PlainTextResponse
 
 STYLES = """
 :root {
@@ -164,7 +164,10 @@ class ServerErrorMiddleware:
     """
 
     def __init__(
-        self, app: ASGIApp, handler: typing.Callable = None, debug: bool = False
+        self,
+        app: ASGIApp,
+        handler: typing.Callable[[Request, Exception], Response] = None,
+        debug: bool = False,
     ) -> None:
         self.app = app
         self.handler = handler
@@ -190,25 +193,13 @@ class ServerErrorMiddleware:
             if not response_started:
                 request = scope["app"].factory_class.http(scope)
                 if self.debug:
-                    # In debug mode, return traceback responses.
                     response = self.debug_response(request, exc)
                 elif self.handler is None:
-                    # Use our default 500 error handler.
                     response = self.error_response(request, exc)
                 else:
-                    # Use an installed 500 error handler.
-                    if asyncio.iscoroutinefunction(self.handler):
-                        response = await self.handler(request, exc)
-                    else:
-                        response = await asyncio.get_running_loop().run_in_executor(
-                            self.handler, request, exc
-                        )
-
+                    response = await self.handler(request, exc)
                 await response(scope, receive, send)
 
-            # We always continue to raise the exception.
-            # This allows servers to log the error, or allows test clients
-            # to optionally raise the error within the test case.
             raise exc from None
 
     def format_line(

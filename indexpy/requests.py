@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import typing
+import json
 from contextvars import ContextVar
 from http import HTTPStatus
 
 from baize.asgi import HTTPConnection as BaiZeHTTPConnection
 from baize.asgi import Request as BaiZeRequest
 from baize.asgi import WebSocket as BaiZeWebSocket
+from baize.asgi import WebSocketState, WebSocketDisconnect
 from baize.utils import cached_property
+from baize.exceptions import HTTPException
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
 
-from .exceptions import HTTPException
 from .utils import State, bind_contextvar
 
 
@@ -47,7 +49,32 @@ request = bind_contextvar(request_var)
 
 
 class WebSocket(BaiZeWebSocket, HTTPConnection):
-    pass
+    async def receive_json(self, mode: str = "text") -> typing.Any:
+        assert mode in ("text", "binary")
+        assert self.application_state == WebSocketState.CONNECTED
+        message = await self.receive()
+        self._raise_on_disconnect(message)
+
+        if mode == "text":
+            text = message["text"]
+        else:
+            text = message["bytes"].decode("utf-8")
+        return json.loads(text)
+
+    async def send_json(self, data: typing.Any, mode: str = "text") -> None:
+        assert mode in ("text", "binary")
+        text = json.dumps(data)
+        if mode == "text":
+            await self.send({"type": "websocket.send", "text": text})
+        else:
+            await self.send({"type": "websocket.send", "bytes": text.encode("utf-8")})
+
+    async def iter_json(self) -> typing.AsyncIterator[typing.Any]:
+        try:
+            while True:
+                yield await self.receive_json()
+        except WebSocketDisconnect:
+            pass
 
 
 websocket_var: ContextVar[WebSocket] = ContextVar("websocket")

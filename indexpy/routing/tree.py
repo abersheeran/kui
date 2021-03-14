@@ -22,8 +22,6 @@ def find_common_prefix(x: str, y: str) -> str:
     """
     find the longest common prefix of x and y
     """
-    if not x or not y:
-        return ""
     for i in range(min(len(x), len(y))):
         if x[i] != y[i]:
             return x[:i]
@@ -55,9 +53,9 @@ def append(
             raise ValueError(
                 "`PathConvertor` is only allowed to appear at the end of path"
             )
-        for node in point.next_nodes or ():
-            if node.re_pattern is None:
-                continue
+        for node in (
+            node for node in point.next_nodes or () if node.re_pattern is not None
+        ):
             if (node.re_pattern == re_pattern) != (node.characters == param_name):
                 raise ValueError(
                     "The same regular matching is used in the same position"
@@ -74,9 +72,7 @@ def append(
     if length == -1:
         length = len(path_format)
 
-    for node in point.next_nodes or ():
-        if node.re_pattern is not None:
-            continue
+    for node in (node for node in point.next_nodes or () if node.re_pattern is None):
         prefix = find_common_prefix(node.characters, path_format[:length])
         if prefix == "":
             continue

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import copy
 import importlib
 import os
@@ -92,11 +93,13 @@ class SocketRoute(BaseRoute):
 T = typing.TypeVar("T")
 
 
-class RouteRegisterMixin:
-    __slots__ = ()
+class RouteRegisterMixin(abc.ABC):
+    @abc.abstractmethod
+    def append(self, route: BaseRoute) -> None:
+        raise NotImplementedError
 
     def __lt__(self, route: BaseRoute) -> None:
-        raise NotImplementedError()
+        self.append(route)
 
     def __lshift__(self, routes: typing.List[BaseRoute]) -> None:
         for route in routes:  # type: BaseRoute
@@ -161,17 +164,6 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
                 self.append(route)
             else:
                 self.extend(route)
-
-    def extend(self, routes: typing.List[BaseRoute]) -> None:  # type: ignore
-        """
-        Extend routes in routes
-
-        example:
-            routes.extend(Routes(...))
-        or
-            routes.extend([...])
-        """
-        return superclass(RouteRegisterMixin, self).extend(routes)
 
     def http_middleware(self, middleware: T) -> T:
         """
