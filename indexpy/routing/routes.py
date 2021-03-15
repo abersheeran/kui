@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import copy
 import importlib
+import operator
 import os
 import sys
 import typing
@@ -18,6 +19,9 @@ else:
 from baize.routing import compile_path
 
 from .tree import RadixTree, RouteType
+
+T = typing.TypeVar("T")
+Self = typing.TypeVar("Self")
 
 
 class NoMatchFound(Exception):
@@ -44,12 +48,14 @@ class BaseRoute:
     def _extend_middlewares(
         self, middlewares: typing.Iterable[typing.Callable]
     ) -> None:
+        reduce(operator.matmul, middlewares, self)
+
+    def __matmul__(self, decorator: typing.Callable[[T], T]):
         endpoint = self.endpoint
-        for middleware in middlewares:
-            self.endpoint = middleware(endpoint)
-            if not (endpoint is self.endpoint):
-                self.endpoint = update_wrapper(self.endpoint, endpoint)
-            endpoint = self.endpoint
+        self.endpoint = decorator(self.endpoint)
+        if not (getattr(self.endpoint, "__wrapped__", self.endpoint) is endpoint):
+            self.endpoint = update_wrapper(self.endpoint, endpoint)
+        return self
 
     def __post_init__(self) -> None:
         if not self.path.startswith("/"):
@@ -68,9 +74,6 @@ class HttpRoute(BaseRoute):
 class SocketRoute(BaseRoute):
     def extend_middlewares(self, routes: typing.List[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_socket_middlewares", []))
-
-
-T = typing.TypeVar("T")
 
 
 class RouteRegisterMixin(abc.ABC):
@@ -285,13 +288,13 @@ class Router(RouteRegisterMixin):
 
         self << routes
 
+    @staticmethod
     def _append(
-        self,
         path: str,
         endpoint: typing.Callable[[], typing.Any],
         name: typing.Optional[str],
         radix_tree: RadixTree,
-        routes: typing.Dict,
+        routes: typing.Dict[str, RouteType],
     ) -> None:
         if name in routes:
             raise ValueError(f"Duplicate route name: {name}")

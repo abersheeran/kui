@@ -87,6 +87,7 @@ class Index:
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
         self.exception_handlers = copy.copy(exception_handlers)
+        self._impl_http = ExceptionMiddleware(exception_handlers)(self._impl_raw_http)
         self.debug = debug
         self.asgiapp = self.build_app()
 
@@ -112,11 +113,7 @@ class Index:
             else:
                 exception_handlers[key] = value
 
-        if not hasattr(self, "__http_view"):
-            self.__http_view = self._http_view
-        _http_view = ExceptionMiddleware(exception_handlers)(self.__http_view)
-        setattr(self, "_http_view", _http_view)
-
+        self._impl_http = ExceptionMiddleware(exception_handlers)(self._impl_raw_http)
         # We expect to be able to catch all code errors, so as an ASGI middleware.
         return ServerErrorMiddleware(
             app=self.app, handler=error_handler, debug=self.debug
@@ -159,12 +156,12 @@ class Index:
         request = self.factory_class.http(scope, receive, send)
         token = request_var.set(request)
         try:
-            response = await self._http_view()
+            response = await self._impl_http()
             return await response(scope, receive, send)
         finally:
             request_var.reset(token)
 
-    async def _http_view(self) -> Response:
+    async def _impl_raw_http(self) -> Response:
         try:
             path_params, handler = self.router.search("http", request["path"])
             request["path_params"] = path_params

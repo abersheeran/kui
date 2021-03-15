@@ -4,7 +4,7 @@ import asyncio
 import functools
 from inspect import signature
 from itertools import groupby
-from typing import Any, TypeVar, Dict, List, Tuple, Union, Type, Callable
+from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model

@@ -1,19 +1,10 @@
 import asyncio
 
-from indexpy import Index, request
-from indexpy.__version__ import __version__
-from indexpy.openapi import OpenAPI, describe_response
+from indexpy import Index
 from indexpy.responses import SendEventResponse
-from indexpy.routing import Routes, SubRoutes
-
-app = Index(debug=True)
+from indexpy.routing import HttpRoute, Routes
 
 
-@app.router.http("/")
-@describe_response(
-    200,
-    content={"text/plain": {"schema": {"type": "string"}}},
-)
 async def homepage():
     """
     Homepage
@@ -21,13 +12,10 @@ async def homepage():
     return "hello, index.py"
 
 
-@app.router.http("/exc")
 async def exc():
     raise Exception("For get debug page.")
 
 
-@app.router.http("/message")
-@describe_response(200, content={"text/event-stream": {}})
 async def message():
     """
     Message
@@ -41,3 +29,13 @@ async def message():
             yield {"id": i, "data": "hello"}
 
     return SendEventResponse(message_gen())
+
+
+app = Index(
+    debug=True,
+    routes=[HttpRoute("/", homepage)],
+)
+app.router << Routes(
+    HttpRoute("/exc", exc),
+    HttpRoute("/message", message),
+)
