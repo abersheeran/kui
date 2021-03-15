@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import functools
-import typing
 from inspect import signature
 from itertools import groupby
+from typing import Any, TypeVar, Dict, List, Tuple, Union, Type, Callable
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
@@ -30,13 +30,13 @@ class ApiView(HttpView):
             cls.__dict__[function_name] = parse_params(function)
         super().__init_subclass__()
 
-    async def __impl__(self) -> typing.Any:
+    async def __impl__(self) -> Any:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
         handler = await bound_params(handler)
         return await handler()
 
 
-Callable = typing.TypeVar("Callable", bound=typing.Callable)
+CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
 def create_model_config(title: str = None, description: str = None):
@@ -51,10 +51,10 @@ def create_model_config(title: str = None, description: str = None):
     return ExclusiveModelConfig
 
 
-def parse_params(function: Callable) -> Callable:
+def parse_params(function: CallableObject) -> CallableObject:
     sig = signature(function)
 
-    __parameters__: typing.Dict[str, typing.Any] = {
+    __parameters__: Dict[str, Any] = {
         "path": {},
         "query": {},
         "header": {},
@@ -109,8 +109,8 @@ def parse_params(function: Callable) -> Callable:
 
 
 def _merge_multi_value(
-    items: typing.List[typing.Tuple[str, str]]
-) -> typing.Dict[str, typing.Union[str, typing.List[str]]]:
+    items: List[Tuple[str, str]]
+) -> Dict[str, Union[str, List[str]]]:
     """
     If there are values with the same key value, they are merged into a List.
     """
@@ -125,19 +125,21 @@ def _merge_multi_value(
     }
 
 
-async def bound_params(handler: typing.Callable) -> typing.Callable:
+async def bound_params(handler: Callable) -> Callable[[], Any]:
     """
     bound parameters "path", "query", "header", "cookie", "body" to the view function
     """
-    parameters = getattr(handler, "__parameters__", None)
-    request_body = getattr(handler, "__request_body__", None)
+    parameters: Dict[str, BaseModel] = getattr(handler, "__parameters__", None)
+    request_body: BaseModel = getattr(handler, "__request_body__", None)
     if not (parameters or request_body):
         return handler
 
-    exclusive_models = getattr(handler, "__exclusive_models__", {})
+    exclusive_models: Dict[Type[BaseModel], str] = getattr(
+        handler, "__exclusive_models__", {}
+    )
 
-    data: typing.List[typing.Any] = []
-    kwargs: typing.Dict[str, BaseModel] = {}
+    data: List[Any] = []
+    kwargs: Dict[str, BaseModel] = {}
 
     try:
         # try to get parameters model and parse
