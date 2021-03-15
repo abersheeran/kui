@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import inspect
+import sys
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-from baize.typing import Literal
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
+
 from pydantic import BaseModel
 
 from .types import UploadFile

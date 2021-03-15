@@ -11,27 +11,13 @@ from pydantic import BaseModel, ValidationError, create_model
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
-from indexpy.responses import Response, convert_response
 from indexpy.utils import safe_issubclass
+from indexpy.views import HttpView
 
-from .fields import BodyInfo, CookieInfo, ExclusiveInfo, HeaderInfo, PathInfo, QueryInfo
+from .fields import FieldInfo
 
 
-class HTTPView:
-    HTTP_METHOD_NAMES = [
-        "get",
-        "post",
-        "put",
-        "patch",
-        "delete",
-        "head",
-        "options",
-        "trace",
-    ]
-
-    if typing.TYPE_CHECKING:
-        __methods__: typing.List[str]
-
+class ApiView(HttpView):
     def __init_subclass__(cls) -> None:
         for function_name in (
             key for key in cls.__dict__.keys() if key in cls.HTTP_METHOD_NAMES
@@ -42,22 +28,12 @@ class HTTPView:
                     f"The function {function_name} should be defined using `async def`"
                 )
             cls.__dict__[function_name] = parse_params(function)
-        cls.__methods__ = [m.upper() for m in cls.HTTP_METHOD_NAMES if hasattr(cls, m)]
+        super().__init_subclass__()
 
-    def __await__(self) -> typing.Generator[typing.Any, None, Response]:
-        return self.__impl__().__await__()
-
-    async def __impl__(self) -> Response:
+    async def __impl__(self) -> typing.Any:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
         handler = await bound_params(handler)
-        return convert_response(await handler())
-
-    async def http_method_not_allowed(self) -> Response:
-        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
-
-    async def options(self) -> Response:
-        """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(headers={"Allow": ", ".join(self.__methods__)})
+        return await handler()
 
 
 Callable = typing.TypeVar("Callable", bound=typing.Callable)
@@ -78,19 +54,20 @@ def create_model_config(title: str = None, description: str = None):
 def parse_params(function: Callable) -> Callable:
     sig = signature(function)
 
-    __parameters__ = {}
+    __parameters__: typing.Dict[str, typing.Any] = {
+        "path": {},
+        "query": {},
+        "header": {},
+        "cookie": {},
+        "body": {},
+    }
     __exclusive_models__ = {}
-    path: typing.Dict[str, typing.Any] = {}
-    query: typing.Dict[str, typing.Any] = {}
-    header: typing.Dict[str, typing.Any] = {}
-    cookie: typing.Dict[str, typing.Any] = {}
-    body: typing.Dict[str, typing.Any] = {}
 
     for name, param in sig.parameters.items():
         default = param.default
         annotation = param.annotation
 
-        if isinstance(default, ExclusiveInfo):
+        if isinstance(default, FieldInfo) and getattr(default, "exclusive", False):
             if safe_issubclass(annotation, BaseModel):
                 model = annotation
             else:
@@ -99,36 +76,24 @@ def parse_params(function: Callable) -> Callable:
                     __config__=create_model_config(default.title, default.description),
                     __root__=(annotation, ...),
                 )
-            __parameters__[default.name] = model
+            __parameters__[default._in] = model
             __exclusive_models__[model] = name
             continue
 
-        if isinstance(default, QueryInfo):
-            _type_ = query
-        elif isinstance(default, HeaderInfo):
-            _type_ = header
-        elif isinstance(default, CookieInfo):
-            _type_ = cookie
-        elif isinstance(default, BodyInfo):
-            _type_ = body
-        elif isinstance(default, PathInfo):
-            _type_ = path
-        else:
-            continue
+        if safe_issubclass(__parameters__[default._in], BaseModel):
+            raise RuntimeError(
+                f"{default._in.capitalize()}(exclusive=True) "
+                "and {default._in.capitalize()} cannot be used at the same time"
+            )
 
         if annotation != param.empty:
-            _type_[name] = (annotation, default)
+            __parameters__[default._in][name] = (annotation, default)
         else:
-            _type_[name] = default
+            __parameters__[default._in][name] = default
 
-    __locals__ = locals()
-    for key in filter(
-        lambda key: bool(__locals__[key]), ("path", "query", "header", "cookie", "body")
+    for key in (
+        key for key in __parameters__ if safe_issubclass(__parameters__[key], BaseModel)
     ):
-        if key in __parameters__:
-            raise RuntimeError(
-                f'Exclusive("{key}") and {key.capitalize()} cannot be used at the same time'
-            )
         __parameters__[key] = create_model("temporary_model", **locals()[key])  # type: ignore
 
     if "body" in __parameters__:

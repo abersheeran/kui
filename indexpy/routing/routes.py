@@ -4,13 +4,18 @@ import abc
 import copy
 import importlib
 import os
+import sys
 import typing
 from dataclasses import asdict, dataclass
 from functools import reduce, update_wrapper
 from pathlib import Path
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
+
 from baize.routing import compile_path
-from baize.typing import Literal
 
 from indexpy.utils import F
 

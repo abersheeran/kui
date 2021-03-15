@@ -3,16 +3,21 @@ from __future__ import annotations
 import copy
 import dataclasses
 import inspect
+import sys
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
+
 from baize.asgi import ASGIApp, Receive, Response, Scope, Send
-from baize.typing import Literal
 from baize.utils import cached_property
 
 from .debug import ServerErrorMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import Request, WebSocket, request_var, websocket_var, request
+from .requests import Request, WebSocket, request, request_var, websocket_var
 from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
@@ -112,6 +117,7 @@ class Index:
         _http_view = ExceptionMiddleware(exception_handlers)(self.__http_view)
         setattr(self, "_http_view", _http_view)
 
+        # We expect to be able to catch all code errors, so as an ASGI middleware.
         return ServerErrorMiddleware(
             app=self.app, handler=error_handler, debug=self.debug
         )

@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import operator
+import sys
 import typing
 from copy import deepcopy
 from functools import reduce
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-from baize.typing import Literal, TypedDict
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal, TypedDict
+else:
+    from typing import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index

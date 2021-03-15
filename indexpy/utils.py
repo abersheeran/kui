@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Tuple, TypeVar, 
 
 
 def safe_issubclass(
-    __cls: type, __class_or_tuple: Union[type, Tuple[Union[type, Tuple[Any, ...]], ...]]
+    __cls: Any, __class_or_tuple: Union[type, Tuple[Union[type, Tuple[Any, ...]], ...]]
 ) -> bool:
     return isclass(__cls) and issubclass(__cls, __class_or_tuple)
 
@@ -111,22 +111,22 @@ else:
         class ContextVarBind:
             __slots__ = ()
 
-            def __getattr__(self, name: str) -> Any:
+            def __getattr__(self, name):
                 return getattr(contextvar.get(), name)
 
-            def __setattr__(self, name: str, value: Any) -> None:
+            def __setattr__(self, name, value):
                 setattr(contextvar.get(), name, value)
 
-            def __delattr__(self, name: str) -> None:
+            def __delattr__(self, name):
                 delattr(contextvar.get(), name)
 
-            def __getitem__(self, index: Any) -> Any:
+            def __getitem__(self, index):
                 return contextvar.get()[index]
 
-            def __setitem__(self, index: Any, value: Any) -> None:
+            def __setitem__(self, index, value):
                 contextvar.get()[index] = value
 
-            def __delitem__(self, index: Any) -> None:
+            def __delitem__(self, index):
                 del contextvar.get()[index]
 
         return ContextVarBind()

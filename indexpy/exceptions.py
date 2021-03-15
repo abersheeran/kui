@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 import functools
+import json
 from typing import (
     Any,
     Awaitable,
