@@ -17,8 +17,6 @@ else:
 
 from baize.routing import compile_path
 
-from indexpy.utils import F
-
 from .tree import RadixTree, RouteType
 
 
@@ -101,7 +99,7 @@ class RouteRegisterMixin(abc.ABC):
 
         example:
             @routes.http("/path", name="endpoint-name")
-            class Endpoint(HTTPView): ...
+            class Endpoint(HttpView): ...
         """
 
         def register(endpoint: T) -> T:
@@ -215,12 +213,6 @@ class FileRoutes(typing.List[BaseRoute]):
 
         self.namespace = namespace
 
-        get_http_middleware = lambda module: getattr(module, "HTTPMiddleware", None)
-        get_socket_middleware = lambda module: getattr(module, "SocketMiddleware", None)
-        wrap_middleware = lambda handler, middleware: update_wrapper(
-            middleware(handler), handler
-        )
-
         for pypath in dirpath.glob("**/*.py"):
             relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
 
@@ -242,27 +234,42 @@ class FileRoutes(typing.List[BaseRoute]):
             get_response = getattr(module, "HTTP", None)
             serve_socket = getattr(module, "Socket", None)
 
-            import_module = lambda deep: importlib.import_module(
-                ".".join(path_list[:deep])
-            )
-
             if get_response:
                 get_response = reduce(
-                    wrap_middleware,
-                    range(len(path_list), 0, -1)
-                    | F(map, import_module)
-                    | F(map, get_http_middleware)
-                    | F(filter, lambda x: bool(x)),
+                    lambda handler, middleware: update_wrapper(
+                        middleware(handler), handler
+                    ),
+                    (
+                        middleware
+                        for middleware in (
+                            getattr(module, "HTTPMiddleware", None)
+                            for module in (
+                                importlib.import_module(".".join(path_list[:deep]))
+                                for deep in range(len(path_list), 0, -1)
+                            )
+                        )
+                        if middleware is not None
+                    ),
                     get_response,
                 )
                 self.append(HttpRoute(url_path, get_response, url_name))
+
             if serve_socket:
                 serve_socket = reduce(
-                    wrap_middleware,
-                    range(len(path_list), 0, -1)
-                    | F(map, import_module)
-                    | F(map, get_socket_middleware)
-                    | F(filter, lambda x: bool(x)),
+                    lambda handler, middleware: update_wrapper(
+                        middleware(handler), handler
+                    ),
+                    (
+                        middleware
+                        for middleware in (
+                            getattr(module, "HTTPMiddleware", None)
+                            for module in (
+                                importlib.import_module(".".join(path_list[:deep]))
+                                for deep in range(len(path_list), 0, -1)
+                            )
+                        )
+                        if middleware is not None
+                    ),
                     serve_socket,
                 )
                 self.append(SocketRoute(url_path, serve_socket, url_name))
