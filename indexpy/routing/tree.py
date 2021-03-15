@@ -7,6 +7,8 @@ from typing import cast as typing_cast
 
 from baize.routing import Convertor, PathConvertor, compile_path
 
+RouteType = Tuple[str, Dict[str, Convertor], Callable[[], Any]]
+
 
 @dataclass
 class TreeNode:
@@ -14,7 +16,7 @@ class TreeNode:
     re_pattern: Optional[Pattern] = None
     next_nodes: Optional[List[TreeNode]] = None
 
-    route: Optional[Tuple[str, Dict[str, Convertor], Callable]] = None
+    route: Optional[RouteType] = None
 
 
 def find_common_prefix(x: str, y: str) -> str:

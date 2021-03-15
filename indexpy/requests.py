@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import typing
 import json
+import typing
 from contextvars import ContextVar
 from http import HTTPStatus
 
 from baize.asgi import HTTPConnection as BaiZeHTTPConnection
 from baize.asgi import Request as BaiZeRequest
 from baize.asgi import WebSocket as BaiZeWebSocket
-from baize.asgi import WebSocketState, WebSocketDisconnect
-from baize.utils import cached_property
+from baize.asgi import WebSocketDisconnect, WebSocketState
 from baize.exceptions import HTTPException
+from baize.utils import cached_property
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
@@ -18,7 +18,13 @@ if typing.TYPE_CHECKING:
 from .utils import State, bind_contextvar
 
 
-class HTTPConnection(BaiZeHTTPConnection):
+class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping):
+    def __setitem__(self, name: str, value: typing.Any) -> None:
+        self._scope[name] = value
+
+    def __delitem__(self, name: str) -> None:
+        del self._scope[name]
+
     @cached_property
     def state(self) -> State:
         self._scope.setdefault("state", {})

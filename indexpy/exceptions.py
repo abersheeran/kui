@@ -1,14 +1,25 @@
 from __future__ import annotations
 
-import asyncio
 import json
-import typing
+import functools
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Dict,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
-from baize.asgi import HTTPException, Message, PlainTextResponse
+from baize.asgi import HTTPException, PlainTextResponse
+from baize.typing import JSONable
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
-from .requests import request
 from .responses import Response
 
 
@@ -16,14 +27,14 @@ class RequestValidationError(Exception):
     def __init__(self, validation_error: ValidationError) -> None:
         self.validation_error = validation_error
 
-    def errors(self) -> typing.List[typing.Dict[str, typing.Any]]:
+    def errors(self) -> List[Dict[str, Any]]:
         return self.validation_error.errors()
 
-    def json(self, *, indent: typing.Union[None, int, str] = 2) -> str:
+    def json(self, *, indent: Union[None, int, str] = 2) -> str:
         return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
 
     @staticmethod
-    def schema() -> dict:
+    def schema() -> Dict[str, JSONable]:
         return {
             "type": "array",
             "items": {
@@ -51,17 +62,18 @@ class RequestValidationError(Exception):
         }
 
 
+Error = TypeVar("Error", bound=Exception)
+ErrorView = Callable[[Error], Awaitable[Response]]
+View = Callable[[], Coroutine[Any, Any, Response]]
+
+
 class ExceptionMiddleware:
     def __init__(
         self,
-        view: typing.Callable[[], typing.Awaitable[None]],
-        handlers: dict = None,
+        handlers: Dict[Union[int, Type[Exception]], ErrorView] = None,
     ) -> None:
-        self.view = view
-        self._status_handlers: typing.Dict[int, typing.Callable] = {}
-        self._exception_handlers: typing.Dict[
-            typing.Type[Exception], typing.Callable
-        ] = {
+        self._status_handlers: Dict[int, ErrorView] = {}
+        self._exception_handlers: Dict[Type[Exception], ErrorView] = {
             HTTPException: self.http_exception,
             RequestValidationError: self.request_validation_error,
         }
@@ -71,8 +83,8 @@ class ExceptionMiddleware:
 
     def add_exception_handler(
         self,
-        exc_class_or_status_code: typing.Union[int, typing.Type[Exception]],
-        handler: typing.Callable,
+        exc_class_or_status_code: Union[int, Type[Exception]],
+        handler: Callable,
     ) -> None:
         if isinstance(exc_class_or_status_code, int):
             self._status_handlers[exc_class_or_status_code] = handler
@@ -80,63 +92,40 @@ class ExceptionMiddleware:
             assert issubclass(exc_class_or_status_code, Exception)
             self._exception_handlers[exc_class_or_status_code] = handler
 
-    def _lookup_exception_handler(
-        self, exc: Exception
-    ) -> typing.Optional[typing.Callable]:
+    def _lookup_exception_handler(self, exc: Exception) -> Optional[Callable]:
         for cls in type(exc).__mro__:
             if cls in self._exception_handlers:
                 return self._exception_handlers[cls]
         return None
 
-    async def __call__(self) -> None:
-        response_started = False
-        send = request._send
+    def __call__(self, endpoint: View) -> View:
+        @functools.wraps(endpoint)
+        async def wrapper() -> Response:
+            try:
+                return await endpoint()
+            except Exception as exc:
+                handler = None
+                if isinstance(exc, HTTPException):
+                    handler = self._status_handlers.get(exc.status_code)
+                if handler is None:
+                    handler = self._lookup_exception_handler(exc)
+                if handler is None:
+                    raise exc from None
+                return await handler(exc)
 
-        async def sender(message: Message) -> None:
-            nonlocal response_started
-
-            if message["type"] == "http.response.start":
-                response_started = True
-            await send(message)
-
-        request._send = sender
-
-        try:
-            return await self.view()
-        except Exception as exc:
-            handler = None
-
-            if isinstance(exc, HTTPException):
-                handler = self._status_handlers.get(exc.status_code)
-
-            if handler is None:
-                handler = self._lookup_exception_handler(exc)
-
-            if handler is None:
-                raise exc from None
-
-            if response_started:
-                msg = "Caught handled exception, but response already started."
-                raise RuntimeError(msg) from exc
-
-            response = handler(request, exc)
-            if asyncio.iscoroutine(response):
-                response = await response
-            return await response(request._send, request._receive, request._send)
+        return wrapper
 
     @staticmethod
-    def http_exception(exc: HTTPException) -> Response:
+    async def http_exception(exc: HTTPException) -> Response:
         if exc.status_code in {204, 304}:
             return Response(status_code=exc.status_code, headers=exc.headers)
 
         return PlainTextResponse(
-            content=exc.content,
-            status_code=exc.status_code,
-            headers=exc.headers and dict(exc.headers),
+            content=exc.content or b"", status_code=exc.status_code, headers=exc.headers
         )
 
     @staticmethod
-    def request_validation_error(exc: RequestValidationError) -> Response:
+    async def request_validation_error(exc: RequestValidationError) -> Response:
         return PlainTextResponse(
             exc.json(), status_code=422, media_type="application/json"
         )

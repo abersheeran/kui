@@ -9,35 +9,12 @@ from dataclasses import asdict, dataclass
 from functools import reduce, update_wrapper
 from pathlib import Path
 
-from baize.asgi import ASGIApp, Receive, Scope, Send
-from baize.routing import Convertor, compile_path
+from baize.routing import compile_path
 from baize.typing import Literal
 
-from indexpy.responses import convert_response
-from indexpy.utils import F, superclass
+from indexpy.utils import F
 
-from .tree import RadixTree
-
-
-def request_response(view: typing.Any) -> ASGIApp:
-    async def _(scope: Scope, receive: Receive, send: Send) -> None:
-        current_app = scope["app"]
-        request = current_app.factory_class.http(scope, receive, send)
-        response = convert_response(await view(request))
-        await response(scope, receive, send)
-
-    setattr(_, "__raw__", view)
-    return _
-
-
-def websocket_session(view: typing.Any) -> ASGIApp:
-    async def _(scope: Scope, receive: Receive, send: Send) -> None:
-        current_app = scope["app"]
-        websocket = current_app.factory_class.websocket(scope, receive, send)
-        await view(websocket)
-
-    setattr(_, "__raw__", view)
-    return _
+from .tree import RadixTree, RouteType
 
 
 class NoMatchFound(Exception):
@@ -98,9 +75,6 @@ class RouteRegisterMixin(abc.ABC):
     def append(self, route: BaseRoute) -> None:
         raise NotImplementedError
 
-    def __lt__(self, route: BaseRoute) -> None:
-        self.append(route)
-
     def __lshift__(self, routes: typing.List[BaseRoute]) -> None:
         for route in routes:  # type: BaseRoute
             if isinstance(routes, Routes):
@@ -114,7 +88,7 @@ class RouteRegisterMixin(abc.ABC):
             if getattr(routes, "namespace", None) and route.name:
                 route.name = getattr(routes, "namespace") + ":" + route.name
 
-            self < route
+            self.append(route)
 
     def http(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
@@ -126,7 +100,7 @@ class RouteRegisterMixin(abc.ABC):
         """
 
         def register(endpoint: T) -> T:
-            self < HttpRoute(path, endpoint, name)
+            self.append(HttpRoute(path, endpoint, name))
             return endpoint
 
         return register
@@ -141,7 +115,7 @@ class RouteRegisterMixin(abc.ABC):
         """
 
         def register(endpoint: T) -> T:
-            self < SocketRoute(path, endpoint, name)
+            self.append(SocketRoute(path, endpoint, name))
             return endpoint
 
         return register
@@ -160,22 +134,24 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
         self._http_middlewares = copy.copy(http_middlewares)
         self._socket_middlewares = copy.copy(socket_middlewares)
         for route in iterable:
-            if not isinstance(route, typing.List):
+            if not isinstance(route, list):
                 self.append(route)
             else:
-                self.extend(route)
+                self << route
 
     def http_middleware(self, middleware: T) -> T:
         """
         append middleware in routes
 
         example:
+        ```
             @routes.http_middleware
             def middleware(endpoint):
-                async def wrapper(request):
+                async def wrapper():
                     response = await endpoint(request)
                     return response
                 return wrapper
+        ```
         """
         self._http_middlewares.append(middleware)
         return middleware
@@ -185,11 +161,13 @@ class Routes(typing.List[BaseRoute], RouteRegisterMixin):
         append middleware in routes
 
         example:
+        ```
             @routes.socket_middleware
             def middleware(endpoint):
-                async def wrapper(websocket):
+                async def wrapper():
                     await endpoint(websocket)
                 return wrapper
+        ```
         """
         self._socket_middlewares.append(middleware)
         return middleware
@@ -290,19 +268,15 @@ class Router(RouteRegisterMixin):
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
 
-        self.http_routes: typing.Dict[
-            str, typing.Tuple[str, typing.Dict[str, Convertor], ASGIApp]
-        ] = {}
-        self.websocket_routes: typing.Dict[
-            str, typing.Tuple[str, typing.Dict[str, Convertor], ASGIApp]
-        ] = {}
+        self.http_routes: typing.Dict[str, RouteType] = {}
+        self.websocket_routes: typing.Dict[str, RouteType] = {}
 
-        self.extend(routes)
+        self << routes
 
     def _append(
         self,
         path: str,
-        endpoint: ASGIApp,
+        endpoint: typing.Callable[[], typing.Any],
         name: typing.Optional[str],
         radix_tree: RadixTree,
         routes: typing.Dict,
@@ -320,7 +294,7 @@ class Router(RouteRegisterMixin):
         if isinstance(route, HttpRoute):
             self._append(
                 route.path,
-                request_response(route.endpoint),
+                route.endpoint,
                 route.name,
                 self.http_tree,
                 self.http_routes,
@@ -328,7 +302,7 @@ class Router(RouteRegisterMixin):
         elif isinstance(route, SocketRoute):
             self._append(
                 route.path,
-                websocket_session(route.endpoint),
+                route.endpoint,
                 route.name,
                 self.websocket_tree,
                 self.websocket_routes,
@@ -340,7 +314,7 @@ class Router(RouteRegisterMixin):
 
     def search(
         self, protocol: Literal["http", "websocket"], path: str
-    ) -> typing.Tuple[typing.Dict[str, typing.Any], ASGIApp]:
+    ) -> typing.Tuple[typing.Dict[str, typing.Any], typing.Callable[[], typing.Any]]:
         if protocol == "http":
             radix_tree = self.http_tree
         elif protocol == "websocket":
@@ -354,17 +328,6 @@ class Router(RouteRegisterMixin):
             raise NoMatchFound(path)
 
         return params, endpoint
-
-    def extend(self, routes: typing.List[BaseRoute]) -> None:
-        """
-        Add routes in router
-
-        example:
-            router.extend(Routes(...))
-        or
-            router.extend([...])
-        """
-        return superclass(RouteRegisterMixin, self).extend(routes)
 
     def url_for(
         self,

@@ -166,7 +166,9 @@ class ServerErrorMiddleware:
     def __init__(
         self,
         app: ASGIApp,
-        handler: typing.Callable[[Request, Exception], Response] = None,
+        handler: typing.Callable[
+            [Request, Exception], typing.Awaitable[Response]
+        ] = None,
         debug: bool = False,
     ) -> None:
         self.app = app

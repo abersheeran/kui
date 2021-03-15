@@ -6,14 +6,13 @@ import inspect
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 
-from baize.asgi import ASGIApp, Receive, Scope, Send
+from baize.asgi import ASGIApp, Receive, Response, Scope, Send
 from baize.typing import Literal
 from baize.utils import cached_property
-from pydantic.dataclasses import dataclass
 
 from .debug import ServerErrorMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import Request, WebSocket, request, request_var, websocket, websocket_var
+from .requests import Request, WebSocket, request_var, websocket_var, request
 from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
@@ -57,7 +56,7 @@ class Lifespan:
         await send({"type": "lifespan.shutdown.complete"})
 
 
-@dataclass
+@dataclasses.dataclass
 class FactoryClass:
     http: Type[Request] = Request
     websocket: Type[WebSocket] = WebSocket
@@ -78,12 +77,12 @@ class Index:
         exception_handlers: Dict[Union[int, Type[Exception]], Callable] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
-        self.debug = debug
         self.factory_class = factory_class
         self.templates = templates
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
         self.exception_handlers = copy.copy(exception_handlers)
+        self.debug = debug
         self.asgiapp = self.build_app()
 
     @property
@@ -108,9 +107,10 @@ class Index:
             else:
                 exception_handlers[key] = value
 
-        if not hasattr(self, "_http"):
-            self._http = self.http
-        self.http = ExceptionMiddleware(self._http, handlers=exception_handlers)
+        if not hasattr(self, "__http_view"):
+            self.__http_view = self._http_view
+        _http_view = ExceptionMiddleware(exception_handlers)(self.__http_view)
+        setattr(self, "_http_view", _http_view)
 
         return ServerErrorMiddleware(
             app=self.app, handler=error_handler, debug=self.debug
@@ -147,41 +147,38 @@ class Index:
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]
+        return await getattr(self, scope_type)(scope, receive, send)
 
-        if scope_type == "lifespan":
-            return await self.lifespan(scope, receive, send)
-
-        if scope_type == "http":
-            connection = self.factory_class.http(scope, receive, send)
-            contextvar = request_var
-        elif scope_type == "websocket":
-            connection = self.factory_class.websocket(scope, receive, send)
-            contextvar = websocket_var
-
+    async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        request = self.factory_class.http(scope, receive, send)
+        token = request_var.set(request)
         try:
-            token = contextvar.set(connection)
-            return await getattr(self, scope_type)(connection)
+            response = await self._http_view()
+            return await response(scope, receive, send)
         finally:
-            contextvar.reset(token)
+            request_var.reset(token)
 
-    async def http(self) -> None:
+    async def _http_view(self) -> Response:
         try:
             path_params, handler = self.router.search("http", request["path"])
-            request._scope["path_params"] = path_params
+            request["path_params"] = path_params
         except NoMatchFound:
             raise HTTPException(404)
         else:
-            response = convert_response(await handler())
-            return await response(request._scope, request._receive, request._send)
+            return convert_response(await handler())
 
-    async def websocket(self) -> None:
+    async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
+        websocket = self.factory_class.websocket(scope, receive, send)
+        token = websocket_var.set(websocket)
         try:
             path_params, handler = self.router.search("websocket", websocket["path"])
-            websocket._scope["path_params"] = path_params
+            scope["path_params"] = path_params
         except NoMatchFound:
             return await websocket.close(1001)
         else:
             return await handler()
+        finally:
+            websocket_var.reset(token)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

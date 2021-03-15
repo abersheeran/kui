@@ -16,8 +16,7 @@ class BaseTemplates(metaclass=ABCMeta):
         name: str,
         context: dict,
         status_code: int = 200,
-        headers: dict = None,
-        media_type: str = None,
+        headers: Mapping[str, str] = None,
     ) -> Response:
         """
         The subclass must override this method and return
@@ -46,12 +45,12 @@ else:
             super().__init__(status_code, headers)
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-            if self.env.enable_async:
+            if self.env.enable_async:  # type: ignore
                 content = await self.template.render_async(self.context)
             else:
                 content = self.template.render(self.context)
 
-            body = content.encode(self.charset)
+            body = content.encode("utf-8")
             self.raw_headers.append(("content-length", str(len(body))))
             self.raw_headers.append(("content-type", "text/html; charset=utf-8"))
 
@@ -106,15 +105,9 @@ else:
             name: str,
             context: dict,
             status_code: int = 200,
-            headers: dict = None,
-            media_type: str = None,
+            headers: Mapping[str, str] = None,
         ) -> _Jinja2TemplateResponse:
 
             return _Jinja2TemplateResponse(
-                self.env,
-                name,
-                context,
-                status_code=status_code,
-                headers=headers,
-                media_type=media_type,
+                self.env, name, context, status_code=status_code, headers=headers
             )

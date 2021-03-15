@@ -49,7 +49,7 @@ class HTTPView:
 
     async def __impl__(self) -> Response:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
-        handler = await bound_params(handler, request)
+        handler = await bound_params(handler)
         return convert_response(await handler())
 
     async def http_method_not_allowed(self) -> Response:

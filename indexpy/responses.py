@@ -32,11 +32,7 @@ __all__ = [
 
 
 def TemplateResponse(
-    name: str,
-    context: dict,
-    status_code: int = 200,
-    headers: dict = None,
-    media_type: str = None,
+    name: str, context: dict, status_code: int = 200, headers: dict = None
 ) -> Response:
     templates = request.app.templates
     if templates is None:
@@ -44,7 +40,7 @@ def TemplateResponse(
             "You must assign a value to `app.templates` to use TemplateResponse"
         )
 
-    return templates.TemplateResponse(name, context, status_code, headers, media_type)
+    return templates.TemplateResponse(name, context, status_code, headers)
 
 
 def convert_response(response: typing.Any) -> Response:

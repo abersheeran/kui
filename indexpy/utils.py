@@ -120,6 +120,15 @@ else:
             def __delattr__(self, name: str) -> None:
                 delattr(contextvar.get(), name)
 
+            def __getitem__(self, index: Any) -> Any:
+                return contextvar.get()[index]
+
+            def __setitem__(self, index: Any, value: Any) -> None:
+                contextvar.get()[index] = value
+
+            def __delitem__(self, index: Any) -> None:
+                del contextvar.get()[index]
+
         return ContextVarBind()
 
 
