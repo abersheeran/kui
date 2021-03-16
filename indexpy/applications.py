@@ -99,7 +99,7 @@ class Index:
     @debug.setter
     def debug(self, value: bool) -> None:
         self.__dict__["debug"] = bool(value)
-        self.asgiapp.debug = bool(value)
+        self.app_with_debug.debug = bool(value)
 
     def add_exception_handler(
         self,
