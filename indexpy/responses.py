@@ -12,6 +12,7 @@ from baize.asgi import (
     RedirectResponse,
     Response,
     SendEventResponse,
+    ServerSentEvent,
     StreamResponse,
 )
 
@@ -103,7 +104,7 @@ def _plain_text(
 
 @automatic.register(AsyncGeneratorType)
 def _send_event(
-    generator: AsyncGeneratorType,
+    generator: typing.AsyncGenerator[ServerSentEvent, None],
     status: int = 200,
     headers: typing.Mapping[str, str] = None,
 ):
