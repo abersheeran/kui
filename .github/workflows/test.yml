@@ -1,11 +1,11 @@
-name: Test
+name: Tests and Publish
 
 on:
   push:
     branches:
       - master
-    tags-ignore:
-      - "v*"
+    tags:
+      - "*"
     paths:
       - "**.py"
       - "!indexpy/__version__.py"
@@ -37,10 +37,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip poetry
           poetry config virtualenvs.create false --local
-          poetry install -E full
-      - name: Test with pytest
+          poetry install -E cli
+      - name: Static type and format checking
         run: |
-          python script/test.py
+          python script/check.py
       - name: Generate coverage report
         run: |
           pytest --cov=./ --cov-report=xml
@@ -54,3 +54,33 @@ jobs:
           fail_ci_if_error: true
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
+
+  publish:
+    needs: tests
+    if: startsWith(github.ref, 'refs/tags/')
+
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      matrix:
+        python-version: [3.7]
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+
+      - name: Build
+        run: |
+          poetry build
+
+      - name: Publish
+        run: |
+          poetry publish --username AberSheeran --password ${{ secrets.PYPIPASS }}

@@ -23,18 +23,12 @@ index-cli = "indexpy.cli:index_cli"
 [tool.poetry.dependencies]
 python = "^3.7"
 
-async-asgi-testclient = {version = "^1.4.6", optional = true}
 baize = {version = "^0.4.1", extras = ["multipart"]}
 click = {version = "^7.1.2", optional = true}
-gunicorn = {version = "*", optional = true}
 pydantic = "^1.8"
-uvicorn = {version = "*", optional = true}
 
 [tool.poetry.extras]
 cli = ["click"] # for index-cli commands
-full = ["gunicorn", "uvicorn", "async-asgi-testclient"]
-serve = ["gunicorn", "uvicorn", "click"] # for 'index-cli serve && index-cli gunicorn'
-test = ["async-asgi-testclient"] # for test asgi app
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
@@ -44,6 +38,7 @@ black = {version = "*", allow-prereleases = true}
 isort = "*"
 
 # for tests
+async-asgi-testclient = "^1.4.6"
 pytest = "^5.4.2"
 pytest-asyncio = "^0.12"
 pytest-cov = "^2.8.1"

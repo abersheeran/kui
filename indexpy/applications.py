@@ -90,7 +90,7 @@ class Index:
         self.exception_middleware = ExceptionMiddleware(exception_handlers)
         self._impl_http = self.exception_middleware(self._impl_raw_http)
         # We expect to be able to catch all code errors, so as an ASGI middleware.
-        self.debug_middleware = DebugMiddleware(app=self.app, debug=self.debug)
+        self.app_with_debug = DebugMiddleware(app=self.app, debug=self.debug)
 
     @property
     def debug(self) -> bool:
@@ -169,4 +169,4 @@ class Index:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
 
-        await self.asgiapp(scope, receive, send)
+        await self.app_with_debug(scope, receive, send)

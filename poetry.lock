@@ -11,7 +11,7 @@ name = "async-asgi-testclient"
 version = "1.4.6"
 description = "Async client for testing ASGI web applications"
 category = "main"
-optional = true
+optional = false
 python-versions = "*"
 
 [package.dependencies]
@@ -82,7 +82,7 @@ name = "certifi"
 version = "2020.12.5"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
-optional = true
+optional = false
 python-versions = "*"
 
 [[package]]
@@ -90,7 +90,7 @@ name = "chardet"
 version = "4.0.0"
 description = "Universal encoding detector for Python 2 and 3"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
@@ -169,7 +169,7 @@ name = "idna"
 version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
@@ -337,7 +337,7 @@ name = "multidict"
 version = "5.1.0"
 description = "multidict implementation"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.6"
 
 [[package]]
@@ -569,7 +569,7 @@ name = "requests"
 version = "2.25.1"
 description = "Python HTTP for Humans."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.dependencies]
@@ -640,7 +640,7 @@ name = "urllib3"
 version = "1.26.3"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
 [package.extras]
@@ -686,14 +686,13 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 
 [extras]
 cli = ["click"]
-full = ["gunicorn", "uvicorn", "async-asgi-testclient"]
+full = ["gunicorn", "uvicorn", "click"]
 serve = ["gunicorn", "uvicorn", "click"]
-test = ["async-asgi-testclient"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "06d7c542f4c02ed959b6d91d111f1253faa5a78b1451d7d22ccffd3c93324b5f"
+content-hash = "08db8367e0145ce7ba9b6437468296668e7f94f4acd137cd29dc003d3b890e8c"
 
 [metadata.files]
 appdirs = [
