@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, List
+from typing import TYPE_CHECKING, Any, Generator, List
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -33,10 +33,7 @@ class HttpView:
     if TYPE_CHECKING:
         __methods__: List[str]
 
-    def __init_subclass__(cls, /, **kwargs: Callable[[], Awaitable[Any]]) -> None:
-        for name, arg in kwargs.items():
-            if name in cls.HTTP_METHOD_NAMES:
-                setattr(cls, name, arg)
+    def __init_subclass__(cls) -> None:
         cls.__methods__ = [m.upper() for m in cls.HTTP_METHOD_NAMES if hasattr(cls, m)]
 
     def __await__(self) -> Generator[None, None, Any]:

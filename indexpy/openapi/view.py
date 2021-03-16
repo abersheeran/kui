@@ -4,7 +4,7 @@ import asyncio
 import functools
 from inspect import signature
 from itertools import groupby
-from typing import Any, Awaitable, Callable, Dict, List, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
@@ -18,8 +18,8 @@ from .fields import FieldInfo
 
 
 class ApiView(HttpView):
-    def __init_subclass__(cls, /, **kwargs: Callable[[], Awaitable[Any]]) -> None:
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
 
         for function_name in (
             key for key in cls.HTTP_METHOD_NAMES if hasattr(cls, key)
