@@ -12,10 +12,10 @@ if sys.version_info[:2] < (3, 8):
 else:
     from typing import Literal
 
-from baize.asgi import ASGIApp, Receive, Response, Scope, Send
+from baize.asgi import Receive, Response, Scope, Send
 from baize.utils import cached_property
 
-from .debug import ServerErrorMiddleware
+from .debug import DebugMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
 from .requests import Request, WebSocket, request, request_var, websocket_var
 from .responses import convert_response
@@ -82,14 +82,15 @@ class Index:
         exception_handlers: Dict[Union[int, Type[Exception]], Callable] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
+        self.__dict__["debug"] = debug
         self.factory_class = factory_class
         self.templates = templates
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
-        self.exception_handlers = copy.copy(exception_handlers)
-        self._impl_http = ExceptionMiddleware(exception_handlers)(self._impl_raw_http)
-        self.debug = debug
-        self.asgiapp = self.build_app()
+        self.exception_middleware = ExceptionMiddleware(exception_handlers)
+        self._impl_http = self.exception_middleware(self._impl_raw_http)
+        # We expect to be able to catch all code errors, so as an ASGI middleware.
+        self.debug_middleware = DebugMiddleware(app=self.app, debug=self.debug)
 
     @property
     def debug(self) -> bool:
@@ -98,34 +99,16 @@ class Index:
     @debug.setter
     def debug(self, value: bool) -> None:
         self.__dict__["debug"] = bool(value)
-        self.rebuild_app()
-
-    def rebuild_app(self) -> None:
-        self.asgiapp = self.build_app()
-
-    def build_app(self) -> ASGIApp:
-        error_handler = None
-        exception_handlers = {}
-
-        for key, value in self.exception_handlers.items():
-            if key in (500, Exception):
-                error_handler = value
-            else:
-                exception_handlers[key] = value
-
-        self._impl_http = ExceptionMiddleware(exception_handlers)(self._impl_raw_http)
-        # We expect to be able to catch all code errors, so as an ASGI middleware.
-        return ServerErrorMiddleware(
-            app=self.app, handler=error_handler, debug=self.debug
-        )
+        self.asgiapp.debug = bool(value)
 
     def add_exception_handler(
         self,
         exc_class_or_status_code: Union[int, Type[Exception]],
         handler: Callable,
     ) -> None:
-        self.exception_handlers[exc_class_or_status_code] = handler
-        self.rebuild_app()
+        self.exception_middleware.add_exception_handler(
+            exc_class_or_status_code, handler
+        )
 
     def exception_handler(
         self, exc_class_or_status_code: Union[int, Type[Exception]]

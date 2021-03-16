@@ -151,7 +151,7 @@ CENTER_LINE = """
 """
 
 
-class ServerErrorMiddleware:
+class DebugMiddleware:
     """
     Handles returning 500 responses when a server error occurs.
 
@@ -163,16 +163,8 @@ class ServerErrorMiddleware:
     always result in an appropriate 500 response.
     """
 
-    def __init__(
-        self,
-        app: ASGIApp,
-        handler: typing.Callable[
-            [Request, Exception], typing.Awaitable[Response]
-        ] = None,
-        debug: bool = False,
-    ) -> None:
+    def __init__(self, app: ASGIApp, debug: bool = False) -> None:
         self.app = app
-        self.handler = handler
         self.debug = debug
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -196,8 +188,6 @@ class ServerErrorMiddleware:
                 request = scope["app"].factory_class.http(scope)
                 if self.debug:
                     response = self.debug_response(request, exc)
-                elif self.handler is None:
-                    response = self.error_response(request, exc)
                 else:
                     response = await self.handler(request, exc)
                 await response(scope, receive, send)
