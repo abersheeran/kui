@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import typing
 from types import AsyncGeneratorType
 
@@ -107,5 +108,22 @@ def _send_event(
     generator: typing.AsyncGenerator[ServerSentEvent, None],
     status: int = 200,
     headers: typing.Mapping[str, str] = None,
-):
+) -> Response:
     return SendEventResponse(generator, status, headers)
+
+
+@automatic.register(os.stat_result)
+def _file(
+    stat_result: os.stat_result,
+    filepath: str,
+    download_name: str = None,
+    media_type: str = None,
+    headers: typing.Mapping[str, str] = None,
+) -> Response:
+    return FileResponse(
+        filepath=filepath,
+        headers=headers,
+        media_type=media_type,
+        download_name=download_name,
+        stat_result=stat_result,
+    )
