@@ -75,13 +75,13 @@ from indexpy import Index
 from indexpy.routing import HttpRoute
 
 
-async def homepage(request):
+async def homepage():
     return "hello, index.py"
 
 
 app = Index(
     routes=[
-        HttpRoute("/", homepage, method="get"),
+        HttpRoute("/", homepage),
     ]
 )
 ```

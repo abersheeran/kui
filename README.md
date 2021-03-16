@@ -66,10 +66,10 @@ pip install -U index.py
 pip install -U git+https://github.com/abersheeran/index.py@setup.py
 ```
 
-中国大陆内的用户可从 Coding 上的镜像仓库拉取
+中国大陆内的用户可从 Gitee 上的镜像仓库拉取
 
 ```bash
-pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
+pip install -U git+https://gitee.com/abersheeran/index.py.git@setup.py
 ```
 
 ## Quick start
@@ -81,13 +81,13 @@ from indexpy import Index
 from indexpy.routing import HttpRoute
 
 
-async def homepage(request):
+async def homepage():
     return "hello, index.py"
 
 
 app = Index(
     routes=[
-        HttpRoute("/", homepage, method="get"),
+        HttpRoute("/", homepage),
     ]
 )
 ```
