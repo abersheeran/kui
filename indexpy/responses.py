@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import typing
+from types import AsyncGeneratorType
 
 from baize.asgi import (
     FileResponse,
@@ -98,3 +99,12 @@ def _plain_text(
     headers: typing.Mapping[str, str] = None,
 ) -> Response:
     return PlainTextResponse(body, status, headers)
+
+
+@automatic.register(AsyncGeneratorType)
+def _send_event(
+    generator: AsyncGeneratorType,
+    status: int = 200,
+    headers: typing.Mapping[str, str] = None,
+):
+    return SendEventResponse(generator, status, headers)

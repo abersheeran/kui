@@ -1,7 +1,6 @@
 import asyncio
 
 from indexpy import Index
-from indexpy.responses import SendEventResponse
 from indexpy.routing import HttpRoute, Routes
 
 
@@ -28,7 +27,7 @@ async def message():
             await asyncio.sleep(1)
             yield {"id": i, "data": "hello"}
 
-    return SendEventResponse(message_gen())
+    return message_gen()
 
 
 app = Index(
