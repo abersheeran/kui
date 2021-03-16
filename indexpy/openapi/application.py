@@ -65,11 +65,7 @@ class OpenAPI:
     def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
         generate_path_docs = lambda path_format, handler: (
             path_format,
-            self._generate_path(
-                getattr(handler, "__raw__"),
-                path_format,
-                definitions,
-            ),
+            self._generate_path(handler, path_format, definitions),
         )
         return dict(
             app.router.http_tree.iterator()
@@ -102,7 +98,7 @@ class OpenAPI:
                 view.__method__.lower(): self._generate_method(view, path, definitions),
             } | F(lambda d: {k: v for k, v in d.items() if v})
         else:
-            raise RuntimeError("Can only generate docs from HTTP handler")
+            return {}
 
     def _generate_method(
         self, func: object, path: str, definitions: dict

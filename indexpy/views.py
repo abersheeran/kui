@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-import typing
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generator, List
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -11,7 +11,7 @@ else:
 
 from baize.asgi import Message
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .requests import WebSocket
 
 from .requests import request
@@ -30,16 +30,19 @@ class HttpView:
         "trace",
     ]
 
-    if typing.TYPE_CHECKING:
-        __methods__: typing.List[str]
+    if TYPE_CHECKING:
+        __methods__: List[str]
 
-    def __init_subclass__(cls) -> None:
+    def __init_subclass__(cls, /, **kwargs: Callable[[], Awaitable[Any]]) -> None:
+        for name, arg in kwargs.items():
+            if name in cls.HTTP_METHOD_NAMES:
+                setattr(cls, name, arg)
         cls.__methods__ = [m.upper() for m in cls.HTTP_METHOD_NAMES if hasattr(cls, m)]
 
-    def __await__(self) -> typing.Generator[None, None, typing.Any]:
+    def __await__(self) -> Generator[None, None, Any]:
         return self.__impl__().__await__()
 
-    async def __impl__(self) -> typing.Any:
+    async def __impl__(self) -> Any:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
         return await handler()
 
@@ -78,7 +81,7 @@ class SocketView:
         finally:
             await self.on_disconnect(close_code)
 
-    async def decode(self, message: Message) -> typing.Any:
+    async def decode(self, message: Message) -> Any:
         if self.encoding == "text":
             if "text" not in message:
                 await self.websocket.close(code=1003)
@@ -109,7 +112,7 @@ class SocketView:
         """Override to handle an incoming websocket connection"""
         await self.websocket.accept()
 
-    async def on_receive(self, data: typing.Any) -> None:
+    async def on_receive(self, data: Any) -> None:
         """Override to handle an incoming websocket message"""
 
     async def on_disconnect(self, close_code: int) -> None:

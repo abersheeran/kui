@@ -4,7 +4,7 @@ import asyncio
 import functools
 from inspect import signature
 from itertools import groupby
-from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
+from typing import Any, Awaitable, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from baize.asgi import FormData
 from pydantic import BaseModel, ValidationError, create_model
@@ -18,17 +18,18 @@ from .fields import FieldInfo
 
 
 class ApiView(HttpView):
-    def __init_subclass__(cls) -> None:
+    def __init_subclass__(cls, /, **kwargs: Callable[[], Awaitable[Any]]) -> None:
+        super().__init_subclass__(**kwargs)
+
         for function_name in (
-            key for key in cls.__dict__.keys() if key in cls.HTTP_METHOD_NAMES
+            key for key in cls.HTTP_METHOD_NAMES if hasattr(cls, key)
         ):
-            function = cls.__dict__[function_name]
-            if asyncio.iscoroutinefunction(function):
+            function = getattr(cls, function_name)
+            if not asyncio.iscoroutinefunction(function):
                 raise TypeError(
                     f"The function {function_name} should be defined using `async def`"
                 )
-            cls.__dict__[function_name] = parse_params(function)
-        super().__init_subclass__()
+            setattr(cls, function_name, parse_params(function))
 
     async def __impl__(self) -> Any:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
@@ -67,6 +68,9 @@ def parse_params(function: CallableObject) -> CallableObject:
         default = param.default
         annotation = param.annotation
 
+        if default == param.empty:
+            continue
+
         if isinstance(default, FieldInfo) and getattr(default, "exclusive", False):
             if safe_issubclass(annotation, BaseModel):
                 model = annotation
@@ -92,9 +96,11 @@ def parse_params(function: CallableObject) -> CallableObject:
             __parameters__[default._in][name] = default
 
     for key in (
-        key for key in __parameters__ if safe_issubclass(__parameters__[key], BaseModel)
+        key
+        for key in __parameters__
+        if not safe_issubclass(__parameters__[key], BaseModel)
     ):
-        __parameters__[key] = create_model("temporary_model", **locals()[key])  # type: ignore
+        __parameters__[key] = create_model("temporary_model", **__parameters__[key])  # type: ignore
 
     if "body" in __parameters__:
         setattr(function, "__request_body__", __parameters__.pop("body"))
