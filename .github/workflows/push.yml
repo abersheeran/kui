@@ -111,7 +111,7 @@ jobs:
 
           # publish all
           git push --all --force gitee
-          git push --tags --force gitee
+          # git push --tags --force gitee # 不知道为什么 Timeout
         env:
           GITEE_REPOSITORY: abersheeran/index.py
           GITEE_USERNAME: ${{ secrets.GITEE_USERNAME }}
