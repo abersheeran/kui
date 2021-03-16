@@ -175,7 +175,7 @@ class DebugMiddleware:
         response_started = False
 
         async def _send(message: Message) -> None:
-            nonlocal response_started, send
+            nonlocal response_started
 
             if message["type"] == "http.response.start":
                 response_started = True
@@ -189,7 +189,7 @@ class DebugMiddleware:
                 if self.debug:
                     response = self.debug_response(request, exc)
                 else:
-                    response = await self.handler(request, exc)
+                    response = self.error_response(request, exc)
                 await response(scope, receive, send)
 
             raise exc from None
