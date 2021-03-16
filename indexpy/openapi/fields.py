@@ -13,7 +13,7 @@ from pydantic.fields import Undefined
 
 
 class FieldInfo(_FieldInfo):
-    __slots__ = ("_in", *_FieldInfo.__slots__)
+    __slots__ = _FieldInfo.__slots__
 
     _in: Literal["path", "query", "header", "cookie", "body"]
 
