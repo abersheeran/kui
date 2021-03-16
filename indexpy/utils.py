@@ -2,12 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-import inspect
 import os
 import threading
-from functools import partial, update_wrapper
+from contextvars import ContextVar
+from functools import partial
+from inspect import isclass
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Tuple, TypeVar, Union
+
+
+def safe_issubclass(
+    __cls: Any, __class_or_tuple: Union[type, Tuple[Union[type, Tuple[Any, ...]], ...]]
+) -> bool:
+    return isclass(__cls) and issubclass(__cls, __class_or_tuple)
+
 
 T = TypeVar("T")
 
@@ -37,55 +45,6 @@ def import_module(name: str) -> Optional[ModuleType]:
     ):
         return importlib.import_module(name)
     return None  # nothing to do when module not be found
-
-
-if TYPE_CHECKING:
-    # https://github.com/python/mypy/issues/5107
-    # for mypy check and IDE support
-    cached_property = property
-else:
-
-    class cached_property:
-        """
-        A property that is only computed once per instance and then replaces
-        itself with an ordinary attribute. Deleting the attribute resets the
-        property.
-        """
-
-        def __init__(self, func: Callable) -> None:
-            self.func = func
-            update_wrapper(self, func)
-
-        def __get__(self, obj: Any, cls: Any) -> Any:
-            result = self.func(obj)
-            if inspect.isawaitable(result):
-                result = asyncio.ensure_future(result)
-            value = obj.__dict__[self.func.__name__] = result
-            return value
-
-
-class superclass:
-    """
-    Call the method of the specified parent class. The usage is similar
-    to `super`, but the difference from `super` is that `superclass`
-    only looks for methods in the specified parent class.
-
-    example:
-        superclass(Class, obj).function(...)
-    """
-
-    def __init__(self, cls: type, instance: Any):
-        assert cls in instance.__class__.mro(), "`cls` must be in parent classes"
-
-        self.__cls = cls
-        self.__instance = instance
-
-    def __getattr__(self, name: str) -> Callable[..., Any]:
-        if not hasattr(self.__cls, name):
-            raise AttributeError(name)
-
-        func = getattr(self.__cls, name)
-        return partial(func, self.__instance)
 
 
 class State(dict):
@@ -138,3 +97,57 @@ class F(partial):
         Implement pipeline operators `var | F(...)`
         """
         return self(other)
+
+
+if TYPE_CHECKING:
+
+    def bind_contextvar(contextvar: ContextVar[T]) -> T:
+        raise NotImplementedError
+
+
+else:
+
+    def bind_contextvar(contextvar):
+        class ContextVarBind:
+            __slots__ = ()
+
+            def __getattr__(self, name):
+                return getattr(contextvar.get(), name)
+
+            def __setattr__(self, name, value):
+                setattr(contextvar.get(), name, value)
+
+            def __delattr__(self, name):
+                delattr(contextvar.get(), name)
+
+            def __getitem__(self, index):
+                return contextvar.get()[index]
+
+            def __setitem__(self, index, value):
+                contextvar.get()[index] = value
+
+            def __delitem__(self, index):
+                del contextvar.get()[index]
+
+        return ContextVarBind()
+
+
+class ImmutableAttribute(Generic[T]):
+    def __set_name__(self, owner: object, name: str) -> None:
+        self.public_name = name
+        self.private_name = "_" + name
+
+    def __get__(self, instance: object, cls: type = None) -> T:
+        return getattr(instance, self.private_name)
+
+    def __set__(self, instance: object, value: T) -> None:
+        if hasattr(instance, self.private_name):
+            raise RuntimeError(
+                f"{instance.__class__.__name__}.{self.public_name} is immutable"
+            )
+        setattr(instance, self.private_name, value)
+
+    def __delete__(self, instance: object) -> None:
+        raise RuntimeError(
+            f"{instance.__class__.__name__}.{self.public_name} is immutable"
+        )

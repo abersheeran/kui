@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from .routes import (
-    ASGIRoute,
     FileRoutes,
     HttpRoute,
     NoMatchFound,
@@ -16,7 +13,6 @@ __all__ = [
     "SubRoutes",
     "HttpRoute",
     "SocketRoute",
-    "ASGIRoute",
     "FileRoutes",
     "NoMatchFound",
     "NoRouteFound",

@@ -1,21 +1,26 @@
 from __future__ import annotations
 
 import operator
+import sys
 import typing
 from copy import deepcopy
 from functools import reduce
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal, TypedDict
+else:
+    from typing import Literal, TypedDict
+
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
-    from indexpy.http.request import Request
-    from indexpy.http.responses import Response
+    from indexpy.requests import Request
 
-from indexpy.http.exceptions import RequestValidationError
-from indexpy.http.responses import HTMLResponse, JSONResponse
+from indexpy.exceptions import RequestValidationError
+from indexpy.requests import request
+from indexpy.responses import HTMLResponse, JSONResponse, Response
 from indexpy.routing import HttpRoute
-from indexpy.typing import Literal, TypedDict
 from indexpy.utils import F
 
 from .functions import merge_openapi_info
@@ -173,14 +178,14 @@ class OpenAPI:
 
     @property
     def routes(self) -> List[HttpRoute]:
-        async def template(request: Request) -> Response:
+        async def template() -> Response:
             return HTMLResponse(self.html_template)
 
-        async def docs(request: Request) -> Response:
+        async def docs() -> Response:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
 
         return [
-            HttpRoute("/", template, method="get"),
-            HttpRoute("/docs", docs, method="get"),
+            HttpRoute("/", template),
+            HttpRoute("/docs", docs),
         ]

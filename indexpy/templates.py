@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import typing
 from abc import ABCMeta, abstractmethod
+from typing import Any, List, Mapping, Union
 
-from indexpy.typing import Receive, Scope, Send
+from baize.asgi import Receive, Scope, Send
 
-if typing.TYPE_CHECKING:
-    from .background import BackgroundTask
-
+from .requests import request
 from .responses import Response
 
 
@@ -18,9 +16,7 @@ class BaseTemplates(metaclass=ABCMeta):
         name: str,
         context: dict,
         status_code: int = 200,
-        headers: dict = None,
-        media_type: str = None,
-        background: BackgroundTask = None,
+        headers: Mapping[str, str] = None,
     ) -> Response:
         """
         The subclass must override this method and return
@@ -35,41 +31,40 @@ except ImportError:
 else:
 
     class _Jinja2TemplateResponse(Response):
-        media_type = "text/html"
-
         def __init__(
             self,
             env: jinja2.Environment,
             name: str,
             context: dict,
             status_code: int = 200,
-            headers: dict = None,
-            media_type: str = None,
-            background: BackgroundTask = None,
+            headers: Mapping[str, str] = None,
         ):
             self.env = env
             self.template = self.env.get_template(name)
             self.context = context
-            super().__init__(None, status_code, headers, media_type, background)
+            super().__init__(status_code, headers)
 
         async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
             if self.env.enable_async:  # type: ignore
                 content = await self.template.render_async(self.context)
             else:
                 content = self.template.render(self.context)
-            self.body = self.render(content)
-            self.headers["content-length"] = str(len(self.body))
 
-            extensions = self.context.get("request", {}).get("extensions", {})
-            if "http.response.template" in extensions:
-                await send(
-                    {
-                        "type": "http.response.template",
-                        "template": self.template,
-                        "context": self.context,
-                    }
-                )
-            await super().__call__(scope, receive, send)
+            body = content.encode("utf-8")
+            self.raw_headers.append(("content-length", str(len(body))))
+            self.raw_headers.append(("content-type", "text/html; charset=utf-8"))
+
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": self.status_code,
+                    "headers": [
+                        (k.encode("latin-1"), v.encode("latin-1"))
+                        for k, v in self.raw_headers
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
 
     class Jinja2Templates(BaseTemplates):
         """
@@ -82,8 +77,8 @@ else:
             self.env = self.get_env(self.get_loaders(*directories))
 
         def get_loaders(self, *directories: str) -> jinja2.BaseLoader:
-            templates_loaders: typing.List[
-                typing.Union[jinja2.FileSystemLoader, jinja2.PackageLoader]
+            templates_loaders: List[
+                Union[jinja2.FileSystemLoader, jinja2.PackageLoader]
             ] = []
             for directory in directories:
                 if ":" in directory:
@@ -97,8 +92,8 @@ else:
 
         def get_env(self, loader: jinja2.BaseLoader) -> jinja2.Environment:
             @jinja2.contextfunction
-            def url_for(context: dict, name: str, **path_params: typing.Any) -> str:
-                router = context["request"]["app"].router
+            def url_for(context: dict, name: str, **path_params: Any) -> str:
+                router = request.app.router
                 return router.url_for(name, path_params)
 
             env = jinja2.Environment(loader=loader, enable_async=True, autoescape=True)
@@ -110,17 +105,9 @@ else:
             name: str,
             context: dict,
             status_code: int = 200,
-            headers: dict = None,
-            media_type: str = None,
-            background: BackgroundTask = None,
+            headers: Mapping[str, str] = None,
         ) -> _Jinja2TemplateResponse:
 
             return _Jinja2TemplateResponse(
-                self.env,
-                name,
-                context,
-                status_code=status_code,
-                headers=headers,
-                media_type=media_type,
-                background=background,
+                self.env, name, context, status_code=status_code, headers=headers
             )

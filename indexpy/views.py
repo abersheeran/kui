@@ -1,19 +1,58 @@
 from __future__ import annotations
 
 import json
+import sys
 import typing
 
-from starlette import status
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
-from indexpy.typing import Literal, Message
+from baize.asgi import Message
 
 if typing.TYPE_CHECKING:
-    from .request import WebSocket
+    from .requests import WebSocket
+
+from .requests import request
+from .responses import Response
+
+
+class HttpView:
+    HTTP_METHOD_NAMES = [
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]
+
+    if typing.TYPE_CHECKING:
+        __methods__: typing.List[str]
+
+    def __init_subclass__(cls) -> None:
+        cls.__methods__ = [m.upper() for m in cls.HTTP_METHOD_NAMES if hasattr(cls, m)]
+
+    def __await__(self) -> typing.Generator[None, None, typing.Any]:
+        return self.__impl__().__await__()
+
+    async def __impl__(self) -> typing.Any:
+        handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
+        return await handler()
+
+    async def http_method_not_allowed(self) -> Response:
+        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
+
+    async def options(self) -> Response:
+        """Handle responding to requests for the OPTIONS HTTP verb."""
+        return Response(headers={"Allow": ", ".join(self.__methods__)})
 
 
 class SocketView:
-
-    encoding: Literal["text", "bytes", "json"] = "json"
+    encoding: Literal["anystr", "text", "bytes", "json"] = "anystr"
 
     def __init__(self, websocket: WebSocket) -> None:
         self.websocket = websocket
@@ -23,7 +62,7 @@ class SocketView:
 
     async def __impl__(self) -> None:
         try:
-            close_code = status.WS_1000_NORMAL_CLOSURE
+            close_code = 1000
             await self.on_connect()
             while True:
                 message = await self.websocket.receive()
@@ -31,25 +70,24 @@ class SocketView:
                     data = await self.decode(message)
                     await self.on_receive(data)
                 elif message["type"] == "websocket.disconnect":
-                    close_code = int(message.get("code", status.WS_1000_NORMAL_CLOSURE))
+                    close_code = int(message.get("code", 1000))
                     break
         except Exception as exc:
-            close_code = status.WS_1011_INTERNAL_ERROR
+            close_code = 1011
             raise exc from None
         finally:
             await self.on_disconnect(close_code)
 
     async def decode(self, message: Message) -> typing.Any:
-
         if self.encoding == "text":
             if "text" not in message:
-                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=1003)
                 raise RuntimeError("Expected text websocket messages, but got bytes")
             return message["text"]
 
         if self.encoding == "bytes":
             if "bytes" not in message:
-                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=1003)
                 raise RuntimeError("Expected bytes websocket messages, but got text")
             return message["bytes"]
 
@@ -62,12 +100,9 @@ class SocketView:
             try:
                 return json.loads(text)
             except json.decoder.JSONDecodeError:
-                await self.websocket.close(code=status.WS_1003_UNSUPPORTED_DATA)
+                await self.websocket.close(code=1003)
                 raise RuntimeError("Malformed JSON data received.")
 
-        assert (
-            self.encoding is None
-        ), f"Unsupported 'encoding' attribute {self.encoding}"
         return message["text"] if message.get("text") else message["bytes"]
 
     async def on_connect(self) -> None:

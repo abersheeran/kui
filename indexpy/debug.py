@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-import asyncio
 import html
 import inspect
 import pprint
 import traceback
 import typing
 
-from starlette.concurrency import run_in_threadpool
+from baize.asgi import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
-    from indexpy.http.request import Request
+    from .requests import Request
+    from .responses import Response
 
-from indexpy.http.responses import HTMLResponse, PlainTextResponse, Response
-from indexpy.typing import ASGIApp, Message, Receive, Scope, Send
+from .responses import HTMLResponse, PlainTextResponse
 
 STYLES = """
 :root {
@@ -152,7 +151,7 @@ CENTER_LINE = """
 """
 
 
-class ServerErrorMiddleware:
+class DebugMiddleware:
     """
     Handles returning 500 responses when a server error occurs.
 
@@ -164,11 +163,8 @@ class ServerErrorMiddleware:
     always result in an appropriate 500 response.
     """
 
-    def __init__(
-        self, app: ASGIApp, handler: typing.Callable = None, debug: bool = False
-    ) -> None:
+    def __init__(self, app: ASGIApp, debug: bool = False) -> None:
         self.app = app
-        self.handler = handler
         self.debug = debug
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -179,7 +175,7 @@ class ServerErrorMiddleware:
         response_started = False
 
         async def _send(message: Message) -> None:
-            nonlocal response_started, send
+            nonlocal response_started
 
             if message["type"] == "http.response.start":
                 response_started = True
@@ -191,23 +187,11 @@ class ServerErrorMiddleware:
             if not response_started:
                 request = scope["app"].factory_class.http(scope)
                 if self.debug:
-                    # In debug mode, return traceback responses.
                     response = self.debug_response(request, exc)
-                elif self.handler is None:
-                    # Use our default 500 error handler.
-                    response = self.error_response(request, exc)
                 else:
-                    # Use an installed 500 error handler.
-                    if asyncio.iscoroutinefunction(self.handler):
-                        response = await self.handler(request, exc)
-                    else:
-                        response = await run_in_threadpool(self.handler, request, exc)
-
+                    response = self.error_response(request, exc)
                 await response(scope, receive, send)
 
-            # We always continue to raise the exception.
-            # This allows servers to log the error, or allows test clients
-            # to optionally raise the error within the test case.
             raise exc from None
 
     def format_line(
