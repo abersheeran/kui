@@ -7,7 +7,7 @@ from itertools import groupby
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
 from baize.asgi import FormData
-from pydantic import BaseModel, ValidationError, create_model
+from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
@@ -40,14 +40,13 @@ class ApiView(HttpView):
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
-def create_model_config(title: str = None, description: str = None):
-    class ExclusiveModelConfig:
-        @staticmethod
-        def schema_extra(schema, model) -> None:
-            if title is not None:
-                schema["title"] = title
-            if description is not None:
-                schema["description"] = description
+def create_model_config(title: str = None, description: str = None) -> Type[BaseConfig]:
+    class ExclusiveModelConfig(BaseConfig):
+        schema_extra = {
+            k: v
+            for k, v in {"title": title, "description": description}.items()
+            if v is not None
+        }
 
     return ExclusiveModelConfig
 
@@ -68,10 +67,10 @@ def parse_params(function: CallableObject) -> CallableObject:
         default = param.default
         annotation = param.annotation
 
-        if default == param.empty:
+        if default == param.empty or not isinstance(default, FieldInfo):
             continue
 
-        if isinstance(default, FieldInfo) and getattr(default, "exclusive", False):
+        if getattr(default, "exclusive", False):
             if safe_issubclass(annotation, BaseModel):
                 model = annotation
             else:

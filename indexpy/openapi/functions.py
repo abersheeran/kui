@@ -1,24 +1,12 @@
 from __future__ import annotations
 
-import sys
 import typing
 from http import HTTPStatus
-from inspect import isclass
-
-if sys.version_info >= (3, 9):
-    # https://www.python.org/dev/peps/pep-0585/
-
-    from types import GenericAlias
-
-    GenericType = (GenericAlias, type(typing.List[str]))
-else:
-
-    GenericType = (type(typing.List[str]),)
 
 from pydantic import BaseModel, create_model
 from pydantic.typing import display_as_type
 
-from indexpy.utils import F
+from indexpy.utils import F, safe_issubclass
 
 T = typing.TypeVar("T", bound=typing.Callable)
 
@@ -51,9 +39,8 @@ def describe_response(
             content is None
             or isinstance(content, dict)
             or (
-                not isinstance(content, GenericType)
-                and isclass(content)
-                and issubclass(content, BaseModel)
+                getattr(content, "__origin__", None) is None
+                and safe_issubclass(content, BaseModel)
             )
         ):
             real_content = content
@@ -110,7 +97,7 @@ def describe_extra_docs(handler: T, info: typing.Dict[str, typing.Any]) -> T:
 
     https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject
     """
-    if isclass(handler):
+    if isinstance(handler, type):
         for method in getattr(handler, "__methods__"):
             handler_method = getattr(handler, method.lower())
             __extra_docs__ = merge_openapi_info(
