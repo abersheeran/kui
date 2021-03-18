@@ -1,10 +1,9 @@
 import asyncio
-from indexpy.routing.routes import SubRoutes
-from pathlib import Path
 import os
+from pathlib import Path
 
 from indexpy import Index
-from indexpy.routing import HttpRoute, Routes
+from indexpy.routing import HttpRoute, Prefix
 
 
 async def homepage():
@@ -41,17 +40,15 @@ async def readme():
     return os.stat(readme_path), readme_path
 
 
-app = Index(
-    debug=True,
-    routes=[HttpRoute("/", homepage)],
-)
-app.router << Routes(
+app = Index(debug=True)
+app.router < HttpRoute("/", homepage)
+app.router << [
     HttpRoute("/exc", exc),
     HttpRoute("/message", message),
-)
-app.router << SubRoutes(
-    "/sources",
-    [
+]
+app.router << (
+    Prefix("/sources")
+    / [
         HttpRoute("/README.md", readme),
-    ],
+    ]
 )
