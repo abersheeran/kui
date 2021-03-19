@@ -239,23 +239,6 @@ class Router(RouteRegisterMixin):
 
         self << routes
 
-    @staticmethod
-    def _append(
-        path: str,
-        endpoint: typing.Callable[[], typing.Any],
-        name: typing.Optional[str],
-        radix_tree: RadixTree,
-        routes: typing.Dict[str, RouteType],
-    ) -> None:
-        if name in routes:
-            raise ValueError(f"Duplicate route name: {name}")
-
-        radix_tree.append(path, endpoint)
-        path_format, path_convertors = compile_path(path)
-
-        if name:  # name not in ("", None)
-            routes[name] = (path_format, path_convertors, endpoint)
-
     def __lt__(self: _RouterSelf, route: BaseRoute) -> _RouterSelf:
         if isinstance(route, HttpRoute):
             radix_tree = self.http_tree
