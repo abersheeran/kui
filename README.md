@@ -47,7 +47,6 @@
 Index.py 实现了 [ASGI3](http://asgi.readthedocs.io/en/latest/) 接口，并使用 Radix Tree 进行路由查找。是[最快的 Python web 框架之一](https://github.com/the-benchmarker/web-frameworks)。一切特性都服务于快速开发高性能的 Web 服务。
 
 - 灵活且高效的路由系统
-- 自动解析请求 & 生成文档
 - 可视化 API 接口与在线调试
 - 支持 [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) 与 WebSocket
 - 自带一键部署命令 (基于 uvicorn 与 gunicorn)
