@@ -1,10 +1,10 @@
 # ![](./img/index-py.png)
 
-这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。Index.py 拥有极高的裸性能，[比 aiohttp、fastapi 更快](https://github.com/the-benchmarker/web-frameworks)。
+这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。
 
 到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 [Django](https://www.djangoproject.com/)。
 
-如果你对本框架后续发展有任何的想法，欢迎访问 [Github Issues](https://github.com/abersheeran/index.py/issues) 反馈；如果你有需要与其他人共同分享、讨论的事情，欢迎访问 [Github Discussions](https://github.com/abersheeran/index.py/discussions)。
+如果你发现了任何的 BUG，欢迎访问 [Github Issues](https://github.com/abersheeran/index.py/issues) 反馈；如果你有需要与其他人共同分享、讨论的事情或希望增加的特性，欢迎访问 [Github Discussions](https://github.com/abersheeran/index.py/discussions) 发起讨论。
 
 ## 设计灵感
 
@@ -26,17 +26,8 @@ pip install -U index.py
 pip install -U git+https://github.com/abersheeran/index.py@setup.py
 ```
 
-中国大陆内的用户可从 Coding 上的镜像仓库拉取
+中国大陆内的用户可从 Gitee 上的镜像仓库拉取
 
 ```bash
-pip install -U git+https://e.coding.net/aber/github/index.py.git@setup.py
+pip install -U git+https://gitee.com/abersheeran/index.py.git@setup.py
 ```
-
-## 必须的依赖
-
-Index.py 并不是一个全然从零开始的框架，它有许多部分依赖于众多优秀的第三方库与 Python 标准库。
-
-- [Starlette](https://www.starlette.io/)：提供了 Request、Response、Background Task、TestClient 等功能。
-- [Pydantic](https://pydantic-docs.helpmanual.io/)：为自动生成 OpenAPI 文档以及请求参数解析提供了支持。
-- [Python-multipart](https://github.com/andrew-d/python-multipart)：为流式上传文件提供了支持。
-- [Click](https://click.palletsprojects.com/en/7.x/)：为 `index-cli` 命令提供支持。

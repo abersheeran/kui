@@ -21,7 +21,6 @@ nav:
   - Lifespan: "event.md"
   - Middleware: "middleware.md"
   - OpenAPI: "openapi.md"
-  - Background Task: "background.md"
   - Command: "command.md"
 
 markdown_extensions:
