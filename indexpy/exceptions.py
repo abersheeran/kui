@@ -20,6 +20,7 @@ from baize.typing import JSONable
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
+from .requests import request
 from .responses import HttpResponse
 
 
@@ -64,7 +65,7 @@ class RequestValidationError(Exception):
 
 Error = TypeVar("Error", bound=Exception)
 ErrorView = Callable[[Error], Awaitable[HttpResponse]]
-View = Callable[[], Coroutine[Any, Any, HttpResponse]]
+View = Callable[[], Coroutine[None, None, None]]
 
 
 class ExceptionMiddleware:
@@ -100,7 +101,7 @@ class ExceptionMiddleware:
 
     def __call__(self, endpoint: View) -> View:
         @functools.wraps(endpoint)
-        async def wrapper() -> HttpResponse:
+        async def wrapper() -> None:
             try:
                 return await endpoint()
             except Exception as exc:
@@ -111,7 +112,8 @@ class ExceptionMiddleware:
                     handler = self._lookup_exception_handler(exc)
                 if handler is None:
                     raise exc from None
-                return await handler(exc)
+                response = await handler(exc)
+                return await response(request._scope, request._receive, request._send)
 
         return wrapper
 
