@@ -230,7 +230,7 @@ _RouterSelf = typing.TypeVar("_RouterSelf", bound="Router")
 
 
 class Router(RouteRegisterMixin):
-    def __init__(self, routes: typing.List[BaseRoute] = []) -> None:
+    def __init__(self, routes: typing.Sequence[BaseRoute]) -> None:
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
 
