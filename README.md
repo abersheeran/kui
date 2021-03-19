@@ -1,6 +1,6 @@
 <div align="center">
 
-<img style="max-width:60%;" src="https://raw.githubusercontent.com/abersheeran/index.py/master/docs/img/index-py.png" />
+<img src="https://raw.githubusercontent.com/abersheeran/index.py/master/docs/img/index-py.png" />
 
 <p>
 中文
