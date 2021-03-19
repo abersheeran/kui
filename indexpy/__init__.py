@@ -15,6 +15,7 @@ from .responses import (
     ServerSentEvent,
     StreamResponse,
 )
+from .views import HttpView, SocketView, required_method
 
 __all__ = [
     "Index",
@@ -37,4 +38,7 @@ __all__ = [
     "SendEventResponse",
     "StreamResponse",
     "TemplateResponse",
+    "required_method",
+    "HttpView",
+    "SocketView",
 ]

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import functools
 import json
 import sys
-from typing import TYPE_CHECKING, Any, Generator, List
+from typing import TYPE_CHECKING, Any, Callable, Generator, List, TypeVar
+from typing import cast as typing_cast
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -16,6 +18,28 @@ if TYPE_CHECKING:
 
 from .requests import request
 from .responses import HttpResponse
+
+FuncView = TypeVar("FuncView", bound=Callable)
+
+
+def required_method(method: str) -> Callable[[FuncView], FuncView]:
+    """
+    Set the acceptable request method of the function
+    """
+    allow_methods = {"HEAD", "GET"} if method == "GET" else {method}
+
+    def decorator(function: FuncView) -> FuncView:
+        @functools.wraps(function)
+        async def wrapper(*args, **kwargs):
+            if request.method in allow_methods:
+                return await function(*args, **kwargs)
+            else:
+                return HttpResponse(headers={"Allow": ", ".join(allow_methods)})
+
+        setattr(wrapper, "__method__", method.upper())
+        return typing_cast(FuncView, wrapper)
+
+    return decorator
 
 
 class HttpView:

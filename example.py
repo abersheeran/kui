@@ -1,4 +1,5 @@
 import asyncio
+from indexpy.views import required_method
 import os
 from pathlib import Path as FilePath
 
@@ -32,6 +33,7 @@ async def message():
     return message_gen()
 
 
+@required_method("GET")
 async def sources(filepath: str = Path()):
     """
     Return source files
