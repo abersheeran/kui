@@ -5,7 +5,7 @@ from async_asgi_testclient import TestClient
 
 
 @pytest.mark.asyncio
-async def test_application():
+async def test_example_application():
     from example import app
 
     async with TestClient(app) as client:
@@ -26,3 +26,6 @@ async def test_application():
         response = await client.get("/sources/README.md")
         assert response.status_code == 200
         assert response.content == (Path(".").absolute() / "README.md").read_bytes()
+
+        response = await client.get("/sources/example")
+        assert response.status_code == 404
