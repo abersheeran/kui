@@ -29,11 +29,11 @@ class ApiView(HttpView):
                 raise TypeError(
                     f"The function {function_name} should be defined using `async def`"
                 )
-            setattr(cls, function_name, parse_params(function))
+            setattr(cls, function_name, parse_signature(function))
 
     async def __impl__(self) -> Any:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
-        handler = await bound_params(handler)
+        handler = await verify_params(handler)
         return await handler()
 
 
@@ -51,7 +51,7 @@ def create_model_config(title: str = None, description: str = None) -> Type[Base
     return ExclusiveModelConfig
 
 
-def parse_params(function: CallableObject) -> CallableObject:
+def parse_signature(function: CallableObject) -> CallableObject:
     sig = signature(function)
 
     __parameters__: Dict[str, Any] = {
@@ -64,11 +64,11 @@ def parse_params(function: CallableObject) -> CallableObject:
     __exclusive_models__ = {}
 
     for name, param in sig.parameters.items():
+        if param.default == param.empty or not isinstance(param.default, FieldInfo):
+            continue
+
         default = param.default
         annotation = param.annotation
-
-        if default == param.empty or not isinstance(default, FieldInfo):
-            continue
 
         if getattr(default, "exclusive", False):
             if safe_issubclass(annotation, BaseModel):
@@ -81,25 +81,23 @@ def parse_params(function: CallableObject) -> CallableObject:
                 )
             __parameters__[default._in] = model
             __exclusive_models__[model] = name
-            continue
-
-        if safe_issubclass(__parameters__[default._in], BaseModel):
-            raise RuntimeError(
-                f"{default._in.capitalize()}(exclusive=True) "
-                "and {default._in.capitalize()} cannot be used at the same time"
-            )
-
-        if annotation != param.empty:
-            __parameters__[default._in][name] = (annotation, default)
         else:
-            __parameters__[default._in][name] = default
+            if safe_issubclass(__parameters__[default._in], BaseModel):
+                raise RuntimeError(
+                    f"{default._in.capitalize()}(exclusive=True) "
+                    "and {default._in.capitalize()} cannot be used at the same time"
+                )
 
-    for key in (
-        key
-        for key in __parameters__
-        if not safe_issubclass(__parameters__[key], BaseModel)
-    ):
-        __parameters__[key] = create_model("temporary_model", **__parameters__[key])  # type: ignore
+            if annotation != param.empty:
+                __parameters__[default._in][name] = (annotation, default)
+            else:
+                __parameters__[default._in][name] = default
+
+    for key in tuple(__parameters__.keys()):
+        params = __parameters__.pop(key)
+        if safe_issubclass(params, BaseModel) or not params:
+            continue
+        __parameters__[key] = create_model("temporary_model", **params)  # type: ignore
 
     if "body" in __parameters__:
         setattr(function, "__request_body__", __parameters__.pop("body"))
@@ -130,7 +128,7 @@ def _merge_multi_value(
     }
 
 
-async def bound_params(handler: Callable) -> Callable[[], Any]:
+async def verify_params(handler: Callable) -> Callable[[], Any]:
     """
     bound parameters "path", "query", "header", "cookie", "body" to the view function
     """
@@ -144,7 +142,6 @@ async def bound_params(handler: Callable) -> Callable[[], Any]:
     )
 
     data: List[Any] = []
-    kwargs: Dict[str, BaseModel] = {}
 
     try:
         # try to get parameters model and parse
@@ -179,6 +176,7 @@ async def bound_params(handler: Callable) -> Callable[[], Any]:
     except ValidationError as e:
         raise RequestValidationError(e)
 
+    kwargs: Dict[str, Any] = {}
     for _data in data:
         if _data.__class__.__name__ == "temporary_model":
             kwargs.update(_data.dict())

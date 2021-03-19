@@ -1,9 +1,11 @@
 import asyncio
 import os
-from pathlib import Path
+from pathlib import Path as FilePath
 
-from indexpy import Index
-from indexpy.routing import HttpRoute, Prefix
+from indexpy import Index, Path
+from indexpy.exceptions import HTTPException
+from indexpy.routing import HttpRoute
+from indexpy.openapi import ApiView
 
 
 async def homepage():
@@ -32,12 +34,16 @@ async def message():
     return message_gen()
 
 
-async def readme():
-    """
-    Return README.md file
-    """
-    readme_path = str(Path(".").absolute() / "README.md")
-    return os.stat(readme_path), readme_path
+class Sources(ApiView):
+    async def get(filepath: str = Path()):
+        """
+        Return source files
+        """
+        realpath = FilePath(".") / filepath.split("./")
+        try:
+            return os.stat(realpath), str(realpath)
+        except FileNotFoundError:
+            raise HTTPException(404)
 
 
 app = Index(debug=True)
@@ -46,9 +52,4 @@ app.router << [
     HttpRoute("/exc", exc),
     HttpRoute("/message", message),
 ]
-app.router << (
-    Prefix("/sources")
-    / [
-        HttpRoute("/README.md", readme),
-    ]
-)
+app.router < HttpRoute("/sources/{filepath:path}", Sources)
