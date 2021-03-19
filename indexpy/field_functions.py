@@ -4,9 +4,9 @@ from typing import Any, Optional
 
 from pydantic.fields import NoArgAnyCallable, Undefined
 
-from .fields import BodyInfo, CookieInfo, HeaderInfo, PathInfo, QueryInfo
+from .fields import BodyInfo, CookieInfo, HeaderInfo, PathInfo, QueryInfo, RequestInfo
 
-__all__ = ["Path", "Query", "Header", "Cookie", "Body"]
+__all__ = ["Path", "Query", "Header", "Cookie", "Body", "Request"]
 
 
 def Path(
@@ -187,3 +187,12 @@ def Body(
     )
     field_info._validate()
     return field_info
+
+
+def Request(alias: str = None) -> Any:
+    """
+    Used to provide extra information about a field.
+
+    :param alias: the public name of the field
+    """
+    return RequestInfo(alias or "")

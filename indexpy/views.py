@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .requests import WebSocket
 
 from .requests import request
-from .responses import Response
+from .responses import HttpResponse
 
 
 class HttpView:
@@ -43,12 +43,14 @@ class HttpView:
         handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
         return await handler()
 
-    async def http_method_not_allowed(self) -> Response:
-        return Response(status_code=405, headers={"Allow": ", ".join(self.__methods__)})
+    async def http_method_not_allowed(self) -> HttpResponse:
+        return HttpResponse(
+            status_code=405, headers={"Allow": ", ".join(self.__methods__)}
+        )
 
-    async def options(self) -> Response:
+    async def options(self) -> HttpResponse:
         """Handle responding to requests for the OPTIONS HTTP verb."""
-        return Response(headers={"Allow": ", ".join(self.__methods__)})
+        return HttpResponse(headers={"Allow": ", ".join(self.__methods__)})
 
 
 class SocketView:

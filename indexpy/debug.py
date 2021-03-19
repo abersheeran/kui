@@ -9,8 +9,8 @@ import typing
 from baize.asgi import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
-    from .requests import Request
-    from .responses import Response
+    from .requests import HttpRequest
+    from .responses import HttpResponse
 
 from .responses import HTMLResponse, PlainTextResponse
 
@@ -258,12 +258,12 @@ class DebugMiddleware:
     def generate_plain_text(self, exc: Exception) -> str:
         return "".join(traceback.format_tb(exc.__traceback__))
 
-    def debug_response(self, request: Request, exc: Exception) -> Response:
+    def debug_response(self, request: HttpRequest, exc: Exception) -> HttpResponse:
         if request.accepts("text/html"):
             content = self.generate_html(exc)
             return HTMLResponse(content, status_code=500)
         content = self.generate_plain_text(exc)
         return PlainTextResponse(content, status_code=500)
 
-    def error_response(self, request: Request, exc: Exception) -> Response:
+    def error_response(self, request: HttpRequest, exc: Exception) -> HttpResponse:
         return PlainTextResponse("Internal Server Error", status_code=500)

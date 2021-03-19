@@ -6,7 +6,7 @@ from typing import Any, List, Mapping, Union
 from baize.asgi import Receive, Scope, Send
 
 from .requests import request
-from .responses import Response
+from .responses import HttpResponse
 
 
 class BaseTemplates(metaclass=ABCMeta):
@@ -17,7 +17,7 @@ class BaseTemplates(metaclass=ABCMeta):
         context: dict,
         status_code: int = 200,
         headers: Mapping[str, str] = None,
-    ) -> Response:
+    ) -> HttpResponse:
         """
         The subclass must override this method and return
         an instance of a Response object.
@@ -30,7 +30,7 @@ except ImportError:
     pass
 else:
 
-    class _Jinja2TemplateResponse(Response):
+    class _Jinja2TemplateResponse(HttpResponse):
         def __init__(
             self,
             env: jinja2.Environment,

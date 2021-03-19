@@ -17,7 +17,7 @@ from baize.utils import cached_property
 
 from .debug import DebugMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import Request, WebSocket, request, request_var, websocket_var
+from .requests import HttpRequest, WebSocket, request, request_var, websocket_var
 from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
@@ -63,7 +63,7 @@ class Lifespan:
 
 @dataclasses.dataclass
 class FactoryClass:
-    http: Type[Request] = Request
+    http: Type[HttpRequest] = HttpRequest
     websocket: Type[WebSocket] = WebSocket
 
 
@@ -139,8 +139,7 @@ class Index:
         request = self.factory_class.http(scope, receive, send)
         token = request_var.set(request)
         try:
-            response = await self._impl_http()
-            return await response(scope, receive, send)
+            await self._impl_http()
         finally:
             request_var.reset(token)
 
@@ -151,7 +150,8 @@ class Index:
         except NoMatchFound:
             raise HTTPException(404)
         else:
-            return convert_response(await handler())
+            response = convert_response(await handler())
+            return await response(request._scope, request._receive, request._send)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = self.factory_class.websocket(scope, receive, send)

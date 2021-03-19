@@ -35,7 +35,7 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping):
         return self["app"]  # type: ignore
 
 
-class Request(BaiZeRequest, HTTPConnection):
+class HttpRequest(BaiZeRequest, HTTPConnection):
     async def data(self) -> typing.Any:
         content_type = self.content_type
         if content_type == "application/json":
@@ -49,7 +49,7 @@ class Request(BaiZeRequest, HTTPConnection):
         raise HTTPException(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
 
 
-request_var: ContextVar[Request] = ContextVar("request")
+request_var: ContextVar[HttpRequest] = ContextVar("request")
 
 request = bind_contextvar(request_var)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from typing import Any
 
 if sys.version_info[:2] < (3, 8):
@@ -15,7 +16,7 @@ from pydantic.fields import Undefined
 class FieldInfo(_FieldInfo):
     __slots__ = _FieldInfo.__slots__
 
-    _in: Literal["path", "query", "header", "cookie", "body"]
+    _in: Literal["path", "query", "header", "cookie", "body", "request"]
 
 
 class PathInfo(FieldInfo):
@@ -66,3 +67,10 @@ class BodyInfo(FieldInfo):
     def __init__(self, default: Any = Undefined, **kwargs: Any) -> None:
         self.exclusive = kwargs.pop("exclusive")
         super().__init__(default, **kwargs)
+
+
+@dataclass
+class RequestInfo:
+    __slots__ = ("alias",)
+
+    alias: str

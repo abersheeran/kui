@@ -11,18 +11,16 @@ from baize.asgi import (
     JSONResponse,
     PlainTextResponse,
     RedirectResponse,
-    Response,
-    SendEventResponse,
-    ServerSentEvent,
-    StreamResponse,
 )
+from baize.asgi import Response as HttpResponse
+from baize.asgi import SendEventResponse, ServerSentEvent, StreamResponse
 
 from .requests import request
 
 __all__ = [
     "automatic",
     "convert_response",
-    "Response",
+    "HttpResponse",
     "FileResponse",
     "HTMLResponse",
     "JSONResponse",
@@ -36,7 +34,7 @@ __all__ = [
 
 def TemplateResponse(
     name: str, context: dict, status_code: int = 200, headers: dict = None
-) -> Response:
+) -> HttpResponse:
     templates = request.app.templates
     if templates is None:
         raise RuntimeError(
@@ -46,7 +44,7 @@ def TemplateResponse(
     return templates.TemplateResponse(name, context, status_code, headers)
 
 
-def convert_response(response: typing.Any) -> Response:
+def convert_response(response: typing.Any) -> HttpResponse:
     """
     shortcut for automatic
 
@@ -69,9 +67,9 @@ def convert_response(response: typing.Any) -> Response:
 
 
 @functools.singledispatch
-def automatic(*args: typing.Any) -> Response:
+def automatic(*args: typing.Any) -> HttpResponse:
     # Response or Response subclass
-    if isinstance(args[0], Response):
+    if isinstance(args[0], HttpResponse):
         return args[0]
 
     raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
@@ -89,7 +87,7 @@ def _none(ret: typing.Type[None]) -> typing.NoReturn:
 @automatic.register(dict)
 def _json(
     body, status: int = 200, headers: typing.Mapping[str, str] = None
-) -> Response:
+) -> HttpResponse:
     return JSONResponse(body, status, headers)
 
 
@@ -99,7 +97,7 @@ def _plain_text(
     body: typing.Union[str, bytes],
     status: int = 200,
     headers: typing.Mapping[str, str] = None,
-) -> Response:
+) -> HttpResponse:
     return PlainTextResponse(body, status, headers)
 
 
@@ -108,7 +106,7 @@ def _send_event(
     generator: typing.AsyncGenerator[ServerSentEvent, None],
     status: int = 200,
     headers: typing.Mapping[str, str] = None,
-) -> Response:
+) -> HttpResponse:
     return SendEventResponse(generator, status, headers)
 
 
@@ -119,7 +117,7 @@ def _file(
     download_name: str = None,
     media_type: str = None,
     headers: typing.Mapping[str, str] = None,
-) -> Response:
+) -> HttpResponse:
     return FileResponse(
         filepath=filepath,
         headers=headers,
