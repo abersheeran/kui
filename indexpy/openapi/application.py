@@ -15,11 +15,11 @@ else:
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
-    from indexpy.requests import Request
+    from indexpy.requests import HttpRequest
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
-from indexpy.responses import HTMLResponse, JSONResponse, Response
+from indexpy.responses import HTMLResponse, HttpResponse, JSONResponse
 from indexpy.routing import HttpRoute
 from indexpy.utils import F
 
@@ -159,7 +159,7 @@ class OpenAPI:
             getattr(func, "__extra_docs__", {}),
         )
 
-    def create_docs(self, request: Request) -> dict:
+    def create_docs(self, request: HttpRequest) -> dict:
         openapi: dict = deepcopy(self.openapi)
         definitions: Dict[str, Any] = {}
         openapi["servers"] = [
@@ -174,14 +174,11 @@ class OpenAPI:
 
     @property
     def routes(self) -> List[HttpRoute]:
-        async def template() -> Response:
+        async def template() -> HttpResponse:
             return HTMLResponse(self.html_template)
 
-        async def docs() -> Response:
+        async def docs() -> HttpResponse:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
 
-        return [
-            HttpRoute("/", template),
-            HttpRoute("/docs", docs),
-        ]
+        return [HttpRoute("/", template), HttpRoute("/docs", docs)]

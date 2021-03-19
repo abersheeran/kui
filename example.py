@@ -1,9 +1,9 @@
 import asyncio
 import os
-from pathlib import Path
+from pathlib import Path as FilePath
 
-from indexpy import Index
-from indexpy.routing import HttpRoute, Prefix
+from indexpy import Index, Path, HTTPException
+from indexpy.routing import HttpRoute
 
 
 async def homepage():
@@ -32,12 +32,15 @@ async def message():
     return message_gen()
 
 
-async def readme():
+async def sources(filepath: str = Path()):
     """
-    Return README.md file
+    Return source files
     """
-    readme_path = str(Path(".").absolute() / "README.md")
-    return os.stat(readme_path), readme_path
+    realpath = FilePath(".") / filepath.lstrip("./")
+    try:
+        return os.stat(realpath), str(realpath)
+    except FileNotFoundError:
+        raise HTTPException(404)
 
 
 app = Index(debug=True)
@@ -46,9 +49,4 @@ app.router << [
     HttpRoute("/exc", exc),
     HttpRoute("/message", message),
 ]
-app.router << (
-    Prefix("/sources")
-    / [
-        HttpRoute("/README.md", readme),
-    ]
-)
+app.router < HttpRoute("/sources/{filepath:path}", sources)

@@ -12,13 +12,13 @@ if sys.version_info[:2] < (3, 8):
 else:
     from typing import Literal
 
-from baize.asgi import Receive, Response, Scope, Send
+from baize.asgi import Receive, Scope, Send
 from baize.utils import cached_property
 
 from .debug import DebugMiddleware
 from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import Request, WebSocket, request, request_var, websocket_var
-from .responses import convert_response
+from .requests import HttpRequest, WebSocket, request, request_var, websocket_var
+from .responses import HttpResponse, convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
 from .utils import State
@@ -63,7 +63,7 @@ class Lifespan:
 
 @dataclasses.dataclass
 class FactoryClass:
-    http: Type[Request] = Request
+    http: Type[HttpRequest] = HttpRequest
     websocket: Type[WebSocket] = WebSocket
 
 
@@ -144,7 +144,7 @@ class Index:
         finally:
             request_var.reset(token)
 
-    async def _impl_raw_http(self) -> Response:
+    async def _impl_raw_http(self) -> HttpResponse:
         try:
             path_params, handler = self.router.search("http", request["path"])
             request["path_params"] = path_params

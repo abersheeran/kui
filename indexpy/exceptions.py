@@ -20,7 +20,7 @@ from baize.typing import JSONable
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
-from .responses import Response
+from .responses import HttpResponse
 
 
 class RequestValidationError(Exception):
@@ -63,8 +63,8 @@ class RequestValidationError(Exception):
 
 
 Error = TypeVar("Error", bound=Exception)
-ErrorView = Callable[[Error], Awaitable[Response]]
-View = Callable[[], Coroutine[Any, Any, Response]]
+ErrorView = Callable[[Error], Awaitable[HttpResponse]]
+View = Callable[[], Coroutine[None, None, HttpResponse]]
 
 
 class ExceptionMiddleware:
@@ -100,7 +100,7 @@ class ExceptionMiddleware:
 
     def __call__(self, endpoint: View) -> View:
         @functools.wraps(endpoint)
-        async def wrapper() -> Response:
+        async def wrapper() -> HttpResponse:
             try:
                 return await endpoint()
             except Exception as exc:
@@ -116,16 +116,16 @@ class ExceptionMiddleware:
         return wrapper
 
     @staticmethod
-    async def http_exception(exc: HTTPException) -> Response:
+    async def http_exception(exc: HTTPException) -> HttpResponse:
         if exc.status_code in {204, 304}:
-            return Response(status_code=exc.status_code, headers=exc.headers)
+            return HttpResponse(status_code=exc.status_code, headers=exc.headers)
 
         return PlainTextResponse(
             content=exc.content or b"", status_code=exc.status_code, headers=exc.headers
         )
 
     @staticmethod
-    async def request_validation_error(exc: RequestValidationError) -> Response:
+    async def request_validation_error(exc: RequestValidationError) -> HttpResponse:
         return PlainTextResponse(
             exc.json(), status_code=422, media_type="application/json"
         )

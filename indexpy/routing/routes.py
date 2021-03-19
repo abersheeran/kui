@@ -18,6 +18,8 @@ else:
 
 from baize.routing import compile_path
 
+from indexpy.parameters import auto_params
+
 from .tree import RadixTree, RouteType
 
 T = typing.TypeVar("T")
@@ -61,6 +63,7 @@ class BaseRoute:
             raise ValueError("Route path must start with '/'")
         if self.name == "":
             self.name = self.endpoint.__name__
+        self.endpoint = auto_params(self.endpoint)
 
 
 @dataclass

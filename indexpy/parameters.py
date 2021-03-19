@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import asyncio
 import functools
-from inspect import signature
+import inspect
 from itertools import groupby
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
 
@@ -12,30 +11,8 @@ from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
 from indexpy.utils import safe_issubclass
-from indexpy.views import HttpView
 
-from .fields import FieldInfo
-
-
-class ApiView(HttpView):
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-
-        for function_name in (
-            key for key in cls.HTTP_METHOD_NAMES if hasattr(cls, key)
-        ):
-            function = getattr(cls, function_name)
-            if not asyncio.iscoroutinefunction(function):
-                raise TypeError(
-                    f"The function {function_name} should be defined using `async def`"
-                )
-            setattr(cls, function_name, parse_params(function))
-
-    async def __impl__(self) -> Any:
-        handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
-        handler = await bound_params(handler)
-        return await handler()
-
+from .fields import FieldInfo, RequestInfo
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
@@ -51,24 +28,25 @@ def create_model_config(title: str = None, description: str = None) -> Type[Base
     return ExclusiveModelConfig
 
 
-def parse_params(function: CallableObject) -> CallableObject:
-    sig = signature(function)
+def parse_signature(function: CallableObject) -> CallableObject:
+    sig = inspect.signature(function)
 
     __parameters__: Dict[str, Any] = {
-        "path": {},
-        "query": {},
-        "header": {},
-        "cookie": {},
-        "body": {},
+        key: {} for key in ["path", "query", "header", "cookie", "body"]
     }
-    __exclusive_models__ = {}
+    __exclusive_models__: Dict[BaseModel, str] = {}
 
     for name, param in sig.parameters.items():
+        if not isinstance(param.default, FieldInfo):
+            continue
+
+        if param.POSITIONAL_ONLY:
+            raise TypeError(
+                f"Parameter {name} cannot be defined as positional only parameters."
+            )
+
         default = param.default
         annotation = param.annotation
-
-        if default == param.empty or not isinstance(default, FieldInfo):
-            continue
 
         if getattr(default, "exclusive", False):
             if safe_issubclass(annotation, BaseModel):
@@ -81,25 +59,21 @@ def parse_params(function: CallableObject) -> CallableObject:
                 )
             __parameters__[default._in] = model
             __exclusive_models__[model] = name
-            continue
-
-        if safe_issubclass(__parameters__[default._in], BaseModel):
-            raise RuntimeError(
-                f"{default._in.capitalize()}(exclusive=True) "
-                "and {default._in.capitalize()} cannot be used at the same time"
-            )
-
-        if annotation != param.empty:
-            __parameters__[default._in][name] = (annotation, default)
         else:
-            __parameters__[default._in][name] = default
+            if safe_issubclass(__parameters__[default._in], BaseModel):
+                raise RuntimeError(
+                    f"{default._in.capitalize()}(exclusive=True) "
+                    f"and {default._in.capitalize()} cannot be used at the same time"
+                )
+            if annotation == param.empty:
+                annotation = Any
+            __parameters__[default._in][name] = (annotation, default)
 
-    for key in (
-        key
-        for key in __parameters__
-        if not safe_issubclass(__parameters__[key], BaseModel)
-    ):
-        __parameters__[key] = create_model("temporary_model", **__parameters__[key])  # type: ignore
+    for key in tuple(__parameters__.keys()):
+        _params_ = __parameters__.pop(key)
+        if safe_issubclass(_params_, BaseModel) or not _params_:
+            continue
+        __parameters__[key] = create_model("temporary_model", **_params_)  # type: ignore
 
     if "body" in __parameters__:
         setattr(function, "__request_body__", __parameters__.pop("body"))
@@ -109,6 +83,27 @@ def parse_params(function: CallableObject) -> CallableObject:
 
     if __exclusive_models__:
         setattr(function, "__exclusive_models__", __exclusive_models__)
+
+    request_attrs = {
+        name: param.default
+        for name, param in sig.parameters.items()
+        if isinstance(param.default, RequestInfo)
+    }
+    if request_attrs:
+        setattr(function, "__request_attrs__", request_attrs)
+
+    __signature__ = inspect.Signature(
+        parameters=[
+            param
+            for param in sig.parameters.values()
+            if (
+                not isinstance(param.default, FieldInfo)
+                or not isinstance(param.default, RequestInfo)
+            )
+        ],
+        return_annotation=sig.return_annotation,
+    )
+    setattr(function, "__signature__", __signature__)
 
     return function
 
@@ -130,13 +125,11 @@ def _merge_multi_value(
     }
 
 
-async def bound_params(handler: Callable) -> Callable[[], Any]:
-    """
-    bound parameters "path", "query", "header", "cookie", "body" to the view function
-    """
+async def verify_params(handler: CallableObject) -> CallableObject:
     parameters: Dict[str, BaseModel] = getattr(handler, "__parameters__", None)
     request_body: BaseModel = getattr(handler, "__request_body__", None)
-    if not (parameters or request_body):
+    request_attrs: Dict[str, RequestInfo] = getattr(handler, "__request_attrs__", None)
+    if not (parameters or request_body or request_attrs):
         return handler
 
     exclusive_models: Dict[Type[BaseModel], str] = getattr(
@@ -144,7 +137,7 @@ async def bound_params(handler: Callable) -> Callable[[], Any]:
     )
 
     data: List[Any] = []
-    kwargs: Dict[str, BaseModel] = {}
+    kwargs: Dict[str, Any] = {}
 
     try:
         # try to get parameters model and parse
@@ -176,6 +169,16 @@ async def bound_params(handler: Callable) -> Callable[[], Any]:
                 _body_data = _merge_multi_value(_body_data.multi_items())
             data.append(request_body.parse_obj(_body_data))
 
+        # try to get request instance attributes
+        if request_attrs:
+            for name, info in request_attrs.items():
+                value: Any = functools.reduce(
+                    lambda attr, name: getattr(attr, name),
+                    (info.alias or name).split("."),
+                    request,
+                )
+                kwargs[name] = (await value) if inspect.isawaitable(value) else value
+
     except ValidationError as e:
         raise RequestValidationError(e)
 
@@ -186,4 +189,29 @@ async def bound_params(handler: Callable) -> Callable[[], Any]:
             kwargs[exclusive_models[_data.__class__]] = _data.__root__
         else:
             kwargs[exclusive_models[_data.__class__]] = _data
-    return functools.partial(handler, **kwargs)
+    return functools.partial(handler, **kwargs)  # type: ignore
+
+
+def auto_params(handler: CallableObject) -> CallableObject:
+    if inspect.isclass(handler) and hasattr(handler, "__methods__"):
+        for method in handler.__methods__:  # type: ignore
+            callback = parse_signature(getattr(handler, method))
+
+            @functools.wraps(callback)
+            async def callback_with_auto_bound_params(*args, **kwargs):
+                p = await verify_params(callback)
+                return await p(*args, **kwargs)
+
+            setattr(handler, method, callback_with_auto_bound_params)
+        return handler
+    elif inspect.iscoroutinefunction(handler):
+        callback = parse_signature(handler)
+
+        @functools.wraps(callback)
+        async def callback_with_auto_bound_params(*args, **kwargs):
+            p = await verify_params(callback)
+            return await p(*args, **kwargs)
+
+        return callback_with_auto_bound_params  # type: ignore
+    else:
+        return handler
