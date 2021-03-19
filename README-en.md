@@ -46,12 +46,11 @@ An easy-to-use high-performance asynchronous web framework.
 
 Index.py implements the [ASGI3](http://asgi.readthedocs.io/en/latest/) interface and uses Radix Tree for route lookup. Is [one of the fastest Python web frameworks](https://github.com/the-benchmarker/web-frameworks). All features serve the rapid development of high-performance Web services.
 
-- Flexible and efficient routing system (based on Radix Tree)
-- Automatically parse requests & generate documents (based on [pydantic](https://pydantic-docs.helpmanual.io/))
-- Visual API interface (based on ReDoc, optimized for fonts)
-- Built-in deployment commands (based on uvicorn and gunicorn)
-- Mount ASGI/WSGI applications
-- Background tasks in process (based on [asyncio](https://docs.python.org/3/library/asyncio.html))
+- Flexible and efficient routing system
+- Automatically parse requests & generate documents
+- Visual API interface and online debugging
+- Support [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) and WebSocket
+- Built-in deployment commands
 - Any available ASGI ecosystem can be used
 
 ## Install
@@ -64,24 +63,4 @@ or install the latest version from Github (unstable).
 
 ```bash
 pip install -U git+https://github.com/abersheeran/index.py@setup.py
-```
-
-## Quick start
-
-Write the following code to the `main.py` file, use `pip install index.py uvicorn` to install `uvicorn` and `index.py`, and then execute `index-cli uvicorn main:app` to start an efficient Web service now.
-
-```python
-from indexpy import Index
-from indexpy.routing import HttpRoute
-
-
-async def homepage():
-    return "hello, index.py"
-
-
-app = Index(
-    routes=[
-        HttpRoute("/", homepage),
-    ]
-)
 ```

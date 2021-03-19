@@ -46,12 +46,11 @@
 
 Index.py 实现了 [ASGI3](http://asgi.readthedocs.io/en/latest/) 接口，并使用 Radix Tree 进行路由查找。是[最快的 Python web 框架之一](https://github.com/the-benchmarker/web-frameworks)。一切特性都服务于快速开发高性能的 Web 服务。
 
-- 灵活且高效的路由系统 (基于 Radix Tree)
-- 自动解析请求 & 生成文档 (基于 [pydantic](https://pydantic-docs.helpmanual.io/))
-- 可视化 API 接口 (基于 ReDoc, 针对中文字体优化)
+- 灵活且高效的路由系统
+- 自动解析请求 & 生成文档
+- 可视化 API 接口与在线调试
+- 支持 [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) 与 WebSocket
 - 自带一键部署命令 (基于 uvicorn 与 gunicorn)
-- 挂载 ASGI/WSGI 应用
-- 进程内后台任务 (基于 [asyncio](https://docs.python.org/3/library/asyncio.html))
 - 可使用任何可用的 ASGI 生态
 
 ## Install
@@ -70,24 +69,4 @@ pip install -U git+https://github.com/abersheeran/index.py@setup.py
 
 ```bash
 pip install -U git+https://gitee.com/abersheeran/index.py.git@setup.py
-```
-
-## Quick start
-
-向 `main.py` 文件写入如下代码，使用 `pip install index.py uvicorn` 安装 `uvicorn` 和 `index.py`，接下来执行 `index-cli uvicorn main:app` 就可以启动一个高效的 Web 服务了。
-
-```python
-from indexpy import Index
-from indexpy.routing import HttpRoute
-
-
-async def homepage():
-    return "hello, index.py"
-
-
-app = Index(
-    routes=[
-        HttpRoute("/", homepage),
-    ]
-)
 ```
