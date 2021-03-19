@@ -210,17 +210,20 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         return middleware
 
 
+_RouteSequence = typing.TypeVar("_RouteSequence", bound=typing.Sequence[BaseRoute])
+
+
 class Prefix(str):
     def __init__(self, *args, **kwargs) -> None:
         assert self.startswith("/") and not self.endswith("/")
 
-    def __truediv__(self, other: T) -> T:
-        if isinstance(other, typing.Sequence):
-            for route in other:
-                route.path = self + route.path
-        else:
+    def __truediv__(self, other: _RouteSequence) -> _RouteSequence:
+        if not isinstance(other, typing.Sequence):
             return NotImplemented
-        return other
+
+        for route in other:
+            route.path = self + route.path
+        return typing.cast(_RouteSequence, other)
 
 
 _RouterSelf = typing.TypeVar("_RouterSelf", bound="Router")
