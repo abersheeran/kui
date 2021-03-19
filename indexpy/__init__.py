@@ -5,9 +5,9 @@ from .exceptions import HTTPException
 from .field_functions import Body, Cookie, Header, Path, Query, Request
 from .requests import request, websocket
 from .responses import (
-    HttpResponse,
     FileResponse,
     HTMLResponse,
+    HttpResponse,
     JSONResponse,
     PlainTextResponse,
     RedirectResponse,
