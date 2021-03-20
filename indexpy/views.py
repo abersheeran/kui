@@ -27,14 +27,17 @@ def required_method(method: str) -> Callable[[FuncView], FuncView]:
     Set the acceptable request method of the function
     """
     allow_methods = {"HEAD", "GET"} if method == "GET" else {method}
+    headers = {"Allow": ", ".join(allow_methods)}
 
     def decorator(function: FuncView) -> FuncView:
         @functools.wraps(function)
         async def wrapper(*args, **kwargs):
             if request.method in allow_methods:
                 return await function(*args, **kwargs)
+            elif request.method == "OPTIONS":
+                return HttpResponse(headers=headers)
             else:
-                return HttpResponse(headers={"Allow": ", ".join(allow_methods)})
+                return HttpResponse(status_code=405, headers=headers)
 
         setattr(wrapper, "__method__", method.upper())
         return typing_cast(FuncView, wrapper)
