@@ -13,7 +13,7 @@ app = Index()
 
 
 @app.router.http("/hello")
-async def hello(request):
+async def hello():
     return "hello"
 ```
 
@@ -87,7 +87,7 @@ class Cat(HttpView):
 
 ## 获取请求值
 
-使用 `from indexpy import request` 语句获取全局变量 `request`，它是一个代理，可以读写删当前请求对应的 `Request` 对象的各个属性。一般来说这足以应付大部分需求，但如果你真的需要访问原始 `Request` 对象，可以使用 `indexpy.requests.request_var.get()`。
+使用 `from indexpy import request` 语句获取全局变量 `request`，它是一个代理对象，可以读写删当前请求对应的 `Request` 对象的各个属性。一般来说这足以应付大部分需求，但如果你真的需要访问原始 `Request` 对象，可以使用 `indexpy.requests.request_var.get()`。
 
 以下是 `indexpy.requests.Request` 对象的常用属性与方法。
 
@@ -133,7 +133,7 @@ class Cat(HttpView):
 
 获取客户端在当前连接中使用的端口: `request.client.port`。
 
-!!!notice
+!!!notice ""
     元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。
 
 ### Cookies
@@ -141,9 +141,6 @@ class Cat(HttpView):
 `request.cookies` 是一个标准字典，定义为 `Dict[str, str]`。
 
 例如：`request.cookies.get('mycookie')`
-
-!!!notice
-    你没办法从`request.cookies`里读取到无效的 cookie (RFC2109)
 
 ### Body
 
@@ -278,7 +275,7 @@ async def return_json():
     return JSONResponse({'hello': 'world'})
 ```
 
-`JSONResponse` 暴露出全部 `json.dumps` 的选项以供自定义。例如在很多时候，Python 内置的 `json` 转换器无法满足实际项目的序列化需求，可以通过覆盖 `default` 方法来自定义无法序列化的对象该如何处理。
+`JSONResponse` 以关键词参数的形式暴露出全部 `json.dumps` 的选项以供自定义。例如在很多时候，Python 内置的 `json` 转换器无法满足实际项目的序列化需求，可以通过覆盖 `default` 方法来自定义无法序列化的对象该如何处理。
 
 ```python
 import json
@@ -317,14 +314,14 @@ async def return_redirect():
     return RedirectResponse('/')
 ```
 
-### StreamingResponse
+### StreamResponse
 
-接受一个异步生成器或普通生成器/迭代器，流式传输响应主体。
+接受一个异步生成器，流式传输响应主体。
 
 ```python
 import asyncio
 
-from indexpy.http.responses import StreamingResponse
+from indexpy import StreamingResponse
 
 
 async def slow_numbers(minimum, maximum):
@@ -335,10 +332,9 @@ async def slow_numbers(minimum, maximum):
     yield('</ul></body></html>')
 
 
-async def app(scope, receive, send):
+async def return_stream(scope, receive, send):
     generator = slow_numbers(1, 10)
-    response = StreamingResponse(generator, media_type='text/html')
-    await response(scope, receive, send)
+    return StreamingResponse(generator, content_type='text/html')
 ```
 
 ### FileResponse
@@ -347,12 +343,13 @@ async def app(scope, receive, send):
 
 与其他响应类型相比，采用不同的参数进行实例化：
 
-* `path` - 要流式传输的文件的文件路径。
+* `filepath` - 要流式传输的文件的文件路径。
 * `headers` - 与 `Response` 中的 `headers` 参数的作用相同。
 * `media_type` - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。
-* `filename` - 如果设置此参数，它将包含在响应的 `Content-Disposition` 中。
+* `download_name` - 如果设置此参数，它将包含在响应的 `Content-Disposition` 中。
+* `stat_result` - 接受一个 `os.stat_result` 对象，如果不传入则会自动使用 `os.stat(filepath)` 的结果。
 
-`FileResponse` 将自动设置适当的 `Content-Length`、`Last-Modified` 和 `ETag` 标头。
+`FileResponse` 将自动设置适当的 `Content-Length`、`Last-Modified` 和 `ETag` 标头。并且无需任何额外的处理即可支持[文件范围请求](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Range_requests)。
 
 ### TemplateResponse
 
@@ -360,63 +357,61 @@ async def app(scope, receive, send):
 
 #### Jinja2 模板引擎
 
-Index-py 内置了对 Jinja2 模板的支持，只要你安装了 `jinja2` 模块，就能从 `indexpy.http.templates` 中导出 `Jinja2Templates`。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。
+Index-py 内置了对 Jinja2 模板的支持，只要你安装了 `jinja2` 模块，就能从 `indexpy.templates` 中导出 `Jinja2Templates`。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。
 
 ```python
-from indexpy import Index
-from indexpy.http.responses import TemplateResponse
+from indexpy import Index, TemplateResponse
 from indexpy.http.templates import Jinja2Templates
 
 app = Index(templates=Jinja2Templates("templates"))
 
 
-@app.router.http("/", method="get")
-async def homepage(request):
-    return TemplateResponse("homepage.html", context={"request": request})
+@app.router.http("/")
+async def homepage():
+    return TemplateResponse("homepage.html")
 ```
 
 如果你要使用某个模块下的指定文件夹中的模板文件，可以使用 `Jinja2Templates("module_name:dirname")`。你还可以传递多个目录让 Jinja2 按照顺序依次查找，直到找到第一个可用的模板，例如：`Jinja2Templates("templates", "module_name:dirname")`。
 
 #### 其他模板引擎
 
-通过继承 `indexpy.http.templates.BaseTemplates` 并实现 `TemplateResponse` 方法，你可以实现自己的模板引擎类。
+通过继承 `indexpy.templates.BaseTemplates` 并实现 `TemplateResponse` 方法，你可以实现自己的模板引擎类。
 
-### ServerSendEventResponse
+### SendEventResponse
 
-通过 `ServerSendEventResponse` 可以返回一个 [Server Sent Events](https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events) 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。
+通过 `SendEventResponse` 可以返回一个 [Server-sent Events](https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events) 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。
 
-`ServerSendEventResponse` 除了可以接受诸如 `status_code`、`headers` 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 `yield` 的每一条消息都需要为合规的 Server-Sent Event 消息（`str` 类型），否则会出现不可预料的错误。
+`SendEventResponse` 除了可以接受诸如 `status_code`、`headers` 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 `yield` 的每一条消息都需要为合规的 Server-Sent Event 消息（`indexpy.ServerSentEvent` 类型）。
 
 如下是一个每隔一秒发送一条 hello 消息、一共发送一百零一条消息的样例。
 
 ```python
 import asyncio
 
-from indexpy import Index
-from indexpy.http.responses import EventResponse
+from indexpy import Index, SendEventResponse
 
 app = Index()
 
 
-@app.router.http("/message", method="get")
-async def message(request):
+@app.router.http("/message")
+async def message():
 
     async def message_gen():
-        for _ in range(101):
+        for i in range(101):
             await asyncio.sleep(1)
-            yield "event: message\r\ndata: {'name': 'Aber', 'body': 'hello'}"
+            yield {"id": i, "data": "hello"}
 
-    return EventResponse(message_gen())
+    return SendEventResponse(message_gen())
 ```
 
 ### 响应的简化写法
 
-为了方便使用，Index-py 允许自定义一些函数来处理 `HTTP` 内返回的非 `Response` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `Response` 对象转换为 `Response` 对象。
+为了方便使用，Index-py 允许自定义一些函数来处理 HTTP 处理器返回的非 `HttpResponse` 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 `HttpResponse` 对象转换为 `HttpResponse` 对象。
 
-!!! tip
-    如果需要手动把函数的返回值转换为 `Response` 对象，则可以使用 `indexpy.http.responses.convert`。
+!!! tip ""
+    如果需要手动把函数的返回值转换为 `HttpResponse` 对象，则可以使用 `indexpy.responses.convert_response`。
 
-Index-py 内置了三个处理函数用于处理六种类型：
+Index-py 内置了一些处理函数用于处理常见的类型：
 
 ```python
 @automatic.register(type(None))
@@ -430,31 +425,45 @@ def _none(ret: typing.Type[None]) -> typing.NoReturn:
 @automatic.register(list)
 @automatic.register(dict)
 def _json(
-    body: typing.Tuple[tuple, list, dict],
-    status: int = 200,
-    headers: dict = None
-) -> Response:
+    body, status: int = 200, headers: typing.Mapping[str, str] = None
+) -> HttpResponse:
     return JSONResponse(body, status, headers)
 
 
 @automatic.register(str)
 @automatic.register(bytes)
 def _plain_text(
-    body: typing.Union[str, bytes], status: int = 200, headers: dict = None
-) -> Response:
+    body: typing.Union[str, bytes],
+    status: int = 200,
+    headers: typing.Mapping[str, str] = None,
+) -> HttpResponse:
     return PlainTextResponse(body, status, headers)
-```
-
-正是有了这些内置处理函数，下面这段代码将被正确解析为一个 JSON 响应。
-
-```python
-from indexpy.http import HTTPView
 
 
-class HTTP(HTTPView):
+@automatic.register(AsyncGeneratorType)
+def _send_event(
+    generator: typing.AsyncGenerator[ServerSentEvent, None],
+    status: int = 200,
+    headers: typing.Mapping[str, str] = None,
+) -> HttpResponse:
+    return SendEventResponse(generator, status, headers)
 
-    def get(self):
-        return {"key": "value"}
+
+@automatic.register(os.stat_result)
+def _file(
+    stat_result: os.stat_result,
+    filepath: str,
+    download_name: str = None,
+    media_type: str = None,
+    headers: typing.Mapping[str, str] = None,
+) -> HttpResponse:
+    return FileResponse(
+        filepath=filepath,
+        headers=headers,
+        media_type=media_type,
+        download_name=download_name,
+        stat_result=stat_result,
+    )
 ```
 
 同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 `TypedDict`，Python 的 `Dict` 约束依旧很弱，但 dataclass 则有效得多），例如：
@@ -462,7 +471,7 @@ class HTTP(HTTPView):
 ```python
 from dataclasses import dataclass, asdict
 
-from indexpy.http.responses import automatic, Response, JSONResponse
+from indexpy.http.responses import automatic, HttpResponse, JSONResponse
 
 
 @dataclass
@@ -473,14 +482,14 @@ class Error:
 
 
 @automatic.register(Error)
-def _error_json(error: Error, status: int = 400) -> Response:
+def _error_json(error: Error, status: int = 400) -> HttpResponse:
     return JSONResponse(asdict(error), status)
 ```
 
 或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`：
 
 ```python
-from indexpy.http.responses import automatic, Response
+from indexpy.responses import automatic, HttpResponse
 
 ...
 
@@ -488,15 +497,17 @@ from indexpy.http.responses import automatic, Response
 @automatic.register(tuple)
 @automatic.register(list)
 @automatic.register(dict)
-def _more_json(body: dict, status: int = 200, headers: dict = None) -> Response:
+def _more_json(body: dict, status: int = 200, headers: dict = None) -> HttpResponse:
     return CustomizeJSONResponse(body, status, headers)
 ```
 
-### HTTP 异常
+## 异常处理
 
-其参数签名是：`HTTPException(status_code: int, content: typing.Any = None, headers: dict = None, media_type: str = None)`
+### HTTPException
 
-你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 知道该如何将它变成一个普通的响应对象）。如果你没有给出 `content`，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为值。
+其参数签名是：`HTTPException(status_code: int, headers: dict = None, content: typing.Any = None)`
+
+你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 会将它变成一个普通的响应对象）。如果你没有给出一个类型为 `bytes` 或 `str` 的 `content` 值，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为最终结果。
 
 ```python
 from indexpy.http import HTTPException
@@ -508,7 +519,7 @@ async def exc(request):
     ...
 ```
 
-有时候也许你想返回更多的信息，可以像使用 `Response` 一样为它传递 `content`、`headers` 或 `media_type` 参数来控制最终实际的响应对象。下面是一个简单的例子。
+有时候也许你想返回更多的信息，可以像使用 `HttpResponse` 一样为它传递 `content`、`headers` 参数来控制最终实际的响应对象。下面是一个简单的例子。
 
 ```python
 from indexpy.http import HTTPException
@@ -516,47 +527,43 @@ from indexpy.http import HTTPException
 
 async def exc(request):
     ...
-    raise HTTPException(405, headers={"Allow": "HEAD,GET,POST"})
+    raise HTTPException(405, headers={"Allow": "HEAD, GET, POST"})
     ...
 ```
 
-## 自定义异常处理
+### 自定义异常处理
 
 对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。
 
 你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 `HTTPException` 异常时，Index-py 会使用你定义的函数而不是默认行为。你也可以捕捉其他继承自 `Exception` 的异常，通过自定义函数，返回指定的内容给客户端。
 
 ```python
-from indexpy import Index
-from indexpy.http import HTTPException, Request
-from indexpy.http.responses import Response, PlainTextResponse
+from indexpy import Index, HTTPException, HttpResponse, PlainTextResponse
 
 app = Index()
 
 
 @app.exception_handler(404)
-def not_found(request: Request, exc: HTTPException) -> Response:
+def not_found(exc: HTTPException) -> HttpResponse:
     return PlainTextResponse("what do you want to do?", status_code=404)
 
 
 @app.exception_handler(ValueError)
-def value_error(request: Request, exc: ValueError) -> Response:
+def value_error(request: Request, exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 ```
 
 除了装饰器注册，你同样可以使用列表式的注册方式，下例与上例等价：
 
 ```python
-from indexpy import Index
-from indexpy.http import HTTPException, Request
-from indexpy.http.responses import Response, PlainTextResponse
+from indexpy import Index, HTTPException, HttpResponse, PlainTextResponse
 
 
-def not_found(request: Request, exc: HTTPException) -> Response:
+def not_found(exc: HTTPException) -> HttpResponse:
     return PlainTextResponse("what do you want to do?", status_code=404)
 
 
-def value_error(request: Request, exc: ValueError) -> Response:
+def value_error(request: Request, exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 
 
@@ -565,6 +572,3 @@ app = Index(exception_handlers={
     ValueError: value_error,
 })
 ```
-
-!!! warning
-    你不能在这里使用 `request.body`/`.form`/`.json`/`.data` 等方法读取请求的内容。
