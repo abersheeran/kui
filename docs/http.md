@@ -4,7 +4,7 @@
 
 ### 函数处理器
 
-使用函数处理单一类型的请求是很简单的，它会接受一个位置参数 `request`，默认类型为 `indexpy.http.request.Request`。
+使用函数处理请求是很简单的。
 
 ```python
 from indexpy import Index
@@ -12,7 +12,7 @@ from indexpy import Index
 app = Index()
 
 
-@app.router.http("/hello", method="get")
+@app.router.http("/hello")
 async def hello(request):
     return "hello"
 ```
@@ -20,57 +20,76 @@ async def hello(request):
 `@app.router.http` 装饰器将返回原始的函数，故而可以将同一个函数注册到多个路由下。
 
 ```python
-from indexpy import Index
+from indexpy import Index, request
 
 app = Index()
 
 
-@app.router.http("/hello", method="get")
-@app.router.http("/hello/{name}", method="get")
-async def hello(request):
+@app.router.http("/hello", name="hello")
+@app.router.http("/hello/{name}", name="hello-with-name")
+async def hello():
     if request.path_params:
         return f"hello {request.path_params['name']}"
     return "hello"
 ```
 
-!!! tip
-    在函数处理器中不允许自行编写代码处理 `options` 方法，但拥有与类处理器相同的处理 `options` 的默认程序。
+你还可以使用 `required_method` 来约束函数处理器仅接受指定的请求方法。
+
+```python
+from indexpy import Index, request, required_method
+
+app = Index()
+
+
+@app.router.http("/hello")
+@required_method("POST")
+async def need_post():
+    return request.method
+```
+
+!!! tip ""
+    当你使用 `required_method` 对请求方法进行约束时，`OPTIONS` 方法将会被自动处理。
+
+!!! notice ""
+    当你使用 `required_method` 允许 `GET` 方法时，`HEAD` 方法也会同时被允许。
 
 ### 类处理器
 
-使用类处理多种请求十分简单。只需要继承 `indexpy.http.HTTPView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
+使用类处理多种请求十分简单。只需要继承 `HttpView` 并编写对应的方法，支持的方法有 `"get"`，`"post"`，`"put"`，`"patch"`，`"delete"`，`"head"`，`"options"`，`"trace"`。
 
-通过 `self.request` 可以读取此次请求的信息。
+!!! tip "允许更多请求方法"
+    在继承类时覆盖类属性 `HTTP_METHOD_NAMES` 即可。
 
 ```python
-from indexpy import Index
-from indexpy.http import HTTPView
+from indexpy import Index, request, HttpView
 
 app = Index()
 
 
 @app.router.http("/cat")
-class Cat(HTTPView):
+class Cat(HttpView):
 
     async def get(self):
-        return self.request.method
+        return request.method
 
     async def post(self):
-        return self.request.method
+        return request.method
 
     async def put(self):
-        return self.request.method
+        return request.method
 
     async def patch(self):
-        return self.request.method
+        return request.method
 
     async def delete(self):
-        return self.request.method
+        return request.method
 ```
 
 ## 获取请求值
 
-以下是 `indexpy.http.request.Request` 对象的常用属性与方法。
+使用 `from indexpy import request` 语句获取全局变量 `request`，它是一个代理，可以读写删当前请求对应的 `Request` 对象的各个属性。一般来说这足以应付大部分需求，但如果你真的需要访问原始 `Request` 对象，可以使用 `indexpy.requests.request_var.get()`。
+
+以下是 `indexpy.requests.Request` 对象的常用属性与方法。
 
 ### Method
 
@@ -141,7 +160,7 @@ class Cat(HTTPView):
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
 ```python
-async def post(request):
+async def post():
     ...
     body = b''
     async for chunk in request.stream():
@@ -192,38 +211,20 @@ del request.state.user  # 删
 
 ## 返回响应值
 
-对于任何正常处理的 HTTP 请求都必须返回一个 `indexpy.http.responses.Response` 对象或者是它的子类对象。
+对于任何正常处理的 HTTP 请求都必须返回一个 `HttpResponse` 对象或者是它的子类对象。
 
-在 `index.http.repsonses` 里内置的可用对象如下：
+### HttpResponse
 
-### Response
+签名：`HttpResponse(status_code: int = 200, headers: Mapping[str, str] = None)`
 
-签名：`Response(content, status_code=200, headers=None, media_type=None, background=None)`
-
-* `content` - 作为响应内容的 `str` 或 `bytes` 对象。
 * `status_code` - HTTP 状态码。
 * `headers` - 字符串字典。
-* `media_type` - 响应内容的[ MIME 类型](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types)。例如：`"text/html"`。
-
-`Response` 将自动包含 Content-Length 标头。 它还将包含一个基于 media_type 的 Content-Type 标头，并为文本类型附加一个字符集。
-
-实例化 `Response` 后，可以通过将其作为 ASGI 应用程序实例进行调用来发送响应。
-
-```python
-from indexpy.http.responses import Response
-
-
-async def app(scope, receive, send):
-    assert scope['type'] == 'http'
-    response = Response('Hello, world!', media_type='text/plain')
-    await response(scope, receive, send)
-```
 
 #### Set Cookie
 
-`Response` 提供 `set_cookie` 方法以允许你设置 cookies。
+`HttpResponse` 提供 `set_cookie` 方法以允许你设置 cookies。
 
-签名：`Response.set_cookie(key, value="", max_age=None, expires=None, path="/", domain=None, secure=False, httponly=False, samesite="lax")`
+签名：`HttpResponse.set_cookie(key, value="", max_age=None, expires=None, path="/", domain=None, secure=False, httponly=False, samesite="lax")`
 
 * `key: str`，将成为 Cookie 的键。
 * `value: str = ""`，将是 Cookie 的值。
@@ -237,62 +238,54 @@ async def app(scope, receive, send):
 
 #### Delete Cookie
 
-`Response` 也提供了 `delete_cookie` 方法指定已设置的 Cookie 过期。
+`HttpResponse` 也提供了 `delete_cookie` 方法指定已设置的 Cookie 过期。
 
-签名: `Response.delete_cookie(key, path='/', domain=None)`
-
-### HTMLResponse
-
-接受 `str` 或 `bytes` 并返回 HTML 响应。
-
-```python
-from indexpy.http.responses import HTMLResponse
-
-
-async def app(scope, receive, send):
-    assert scope['type'] == 'http'
-    response = HTMLResponse('<html><body><h1>Hello, world!</h1></body></html>')
-    await response(scope, receive, send)
-```
+签名: `HttpResponse.delete_cookie(key, path='/', domain=None)`
 
 ### PlainTextResponse
 
 接受 `str` 或 `bytes` 并返回纯文本响应。
 
 ```python
-from indexpy.http.responses import PlainTextResponse
+from indexpy import PlainTextResponse
 
 
-async def app(scope, receive, send):
-    assert scope['type'] == 'http'
-    response = PlainTextResponse('Hello, world!')
-    await response(scope, receive, send)
+async def return_plaintext():
+    return PlainTextResponse('Hello, world!')
+```
+
+### HTMLResponse
+
+接受 `str` 或 `bytes` 并返回 HTML 响应。
+
+```python
+from indexpy import HTMLResponse
+
+
+async def return_html():
+    return HTMLResponse('<html><body><h1>Hello, world!</h1></body></html>')
 ```
 
 ### JSONResponse
 
-接受一些数据并返回一个 `application/json` 编码的响应。
+接受一些 Python 对象并返回一个 `application/json` 编码的响应。
 
 ```python
-from indexpy.http.responses import JSONResponse
+from indexpy import JSONResponse
 
 
-async def app(scope, receive, send):
-    assert scope['type'] == 'http'
-    response = JSONResponse({'hello': 'world'})
-    await response(scope, receive, send)
+async def return_json():
+    return JSONResponse({'hello': 'world'})
 ```
 
-#### 自定义序列化方法
-
-很多时候，Python 内置的 `json` 标准库无法满足实际项目的序列化需求，可以通过覆盖 `JSONResponse.json_convert` 来自定义序列化方法。
+`JSONResponse` 暴露出全部 `json.dumps` 的选项以供自定义。例如在很多时候，Python 内置的 `json` 转换器无法满足实际项目的序列化需求，可以通过覆盖 `default` 方法来自定义无法序列化的对象该如何处理。
 
 ```python
 import json
 import decimal
 import datetime
 
-from indexpy.http.responses import JSONResponse
+from indexpy import JSONResponse
 
 
 def custom_convert(obj):
@@ -308,7 +301,8 @@ def custom_convert(obj):
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 
-JSONResponse.json_convert = custom_convert
+async def return_json():
+    return JSONResponse({'hello': 'world'}, default=custom_convert)
 ```
 
 ### RedirectResponse
@@ -316,16 +310,11 @@ JSONResponse.json_convert = custom_convert
 返回 HTTP 重定向。默认情况下使用 307 状态代码。
 
 ```python
-from indexpy.http.responses import PlainTextResponse, RedirectResponse
+from indexpy import RedirectResponse
 
 
-async def app(scope, receive, send):
-    assert scope['type'] == 'http'
-    if scope['path'] != '/':
-        response = RedirectResponse(url='/')
-    else:
-        response = PlainTextResponse('Hello, world!')
-    await response(scope, receive, send)
+async def return_redirect():
+    return RedirectResponse('/')
 ```
 
 ### StreamingResponse
@@ -347,7 +336,6 @@ async def slow_numbers(minimum, maximum):
 
 
 async def app(scope, receive, send):
-    assert scope['type'] == 'http'
     generator = slow_numbers(1, 10)
     response = StreamingResponse(generator, media_type='text/html')
     await response(scope, receive, send)
