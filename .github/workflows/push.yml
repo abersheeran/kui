@@ -69,7 +69,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: docs
+          BRANCH: gh-pages
           FOLDER: site
 
   push-to-mirror:
