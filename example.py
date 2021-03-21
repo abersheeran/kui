@@ -1,9 +1,8 @@
 import asyncio
-from indexpy.views import required_method
 import os
 from pathlib import Path as FilePath
 
-from indexpy import Index, Path, HTTPException
+from indexpy import Index, Path, HTTPException, required_method
 from indexpy.routing import HttpRoute
 
 
@@ -45,10 +44,12 @@ async def sources(filepath: str = Path()):
         raise HTTPException(404)
 
 
-app = Index(debug=True)
-app.router < HttpRoute("/", homepage)
-app.router << [
-    HttpRoute("/exc", exc),
-    HttpRoute("/message", message),
-]
-app.router < HttpRoute("/sources/{filepath:path}", sources)
+app = Index(
+    debug=True,
+    routes=[
+        HttpRoute("/", homepage),
+        HttpRoute("/exc", exc),
+        HttpRoute("/message", message),
+        HttpRoute("/sources/{filepath:path}", sources),
+    ],
+)

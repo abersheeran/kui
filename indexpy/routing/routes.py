@@ -171,14 +171,14 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         self._list.append(route)
         return self
 
-    def __rtruediv__(self: _RoutesSelf, other: str) -> _RoutesSelf:
+    def __rfloordiv__(self: _RoutesSelf, other: str) -> _RoutesSelf:
         """
-        other / self
+        other // self
         """
         if not isinstance(other, str):
             return NotImplemented
 
-        return Prefix(other) / self
+        return Prefix(other) // self
 
     def http_middleware(self, middleware: T) -> T:
         """
@@ -220,7 +220,10 @@ class Prefix(str):
     def __init__(self, *args, **kwargs) -> None:
         assert self.startswith("/") and not self.endswith("/")
 
-    def __truediv__(self, other: _RouteSequence) -> _RouteSequence:
+    def __floordiv__(self, other: _RouteSequence) -> _RouteSequence:
+        """
+        self // other
+        """
         if not isinstance(other, typing.Sequence):
             return NotImplemented
 
@@ -286,6 +289,7 @@ class Router(RouteRegisterMixin):
         self,
         name: str,
         path_params: typing.Dict[str, typing.Any] = {},
+        *,
         protocol: Literal["http", "websocket"] = "http",
     ) -> str:
         if protocol == "http":
