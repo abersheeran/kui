@@ -1,0 +1,1208 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="一个基于 ASGI 协议的异步 Web 框架.">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.6">
+    
+    
+      
+        <title>Route - Index.py</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2c0c5eaf.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Index.py" class="md-header__button md-logo" aria-label="Index.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Index.py
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Route
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/abersheeran/index.py/" title="前往 GitHub 仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Index.py
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Index.py" class="md-nav__button md-logo" aria-label="Index.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Index.py
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/abersheeran/index.py/" title="前往 GitHub 仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Index.py
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        概览
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Route
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Route
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    基本用法
+  </a>
+  
+    <nav class="md-nav" aria-label="基本用法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    装饰器注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    路由对象
+  </a>
+  
+    <nav class="md-nav" aria-label="路由对象">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#httproute" class="md-nav__link">
+    HttpRoute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#socketroute" class="md-nav__link">
+    SocketRoute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asgiroute" class="md-nav__link">
+    ASGIRoute
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    列表式注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    路径参数
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    注册多请求方法
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    反向查找
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    路由列表
+  </a>
+  
+    <nav class="md-nav" aria-label="路由列表">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routes" class="md-nav__link">
+    Routes
+  </a>
+  
+    <nav class="md-nav" aria-label="Routes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    名称空间
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    注册中间件
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subroutes" class="md-nav__link">
+    SubRoutes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileroutes" class="md-nav__link">
+    FileRoutes
+  </a>
+  
+    <nav class="md-nav" aria-label="FileRoutes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    中间件定义
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    处理器定义
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    路由名称
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    映射规则
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    路由组合
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    路由冲突
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        HTTP
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../websocket/" class="md-nav__link">
+        WebSocket
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../event/" class="md-nav__link">
+        Lifespan
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../middleware/" class="md-nav__link">
+        Middleware
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openapi/" class="md-nav__link">
+        OpenAPI
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background/" class="md-nav__link">
+        Background Task
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command/" class="md-nav__link">
+        Command
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    基本用法
+  </a>
+  
+    <nav class="md-nav" aria-label="基本用法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    装饰器注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    路由对象
+  </a>
+  
+    <nav class="md-nav" aria-label="路由对象">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#httproute" class="md-nav__link">
+    HttpRoute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#socketroute" class="md-nav__link">
+    SocketRoute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asgiroute" class="md-nav__link">
+    ASGIRoute
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    列表式注册
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    路径参数
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    注册多请求方法
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    反向查找
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    路由列表
+  </a>
+  
+    <nav class="md-nav" aria-label="路由列表">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routes" class="md-nav__link">
+    Routes
+  </a>
+  
+    <nav class="md-nav" aria-label="Routes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    名称空间
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    注册中间件
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subroutes" class="md-nav__link">
+    SubRoutes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fileroutes" class="md-nav__link">
+    FileRoutes
+  </a>
+  
+    <nav class="md-nav" aria-label="FileRoutes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    中间件定义
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    处理器定义
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    路由名称
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    映射规则
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    路由组合
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    路由冲突
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/route.md" title="编辑此页" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  <h1>Route</h1>
+                
+                <p>Index-py 的路由基于 <a href="https://en.wikipedia.org/wiki/Radix_tree">Radix Tree</a>。</p>
+<h2 id="_1">基本用法</h2>
+<h3 id="_2">装饰器注册</h3>
+<p>与 bottle/flask 之类的框架一样，Index-py 支持使用装饰器注册路由。下面的例子里，<code>name</code> 是路由名称，这在反向查找路由时会起到作用。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;hello world&quot;</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">websocket</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello_ws&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello_ws</span><span class="p">(</span><span class="n">websocket</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">asgi</span><span class="p">(</span>
+    <span class="s2">&quot;/static{filepath:path}&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">,),</span>
+    <span class="n">root_path</span><span class="o">=</span><span class="s2">&quot;/static&quot;</span>
+<span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">static</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>如果 <code>name</code> 没有被指定，则会默认使用被注册的可调用对象的 <code>__name__</code> 属性。</p>
+</div>
+<div class="admonition notice">
+<p class="admonition-title">Notice</p>
+<p>如果指定路由的 <code>name</code> 为 <code>None</code>，则无法通过 <code>name</code> 查找到该路由。</p>
+</div>
+<h3 id="_3">路由对象</h3>
+<p>事实上，装饰器路由申明方式是如下方法的快捷方式</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.routing</span> <span class="kn">import</span> <span class="n">HttpRoute</span><span class="p">,</span> <span class="n">SocketRoute</span><span class="p">,</span> <span class="n">ASGIRoute</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;hello world&quot;</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello_ws</span><span class="p">(</span><span class="n">websocket</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">static</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">))</span>
+<span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello_ws</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello_ws&quot;</span><span class="p">))</span>
+<span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+    <span class="n">ASGIRoute</span><span class="p">(</span>
+        <span class="s2">&quot;/static{filepath:path}&quot;</span><span class="p">,</span>
+        <span class="n">static</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">,),</span>
+        <span class="n">root_path</span><span class="o">=</span><span class="s2">&quot;/static&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h4 id="httproute">HttpRoute</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>
+<p><code>name</code> 用于为路由指定名称，<code>name</code> 为 <code>None</code> 时，此路由将没有名称；<code>name</code> 为 <code>""</code> 时，将自动读取 <code>endpoint.__name__</code> 作为路由名称。</p>
+</li>
+<li>
+<p><code>method</code> 用于为 <code>endpoint</code> 指定一个允许的 HTTP Method，必须是小写的有效的 HTTP Method 名称。但仅在 <code>endpoint</code> 是函数时需要指定此参数。</p>
+</li>
+</ul>
+<h4 id="socketroute">SocketRoute</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">SocketRoute</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>所有参数的作用与 <code>HttpRoute</code> 相同。</p>
+<h4 id="asgiroute">ASGIRoute</h4>
+<div class="codehilite"><pre><span></span><code><span class="n">ASGIRoute</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Container</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;websocket&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;websocket&quot;</span><span class="p">),</span> <span class="n">root_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>
+<p><code>type</code> 用于为此路由指定允许接受的请求类型，默认为 <code>http</code>、<code>websocket</code> 两种。</p>
+</li>
+<li>
+<p><code>root_path</code> 用于挂载此路由的应用到指定的 <code>root_path</code> 下。</p>
+</li>
+</ul>
+<h3 id="_4">列表式注册</h3>
+<p>Index-py 同样支持类似于 Django 的列表式写法：</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.routing</span> <span class="kn">import</span> <span class="n">HttpRoute</span><span class="p">,</span> <span class="n">SocketRoute</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;hello world&quot;</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello_ws</span><span class="p">(</span><span class="n">websocket</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">),</span>
+    <span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello_ws</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello_ws&quot;</span><span class="p">),</span>
+<span class="p">])</span>
+</code></pre></div>
+
+<h3 id="_5">路径参数</h3>
+<p>使用 <code>{name:type}</code> 可以标注路径参数，目前支持的类型有 <code>str</code>、<code>int</code>、<code>decimal</code>、<code>uuid</code> 和 <code>path</code>。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>如果路径参数的类型为 <code>str</code>，可以忽略掉 <code>:str</code>，直接使用 <code>{name}</code>。</p>
+</div>
+<div class="admonition notice">
+<p class="admonition-title">Notice</p>
+<p><code>path</code> 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。</p>
+</div>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.routing</span> <span class="kn">import</span> <span class="n">HttpRoute</span><span class="p">,</span> <span class="n">SocketRoute</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/{username:str}&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">what_is_your_name</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">path_params</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<h3 id="_6">注册多请求方法</h3>
+<p>注册处理 HTTP 请求的可调用对象为函数时，必须标注允许处理的 HTTP 方法，且只允许一种。需要为同一个路由注册处理不同 HTTP 方法的可调用对象，应使用类，并继承自 <code>HTTPView</code>。以下为示例代码，需要更详细的描述，应查看 <a href="../http/#_2">HTTP</a> 章节。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPView</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/cat&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Cat</span><span class="p">(</span><span class="n">HTTPView</span><span class="p">):</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+</code></pre></div>
+
+<h3 id="_7">反向查找</h3>
+<p>某些情况下，需要由路由名称反向生成对应的 URL 值，可以使用 <code>app.router.url_for</code>。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello-name&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;hello </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">path_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;/hello&quot;</span>
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="s2">&quot;hello-name&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Aber&quot;</span><span class="p">})</span> <span class="o">==</span> <span class="s2">&quot;/hello/Aber&quot;</span>
+</code></pre></div>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>反向查找中，<code>websocket</code> 与 <code>http</code> 是互相独立的。通过 <code>protocol</code> 参数可以选择查找的路由，默认为 <code>http</code>。</p>
+</div>
+<h2 id="_8">路由列表</h2>
+<h3 id="routes">Routes</h3>
+<p>当需要把某一些路由归为一组时，可使用 <code>Routes</code> 对象。<code>Routes</code> 对象也拥有 <code>.http</code>、<code>.websocket</code> 和 <code>.asgi</code> 方法，使用方法与 <code>app.router</code> 相同。</p>
+<p><code>Routes</code> 继承自 <code>typing.List</code>，所以它允许你使用类似于 Django 一样的路由申明方式，示例如下。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.routing</span> <span class="kn">import</span> <span class="n">Routes</span><span class="p">,</span> <span class="n">HttpRoute</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;hello world&quot;</span>
+
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">(</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">routes</span><span class="o">=</span><span class="n">routes</span><span class="p">)</span>
+</code></pre></div>
+
+<h4 id="_9">名称空间</h4>
+<p>你可以为 <code>Routes</code> 设置 <code>namespace</code> 参数，这将在 <code>Routes</code> 对象中包含的每个路由名称（如果有的话）前加上 <code>namespace:</code>，以此来避免不同名称空间内的路由名称冲突。</p>
+<h4 id="_10">注册中间件</h4>
+<p>通过 <code>Routes</code> 你可以为整组路由注册一个或多个中间件。以下为简单的样例，仅用于表示如何注册中间件，关于中间件定义更详细的描述请查看<a href="../middleware/">中间件章节</a>。</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">one_http_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">def</span> <span class="nf">one_socket_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">def</span> <span class="nf">one_asgi_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">(</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">http_middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">one_http_middleware</span><span class="p">],</span>
+    <span class="n">socket_middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">one_socket_middleware</span><span class="p">],</span>
+    <span class="n">asgi_middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">one_asgi_middleware</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>当然，你同样可以使用装饰器来注册中间件，与上例的结果没有什么不同。</p>
+<div class="codehilite"><pre><span></span><code><span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http_middleware</span>
+<span class="k">def</span> <span class="nf">one_http_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">socket_middleware</span>
+<span class="k">def</span> <span class="nf">one_socket_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">asgi_middleware</span>
+<span class="k">def</span> <span class="nf">one_asgi_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+
+<h3 id="subroutes">SubRoutes</h3>
+<p><code>SubRoutes</code> 是 <code>Routes</code> 的子类，它允许你更简单的定义子路由，而不是在每个路由上增加一个前缀。它同样拥有 <code>Routes</code> 一样的路由注册方式与中间件注册方式。</p>
+<div class="codehilite"><pre><span></span><code><span class="n">subroutes</span> <span class="o">=</span> <span class="n">SubRoutes</span><span class="p">(</span>
+    <span class="s2">&quot;/hello&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/world&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+        <span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/socket_world&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">),</span>
+</code></pre></div>
+
+<h3 id="fileroutes">FileRoutes</h3>
+<div class="admonition notice">
+<p>这也是 Index.py 此项目的命名来源之一。</p>
+</div>
+<p><code>FileRoutes</code> 是一个特殊的路由列表，它允许你将某一个 <code>module</code> 下所有的 <code>.py</code> 文件一一对应到其相对路径相同的路由。</p>
+<h4 id="_11">中间件定义</h4>
+<p><code>__init__.py</code> 中名为 <code>HTTPMiddleware</code> 的对象将被作为 HTTP 中间件、<code>SocketMiddleware</code> 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。</p>
+<h4 id="_12">处理器定义</h4>
+<p>除了 <code>__init__.py</code> 文件以外的 <code>.py</code> 文件中，名为 <code>HTTP</code> 的对象（任何可调用对象均可，函数、类等）将被视为 HTTP 处理器，名为 <code>Socket</code> 的对象（任何可调用对象均可，函数、类等）将被视为 WebSocket 处理器。</p>
+<h4 id="_13">路由名称</h4>
+<p>在文件中定义名称为 <code>name</code> 的字符串将作为该文件对应的路由名称。</p>
+<p><code>FileRoutes</code> 同样拥有 <code>namespace</code> 参数，并且拥有同样的作用。</p>
+<h4 id="_14">映射规则</h4>
+<p><code>module/filename.py</code> 文件将对应路由 <code>/filename</code>，<code>module/dirname/filename.py</code> 将对应 <code>/dirname/filename</code>，以此类推。</p>
+<p>文件映射有一个特殊规则：<code>module/**/index.py</code> 将负责处理 <code>/**/</code> 路径的内容。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>你可以将文件名或文件夹名修改为 <code>module/{name}.py</code> 以此接受路径参数。</p>
+</div>
+<p>可以为 <code>FileRoutes</code> 设置 <code>suffix</code> 参数，给每个路由加上后缀，譬如 <code>suffix=".php"</code> 这将使路径看起来很像 PHP 😀。</p>
+<h3 id="_15">路由组合</h3>
+<p>通过使用 <code>Routes</code> 对象与 <code>SubRoutes</code> 对象，你可以任意的构建路由，却不会有任何运行时的损耗——一切嵌套路由都会在代码加载时被展开。</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/sayhi/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">SubRoutes</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">Routes</span><span class="p">(</span>
+        <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/world&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+        <span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/socket_world&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="p">)),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h2 id="_16">路由冲突</h2>
+<blockquote>
+<p>当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。</p>
+</blockquote>
+<p>Index-py 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index-py 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>在上例中，两个路由同为 <code>/static/</code> 节点下的子节点，故而在匹配 url 为 <code>/static/verify.txt</code> 的请求时，按照注册顺序，会匹配到第一条。</li>
+<li>在下例中，<code>/static/verify/google.txt</code> 能匹配到的是第三条路由而不是第二条——因为第三条路由与第一条路由同为 <code>/static/verify/</code> 节点下的子节点，第二条路由属于 <code>/static/</code> 节点下，<code>/static/</code> 的子节点里优先匹配到 <code>verify</code> 节点与其子节点，后匹配 <code>{filepath:path}</code> 节点。故而匹配到第三条路由，而不是第二条。</li>
+</ul>
+<div class="codehilite"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/bing.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/google.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>但如果注册顺序如下例，则 <code>/static/verify/google.txt</code> 匹配到的路由为第一条，</p>
+<div class="codehilite"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/bing.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/google.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href=".." class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              概览
+            </div>
+          </div>
+        </a>
+      
+      
+        <a href="../http/" class="md-footer__link md-footer__link--next" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              HTTP
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fb4a9340.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a1c7c35e.min.js"></script>
+      
+    
+  <div id="version-select">
+    <div class="version-select">
+        Version: 0.16
+    </div>
+    
+        <div class="version-select">
+            <a href="/master/route/">master</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/stable/route/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.16/route/">0.16</a>
+        </div>
+    
+        <style>
+            #version-select {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+                max-width: 80vw;
+                max-height: 50vh;
+                font-size: 16px;
+                display: flex;
+                flex-direction: row-reverse;
+                flex-wrap: wrap-reverse;
+            }
+
+            .version-select {
+                display: none;
+                padding: 0.5em;
+                color: var(--md-primary-bg-color);
+                background-color: var(--md-primary-fg-color);
+                border: var(--md-primary-bg-color);
+                border-radius: 5px;
+                margin: 10px;
+                white-space: nowrap;
+            }
+
+            #version-select div:first-of-type {
+                display: block;
+            }
+
+            #version-select:hover .version-select {
+                display: block;
+            }
+        </style>
+        </div>
+</body>
+</html>
