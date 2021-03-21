@@ -1,8 +1,6 @@
 # ![](./img/index-py.png)
 
-这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。
-
-到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 [Django](https://www.djangoproject.com/)。
+这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 [Django](https://www.djangoproject.com/)。
 
 如果你发现了任何的 BUG，欢迎访问 [Github Issues](https://github.com/abersheeran/index.py/issues) 反馈；如果你有需要与其他人共同分享、讨论的事情或希望增加的特性，欢迎访问 [Github Discussions](https://github.com/abersheeran/index.py/discussions) 发起讨论。
 

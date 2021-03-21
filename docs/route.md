@@ -12,30 +12,20 @@ from indexpy import Index
 app = Index()
 
 
-@app.router.http("/hello", name="hello", method="get")
-async def hello(request):
-    return "hello world"
+@app.router.http("/hello", name="hello")
+async def hello():
+    ...
 
 
 @app.router.websocket("/hello", name="hello_ws")
-async def hello_ws(websocket):
-    ...
-
-
-@app.router.asgi(
-    "/static{filepath:path}",
-    name="static",
-    type=("http",),
-    root_path="/static"
-)
-async def static(scope, receive, send):
+async def hello_ws():
     ...
 ```
 
-!!! tip
+!!! tip ""
     如果 `name` 没有被指定，则会默认使用被注册的可调用对象的 `__name__` 属性。
 
-!!! notice
+!!! notice ""
     如果指定路由的 `name` 为 `None`，则无法通过 `name` 查找到该路由。
 
 ### 路由对象
@@ -44,63 +34,80 @@ async def static(scope, receive, send):
 
 ```python
 from indexpy import Index
-from indexpy.routing import HttpRoute, SocketRoute, ASGIRoute
+from indexpy.routing import HttpRoute, SocketRoute
 
 app = Index()
 
 
-async def hello(request):
+async def hello():
     return "hello world"
 
 
-async def hello_ws(websocket):
+async def hello_ws():
     ...
 
 
-async def static(scope, receive, send):
-    ...
-
-
-app.router.append(HttpRoute("/hello", hello, name="hello", method="get"))
-app.router.append(SocketRoute("/hello", hello_ws, name="hello_ws"))
-app.router.append(
-    ASGIRoute(
-        "/static{filepath:path}",
-        static,
-        name="static",
-        type=("http",),
-        root_path="/static",
-    )
-)
+app.router < HttpRoute("/hello", hello, name="hello")
+app.router < SocketRoute("/hello", hello_ws, name="hello_ws")
 ```
 
-#### HttpRoute
+Index-py 的路由对象有两种，分别对应 Http 和 WebSocket 方法。
 
 ```python
-HttpRoute(path: str, endpoint: Any, name: Optional[str] = "", method: str = "")
-```
+# Http
+HttpRoute(path: str, endpoint: Any, name: Optional[str] = "")
 
-- `name` 用于为路由指定名称，`name` 为 `None` 时，此路由将没有名称；`name` 为 `""` 时，将自动读取 `endpoint.__name__` 作为路由名称。
-
-- `method` 用于为 `endpoint` 指定一个允许的 HTTP Method，必须是小写的有效的 HTTP Method 名称。但仅在 `endpoint` 是函数时需要指定此参数。
-
-#### SocketRoute
-
-```python
+# WebSocket
 SocketRoute(path: str, endpoint: Any, name: Optional[str] = "")
 ```
 
-所有参数的作用与 `HttpRoute` 相同。
+- `path` 指定路由能匹配到的字符串
 
-#### ASGIRoute
+- `endpoint` 指定路由对应的可调用对象
+
+- `name` 为路由指定名称，`name` 为 `None` 时，此路由将没有名称；`name` 为 `""` 时，将自动读取 `endpoint.__name__` 作为路由名称。
+
+#### 预处理
+
+使用路由对象注册的可调用对象 endpoint，Index-py 会自动为其注册一个装饰器，用于处理部分参数的自动校验和注入。
+
+#### 装饰器
+
+你可以对路由对象使用装饰器，这将会作用到 endpoint 上，但与直接对 endpoint 使用装饰器不同的是它作用于 Index-py 预处理后的 endpoint 上。
+
+!!! tip ""
+    你可以在这样注册的装饰器里捕捉到可能抛出的参数校验异常。
+
+!!! notice ""
+    在本文档其他地方，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。
 
 ```python
-ASGIRoute(path: str, endpoint: Any, name: Optional[str] = "", type: typing.Container[Literal["http", "websocket"]] = ("http", "websocket"), root_path: str = "")
+HttpRoute(...) @ decorator
 ```
 
-- `type` 用于为此路由指定允许接受的请求类型，默认为 `http`、`websocket` 两种。
+像注册普通的装饰器一样，你可以注册多个；执行顺序也一样，由远到近的执行。
 
-- `root_path` 用于挂载此路由的应用到指定的 `root_path` 下。
+```python
+HttpRoute(...) @ decorator1 @ decorator2 @ decorator3
+```
+
+以下是两个定义装饰器的模板，只需要填充进你自己的代码，就可以使用了。
+
+```python
+def http_middleware(endpoint):
+    async def wrapper():
+        return await endpoint()
+    return wrapper
+
+
+def socket_middleware(endpoint):
+    async def wrapper():
+        await endpoint()
+    return wrapper
+```
+
+!!! tip ""
+    WebSocket 处理器一定会返回 `None`，所以你可以省略 `return` 语句，就像上例一样。
 
 ### 列表式注册
 
@@ -111,70 +118,42 @@ from indexpy import Index
 from indexpy.routing import HttpRoute, SocketRoute
 
 
-async def hello(request):
+async def hello():
     return "hello world"
 
 
-async def hello_ws(websocket):
+async def hello_ws():
     ...
 
 
 app = Index(routes=[
-    HttpRoute("/hello", hello, name="hello", method="get"),
+    HttpRoute("/hello", hello, name="hello"),
     SocketRoute("/hello", hello_ws, name="hello_ws"),
 ])
 ```
 
 ### 路径参数
 
-使用 `{name:type}` 可以标注路径参数，目前支持的类型有 `str`、`int`、`decimal`、`uuid` 和 `path`。
+使用 `{name:type}` 可以标注路径参数，目前支持的类型有 `str`、`int`、`decimal`、`date`、`uuid` 和 `path`。
 
-!!! tip
+!!! tip ""
     如果路径参数的类型为 `str`，可以忽略掉 `:str`，直接使用 `{name}`。
 
-!!! notice
+!!! notice ""
+    `str` 不能匹配到 `/`，如果需要匹配 `/` 请使用 `path`。
+
+!!! notice ""
     `path` 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。
 
 ```python
-from indexpy import Index
-from indexpy.routing import HttpRoute, SocketRoute
+from indexpy import Index, request
 
 app = Index()
 
 
-@app.router.http("/{username:str}", method="get")
-async def what_is_your_name(request):
+@app.router.http("/{username:str}")
+async def what_is_your_name():
     return request.path_params["username"]
-```
-
-### 注册多请求方法
-
-注册处理 HTTP 请求的可调用对象为函数时，必须标注允许处理的 HTTP 方法，且只允许一种。需要为同一个路由注册处理不同 HTTP 方法的可调用对象，应使用类，并继承自 `HTTPView`。以下为示例代码，需要更详细的描述，应查看 [HTTP](../http/#_2) 章节。
-
-```python
-from indexpy import Index
-from indexpy.http import HTTPView
-
-app = Index()
-
-
-@app.router.http("/cat")
-class Cat(HTTPView):
-
-    async def get(self):
-        return self.request.method
-
-    async def post(self):
-        return self.request.method
-
-    async def put(self):
-        return self.request.method
-
-    async def patch(self):
-        return self.request.method
-
-    async def delete(self):
-        return self.request.method
 ```
 
 ### 反向查找
@@ -182,34 +161,33 @@ class Cat(HTTPView):
 某些情况下，需要由路由名称反向生成对应的 URL 值，可以使用 `app.router.url_for`。
 
 ```python
-from indexpy import Index
+from indexpy import Index, request
 
 app = Index()
 
 
-@app.router.http("/hello", name="hello", method="get")
-@app.router.http("/hello/{name}", name="hello-name", method="get")
-async def hello(request):
+@app.router.http("/hello", name="hello")
+@app.router.http("/hello/{name}", name="hello-with-name")
+async def hello():
     return f"hello {request.path_params.get('name')}"
 
 
 assert app.router.url_for("hello") == "/hello"
-assert app.router.url_for("hello-name", {"name": "Aber"}) == "/hello/Aber"
+assert app.router.url_for("hello-with-name", {"name": "Aber"}) == "/hello/Aber"
 ```
 
-!!! tip
+!!! tip ""
     反向查找中，`websocket` 与 `http` 是互相独立的。通过 `protocol` 参数可以选择查找的路由，默认为 `http`。
 
-## 路由列表
+## 路由分组
 
-### Routes
+当需要把某一些路由归为一组时，可使用 `Routes` 对象。
 
-当需要把某一些路由归为一组时，可使用 `Routes` 对象。`Routes` 对象也拥有 `.http`、`.websocket` 和 `.asgi` 方法，使用方法与 `app.router` 相同。
+`Routes` 对象拥有 `.http` 和 `.websocket` 方法允许你使用装饰器方式注册路由，使用方法与 `app.router` 相同。
 
-`Routes` 继承自 `typing.List`，所以它允许你使用类似于 Django 一样的路由申明方式，示例如下。
+`Routes` 也同样允许你使用类似于 Django 一样的路由申明方式，示例如下。
 
 ```python
-from indexpy import Index
 from indexpy.routing import Routes, HttpRoute
 
 
@@ -218,38 +196,82 @@ async def hello(request):
 
 
 routes = Routes(
-    HttpRoute("/hello", hello, method="get"),
+    HttpRoute("/hello", hello),
 )
-
-app = Index(routes=routes)
 ```
 
-#### 名称空间
+使用 `<<` 运算符即可注册 `Routes` 中所有路由给 `app.router`，并且这一运算的返回结果是 `app.router`，这意味着你可以进行链式调用。
+
+```python
+from .app1.urls import routes as app1_routes
+from .app2.urls import routes as app2_routes
+
+app.router << app1_routes << app2_routes
+```
+
+当然，你也可以直接在初始化 `Index` 对象时传入。
+
+```python
+from indexpy import Index
+
+from .app1.urls import routes as app1_routes
+
+app = Index(routes=app1_routes)
+```
+
+### 路由组合
+
+`Routes` 可以轻松和其他 `Routes` 组合起来。
+
+```python
+from .app1.urls import routes as app1_routes
+
+routes = Routes(...) << app1_routes
+```
+
+并且 `<<` 的结果同样是 `Routes` 对象，这意味着你可以链式调用它，如下所示。
+
+```python
+from .app1.urls import routes as app1_routes
+from .app2.urls import routes as app2_routes
+
+
+Routes() << app1_routes << app2_routes
+```
+
+### 名称空间
 
 你可以为 `Routes` 设置 `namespace` 参数，这将在 `Routes` 对象中包含的每个路由名称（如果有的话）前加上 `namespace:`，以此来避免不同名称空间内的路由名称冲突。
 
-#### 注册中间件
+```python
+routes = Routes(..., namespace="namespace")
+```
 
-通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例，仅用于表示如何注册中间件，关于中间件定义更详细的描述请查看[中间件章节](./middleware.md)。
+!!! notice ""
+
+    在使用 `app.router.url_for` 时不要忘记加上路由所在的名称空间前缀。
+
+### 注册中间件
+
+通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例：
 
 ```python
 def one_http_middleware(endpoint):
-    ...
+    async def wrapper():
+        return await endpoint()
+    return wrapper
 
 
 def one_socket_middleware(endpoint):
-    ...
-
-
-def one_asgi_middleware(endpoint):
-    ...
+    async def wrapper():
+        return await endpoint()
+    return wrapper
 
 
 routes = Routes(
     ...,
     http_middlewares=[one_http_middleware],
     socket_middlewares=[one_socket_middleware],
-    asgi_middlewares=[one_asgi_middleware]
 )
 ```
 
@@ -261,82 +283,42 @@ routes = Routes(...)
 
 @routes.http_middleware
 def one_http_middleware(endpoint):
-    ...
+    async def wrapper():
+        return await endpoint()
+    return wrapper
 
 
 @routes.socket_middleware
 def one_socket_middleware(endpoint):
-    ...
-
-
-@routes.asgi_middleware
-def one_asgi_middleware(endpoint):
-    ...
+    async def wrapper():
+        return await endpoint()
+    return wrapper
 ```
 
-### SubRoutes
+### 公共前缀
 
-`SubRoutes` 是 `Routes` 的子类，它允许你更简单的定义子路由，而不是在每个路由上增加一个前缀。它同样拥有 `Routes` 一样的路由注册方式与中间件注册方式。
+有时候某一组的路由我们希望放到同一个前缀下，如下两段代码的结果是相同的。
 
 ```python
-subroutes = SubRoutes(
-    "/hello",
-    [
-        HttpRoute("/world", ...),
-        SocketRoute("/socket_world", ...),
-    ],
-),
+routes = "/auth" // Routes(
+    HttpRoute("/login", ...),
+    HttpRoute("/register", ...),
+)
 ```
 
-### FileRoutes
-
-!!! notice ""
-    这也是 Index.py 此项目的命名来源之一。
-
-`FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。
-
-#### 中间件定义
-
-`__init__.py` 中名为 `HTTPMiddleware` 的对象将被作为 HTTP 中间件、`SocketMiddleware` 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。
-
-#### 处理器定义
-
-除了 `__init__.py` 文件以外的 `.py` 文件中，名为 `HTTP` 的对象（任何可调用对象均可，函数、类等）将被视为 HTTP 处理器，名为 `Socket` 的对象（任何可调用对象均可，函数、类等）将被视为 WebSocket 处理器。
-
-#### 路由名称
-
-在文件中定义名称为 `name` 的字符串将作为该文件对应的路由名称。
-
-`FileRoutes` 同样拥有 `namespace` 参数，并且拥有同样的作用。
-
-#### 映射规则
-
-`module/filename.py` 文件将对应路由 `/filename`，`module/dirname/filename.py` 将对应 `/dirname/filename`，以此类推。
-
-文件映射有一个特殊规则：`module/**/index.py` 将负责处理 `/**/` 路径的内容。
-
-!!! tip
-    你可以将文件名或文件夹名修改为 `module/{name}.py` 以此接受路径参数。
-
-可以为 `FileRoutes` 设置 `suffix` 参数，给每个路由加上后缀，譬如 `suffix=".php"` 这将使路径看起来很像 PHP 😀。
-
-### 路由组合
-
-通过使用 `Routes` 对象与 `SubRoutes` 对象，你可以任意的构建路由，却不会有任何运行时的损耗——一切嵌套路由都会在代码加载时被展开。
-
 ```python
-Routes(
-    HttpRoute("/sayhi/{name}", ...),
-    SubRoutes("/hello", Routes(
-        HttpRoute("/world", ...),
-        SocketRoute("/socket_world", ...),
-    )),
+routes = Routes(
+    HttpRoute("/auth/login", ...),
+    HttpRoute("/auth/register", ...),
 )
 ```
 
 ## 路由冲突
 
-> 当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。
+!!! notice ""
+    如果你没有遇到路由问题，请跳过本章节。
+
+当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。
 
 Index-py 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index-py 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。
 
@@ -367,3 +349,39 @@ Routes(
     HttpRoute("/static/verify/google.txt", ...),
 )
 ```
+
+## 路由拓展
+
+通过构建路由对象的序列（`Sequence[BaseRoute]`）可以编写自己喜爱的路由注册方式，在最终都会合并进 Radix Tree 里。
+
+### FileRoutes
+
+!!! notice ""
+    这也是 Index.py 此项目的命名来源之一。
+
+`FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。
+
+#### 中间件定义
+
+`__init__.py` 中名为 `HTTPMiddleware` 的对象将被作为 HTTP 中间件、`SocketMiddleware` 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。
+
+#### 处理器定义
+
+除了 `__init__.py` 文件以外的 `.py` 文件中，名为 `HTTP` 的对象（任何可调用对象均可，函数、类等）将被视为 HTTP 处理器，名为 `Socket` 的对象（任何可调用对象均可，函数、类等）将被视为 WebSocket 处理器。
+
+#### 路由名称
+
+在文件中定义名称为 `name` 的字符串将作为该文件对应的路由名称。
+
+`FileRoutes` 同样拥有 `namespace` 参数，并且拥有同样的作用。
+
+#### 映射规则
+
+`module/filename.py` 文件将对应路由 `/filename`，`module/dirname/filename.py` 将对应 `/dirname/filename`，以此类推。
+
+文件映射有一个特殊规则：`module/**/index.py` 将负责处理 `/**/` 路径的内容。
+
+!!! tip ""
+    你可以将文件名或文件夹名修改为 `module/{name}.py` 以此接受路径参数。
+
+可以为 `FileRoutes` 设置 `suffix` 参数，给每个路由加上后缀，譬如 `suffix=".php"` 这将使路径看起来很像 PHP 😀。
