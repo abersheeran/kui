@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import json
+from http import HTTPStatus
 from typing import (
     Any,
     Awaitable,
@@ -14,7 +15,6 @@ from typing import (
     TypeVar,
     Union,
 )
-from http import HTTPStatus
 
 from baize.asgi import HTTPException, PlainTextResponse
 from baize.typing import JSONable
