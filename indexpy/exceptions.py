@@ -14,6 +14,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from http import HTTPStatus
 
 from baize.asgi import HTTPException, PlainTextResponse
 from baize.typing import JSONable
@@ -121,7 +122,13 @@ class ExceptionMiddleware:
             return HttpResponse(status_code=exc.status_code, headers=exc.headers)
 
         return PlainTextResponse(
-            content=exc.content or b"", status_code=exc.status_code, headers=exc.headers
+            content=(
+                exc.content
+                if isinstance(exc.content, (bytes, str))
+                else HTTPStatus(exc.status_code).description
+            ),
+            status_code=exc.status_code,
+            headers=exc.headers,
         )
 
     @staticmethod
