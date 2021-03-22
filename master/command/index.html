@@ -272,8 +272,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
       </a>
     </li>
   
@@ -405,7 +405,14 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    例子
+    样例
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    引入第三方模块命令
   </a>
   
 </li>
@@ -537,7 +544,14 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    例子
+    样例
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    引入第三方模块命令
   </a>
   
 </li>
@@ -678,7 +692,7 @@ Options:
 <h2 id="_2">自定义命令</h2>
 <p>Index-py 使用了 <a href="https://palletsprojects.com/p/click/">click</a> 来提供命令支持。</p>
 <p>所以如果需要自定义命令，你只需要在项目根目录下新建一个 <code>commands.py</code> 文件，在其中按照 click 的规则编写自己的命令。</p>
-<h3 id="_3">例子</h3>
+<h3 id="_3">样例</h3>
 <p>在项目根目录下的 <code>commands.py</code> 里写入以下内容</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -711,6 +725,9 @@ Commands:
   only-print  Custom command
 </code></pre></div>
 </td></tr></table>
+<h3 id="_4">引入第三方模块命令</h3>
+<p>在需要使用其他人封装好的第三方模块命令时，只需要在上述的 <code>commands.py</code> 文件中编写 <code>import</code> 语句导入第三方模块中编写的命令模块即可。</p>
+<p>这一设计是为了让用户显式地知悉自己从哪些第三方模块里导入了命令。</p>
                 
               
               
@@ -728,7 +745,7 @@ Commands:
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../openapi/" class="md-footer__link md-footer__link--prev" rel="prev">
+        <a href="../parameters/" class="md-footer__link md-footer__link--prev" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -737,7 +754,7 @@ Commands:
               <span class="md-footer__direction">
                 上一页
               </span>
-              OpenAPI
+              Parameters
             </div>
           </div>
         </a>
