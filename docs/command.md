@@ -103,7 +103,7 @@ Index-py 使用了 [click](https://palletsprojects.com/p/click/) 来提供命令
 
 所以如果需要自定义命令，你只需要在项目根目录下新建一个 `commands.py` 文件，在其中按照 click 的规则编写自己的命令。
 
-### 例子
+### 样例
 
 在项目根目录下的 `commands.py` 里写入以下内容
 
@@ -128,3 +128,9 @@ Options:
 Commands:
   only-print  Custom command
 ```
+
+### 引入第三方模块命令
+
+在需要使用其他人封装好的第三方模块命令时，只需要在上述的 `commands.py` 文件中编写 `import` 语句导入第三方模块中编写的命令模块即可。
+
+这一设计是为了让用户显式地知悉自己从哪些第三方模块里导入了命令。

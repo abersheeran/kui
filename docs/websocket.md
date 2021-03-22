@@ -4,10 +4,13 @@
 
 ### 函数处理器
 
-函数接受一个位置参数 `websocket`，它是一个 `indexpy.websocket.request.WebSocket` 对象。在函数的开始，必须调用 `await websocket.accept()`，在函数结束必须调用 `await websocket.close(CLOSE_CODE)`。
+在 WebSocket 处理器的开始，必须调用 `await websocket.accept()`，在处理器退出时必须调用 `await websocket.close(CLOSE_CODE)`。
 
 ```python
-async def simple_echo(websocket):
+from indexpy import websocket
+
+
+async def simple_echo():
     try:
         await websocket.accept()
         while True:
@@ -19,9 +22,9 @@ async def simple_echo(websocket):
 
 ### 类处理器
 
-与 HTTP 类处理器类似，WebSocket 类处理器需要从 `indexpy.websocket.SocketView` 继承而来。
+与 HTTP 类处理器类似，WebSocket 类处理器可以从 `indexpy.SocketView` 继承而来。
 
-它有一个类属性：`encoding`，此属性有三个可用值——`"text"`、`"bytes"`、`"json"`，将决定接收到的 WebSocket 数据以何种编码被解析。默认为 `json`。
+它有一个类属性：`encoding`，此属性有几个可用值——`"anystr"`、`"text"`、`"bytes"`、`"json"`，将决定接收到的 WebSocket 数据以何种编码被解析。默认为 `anystr`。
 
 它有三个方法可用于常规使用，分别对应一个 WebSocket 连接的不同状态：
 
@@ -29,7 +32,7 @@ async def simple_echo(websocket):
 
     此函数在一个 websocket 连接被建立后调用。
 
-    如果覆盖了此函数，则必须在其中显式的调用 `await self.websocket.accept()` 来接受连接的建立。
+    如果覆盖了此函数，则必须在其中显式的调用 `await websocket.accept()` 来接受连接的建立。
 
 2. `on_receive(data: typing.Any)`
 
@@ -39,14 +42,14 @@ async def simple_echo(websocket):
 
     此函数在一个 websocket 即将被关闭时调用。
 
-    如果覆盖了此函数，你必须在其中显式的调用 `await self.websocket.close(code=close_code)` 用以关闭连接。
+    如果覆盖了此函数，你必须在其中显式的调用 `await websocket.close(code=close_code)` 用以关闭连接。
 
-!!! notice
+!!! notice ""
     这三个函数必须都以 `async def` 的方式被定义为异步函数
 
 ## WebSocket 对象
 
-每个 WebSocket 连接都会对应一个 `indexpy.websocket.request.WebSocket` 对象，它拥有一对 `receive`/`send` 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。
+每个 WebSocket 连接都会对应一个 `indexpy.requests.WebSocket` 对象，它拥有一对 `receive`/`send` 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。
 
 - `receive_bytes`/`send_bytes`: 接收/发送 `bytes` 类型的数据
 
@@ -84,7 +87,7 @@ async def simple_echo(websocket):
 
 获取客户端在当前连接中使用的端口: `websocket.client.port`。
 
-!!!notice
+!!!notice ""
     元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。
 
 ### Cookies
@@ -92,9 +95,6 @@ async def simple_echo(websocket):
 `websocket.cookies` 是一个标准字典，定义为 `Dict[str, str]`。
 
 例如：`websocket.cookies.get('mycookie')`
-
-!!!notice
-    你没办法从`websocket.cookies`里读取到无效的 cookie (RFC2109)
 
 ### State
 

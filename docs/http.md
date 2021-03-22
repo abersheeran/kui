@@ -513,7 +513,7 @@ def _more_json(body: dict, status: int = 200, headers: dict = None) -> HttpRespo
 from indexpy.http import HTTPException
 
 
-async def exc(request):
+async def endpoint():
     ...
     raise HTTPException(400)
     ...
@@ -525,7 +525,7 @@ async def exc(request):
 from indexpy.http import HTTPException
 
 
-async def exc(request):
+async def endpoint():
     ...
     raise HTTPException(405, headers={"Allow": "HEAD, GET, POST"})
     ...
@@ -549,7 +549,7 @@ def not_found(exc: HTTPException) -> HttpResponse:
 
 
 @app.exception_handler(ValueError)
-def value_error(request: Request, exc: ValueError) -> HttpResponse:
+def value_error(exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 ```
 
@@ -563,7 +563,7 @@ def not_found(exc: HTTPException) -> HttpResponse:
     return PlainTextResponse("what do you want to do?", status_code=404)
 
 
-def value_error(request: Request, exc: ValueError) -> HttpResponse:
+def value_error(exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 
 

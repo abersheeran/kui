@@ -35,7 +35,7 @@ nav:
   - Http: "http.md"
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
-  - OpenAPI: "openapi.md"
+  - Parameters: "parameters.md"
   - Command: "command.md"
 
 markdown_extensions:
