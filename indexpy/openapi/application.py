@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
 from indexpy.responses import HTMLResponse, HttpResponse, JSONResponse
-from indexpy.routing import HttpRoute
+from indexpy.routing import HttpRoute, Routes
 from indexpy.utils import F
 
 from .functions import merge_openapi_info
@@ -173,7 +173,7 @@ class OpenAPI:
         return openapi
 
     @property
-    def routes(self) -> List[HttpRoute]:
+    def routes(self) -> Routes:
         async def template() -> HttpResponse:
             return HTMLResponse(self.html_template)
 
@@ -181,4 +181,4 @@ class OpenAPI:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
 
-        return [HttpRoute("/", template), HttpRoute("/docs", docs)]
+        return Routes(HttpRoute("/", template), HttpRoute("/docs", docs))
