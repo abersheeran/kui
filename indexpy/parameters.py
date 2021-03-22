@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import functools
 import inspect
 from itertools import groupby
@@ -194,6 +195,7 @@ async def verify_params(handler: CallableObject) -> CallableObject:
 
 def auto_params(handler: CallableObject) -> CallableObject:
     if inspect.isclass(handler) and hasattr(handler, "__methods__"):
+        handler = copy.deepcopy(handler)
         for method in handler.__methods__:  # type: ignore
             callback = parse_signature(getattr(handler, method))
 
@@ -205,6 +207,7 @@ def auto_params(handler: CallableObject) -> CallableObject:
             setattr(handler, method, callback_with_auto_bound_params)
         return handler
     elif inspect.iscoroutinefunction(handler):
+        handler = copy.deepcopy(handler)
         callback = parse_signature(handler)
 
         @functools.wraps(callback)
