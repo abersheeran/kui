@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Any, List, Mapping, Union
 
-from baize.asgi import Receive, Scope, Send
+from baize.asgi import SmallResponse
 
 from .requests import request
 from .responses import HttpResponse
@@ -14,7 +14,7 @@ class BaseTemplates(metaclass=ABCMeta):
     def TemplateResponse(
         self,
         name: str,
-        context: dict,
+        context: Mapping[str, Any],
         status_code: int = 200,
         headers: Mapping[str, str] = None,
     ) -> HttpResponse:
@@ -30,41 +30,25 @@ except ImportError:
     pass
 else:
 
-    class _Jinja2TemplateResponse(HttpResponse):
+    class _Jinja2TemplateResponse(SmallResponse):
         def __init__(
             self,
             env: jinja2.Environment,
             name: str,
-            context: dict,
+            context: Mapping[str, Any],
             status_code: int = 200,
             headers: Mapping[str, str] = None,
         ):
             self.env = env
             self.template = self.env.get_template(name)
-            self.context = context
-            super().__init__(status_code, headers)
+            super().__init__(context, status_code, headers)
 
-        async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        async def render(self, context: Mapping[str, Any]) -> bytes:
             if self.env.enable_async:  # type: ignore
-                content = await self.template.render_async(self.context)
+                text = await self.template.render_async(context)
             else:
-                content = self.template.render(self.context)
-
-            body = content.encode("utf-8")
-            self.raw_headers.append(("content-length", str(len(body))))
-            self.raw_headers.append(("content-type", "text/html; charset=utf-8"))
-
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": self.status_code,
-                    "headers": [
-                        (k.encode("latin-1"), v.encode("latin-1"))
-                        for k, v in self.raw_headers
-                    ],
-                }
-            )
-            await send({"type": "http.response.body", "body": body})
+                text = self.template.render(context)
+            return text.encode(self.charset)
 
     class Jinja2Templates(BaseTemplates):
         """
@@ -103,11 +87,10 @@ else:
         def TemplateResponse(
             self,
             name: str,
-            context: dict,
+            context: Mapping[str, Any],
             status_code: int = 200,
             headers: Mapping[str, str] = None,
         ) -> _Jinja2TemplateResponse:
-
             return _Jinja2TemplateResponse(
                 self.env, name, context, status_code=status_code, headers=headers
             )
