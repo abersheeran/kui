@@ -70,11 +70,15 @@ def parse_signature(function: CallableObject) -> CallableObject:
                 annotation = Any
             __parameters__[default._in][name] = (annotation, default)
 
-    for key in tuple(__parameters__.keys()):
-        _params_ = __parameters__.pop(key)
-        if safe_issubclass(_params_, BaseModel) or not _params_:
-            continue
-        __parameters__[key] = create_model("temporary_model", **_params_)  # type: ignore
+    for key, params in filter(
+        lambda kv: kv[1],
+        ((key, __parameters__.pop(key)) for key in tuple(__parameters__.keys())),
+    ):
+        if safe_issubclass(params, BaseModel):
+            model = params
+        else:
+            model = create_model("temporary_model", **params)
+        __parameters__[key] = model
 
     if "body" in __parameters__:
         setattr(function, "__request_body__", __parameters__.pop("body"))
