@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import abc
-import copy
 import importlib
 import operator
 import os
@@ -146,15 +145,15 @@ _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="Routes")
 class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union[BaseRoute, typing.List[BaseRoute]],
+        *iterable: typing.Union[BaseRoute, typing.Sequence[BaseRoute]],
         namespace: str = "",
-        http_middlewares: typing.List[typing.Any] = [],
-        socket_middlewares: typing.List[typing.Any] = [],
+        http_middlewares: typing.Sequence[typing.Any] = [],
+        socket_middlewares: typing.Sequence[typing.Any] = [],
     ) -> None:
         self.namespace = namespace
         self._list: typing.List[BaseRoute] = []
-        self._http_middlewares = copy.copy(http_middlewares)
-        self._socket_middlewares = copy.copy(socket_middlewares)
+        self._http_middlewares = list(http_middlewares)
+        self._socket_middlewares = list(socket_middlewares)
         for route in iterable:
             if not isinstance(route, typing.Sequence):
                 self < route
