@@ -16,7 +16,7 @@
     
     
       
-        <title>HTTP - Index.py</title>
+        <title>Http - Index.py</title>
       
     
     
@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -90,7 +90,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              HTTP
+              Http
             
           </span>
         </div>
@@ -234,12 +234,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          HTTP
+          Http
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        HTTP
+        Http
       </a>
       
         
@@ -392,11 +392,11 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#response" class="md-nav__link">
-    Response
+  <a href="#httpresponse" class="md-nav__link">
+    HttpResponse
   </a>
   
-    <nav class="md-nav" aria-label="Response">
+    <nav class="md-nav" aria-label="HttpResponse">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -419,15 +419,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#htmlresponse" class="md-nav__link">
-    HTMLResponse
+  <a href="#plaintextresponse" class="md-nav__link">
+    PlainTextResponse
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#plaintextresponse" class="md-nav__link">
-    PlainTextResponse
+  <a href="#htmlresponse" class="md-nav__link">
+    HTMLResponse
   </a>
   
 </li>
@@ -436,19 +436,6 @@
   <a href="#jsonresponse" class="md-nav__link">
     JSONResponse
   </a>
-  
-    <nav class="md-nav" aria-label="JSONResponse">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    自定义序列化方法
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -460,8 +447,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#streamingresponse" class="md-nav__link">
-    StreamingResponse
+  <a href="#streamresponse" class="md-nav__link">
+    StreamResponse
   </a>
   
 </li>
@@ -489,7 +476,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     其他模板引擎
   </a>
   
@@ -501,22 +488,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#serversendeventresponse" class="md-nav__link">
-    ServerSendEventResponse
+  <a href="#sendeventresponse" class="md-nav__link">
+    SendEventResponse
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     响应的简化写法
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http_1" class="md-nav__link">
-    HTTP 异常
   </a>
   
 </li>
@@ -527,9 +507,29 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    异常处理
+  </a>
+  
+    <nav class="md-nav" aria-label="异常处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#httpexception" class="md-nav__link">
+    HTTPException
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_8" class="md-nav__link">
     自定义异常处理
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -579,38 +579,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
-        Middleware
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../background/" class="md-nav__link">
-        Background Task
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
       </a>
     </li>
   
@@ -792,11 +762,11 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#response" class="md-nav__link">
-    Response
+  <a href="#httpresponse" class="md-nav__link">
+    HttpResponse
   </a>
   
-    <nav class="md-nav" aria-label="Response">
+    <nav class="md-nav" aria-label="HttpResponse">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -819,15 +789,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#htmlresponse" class="md-nav__link">
-    HTMLResponse
+  <a href="#plaintextresponse" class="md-nav__link">
+    PlainTextResponse
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#plaintextresponse" class="md-nav__link">
-    PlainTextResponse
+  <a href="#htmlresponse" class="md-nav__link">
+    HTMLResponse
   </a>
   
 </li>
@@ -836,19 +806,6 @@
   <a href="#jsonresponse" class="md-nav__link">
     JSONResponse
   </a>
-  
-    <nav class="md-nav" aria-label="JSONResponse">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    自定义序列化方法
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -860,8 +817,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#streamingresponse" class="md-nav__link">
-    StreamingResponse
+  <a href="#streamresponse" class="md-nav__link">
+    StreamResponse
   </a>
   
 </li>
@@ -889,7 +846,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     其他模板引擎
   </a>
   
@@ -901,22 +858,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#serversendeventresponse" class="md-nav__link">
-    ServerSendEventResponse
+  <a href="#sendeventresponse" class="md-nav__link">
+    SendEventResponse
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     响应的简化写法
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http_1" class="md-nav__link">
-    HTTP 异常
   </a>
   
 </li>
@@ -927,9 +877,29 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    异常处理
+  </a>
+  
+    <nav class="md-nav" aria-label="异常处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#httpexception" class="md-nav__link">
+    HTTPException
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_8" class="md-nav__link">
     自定义异常处理
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -950,70 +920,133 @@
                   </a>
                 
                 
-                  <h1>HTTP</h1>
+                  <h1>Http</h1>
                 
                 <h2 id="http">HTTP 处理器</h2>
 <p>在下文中，用于处理 HTTP 请求的可调用对象被称为 HTTP 处理器。</p>
 <h3 id="_1">函数处理器</h3>
-<p>使用函数处理单一类型的请求是很简单的，它会接受一个位置参数 <code>request</code>，默认类型为 <code>indexpy.http.request.Request</code>。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<p>使用函数处理请求是很简单的。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
     <span class="k">return</span> <span class="s2">&quot;hello&quot;</span>
 </code></pre></div>
-
+</td></tr></table>
 <p><code>@app.router.http</code> 装饰器将返回原始的函数，故而可以将同一个函数注册到多个路由下。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">request</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello-with-name&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">path_params</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;hello </span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">path_params</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;hello&quot;</span>
 </code></pre></div>
+</td></tr></table>
+<p>你还可以使用 <code>required_method</code> 来约束函数处理器仅接受指定的请求方法。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">required_method</span>
 
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="nd">@required_method</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">need_post</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
+</code></pre></div>
+</td></tr></table>
 <div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>在函数处理器中不允许自行编写代码处理 <code>options</code> 方法，但拥有与类处理器相同的处理 <code>options</code> 的默认程序。</p>
+<p>当你使用 <code>required_method</code> 对请求方法进行约束时，<code>OPTIONS</code> 方法将会被自动处理。</p>
+</div>
+<div class="admonition notice">
+<p>当你使用 <code>required_method</code> 允许 <code>GET</code> 方法时，<code>HEAD</code> 方法也会同时被允许。</p>
 </div>
 <h3 id="_2">类处理器</h3>
-<p>使用类处理多种请求十分简单。只需要继承 <code>indexpy.http.HTTPView</code> 并编写对应的方法，支持的方法有 <code>"get"</code>，<code>"post"</code>，<code>"put"</code>，<code>"patch"</code>，<code>"delete"</code>，<code>"head"</code>，<code>"options"</code>，<code>"trace"</code>。</p>
-<p>通过 <code>self.request</code> 可以读取此次请求的信息。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPView</span>
+<p>使用类处理多种请求十分简单。只需要继承 <code>HttpView</code> 并编写对应的方法，支持的方法有 <code>"get"</code>，<code>"post"</code>，<code>"put"</code>，<code>"patch"</code>，<code>"delete"</code>，<code>"head"</code>，<code>"options"</code>，<code>"trace"</code>。</p>
+<div class="admonition tip">
+<p class="admonition-title">允许更多请求方法</p>
+<p>在继承类时覆盖类属性 <code>HTTP_METHOD_NAMES</code> 即可。</p>
+</div>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">HttpView</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/cat&quot;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Cat</span><span class="p">(</span><span class="n">HTTPView</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Cat</span><span class="p">(</span><span class="n">HttpView</span><span class="p">):</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span>
 </code></pre></div>
-
+</td></tr></table>
 <h2 id="_3">获取请求值</h2>
-<p>以下是 <code>indexpy.http.request.Request</code> 对象的常用属性与方法。</p>
+<p>使用 <code>from indexpy import request</code> 语句获取全局变量 <code>request</code>，它是一个代理对象，可以读写删当前请求对应的 <code>Request</code> 对象的各个属性。一般来说这足以应付大部分需求，但如果你真的需要访问原始 <code>Request</code> 对象，可以使用 <code>indexpy.requests.request_var.get()</code>。</p>
+<p>以下是 <code>indexpy.requests.Request</code> 对象的常用属性与方法。</p>
 <h3 id="method">Method</h3>
 <p>通过 <code>request.method</code> 可以获取到请求方法，例如 <code>get</code>/<code>post</code> 等。</p>
 <h3 id="url">URL</h3>
@@ -1036,16 +1069,11 @@
 <p>获取客户端 hostname 或 IP 地址: <code>request.client.host</code>。</p>
 <p>获取客户端在当前连接中使用的端口: <code>request.client.port</code>。</p>
 <div class="admonition notice">
-<p class="admonition-title">Notice</p>
 <p>元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。</p>
 </div>
 <h3 id="cookies">Cookies</h3>
 <p><code>request.cookies</code> 是一个标准字典，定义为 <code>Dict[str, str]</code>。</p>
 <p>例如：<code>request.cookies.get('mycookie')</code></p>
-<div class="admonition notice">
-<p class="admonition-title">Notice</p>
-<p>你没办法从<code>request.cookies</code>里读取到无效的 cookie (RFC2109)</p>
-</div>
 <h3 id="body">Body</h3>
 <p>有几种方法可以读到请求体内容：</p>
 <ul>
@@ -1063,14 +1091,19 @@
 </li>
 </ul>
 <p>你也可以使用 <code>async for</code> 语法将 <code>body</code> 作为一个 <code>bytes</code> 流进行读取：</p>
-<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">post</span><span class="p">():</span>
     <span class="o">...</span>
     <span class="n">body</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">stream</span><span class="p">():</span>
         <span class="n">body</span> <span class="o">+=</span> <span class="n">chunk</span>
     <span class="o">...</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>如果你直接使用了 <code>request.stream()</code> 去读取数据，那么请求体将不会缓存在内存中。其后任何对 <code>.body</code>/<code>.form</code>/<code>.json</code> 的调用都将抛出错误。</p>
 <p>在某些情况下，例如长轮询或流式响应，你可能需要确定客户端是否已断开连接。可以使用 <code>disconnected = await request.is_disconnected()</code> 确定此状态。</p>
 <h3 id="request-files">Request Files</h3>
@@ -1089,45 +1122,37 @@
 <li><code>async close()</code>: 关闭文件。</li>
 </ul>
 <p>下面是一个读取原始文件名称和内容的例子：</p>
-<div class="codehilite"><pre><span></span><code><span class="n">form</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">form</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span>
 <span class="n">filename</span> <span class="o">=</span> <span class="n">form</span><span class="p">[</span><span class="s2">&quot;upload_file&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span>
 <span class="n">contents</span> <span class="o">=</span> <span class="k">await</span> <span class="n">form</span><span class="p">[</span><span class="s2">&quot;upload_file&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 </code></pre></div>
-
+</td></tr></table>
 <h3 id="state">State</h3>
 <p>某些情况下需要储存一些额外的自定义信息到 <code>request</code> 中，可以使用 <code>request.state</code> 用于存储。</p>
-<div class="codehilite"><pre><span></span><code><span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>  <span class="c1"># 写</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>  <span class="c1"># 写</span>
 
 <span class="n">user_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># 读</span>
 
 <span class="k">del</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span>  <span class="c1"># 删</span>
 </code></pre></div>
-
+</td></tr></table>
 <h2 id="_4">返回响应值</h2>
-<p>对于任何正常处理的 HTTP 请求都必须返回一个 <code>indexpy.http.responses.Response</code> 对象或者是它的子类对象。</p>
-<p>在 <code>index.http.repsonses</code> 里内置的可用对象如下：</p>
-<h3 id="response">Response</h3>
-<p>签名：<code>Response(content, status_code=200, headers=None, media_type=None, background=None)</code></p>
+<p>对于任何正常处理的 HTTP 请求都必须返回一个 <code>HttpResponse</code> 对象或者是它的子类对象。</p>
+<h3 id="httpresponse">HttpResponse</h3>
+<p>签名：<code>HttpResponse(status_code: int = 200, headers: Mapping[str, str] = None)</code></p>
 <ul>
-<li><code>content</code> - 作为响应内容的 <code>str</code> 或 <code>bytes</code> 对象。</li>
 <li><code>status_code</code> - HTTP 状态码。</li>
 <li><code>headers</code> - 字符串字典。</li>
-<li><code>media_type</code> - 响应内容的<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types"> MIME 类型</a>。例如：<code>"text/html"</code>。</li>
 </ul>
-<p><code>Response</code> 将自动包含 Content-Length 标头。 它还将包含一个基于 media_type 的 Content-Type 标头，并为文本类型附加一个字符集。</p>
-<p>实例化 <code>Response</code> 后，可以通过将其作为 ASGI 应用程序实例进行调用来发送响应。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">Response</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">Response</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">,</span> <span class="n">media_type</span><span class="o">=</span><span class="s1">&#39;text/plain&#39;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
-</code></pre></div>
-
 <h4 id="set-cookie">Set Cookie</h4>
-<p><code>Response</code> 提供 <code>set_cookie</code> 方法以允许你设置 cookies。</p>
-<p>签名：<code>Response.set_cookie(key, value="", max_age=None, expires=None, path="/", domain=None, secure=False, httponly=False, samesite="lax")</code></p>
+<p><code>HttpResponse</code> 提供 <code>set_cookie</code> 方法以允许你设置 cookies。</p>
+<p>签名：<code>HttpResponse.set_cookie(key, value="", max_age=None, expires=None, path="/", domain=None, secure=False, httponly=False, samesite="lax")</code></p>
 <ul>
 <li><code>key: str</code>，将成为 Cookie 的键。</li>
 <li><code>value: str = ""</code>，将是 Cookie 的值。</li>
@@ -1140,48 +1165,74 @@
 <li><code>samesite: str = "lax"</code>，用于指定 Cookie 的相同网站策略。有效值为 <code>"lax"</code>，<code>"strict"</code> 和 <code>"none"</code>。</li>
 </ul>
 <h4 id="delete-cookie">Delete Cookie</h4>
-<p><code>Response</code> 也提供了 <code>delete_cookie</code> 方法指定已设置的 Cookie 过期。</p>
-<p>签名: <code>Response.delete_cookie(key, path='/', domain=None)</code></p>
-<h3 id="htmlresponse">HTMLResponse</h3>
-<p>接受 <code>str</code> 或 <code>bytes</code> 并返回 HTML 响应。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">HTMLResponse</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">HTMLResponse</span><span class="p">(</span><span class="s1">&#39;&lt;html&gt;&lt;body&gt;&lt;h1&gt;Hello, world!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&#39;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
-</code></pre></div>
-
+<p><code>HttpResponse</code> 也提供了 <code>delete_cookie</code> 方法指定已设置的 Cookie 过期。</p>
+<p>签名: <code>HttpResponse.delete_cookie(key, path='/', domain=None)</code></p>
 <h3 id="plaintextresponse">PlainTextResponse</h3>
 <p>接受 <code>str</code> 或 <code>bytes</code> 并返回纯文本响应。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">PlainTextResponse</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">PlainTextResponse</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_plaintext</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
+<h3 id="htmlresponse">HTMLResponse</h3>
+<p>接受 <code>str</code> 或 <code>bytes</code> 并返回 HTML 响应。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">HTMLResponse</span>
 
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_html</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">HTMLResponse</span><span class="p">(</span><span class="s1">&#39;&lt;html&gt;&lt;body&gt;&lt;h1&gt;Hello, world!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&#39;</span><span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
 <h3 id="jsonresponse">JSONResponse</h3>
-<p>接受一些数据并返回一个 <code>application/json</code> 编码的响应。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+<p>接受一些 Python 对象并返回一个 <code>application/json</code> 编码的响应。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;hello&#39;</span><span class="p">:</span> <span class="s1">&#39;world&#39;</span><span class="p">})</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_json</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;hello&#39;</span><span class="p">:</span> <span class="s1">&#39;world&#39;</span><span class="p">})</span>
 </code></pre></div>
-
-<h4 id="_5">自定义序列化方法</h4>
-<p>很多时候，Python 内置的 <code>json</code> 标准库无法满足实际项目的序列化需求，可以通过覆盖 <code>JSONResponse.json_convert</code> 来自定义序列化方法。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
+</td></tr></table>
+<p><code>JSONResponse</code> 以关键词参数的形式暴露出全部 <code>json.dumps</code> 的选项以供自定义。例如在很多时候，Python 内置的 <code>json</code> 转换器无法满足实际项目的序列化需求，可以通过覆盖 <code>default</code> 方法来自定义无法序列化的对象该如何处理。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">decimal</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
 
 
 <span class="k">def</span> <span class="nf">custom_convert</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -1197,28 +1248,43 @@
     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Object of type </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> is not JSON serializable&#39;</span><span class="p">)</span>
 
 
-<span class="n">JSONResponse</span><span class="o">.</span><span class="n">json_convert</span> <span class="o">=</span> <span class="n">custom_convert</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_json</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;hello&#39;</span><span class="p">:</span> <span class="s1">&#39;world&#39;</span><span class="p">},</span> <span class="n">default</span><span class="o">=</span><span class="n">custom_convert</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <h3 id="redirectresponse">RedirectResponse</h3>
 <p>返回 HTTP 重定向。默认情况下使用 307 状态代码。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">PlainTextResponse</span><span class="p">,</span> <span class="n">RedirectResponse</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">RedirectResponse</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
-    <span class="k">if</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">RedirectResponse</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_redirect</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">RedirectResponse</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
+<h3 id="streamresponse">StreamResponse</h3>
+<p>接受一个异步生成器，流式传输响应主体。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 
-<h3 id="streamingresponse">StreamingResponse</h3>
-<p>接受一个异步生成器或普通生成器/迭代器，流式传输响应主体。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">StreamingResponse</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">StreamingResponse</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">slow_numbers</span><span class="p">(</span><span class="n">minimum</span><span class="p">,</span> <span class="n">maximum</span><span class="p">):</span>
@@ -1229,73 +1295,141 @@
     <span class="k">yield</span><span class="p">(</span><span class="s1">&#39;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;&#39;</span><span class="p">)</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">scope</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;http&#39;</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">return_stream</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
     <span class="n">generator</span> <span class="o">=</span> <span class="n">slow_numbers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">media_type</span><span class="o">=</span><span class="s1">&#39;text/html&#39;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">response</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;text/html&#39;</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <h3 id="fileresponse">FileResponse</h3>
 <p>异步传输文件作为响应。</p>
 <p>与其他响应类型相比，采用不同的参数进行实例化：</p>
 <ul>
-<li><code>path</code> - 要流式传输的文件的文件路径。</li>
+<li><code>filepath</code> - 要流式传输的文件的文件路径。</li>
 <li><code>headers</code> - 与 <code>Response</code> 中的 <code>headers</code> 参数的作用相同。</li>
 <li><code>media_type</code> - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。</li>
-<li><code>filename</code> - 如果设置此参数，它将包含在响应的 <code>Content-Disposition</code> 中。</li>
+<li><code>download_name</code> - 如果设置此参数，它将包含在响应的 <code>Content-Disposition</code> 中。</li>
+<li><code>stat_result</code> - 接受一个 <code>os.stat_result</code> 对象，如果不传入则会自动使用 <code>os.stat(filepath)</code> 的结果。</li>
 </ul>
-<p><code>FileResponse</code> 将自动设置适当的 <code>Content-Length</code>、<code>Last-Modified</code> 和 <code>ETag</code> 标头。</p>
+<p><code>FileResponse</code> 将自动设置适当的 <code>Content-Length</code>、<code>Last-Modified</code> 和 <code>ETag</code> 标头。并且无需任何额外的处理即可支持<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Range_requests">文件范围请求</a>。</p>
 <h3 id="templateresponse">TemplateResponse</h3>
 <p><code>TemplateResponse</code> 是 <code>app.templates.TemplateResponse</code> 的一个快捷方式。</p>
 <h4 id="jinja2">Jinja2 模板引擎</h4>
-<p>Index-py 内置了对 Jinja2 模板的支持，只要你安装了 <code>jinja2</code> 模块，就能从 <code>indexpy.http.templates</code> 中导出 <code>Jinja2Templates</code>。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">TemplateResponse</span>
+<p>Index-py 内置了对 Jinja2 模板的支持，只要你安装了 <code>jinja2</code> 模块，就能从 <code>indexpy.templates</code> 中导出 <code>Jinja2Templates</code>。以下是一个简单的使用样例，访问 "/" 它将从项目根目录下的 templates 目录寻找 homepage.html 文件进行渲染。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">TemplateResponse</span>
 <span class="kn">from</span> <span class="nn">indexpy.http.templates</span> <span class="kn">import</span> <span class="n">Jinja2Templates</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">Jinja2Templates</span><span class="p">(</span><span class="s2">&quot;templates&quot;</span><span class="p">))</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">homepage</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;homepage.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">homepage</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;homepage.html&quot;</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>如果你要使用某个模块下的指定文件夹中的模板文件，可以使用 <code>Jinja2Templates("module_name:dirname")</code>。你还可以传递多个目录让 Jinja2 按照顺序依次查找，直到找到第一个可用的模板，例如：<code>Jinja2Templates("templates", "module_name:dirname")</code>。</p>
-<h4 id="_6">其他模板引擎</h4>
-<p>通过继承 <code>indexpy.http.templates.BaseTemplates</code> 并实现 <code>TemplateResponse</code> 方法，你可以实现自己的模板引擎类。</p>
-<h3 id="serversendeventresponse">ServerSendEventResponse</h3>
-<p>通过 <code>ServerSendEventResponse</code> 可以返回一个 <a href="https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events">Server Sent Events</a> 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。</p>
-<p><code>ServerSendEventResponse</code> 除了可以接受诸如 <code>status_code</code>、<code>headers</code> 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 <code>yield</code> 的每一条消息都需要为合规的 Server-Sent Event 消息（<code>str</code> 类型），否则会出现不可预料的错误。</p>
+<h4 id="_5">其他模板引擎</h4>
+<p>通过继承 <code>indexpy.templates.BaseTemplates</code> 并实现 <code>TemplateResponse</code> 方法，你可以实现自己的模板引擎类。</p>
+<h3 id="sendeventresponse">SendEventResponse</h3>
+<p>通过 <code>SendEventResponse</code> 可以返回一个 <a href="https://developer.mozilla.org/zh-CN/docs/Server-sent_events/Using_server-sent_events">Server-sent Events</a> 响应，这是一种 HTTP 长连接响应，可应用于服务器实时推送数据到客户端等场景。</p>
+<p><code>SendEventResponse</code> 除了可以接受诸如 <code>status_code</code>、<code>headers</code> 等常规参数外，还需要自行传入一个用于生成消息的异步生成器。传入的异步生成器 <code>yield</code> 的每一条消息都需要为合规的 Server-Sent Event 消息（<code>indexpy.ServerSentEvent</code> 类型）。</p>
 <p>如下是一个每隔一秒发送一条 hello 消息、一共发送一百零一条消息的样例。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 
-<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">EventResponse</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">SendEventResponse</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/message&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">message</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/message&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">message</span><span class="p">():</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">message_gen</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">101</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">101</span><span class="p">):</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">yield</span> <span class="s2">&quot;event: message</span><span class="se">\r\n</span><span class="s2">data: {&#39;name&#39;: &#39;Aber&#39;, &#39;body&#39;: &#39;hello&#39;}&quot;</span>
+            <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">EventResponse</span><span class="p">(</span><span class="n">message_gen</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">SendEventResponse</span><span class="p">(</span><span class="n">message_gen</span><span class="p">())</span>
 </code></pre></div>
-
-<h3 id="_7">响应的简化写法</h3>
-<p>为了方便使用，Index-py 允许自定义一些函数来处理 <code>HTTP</code> 内返回的非 <code>Response</code> 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 <code>Response</code> 对象转换为 <code>Response</code> 对象。</p>
+</td></tr></table>
+<h3 id="_6">响应的简化写法</h3>
+<p>为了方便使用，Index-py 允许自定义一些函数来处理 HTTP 处理器返回的非 <code>HttpResponse</code> 对象。它的原理是拦截响应，通过响应值的类型来自动选择处理函数，把非 <code>HttpResponse</code> 对象转换为 <code>HttpResponse</code> 对象。</p>
 <div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>如果需要手动把函数的返回值转换为 <code>Response</code> 对象，则可以使用 <code>indexpy.http.responses.convert</code>。</p>
+<p>如果需要手动把函数的返回值转换为 <code>HttpResponse</code> 对象，则可以使用 <code>indexpy.responses.convert_response</code>。</p>
 </div>
-<p>Index-py 内置了三个处理函数用于处理六种类型：</p>
-<div class="codehilite"><pre><span></span><code><span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+<p>Index-py 内置了一些处理函数用于处理常见的类型：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
 <span class="k">def</span> <span class="nf">_none</span><span class="p">(</span><span class="n">ret</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">NoReturn</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
         <span class="s2">&quot;Get &#39;None&#39;. Maybe you need to add a return statement to the function.&quot;</span>
@@ -1306,35 +1440,65 @@
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_json</span><span class="p">(</span>
-    <span class="n">body</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
-    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
-    <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
 
 
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_plain_text</span><span class="p">(</span>
-    <span class="n">body</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="n">body</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+
+
+<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">AsyncGeneratorType</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_send_event</span><span class="p">(</span>
+    <span class="n">generator</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">ServerSentEvent</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">SendEventResponse</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+
+
+<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat_result</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_file</span><span class="p">(</span>
+    <span class="n">stat_result</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat_result</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">download_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">media_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="p">,</span>
+        <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+        <span class="n">media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
+        <span class="n">download_name</span><span class="o">=</span><span class="n">download_name</span><span class="p">,</span>
+        <span class="n">stat_result</span><span class="o">=</span><span class="n">stat_result</span><span class="p">,</span>
+    <span class="p">)</span>
 </code></pre></div>
-
-<p>正是有了这些内置处理函数，下面这段代码将被正确解析为一个 JSON 响应。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPView</span>
-
-
-<span class="k">class</span> <span class="nc">HTTP</span><span class="p">(</span><span class="n">HTTPView</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">}</span>
-</code></pre></div>
-
+</td></tr></table>
 <p>同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 <code>TypedDict</code>，Python 的 <code>Dict</code> 约束依旧很弱，但 dataclass 则有效得多），例如：</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
 
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">automatic</span><span class="p">,</span> <span class="n">Response</span><span class="p">,</span> <span class="n">JSONResponse</span>
+<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">automatic</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">JSONResponse</span>
 
 
 <span class="nd">@dataclass</span>
@@ -1345,12 +1509,21 @@
 
 
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Error</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_error_json</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="n">Error</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_error_json</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="n">Error</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">error</span><span class="p">),</span> <span class="n">status</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>或者你想覆盖默认的 <code>tuple</code>/<code>list</code>/<code>dict</code> 所对应的 <code>JSONResponse</code>：</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">automatic</span><span class="p">,</span> <span class="n">Response</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.responses</span> <span class="kn">import</span> <span class="n">automatic</span><span class="p">,</span> <span class="n">HttpResponse</span>
 
 <span class="o">...</span>
 
@@ -1358,53 +1531,98 @@
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">tuple</span><span class="p">)</span>
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_more_json</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_more_json</span><span class="p">(</span><span class="n">body</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">CustomizeJSONResponse</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
+<h2 id="_7">异常处理</h2>
+<h3 id="httpexception">HTTPException</h3>
+<p>其参数签名是：<code>HTTPException(status_code: int, headers: dict = None, content: typing.Any = None)</code></p>
+<p>你可以通过抛出 <code>HTTPException</code> 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 会将它变成一个普通的响应对象）。如果你没有给出一个类型为 <code>bytes</code> 或 <code>str</code> 的 <code>content</code> 值，那么它将使用 Python 标准库中的 <code>http.HTTPStatus(status_code).description</code> 作为最终结果。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPException</span>
 
-<h3 id="http_1">HTTP 异常</h3>
-<p>其参数签名是：<code>HTTPException(status_code: int, content: typing.Any = None, headers: dict = None, media_type: str = None)</code></p>
-<p>你可以通过抛出 <code>HTTPException</code> 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 知道该如何将它变成一个普通的响应对象）。如果你没有给出 <code>content</code>，那么它将使用 Python 标准库中的 <code>http.HTTPStatus(status_code).description</code> 作为值。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPException</span>
 
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">exc</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">endpoint</span><span class="p">():</span>
     <span class="o">...</span>
     <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
     <span class="o">...</span>
 </code></pre></div>
+</td></tr></table>
+<p>有时候也许你想返回更多的信息，可以像使用 <code>HttpResponse</code> 一样为它传递 <code>content</code>、<code>headers</code> 参数来控制最终实际的响应对象。下面是一个简单的例子。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPException</span>
 
-<h2 id="_8">自定义异常处理</h2>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">endpoint</span><span class="p">():</span>
+    <span class="o">...</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Allow&quot;</span><span class="p">:</span> <span class="s2">&quot;HEAD, GET, POST&quot;</span><span class="p">})</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<h3 id="_8">自定义异常处理</h3>
 <p>对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。</p>
 <p>你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 <code>HTTPException</code> 异常时，Index-py 会使用你定义的函数而不是默认行为。你也可以捕捉其他继承自 <code>Exception</code> 的异常，通过自定义函数，返回指定的内容给客户端。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Request</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">Response</span><span class="p">,</span> <span class="n">PlainTextResponse</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">PlainTextResponse</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">exception_handler</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">not_found</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="n">HTTPException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">not_found</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="n">HTTPException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s2">&quot;what do you want to do?&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
 
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">exception_handler</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">value_error</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">value_error</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s2">&quot;Something went wrong with the server.&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>除了装饰器注册，你同样可以使用列表式的注册方式，下例与上例等价：</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Request</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">Response</span><span class="p">,</span> <span class="n">PlainTextResponse</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">PlainTextResponse</span>
 
 
-<span class="k">def</span> <span class="nf">not_found</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="n">HTTPException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">not_found</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="n">HTTPException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s2">&quot;what do you want to do?&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">value_error</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">value_error</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="s2">&quot;Something went wrong with the server.&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 
 
@@ -1413,11 +1631,7 @@
     <span class="ne">ValueError</span><span class="p">:</span> <span class="n">value_error</span><span class="p">,</span>
 <span class="p">})</span>
 </code></pre></div>
-
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>你不能在这里使用 <code>request.body</code>/<code>.form</code>/<code>.json</code>/<code>.data</code> 等方法读取请求的内容。</p>
-</div>
+</td></tr></table>
                 
               
               
@@ -1470,6 +1684,10 @@
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
         
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
+        
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
           Material for MkDocs
@@ -1502,6 +1720,10 @@
     
         <div class="version-select">
             <a href="/stable/http/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.17/http/">0.17</a>
         </div>
     
         <div class="version-select">

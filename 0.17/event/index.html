@@ -16,7 +16,7 @@
     
     
       
-        <title>Background Task - Index.py</title>
+        <title>Lifespan - Index.py</title>
       
     
     
@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -90,7 +90,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Background Task
+              Lifespan
             
           </span>
         </div>
@@ -228,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="../http/" class="md-nav__link">
-        HTTP
+        Http
       </a>
     </li>
   
@@ -255,51 +255,6 @@
 
   
   
-  
-    <li class="md-nav__item">
-      <a href="../event/" class="md-nav__link">
-        Lifespan
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
-        Middleware
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
     
   
   
@@ -309,12 +264,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Background Task
+          Lifespan
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Background Task
+        Lifespan
       </a>
       
         
@@ -330,21 +285,7 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
-    单一后台任务
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    多后台任务
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    同步任务
+    注册事件
   </a>
   
 </li>
@@ -353,6 +294,21 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
+      </a>
     </li>
   
 
@@ -396,21 +352,7 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
-    单一后台任务
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    多后台任务
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    同步任务
+    注册事件
   </a>
   
 </li>
@@ -427,71 +369,93 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/background.md" title="编辑此页" class="md-content__button md-icon">
+                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/event.md" title="编辑此页" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
                 
-                  <h1>Background Task</h1>
+                  <h1>Lifespan</h1>
                 
-                <p>在传统的多线程 web 开发里，要正常的启动一个后台任务是十分困难的，想想线程安全和变量作用域之类的事情。饶是你经验丰富，解决这些问题依旧是痛苦的。</p>
-<p>在 Index-py 中你只需要一些 <a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> 的知识就可以做到轻松的启动后台任务。</p>
-<h2 id="_1">单一后台任务</h2>
-<p>很多情况下我们需要这样一种后台任务——在响应结束后，执行某种耗时的 IO 操作。</p>
-<p><code>indexpy.http.BackgroundTask</code> 是一个神奇的包装类，它可以帮助你把函数提交到此次 http 响应结束后执行——如果响应未完成就失败了，后台任务将不会执行。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">Background</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+                <p>Index-py 允许注册若干个事件处理程序，以处理在应用程序启动之前或关闭时需要运行的代码。</p>
+<ul>
+<li><code>on_startup</code>: Index-py 启动之前运行的函数</li>
+<li><code>on_shutdown</code>: Index-py 关闭之前运行的函数</li>
+</ul>
+<h2 id="_1">注册事件</h2>
+<p>你可以用装饰器语法注册事件处理程序，注册普通函数或由 <code>async def</code> 定义的异步函数均可。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">)</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">send_welcome_email</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="o">...</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">on_startup</span>
+<span class="k">def</span> <span class="nf">logger_on_startup</span><span class="p">():</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Called on startup&quot;</span><span class="p">)</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/signup&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">signup</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
-    <span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
-    <span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
-    <span class="n">task</span> <span class="o">=</span> <span class="n">BackgroundTask</span><span class="p">(</span><span class="n">send_welcome_email</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;Signup successful&#39;</span><span class="p">},</span> <span class="n">background</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">on_shutdown</span>
+<span class="k">def</span> <span class="nf">logger_on_shutdown</span><span class="p">():</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Called on shutdown&quot;</span><span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
+<p>也可以在创建 <code>Index</code> 对象时作为参数传递，以下程序与上等价。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
 
-<h2 id="_2">多后台任务</h2>
-<p>如果需要顺序的执行多个后台任务(执行顺序由添加顺序决定，先添加、先执行)，需要使用 <code>BackgroundTasks</code> 代替 <code>BackgroundTask</code>，它们的工作原理是一样的。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">BackgroundTasks</span>
-<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 
-<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">)</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">send_welcome_email</span><span class="p">(</span><span class="n">to_address</span><span class="p">):</span>
-    <span class="o">...</span>
+<span class="k">def</span> <span class="nf">logger_on_startup</span><span class="p">():</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Called on startup&quot;</span><span class="p">)</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">send_admin_notification</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
-    <span class="o">...</span>
+<span class="k">def</span> <span class="nf">logger_on_shutdown</span><span class="p">():</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Called on shutdown&quot;</span><span class="p">)</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/signup&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
-    <span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
-    <span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
-    <span class="n">tasks</span> <span class="o">=</span> <span class="n">BackgroundTasks</span><span class="p">()</span>
-    <span class="n">tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">send_welcome_email</span><span class="p">,</span> <span class="n">to_address</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
-    <span class="n">tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">send_admin_notification</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;Signup successful&#39;</span><span class="p">},</span> <span class="n">background</span><span class="o">=</span><span class="n">tasks</span><span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span>
+    <span class="n">on_startup</span><span class="o">=</span><span class="p">[</span><span class="n">logger_on_startup</span><span class="p">],</span>
+    <span class="n">on_shutdown</span><span class="o">=</span><span class="p">[</span><span class="n">logger_on_shutdown</span><span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
-
-<h2 id="_3">同步任务</h2>
-<p>以上的用法都仅限于使用 <code>async def</code> 定义的异步函数，如果你想在后台运行同步 IO 的任务函数，你应该使用 <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor"><code>asyncio.loop.run_in_executor</code></a> 对同步函数进行改造，让它变成一个异步函数。</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>在 Python 3.9 与 3.9 以上的版本，你还可以使用 <a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread"><code>asyncio.to_thread</code></a> 来改造同步函数，它允许你传递关键词参数，而不是像 <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor"><code>asyncio.loop.run_in_executor</code></a> 一样只能传递位置参数。</p>
-</div>
+</td></tr></table>
                 
               
               
@@ -509,7 +473,7 @@
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../openapi/" class="md-footer__link md-footer__link--prev" rel="prev">
+        <a href="../websocket/" class="md-footer__link md-footer__link--prev" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -518,19 +482,19 @@
               <span class="md-footer__direction">
                 上一页
               </span>
-              OpenAPI
+              WebSocket
             </div>
           </div>
         </a>
       
       
-        <a href="../command/" class="md-footer__link md-footer__link--next" rel="next">
+        <a href="../parameters/" class="md-footer__link md-footer__link--next" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 下一页
               </span>
-              Command
+              Parameters
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -543,6 +507,10 @@
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -567,19 +535,23 @@
     
   <div id="version-select">
     <div class="version-select">
-        Version: stable
+        Version: 0.17
     </div>
     
         <div class="version-select">
-            <a href="/master/background/">master</a>
+            <a href="/master/event/">master</a>
         </div>
     
         <div class="version-select">
-            <a href="/stable/background/">stable</a>
+            <a href="/stable/event/">stable</a>
         </div>
     
         <div class="version-select">
-            <a href="/0.16/background/">0.16</a>
+            <a href="/0.17/event/">0.17</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.16/event/">0.16</a>
         </div>
     
         <style>

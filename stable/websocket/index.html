@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -228,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="../http/" class="md-nav__link">
-        HTTP
+        Http
       </a>
     </li>
   
@@ -388,38 +388,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
-        Middleware
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../background/" class="md-nav__link">
-        Background Task
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
       </a>
     </li>
   
@@ -573,8 +543,21 @@
                 <h2 id="websocket">WebSocket 处理器</h2>
 <p>在下文中，用于处理 WebSocket 请求的可调用对象被称为 WebSocket 处理器。</p>
 <h3 id="_1">函数处理器</h3>
-<p>函数接受一个位置参数 <code>websocket</code>，它是一个 <code>indexpy.websocket.request.WebSocket</code> 对象。在函数的开始，必须调用 <code>await websocket.accept()</code>，在函数结束必须调用 <code>await websocket.close(CLOSE_CODE)</code>。</p>
-<div class="codehilite"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">simple_echo</span><span class="p">(</span><span class="n">websocket</span><span class="p">):</span>
+<p>在 WebSocket 处理器的开始，必须调用 <code>await websocket.accept()</code>，在处理器退出时必须调用 <code>await websocket.close(CLOSE_CODE)</code>。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">websocket</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">simple_echo</span><span class="p">():</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -583,16 +566,16 @@
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <h3 id="_2">类处理器</h3>
-<p>与 HTTP 类处理器类似，WebSocket 类处理器需要从 <code>indexpy.websocket.SocketView</code> 继承而来。</p>
-<p>它有一个类属性：<code>encoding</code>，此属性有三个可用值——<code>"text"</code>、<code>"bytes"</code>、<code>"json"</code>，将决定接收到的 WebSocket 数据以何种编码被解析。默认为 <code>json</code>。</p>
+<p>与 HTTP 类处理器类似，WebSocket 类处理器可以从 <code>indexpy.SocketView</code> 继承而来。</p>
+<p>它有一个类属性：<code>encoding</code>，此属性有几个可用值——<code>"anystr"</code>、<code>"text"</code>、<code>"bytes"</code>、<code>"json"</code>，将决定接收到的 WebSocket 数据以何种编码被解析。默认为 <code>anystr</code>。</p>
 <p>它有三个方法可用于常规使用，分别对应一个 WebSocket 连接的不同状态：</p>
 <ol>
 <li>
 <p><code>on_connect()</code></p>
 <p>此函数在一个 websocket 连接被建立后调用。</p>
-<p>如果覆盖了此函数，则必须在其中显式的调用 <code>await self.websocket.accept()</code> 来接受连接的建立。</p>
+<p>如果覆盖了此函数，则必须在其中显式的调用 <code>await websocket.accept()</code> 来接受连接的建立。</p>
 </li>
 <li>
 <p><code>on_receive(data: typing.Any)</code></p>
@@ -601,15 +584,14 @@
 <li>
 <p><code>on_disconnect(close_code: int)</code></p>
 <p>此函数在一个 websocket 即将被关闭时调用。</p>
-<p>如果覆盖了此函数，你必须在其中显式的调用 <code>await self.websocket.close(code=close_code)</code> 用以关闭连接。</p>
+<p>如果覆盖了此函数，你必须在其中显式的调用 <code>await websocket.close(code=close_code)</code> 用以关闭连接。</p>
 </li>
 </ol>
 <div class="admonition notice">
-<p class="admonition-title">Notice</p>
 <p>这三个函数必须都以 <code>async def</code> 的方式被定义为异步函数</p>
 </div>
 <h2 id="websocket_1">WebSocket 对象</h2>
-<p>每个 WebSocket 连接都会对应一个 <code>indexpy.websocket.request.WebSocket</code> 对象，它拥有一对 <code>receive</code>/<code>send</code> 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。</p>
+<p>每个 WebSocket 连接都会对应一个 <code>indexpy.requests.WebSocket</code> 对象，它拥有一对 <code>receive</code>/<code>send</code> 函数。但为了方便使用，在此基础上封装了三对 recv/send 函数。</p>
 <ul>
 <li>
 <p><code>receive_bytes</code>/<code>send_bytes</code>: 接收/发送 <code>bytes</code> 类型的数据</p>
@@ -637,24 +619,24 @@
 <p>获取客户端 hostname 或 IP 地址: <code>websocket.client.host</code>。</p>
 <p>获取客户端在当前连接中使用的端口: <code>websocket.client.port</code>。</p>
 <div class="admonition notice">
-<p class="admonition-title">Notice</p>
 <p>元组中任何一个元素都可能为 None。这受限于 ASGI 服务器传递的值。</p>
 </div>
 <h3 id="cookies">Cookies</h3>
 <p><code>websocket.cookies</code> 是一个标准字典，定义为 <code>Dict[str, str]</code>。</p>
 <p>例如：<code>websocket.cookies.get('mycookie')</code></p>
-<div class="admonition notice">
-<p class="admonition-title">Notice</p>
-<p>你没办法从<code>websocket.cookies</code>里读取到无效的 cookie (RFC2109)</p>
-</div>
 <h3 id="state">State</h3>
 <p>某些情况下需要储存一些额外的自定义信息到 <code>request</code> 中，可以使用 <code>websocket.state</code> 用于存储。</p>
-<div class="codehilite"><pre><span></span><code><span class="n">websocket</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>  <span class="c1"># 写</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">websocket</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">)</span>  <span class="c1"># 写</span>
 
 <span class="n">user_name</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># 读</span>
 
 <span class="k">del</span> <span class="n">websocket</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">user</span>  <span class="c1"># 删</span>
 </code></pre></div>
+</td></tr></table>
                 
               
               
@@ -681,7 +663,7 @@
               <span class="md-footer__direction">
                 上一页
               </span>
-              HTTP
+              Http
             </div>
           </div>
         </a>
@@ -706,6 +688,10 @@
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -739,6 +725,10 @@
     
         <div class="version-select">
             <a href="/stable/websocket/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.17/websocket/">0.17</a>
         </div>
     
         <div class="version-select">

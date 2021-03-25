@@ -16,7 +16,7 @@
     
     
       
-        <title>Middleware - Index.py</title>
+        <title>Command - Index.py</title>
       
     
     
@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#http" class="md-skip">
+        <a href="#_1" class="md-skip">
           跳转至
         </a>
       
@@ -90,7 +90,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Middleware
+              Command
             
           </span>
         </div>
@@ -228,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="../http/" class="md-nav__link">
-        HTTP
+        Http
       </a>
     </li>
   
@@ -270,6 +270,21 @@
 
   
   
+  
+    <li class="md-nav__item">
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
     
   
   
@@ -279,12 +294,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Middleware
+          Command
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Middleware
+        Command
       </a>
       
         
@@ -299,24 +314,79 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#http" class="md-nav__link">
-    HTTP 中间件
+  <a href="#_1" class="md-nav__link">
+    内置命令
   </a>
   
-    <nav class="md-nav" aria-label="HTTP 中间件">
+    <nav class="md-nav" aria-label="内置命令">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    基于函数的中间件
+  <a href="#index-cli" class="md-nav__link">
+    index-cli
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    基于类的中间件
+  <a href="#index-cli-uvicorn" class="md-nav__link">
+    index-cli uvicorn
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn" class="md-nav__link">
+    index-cli gunicorn
+  </a>
+  
+    <nav class="md-nav" aria-label="index-cli gunicorn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-start" class="md-nav__link">
+    index-cli gunicorn start
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-stop" class="md-nav__link">
+    index-cli gunicorn stop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-restart" class="md-nav__link">
+    index-cli gunicorn restart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-reload" class="md-nav__link">
+    index-cli gunicorn reload
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-incr" class="md-nav__link">
+    index-cli gunicorn incr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-decr" class="md-nav__link">
+    index-cli gunicorn decr
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -326,50 +396,23 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#websocket" class="md-nav__link">
-    WebSocket 中间件
+  <a href="#_2" class="md-nav__link">
+    自定义命令
   </a>
   
-    <nav class="md-nav" aria-label="WebSocket 中间件">
+    <nav class="md-nav" aria-label="自定义命令">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    基于函数的中间件
+    样例
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    基于类的中间件
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#asgi" class="md-nav__link">
-    ASGI 中间件
-  </a>
-  
-    <nav class="md-nav" aria-label="ASGI 中间件">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#index-py-asgi" class="md-nav__link">
-    附加给 Index-py 对象的 ASGI 中间件
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#asgi_1" class="md-nav__link">
-    附加到路由的 ASGI 中间件
+    引入第三方模块命令
   </a>
   
 </li>
@@ -383,51 +426,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../background/" class="md-nav__link">
-        Background Task
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../command/" class="md-nav__link">
-        Command
-      </a>
     </li>
   
 
@@ -455,24 +453,79 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#http" class="md-nav__link">
-    HTTP 中间件
+  <a href="#_1" class="md-nav__link">
+    内置命令
   </a>
   
-    <nav class="md-nav" aria-label="HTTP 中间件">
+    <nav class="md-nav" aria-label="内置命令">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    基于函数的中间件
+  <a href="#index-cli" class="md-nav__link">
+    index-cli
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    基于类的中间件
+  <a href="#index-cli-uvicorn" class="md-nav__link">
+    index-cli uvicorn
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn" class="md-nav__link">
+    index-cli gunicorn
+  </a>
+  
+    <nav class="md-nav" aria-label="index-cli gunicorn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-start" class="md-nav__link">
+    index-cli gunicorn start
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-stop" class="md-nav__link">
+    index-cli gunicorn stop
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-restart" class="md-nav__link">
+    index-cli gunicorn restart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-reload" class="md-nav__link">
+    index-cli gunicorn reload
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-incr" class="md-nav__link">
+    index-cli gunicorn incr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-gunicorn-decr" class="md-nav__link">
+    index-cli gunicorn decr
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -482,50 +535,23 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#websocket" class="md-nav__link">
-    WebSocket 中间件
+  <a href="#_2" class="md-nav__link">
+    自定义命令
   </a>
   
-    <nav class="md-nav" aria-label="WebSocket 中间件">
+    <nav class="md-nav" aria-label="自定义命令">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    基于函数的中间件
+    样例
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    基于类的中间件
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#asgi" class="md-nav__link">
-    ASGI 中间件
-  </a>
-  
-    <nav class="md-nav" aria-label="ASGI 中间件">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#index-py-asgi" class="md-nav__link">
-    附加给 Index-py 对象的 ASGI 中间件
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#asgi_1" class="md-nav__link">
-    附加到路由的 ASGI 中间件
+    引入第三方模块命令
   </a>
   
 </li>
@@ -547,129 +573,161 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/middleware.md" title="编辑此页" class="md-content__button md-icon">
+                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/command.md" title="编辑此页" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
                 
-                  <h1>Middleware</h1>
+                  <h1>Command</h1>
                 
-                <p>在了解 Index-py 的中间件注册方式之前，先看看本框架的中间件设计思路——每个中间件都是给 <code>endpoint</code> 的装饰器。事实上，Index-py 的中间都会在路由展开时以装饰器相同的方式层层包裹最终的 <code>endpoint</code>。如果你愿意手动为每个 <code>endpoint</code> 加上装饰器，那么你也可以不需要使用 Index-py 中间件。</p>
-<h2 id="http">HTTP 中间件</h2>
-<h3 id="_1">基于函数的中间件</h3>
-<p>编写一个 HTTP 中间件十分简单，就像编写一个装饰器函数一样。</p>
-<p>第一层函数只有一个参数，就是被包裹的可调用对象。第二层函数仅接受一个参数 <code>requesst</code>，函数返回值将作为此次请求的响应结果。</p>
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-        <span class="o">...</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-        <span class="o">...</span>
-        <span class="k">return</span> <span class="n">response</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</code></pre></div>
-
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p><code>endpoint</code> 是实际处理 HTTP 请求的可调用对象</p>
-</div>
-<h3 id="_2">基于类的中间件</h3>
-<p>基于类的中间件可以继承 <code>indexpy.http.MiddlewareMixin</code>，有以下三个方法可以重写。</p>
-<ul>
-<li>
-<p><code>process_request(request: Request)</code></p>
-<p>此方法在请求被层层传递时调用，可用于修改 <code>request</code> 对象以供后续处理使用。必须返回 <code>None</code>，否则返回值将作为最终结果并直接终止此次请求。</p>
-</li>
-<li>
-<p><code>process_response(request: Request, response: Response)</code></p>
-<p>此方法在请求被正常处理、已经返回响应对象后调用，它必须返回一个可用的响应对象（一般来说直接返回 <code>response</code> 即可）。</p>
-</li>
-<li>
-<p><code>process_exception(request: Request, exception: Exception)</code></p>
-<p>此方法在中间件之后的调用链路上出现异常时被调用。当其返回值为 <code>None</code> 时，异常会被原样抛出，否则其返回值将作为此次请求的响应值被返回。</p>
-</li>
-</ul>
+                <h2 id="_1">内置命令</h2>
+<p>Index-py 内置了一些命令方便使用。</p>
+<h3 id="index-cli">index-cli</h3>
+<p><code>index-cli</code> 是 <code>index</code> 内置的根命令，所有其余命令均为 <code>index-cli</code> 的子命令。</p>
+<h3 id="index-cli-uvicorn">index-cli uvicorn</h3>
 <div class="admonition notice">
 <p class="admonition-title">Notice</p>
-<p>以上函数无论你以何种方式定义，都会在加载时被改造成异步函数，但为了减少不必要的损耗，尽量使用 <code>async def</code> 去定义它们——除非在其中使用了含有阻塞 IO 的其他函数，例如 Django ORM, PonyORM 等。</p>
+<p>此命令需要安装 <a href="https://www.uvicorn.org/">uvicorn</a>。</p>
 </div>
-<p>通过指定 <code>Middleware</code> 中的 <code>mounts</code> 属性，可以为中间件指定子中间件。执行时会先执行父中间件，再执行子中间件。</p>
-<div class="admonition notice">
-<p class="admonition-title">Notice</p>
-<p>子中间件的执行顺序是从左到右。</p>
-</div>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">MiddlewareMixin</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli uvicorn --help
+Usage: index-cli uvicorn <span class="o">[</span>OPTIONS<span class="o">]</span> APPLICATION
 
+  use uvicorn to run Index.py application
 
-<span class="k">class</span> <span class="nc">ExampleChildMiddleware</span><span class="p">(</span><span class="n">MiddlewareMixin</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;enter first process request&quot;</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;enter last process response&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span>
-
-
-<span class="k">class</span> <span class="nc">Middleware</span><span class="p">(</span><span class="n">MiddlewareMixin</span><span class="p">):</span>
-    <span class="n">mounts</span> <span class="o">=</span> <span class="p">(</span><span class="n">ExampleChildMiddleware</span><span class="p">,)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;example base middleware request&quot;</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;example base middleware response&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">response</span>
+Options:
+  --bind TEXT                     <span class="o">[</span>default: <span class="m">127</span>.0.0.1:4190<span class="o">]</span>
+  --autoreload / --no-autoreload  <span class="o">[</span>default: True<span class="o">]</span>
+  --log-level <span class="o">[</span>critical<span class="p">|</span>error<span class="p">|</span>warning<span class="p">|</span>info<span class="p">|</span>debug<span class="o">]</span>
+                                  <span class="o">[</span>default: info<span class="o">]</span>
+  --help                          Show this message and exit.
 </code></pre></div>
-
-<h2 id="websocket">WebSocket 中间件</h2>
-<h3 id="_3">基于函数的中间件</h3>
-<p>编写一个 WebSocket 中间件与编写一个 HTTP 中间件很相似，不同的是 <code>websocket</code> 对应的 <code>endpoint</code> 对象不会有返回值。中间件的第二层函数也不需要返回结果，任何返回结果都是无效的。</p>
-<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">websocket</span><span class="p">):</span>
-        <span class="o">...</span>
-        <span class="k">await</span> <span class="n">endpoint</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span>
-        <span class="o">...</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</code></pre></div>
-
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p><code>endpoint</code> 是实际处理 WebSocket 请求的可调用对象</p>
-</div>
-<h3 id="_4">基于类的中间件</h3>
-<p>基于类的中间件可以继承 <code>indexpy.websocket.MiddlewareMixin</code>，有以下两个方法可以重写。</p>
+</td></tr></table>
+<p>此命令可以便捷的使用 Uvicorn 启动 Index-py 项目。例如：<code>index-cli uvicorn main:app</code>。</p>
+<p>有三个选项可以使用：</p>
 <ul>
 <li>
-<p><code>before_accept(websocket: WebSocket) -&gt; None</code></p>
-<p>此方法在 websocket 连接被接受前调用。</p>
+<p><code>--bind</code>：指定绑定的地址，例如："0.0.0.0:80"、"unix:./uvicorn.sock"</p>
 </li>
 <li>
-<p><code>after_close(websocket: WebSocket) -&gt; None</code></p>
-<p>此方法在 websocket 连接被关闭后调用。</p>
+<p><code>--autoreload / --no-autoreload</code>：指定 Python 文件变更时，是否自动重启服务。</p>
+</li>
+<li>
+<p><code>--log-level</code>：指定输出日志的最低等级。</p>
 </li>
 </ul>
-<p>同样的，<code>indexpy.websocket.MiddlewareMixin</code> 也有 <code>mounts</code> 属性用于挂在子中间件。</p>
-<h2 id="asgi">ASGI 中间件</h2>
-<p>在 Index-py 中，定义并使用 ASGI 中间件的方式有两种，一种是与 Starlette 相同的注册方式，将 ASGI 中间件注册给 Index-py 对象；另一种是将 ASGI 中间件注册给指定的 <a href="../route/#asgiroute"><code>ASGIRoute</code></a>。这两种 ASGI 中间件的定义方法不同，使用方法不同，作用范围也不同。</p>
-<h3 id="index-py-asgi">附加给 Index-py 对象的 ASGI 中间件</h3>
-<p>就像<a href="https://www.starlette.io/middleware/"> Starlette 文档</a>里的中间件一样，这一类的中间件定义，它的 <code>__init__</code> 签名必须为 <code>(self, app: ASGIApp, *args: Any, **kwargs: Any)</code>，<code>__call__</code> 必须是一个标准的 ASGI 接口。注册方式类似于如下代码：</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">starlette.middleware.gzip</span> <span class="kn">import</span> <span class="n">GZipMiddleware</span>
+<h3 id="index-cli-gunicorn">index-cli gunicorn</h3>
+<h4 id="index-cli-gunicorn-start"><code>index-cli gunicorn start</code></h4>
+<div class="admonition notice">
+<p class="admonition-title">Notice</p>
+<p>此命令需要安装 <a href="https://gunicorn.org/">gunicorn</a>。</p>
+</div>
+<p>通过 gunicorn 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 <code>uvicorn</code> 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。例如 <code>index-cli gunicorn start main:app</code>。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli gunicorn start --help
+Usage: index-cli gunicorn start [OPTIONS] APPLICATION
 
-<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
-<span class="n">app</span><span class="o">.</span><span class="n">add_middleware</span><span class="p">(</span><span class="n">GZipMiddleware</span><span class="p">,</span> <span class="n">minimum_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+  Run gunicorn
+
+Options:
+  --bind TEXT                     [default: 127.0.0.1:4190]
+  --autoreload / --no-autoreload  [default: False]
+  --log-level [critical|error|warning|info|debug]
+                                  [default: info]
+  -w, --workers INTEGER
+  -d, --daemon                    [default: False]
+  -c, --configuration FILE
+  --help                          Show this message and exit.
 </code></pre></div>
+</td></tr></table>
+<ul>
+<li>
+<p><code>--bind</code>：指定绑定的地址，例如："0.0.0.0:80"、"unix:./uvicorn.sock"</p>
+</li>
+<li>
+<p><code>--autoreload / --no-autoreload</code>：指定 Python 文件变更时，是否自动重启服务。</p>
+</li>
+<li>
+<p><code>--log-level</code>：指定输出日志的最低等级。</p>
+</li>
+<li>
+<p><code>--workers</code>：指定启动的进程数量，如果没有指定，它默认是 CPU 核心数。</p>
+</li>
+</ul>
+<p>如果使用了 <code>--daemon</code> 选项，Index-py 将在后台运行，运行日志写入项目根目录下的 <code>run.log</code> 里。</p>
+<p>假如你需要编写更多的 gunicorn 配置，可以使用 <code>-c</code> 来指定一个 <code>.py</code> 作为配置文件。具体配置详见 <a href="http://docs.gunicorn.org/en/latest/configure.html#configuration-file">gunicorn 文档</a>。</p>
+<h4 id="index-cli-gunicorn-stop"><code>index-cli gunicorn stop</code></h4>
+<p>当你使用 <code>index-cli gunicorn start</code> 在启动了 Index-py 时，可以在项目根目录下执行此命令去停止 Index。</p>
+<p>你想强行停止，而不等待现存的所有请求结束之后再停止，则可以使用 <code>--force-stop</code> 选项。</p>
+<h4 id="index-cli-gunicorn-restart"><code>index-cli gunicorn restart</code></h4>
+<p>当你使用 <code>index-cli gunicorn start</code> 在启动了 Index-py 时，可以在项目根目录下执行此命令去重启 Index。</p>
+<h4 id="index-cli-gunicorn-reload"><code>index-cli gunicorn reload</code></h4>
+<p>此命令可令 gunicorn 读取新的配置并重新创建 worker 进程。</p>
+<p>在没有配置 gunicorn 使用 prefork 模式的时候，此命令效果与 <code>restart</code> 相同。</p>
+<h4 id="index-cli-gunicorn-incr"><code>index-cli gunicorn incr</code></h4>
+<p>增加一个工作进程。</p>
+<h4 id="index-cli-gunicorn-decr"><code>index-cli gunicorn decr</code></h4>
+<p>减少一个工作进程。</p>
+<h2 id="_2">自定义命令</h2>
+<p>Index-py 使用了 <a href="https://palletsprojects.com/p/click/">click</a> 来提供命令支持。</p>
+<p>所以如果需要自定义命令，你只需要在项目根目录下新建一个 <code>commands.py</code> 文件，在其中按照 click 的规则编写自己的命令。</p>
+<h3 id="_3">样例</h3>
+<p>在项目根目录下的 <code>commands.py</code> 里写入以下内容</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.cli</span> <span class="kn">import</span> <span class="n">index_cli</span>
 
-<h3 id="asgi_1">附加到路由的 ASGI 中间件</h3>
-<p>这种方式就如同最上面所讲的，使用装饰器相同的编写方式。以下为一个简单的定义样例，注册方式请参考 <a href="../route/#_10">Routes 章节</a>。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.types</span> <span class="kn">import</span> <span class="n">ASGIApp</span>
 
-<span class="k">def</span> <span class="nf">middleware</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">ASGIApp</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">):</span>
-        <span class="o">...</span>
-        <span class="k">await</span> <span class="n">app</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">,</span> <span class="n">send</span><span class="p">)</span>
-        <span class="o">...</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
+<span class="nd">@index_cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;Custom command&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">only_print</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Custom command&#39;</span><span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
+<p>然后使用 <code>index-cli --help</code> 能看到命令已经被加入了</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli --help
+Usage: index-cli [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  only-print  Custom command
+</code></pre></div>
+</td></tr></table>
+<h3 id="_4">引入第三方模块命令</h3>
+<p>在需要使用其他人封装好的第三方模块命令时，只需要在上述的 <code>commands.py</code> 文件中编写 <code>import</code> 语句导入第三方模块中编写的命令模块即可。</p>
+<p>这一设计是为了让用户显式地知悉自己从哪些第三方模块里导入了命令。</p>
                 
               
               
@@ -687,7 +745,7 @@
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../event/" class="md-footer__link md-footer__link--prev" rel="prev">
+        <a href="../parameters/" class="md-footer__link md-footer__link--prev" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -696,31 +754,21 @@
               <span class="md-footer__direction">
                 上一页
               </span>
-              Lifespan
+              Parameters
             </div>
           </div>
         </a>
       
-      
-        <a href="../openapi/" class="md-footer__link md-footer__link--next" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                下一页
-              </span>
-              OpenAPI
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
       
     </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -745,19 +793,23 @@
     
   <div id="version-select">
     <div class="version-select">
-        Version: stable
+        Version: 0.17
     </div>
     
         <div class="version-select">
-            <a href="/master/middleware/">master</a>
+            <a href="/master/command/">master</a>
         </div>
     
         <div class="version-select">
-            <a href="/stable/middleware/">stable</a>
+            <a href="/stable/command/">stable</a>
         </div>
     
         <div class="version-select">
-            <a href="/0.16/middleware/">0.16</a>
+            <a href="/0.17/command/">0.17</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.16/command/">0.16</a>
         </div>
     
         <style>

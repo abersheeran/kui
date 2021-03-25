@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -228,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="../http/" class="md-nav__link">
-        HTTP
+        Http
       </a>
     </li>
   
@@ -306,38 +306,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
-        Middleware
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../background/" class="md-nav__link">
-        Background Task
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
       </a>
     </li>
   
@@ -413,7 +383,22 @@
 </ul>
 <h2 id="_1">注册事件</h2>
 <p>你可以用装饰器语法注册事件处理程序，注册普通函数或由 <code>async def</code> 定义的异步函数均可。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 
@@ -430,9 +415,27 @@
 <span class="k">def</span> <span class="nf">logger_on_shutdown</span><span class="p">():</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Called on shutdown&quot;</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>也可以在创建 <code>Index</code> 对象时作为参数传递，以下程序与上等价。</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 
@@ -452,6 +455,7 @@
     <span class="n">on_shutdown</span><span class="o">=</span><span class="p">[</span><span class="n">logger_on_shutdown</span><span class="p">],</span>
 <span class="p">)</span>
 </code></pre></div>
+</td></tr></table>
                 
               
               
@@ -484,13 +488,13 @@
         </a>
       
       
-        <a href="../middleware/" class="md-footer__link md-footer__link--next" rel="next">
+        <a href="../parameters/" class="md-footer__link md-footer__link--next" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 下一页
               </span>
-              Middleware
+              Parameters
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -503,6 +507,10 @@
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -536,6 +544,10 @@
     
         <div class="version-select">
             <a href="/stable/event/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.17/event/">0.17</a>
         </div>
     
         <div class="version-select">

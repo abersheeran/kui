@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
       
   
     
@@ -228,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="../http/" class="md-nav__link">
-        HTTP
+        Http
       </a>
     </li>
   
@@ -272,38 +272,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
-        Middleware
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
-        OpenAPI
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../background/" class="md-nav__link">
-        Background Task
+      <a href="../parameters/" class="md-nav__link">
+        Parameters
       </a>
     </li>
   
@@ -435,7 +405,14 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    例子
+    样例
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    引入第三方模块命令
   </a>
   
 </li>
@@ -567,7 +544,14 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    例子
+    样例
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    引入第三方模块命令
   </a>
   
 </li>
@@ -605,7 +589,17 @@
 <p class="admonition-title">Notice</p>
 <p>此命令需要安装 <a href="https://www.uvicorn.org/">uvicorn</a>。</p>
 </div>
-<div class="codehilite"><pre><span></span><code>❯ index-cli uvicorn --help
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli uvicorn --help
 Usage: index-cli uvicorn <span class="o">[</span>OPTIONS<span class="o">]</span> APPLICATION
 
   use uvicorn to run Index.py application
@@ -617,7 +611,7 @@ Options:
                                   <span class="o">[</span>default: info<span class="o">]</span>
   --help                          Show this message and exit.
 </code></pre></div>
-
+</td></tr></table>
 <p>此命令可以便捷的使用 Uvicorn 启动 Index-py 项目。例如：<code>index-cli uvicorn main:app</code>。</p>
 <p>有三个选项可以使用：</p>
 <ul>
@@ -638,22 +632,35 @@ Options:
 <p>此命令需要安装 <a href="https://gunicorn.org/">gunicorn</a>。</p>
 </div>
 <p>通过 gunicorn 启动服务、管理进程。可以粗浅的理解为能启动多个进程的 <code>uvicorn</code> 命令，只不过由 gunicorn 监视并管理各个 worker 进程的运行。例如 <code>index-cli gunicorn start main:app</code>。</p>
-<div class="codehilite"><pre><span></span><code><span class="err">❯</span><span class="w"> </span><span class="k">index</span><span class="o">-</span><span class="n">cli</span><span class="w"> </span><span class="n">gunicorn</span><span class="w"> </span><span class="k">start</span><span class="w"> </span><span class="o">--</span><span class="n">help</span><span class="w"></span>
-<span class="k">Usage</span><span class="err">:</span><span class="w"> </span><span class="k">index</span><span class="o">-</span><span class="n">cli</span><span class="w"> </span><span class="n">gunicorn</span><span class="w"> </span><span class="k">start</span><span class="w"> </span><span class="o">[</span><span class="n">OPTIONS</span><span class="o">]</span><span class="w"> </span><span class="n">APPLICATION</span><span class="w"></span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli gunicorn start --help
+Usage: index-cli gunicorn start [OPTIONS] APPLICATION
 
-<span class="w">  </span><span class="n">Run</span><span class="w"> </span><span class="n">gunicorn</span><span class="w"></span>
+  Run gunicorn
 
-<span class="nl">Options</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="o">--</span><span class="n">bind</span><span class="w"> </span><span class="nc">TEXT</span><span class="w">                     </span><span class="o">[</span><span class="n">default: 127.0.0.1:4190</span><span class="o">]</span><span class="w"></span>
-<span class="w">  </span><span class="o">--</span><span class="n">autoreload</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="o">--</span><span class="k">no</span><span class="o">-</span><span class="n">autoreload</span><span class="w">  </span><span class="o">[</span><span class="n">default: False</span><span class="o">]</span><span class="w"></span>
-<span class="w">  </span><span class="o">--</span><span class="nf">log</span><span class="o">-</span><span class="k">level</span><span class="w"> </span><span class="o">[</span><span class="n">critical|error|warning|info|debug</span><span class="o">]</span><span class="w"></span>
-<span class="w">                                  </span><span class="o">[</span><span class="n">default: info</span><span class="o">]</span><span class="w"></span>
-<span class="w">  </span><span class="o">-</span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">workers</span><span class="w"> </span><span class="k">INTEGER</span><span class="w"></span>
-<span class="w">  </span><span class="o">-</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">daemon</span><span class="w">                    </span><span class="o">[</span><span class="n">default: False</span><span class="o">]</span><span class="w"></span>
-<span class="w">  </span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">configuration</span><span class="w"> </span><span class="k">FILE</span><span class="w"></span>
-<span class="w">  </span><span class="c1">--help                          Show this message and exit.</span>
+Options:
+  --bind TEXT                     [default: 127.0.0.1:4190]
+  --autoreload / --no-autoreload  [default: False]
+  --log-level [critical|error|warning|info|debug]
+                                  [default: info]
+  -w, --workers INTEGER
+  -d, --daemon                    [default: False]
+  -c, --configuration FILE
+  --help                          Show this message and exit.
 </code></pre></div>
-
+</td></tr></table>
 <ul>
 <li>
 <p><code>--bind</code>：指定绑定的地址，例如："0.0.0.0:80"、"unix:./uvicorn.sock"</p>
@@ -685,26 +692,42 @@ Options:
 <h2 id="_2">自定义命令</h2>
 <p>Index-py 使用了 <a href="https://palletsprojects.com/p/click/">click</a> 来提供命令支持。</p>
 <p>所以如果需要自定义命令，你只需要在项目根目录下新建一个 <code>commands.py</code> 文件，在其中按照 click 的规则编写自己的命令。</p>
-<h3 id="_3">例子</h3>
+<h3 id="_3">样例</h3>
 <p>在项目根目录下的 <code>commands.py</code> 里写入以下内容</p>
-<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.cli</span> <span class="kn">import</span> <span class="n">index_cli</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy.cli</span> <span class="kn">import</span> <span class="n">index_cli</span>
 
 
 <span class="nd">@index_cli</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;Custom command&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">only_print</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Custom command&#39;</span><span class="p">)</span>
 </code></pre></div>
-
+</td></tr></table>
 <p>然后使用 <code>index-cli --help</code> 能看到命令已经被加入了</p>
-<div class="codehilite"><pre><span></span><code><span class="err">❯</span><span class="w"> </span><span class="k">index</span><span class="o">-</span><span class="n">cli</span><span class="w"> </span><span class="o">--</span><span class="n">help</span><span class="w"></span>
-<span class="k">Usage</span><span class="err">:</span><span class="w"> </span><span class="k">index</span><span class="o">-</span><span class="n">cli</span><span class="w"> </span><span class="o">[</span><span class="n">OPTIONS</span><span class="o">]</span><span class="w"> </span><span class="n">COMMAND</span><span class="w"> </span><span class="o">[</span><span class="n">ARGS</span><span class="o">]</span><span class="p">...</span><span class="w"></span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli --help
+Usage: index-cli [OPTIONS] COMMAND [ARGS]...
 
-<span class="nl">Options</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="o">--</span><span class="n">help</span><span class="w">  </span><span class="n">Show</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="k">exit</span><span class="p">.</span><span class="w"></span>
+Options:
+  --help  Show this message and exit.
 
-<span class="nl">Commands</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="k">only</span><span class="o">-</span><span class="k">print</span><span class="w">  </span><span class="n">Custom</span><span class="w"> </span><span class="n">command</span><span class="w"></span>
+Commands:
+  only-print  Custom command
 </code></pre></div>
+</td></tr></table>
+<h3 id="_4">引入第三方模块命令</h3>
+<p>在需要使用其他人封装好的第三方模块命令时，只需要在上述的 <code>commands.py</code> 文件中编写 <code>import</code> 语句导入第三方模块中编写的命令模块即可。</p>
+<p>这一设计是为了让用户显式地知悉自己从哪些第三方模块里导入了命令。</p>
                 
               
               
@@ -722,7 +745,7 @@ Options:
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../background/" class="md-footer__link md-footer__link--prev" rel="prev">
+        <a href="../parameters/" class="md-footer__link md-footer__link--prev" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -731,7 +754,7 @@ Options:
               <span class="md-footer__direction">
                 上一页
               </span>
-              Background Task
+              Parameters
             </div>
           </div>
         </a>
@@ -742,6 +765,10 @@ Options:
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -775,6 +802,10 @@ Options:
     
         <div class="version-select">
             <a href="/stable/command/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.17/command/">0.17</a>
         </div>
     
         <div class="version-select">
