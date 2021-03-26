@@ -23,7 +23,7 @@ index-cli = "indexpy.cli:index_cli"
 [tool.poetry.dependencies]
 python = "^3.7"
 
-baize = {version = "^0.6.0", extras = ["multipart"]}
+baize = {version = "^0.7.0", extras = ["multipart"]}
 click = {version = "^7.1.2", optional = true}
 pydantic = "^1.8"
 

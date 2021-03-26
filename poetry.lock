@@ -42,7 +42,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "baize"
-version = "0.6.0"
+version = "0.7.0"
 description = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ cli = ["click"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "815b9e700d980867b5087d991e69b4d0beafb7400e271e58ad26fecbdd6b9f67"
+content-hash = "b876e5a7b71438083cfa928e1f36dbd0d66c6b33100d06acef9a06d2f652324c"
 
 [metadata.files]
 appdirs = [
@@ -671,8 +671,8 @@ attrs = [
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 baize = [
-    {file = "baize-0.6.0-py3-none-any.whl", hash = "sha256:92e25902f2b32a9b99f168f2a0aea2eff222dbb6a909eb6173746b4da72bf847"},
-    {file = "baize-0.6.0.tar.gz", hash = "sha256:baa311a484a0b7dc9581df7a153c9ede9044277d5cfc7123b3cc684273d5f5e4"},
+    {file = "baize-0.7.0-py3-none-any.whl", hash = "sha256:b60d9af0b5100c1954bc2da8e7088d5d579d444c6baa941a30b11506b64d5d7a"},
+    {file = "baize-0.7.0.tar.gz", hash = "sha256:783bd00975c88e9c0515f036da915dbd45928c8edfa6001baab4535fb4d7eb20"},
 ]
 black = [
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},

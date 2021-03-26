@@ -4,7 +4,7 @@ import copy
 import functools
 import inspect
 from itertools import groupby
-from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Sequence, Tuple, Type, TypeVar, Union
 
 from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
@@ -114,7 +114,7 @@ def parse_signature(function: CallableObject) -> CallableObject:
 
 
 def _merge_multi_value(
-    items: List[Tuple[str, str]]
+    items: Sequence[Tuple[str, Any]]
 ) -> Dict[str, Union[str, List[str]]]:
     """
     If there are values with the same key value, they are merged into a List.
@@ -158,11 +158,7 @@ async def verify_params(handler: CallableObject) -> CallableObject:
                 )
 
             if "header" in parameters:
-                data.append(
-                    parameters["header"].parse_obj(
-                        _merge_multi_value(request.headers.items())
-                    )
-                )
+                data.append(parameters["header"].parse_obj(request.headers.items()))
 
             if "cookie" in parameters:
                 data.append(parameters["cookie"].parse_obj(request.cookies))
