@@ -158,7 +158,7 @@ async def verify_params(handler: CallableObject) -> CallableObject:
                 )
 
             if "header" in parameters:
-                data.append(parameters["header"].parse_obj(request.headers.items()))
+                data.append(parameters["header"].parse_obj(request.headers))
 
             if "cookie" in parameters:
                 data.append(parameters["cookie"].parse_obj(request.cookies))
