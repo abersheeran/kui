@@ -179,6 +179,18 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
 
         return Prefix(other) // self
 
+    def __add__(self, routes: typing.Sequence[BaseRoute]) -> Routes:
+        """
+        self + routes
+        """
+        return Routes(*self, *routes)
+
+    def __radd__(self, routes: typing.Sequence[BaseRoute]) -> Routes:
+        """
+        routes + self
+        """
+        return Routes(*routes, *self)
+
     def http_middleware(self, middleware: T) -> T:
         """
         append middleware in routes
