@@ -34,4 +34,23 @@ def test_url_for():
 
 
 def test_prefix():
-    pass
+    from indexpy.routing import Routes, HttpRoute
+
+    assert [
+        route.path
+        for route in (
+            "/auth"
+            // Routes(
+                HttpRoute("/login", test_prefix),
+                HttpRoute("/register", test_prefix),
+            )
+        )
+    ] == [
+        route.path
+        for route in (
+            Routes(
+                HttpRoute("/auth/login", test_prefix),
+                HttpRoute("/auth/register", test_prefix),
+            )
+        )
+    ]
