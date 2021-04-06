@@ -34,7 +34,7 @@ def test_url_for():
 
 
 def test_prefix():
-    from indexpy.routing import Routes, HttpRoute
+    from indexpy.routing import HttpRoute, Routes
 
     assert [
         route.path
