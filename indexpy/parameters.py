@@ -196,7 +196,7 @@ async def verify_params(handler: CallableObject) -> CallableObject:
 def auto_params(handler: CallableObject) -> CallableObject:
     if inspect.isclass(handler) and hasattr(handler, "__methods__"):
         handler = copy.deepcopy(handler)
-        for method in handler.__methods__:  # type: ignore
+        for method in map(lambda x: x.lower(), handler.__methods__):  # type: ignore
             callback = parse_signature(getattr(handler, method))
 
             @functools.wraps(callback)
