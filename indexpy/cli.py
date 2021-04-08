@@ -100,6 +100,7 @@ else:
 try:
     import gunicorn
 
+    assert gunicorn.version_info > (20, 1)
     del gunicorn
 except ImportError:
     pass
@@ -150,7 +151,7 @@ else:
         log_level: str,
     ):
         command = (
-            "gunicorn -k uvicorn.workers.UvicornWorker"
+            f"{sys.executable} -m gunicorn -k uvicorn.workers.UvicornWorker"
             + f" --bind {bind}"
             + f" --chdir {os.getcwd()}"
             + f" --workers {workers}"
