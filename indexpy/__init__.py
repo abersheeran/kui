@@ -15,6 +15,7 @@ from .responses import (
     ServerSentEvent,
     StreamResponse,
 )
+from .routing import HttpRoute, Routes, SocketRoute
 from .views import HttpView, SocketView, required_method
 
 __all__ = [
@@ -41,4 +42,7 @@ __all__ = [
     "required_method",
     "HttpView",
     "SocketView",
+    "Routes",
+    "HttpRoute",
+    "SocketRoute",
 ]

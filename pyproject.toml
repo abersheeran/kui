@@ -51,7 +51,7 @@ mkdocs-material = "*"
 profile = "black"
 
 [tool.coverage.run]
-omit = ["*/.venv/*", "*/tests/*"]
+omit = ["*/.venv/*", "*/tests/*", "indexpy/cli.py"]
 
 [tool.coverage.report]
 exclude_lines = [
