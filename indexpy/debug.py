@@ -192,7 +192,7 @@ class DebugMiddleware:
                     response = self.error_response(request, exc)
                 await response(scope, receive, send)
 
-            raise exc from None
+            raise exc
 
     def format_line(
         self, index: int, line: str, frame_lineno: int, frame_index: int

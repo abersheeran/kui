@@ -17,7 +17,6 @@ from typing import (
 )
 
 from baize.asgi import HTTPException, PlainTextResponse
-from baize.typing import JSONable
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
@@ -35,7 +34,7 @@ class RequestValidationError(Exception):
         return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
 
     @staticmethod
-    def schema() -> Dict[str, JSONable]:
+    def schema() -> Dict[str, Any]:
         return {
             "type": "array",
             "items": {
@@ -111,7 +110,7 @@ class ExceptionMiddleware:
                 if handler is None:
                     handler = self._lookup_exception_handler(exc)
                 if handler is None:
-                    raise exc from None
+                    raise exc
                 return await handler(exc)
 
         return wrapper

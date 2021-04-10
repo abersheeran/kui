@@ -97,7 +97,7 @@ class SocketView:
                     break
         except Exception as exc:
             close_code = 1011
-            raise exc from None
+            raise exc
         finally:
             await self.on_disconnect(close_code)
 
