@@ -115,13 +115,13 @@ def _file(
     stat_result: os.stat_result,
     filepath: str,
     download_name: str = None,
-    media_type: str = None,
+    content_type: str = None,
     headers: typing.Mapping[str, str] = None,
 ) -> HttpResponse:
     return FileResponse(
         filepath=filepath,
         headers=headers,
-        media_type=media_type,
+        content_type=content_type,
         download_name=download_name,
         stat_result=stat_result,
     )
