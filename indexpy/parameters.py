@@ -193,28 +193,25 @@ async def verify_params(handler: CallableObject) -> CallableObject:
     return functools.partial(handler, **kwargs)  # type: ignore
 
 
+def create_new_callback(callback: CallableObject) -> CallableObject:
+    @functools.wraps(callback)
+    async def callback_with_auto_bound_params(*args, **kwargs):
+        p = await verify_params(callback)
+        return await p(*args, **kwargs)
+
+    return callback_with_auto_bound_params  # type: ignore
+
+
 def auto_params(handler: CallableObject) -> CallableObject:
     if inspect.isclass(handler) and hasattr(handler, "__methods__"):
         handler = copy.deepcopy(handler)
         for method in map(lambda x: x.lower(), handler.__methods__):  # type: ignore
             callback = parse_signature(getattr(handler, method))
-
-            @functools.wraps(callback)
-            async def callback_with_auto_bound_params(*args, **kwargs):
-                p = await verify_params(callback)
-                return await p(*args, **kwargs)
-
-            setattr(handler, method, callback_with_auto_bound_params)
+            setattr(handler, method, create_new_callback(callback))
         return handler
     elif inspect.iscoroutinefunction(handler):
         handler = copy.deepcopy(handler)
         callback = parse_signature(handler)
-
-        @functools.wraps(callback)
-        async def callback_with_auto_bound_params(*args, **kwargs):
-            p = await verify_params(callback)
-            return await p(*args, **kwargs)
-
-        return callback_with_auto_bound_params  # type: ignore
+        return create_new_callback(callback)
     else:
         return handler
