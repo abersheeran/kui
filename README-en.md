@@ -46,6 +46,7 @@ An easy-to-use high-performance asynchronous web framework.
 
 Index.py implements the [ASGI3](http://asgi.readthedocs.io/en/latest/) interface and uses Radix Tree for route lookup. Is [one of the fastest Python web frameworks](https://github.com/the-benchmarker/web-frameworks). All features serve the rapid development of high-performance Web services.
 
+- Lots of correct type annotations
 - Flexible and efficient routing system
 - Visual API interface and online debugging
 - Support [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) and WebSocket
