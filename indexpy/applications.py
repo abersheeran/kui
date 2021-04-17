@@ -105,7 +105,7 @@ class Index:
         exc_class_or_status_code: Union[int, Type[Exception]],
         handler: Callable,
     ) -> None:
-        self.exception_middleware.add_exception_handler(
+        self.exception_contextmanager.add_exception_handler(
             exc_class_or_status_code, handler
         )
 

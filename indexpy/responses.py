@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-import os
 import typing
 from types import AsyncGeneratorType
 
