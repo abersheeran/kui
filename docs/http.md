@@ -447,23 +447,6 @@ def _send_event(
     headers: typing.Mapping[str, str] = None,
 ) -> HttpResponse:
     return SendEventResponse(generator, status, headers)
-
-
-@automatic.register(os.stat_result)
-def _file(
-    stat_result: os.stat_result,
-    filepath: str,
-    download_name: str = None,
-    media_type: str = None,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return FileResponse(
-        filepath=filepath,
-        headers=headers,
-        media_type=media_type,
-        download_name=download_name,
-        stat_result=stat_result,
-    )
 ```
 
 同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 `TypedDict`，Python 的 `Dict` 约束依旧很弱，但 dataclass 则有效得多），例如：
