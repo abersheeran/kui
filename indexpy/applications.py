@@ -16,9 +16,9 @@ from baize.asgi import Receive, Scope, Send
 from baize.utils import cached_property
 
 from .debug import DebugMiddleware
-from .exceptions import ExceptionMiddleware, HTTPException
-from .requests import HttpRequest, WebSocket, request, request_var, websocket_var
-from .responses import HttpResponse, convert_response
+from .exceptions import ExceptionContextManager, HTTPException
+from .requests import HttpRequest, WebSocket, request_var, websocket_var
+from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
 from .utils import State
@@ -87,8 +87,7 @@ class Index:
         self.templates = templates
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
-        self.exception_middleware = ExceptionMiddleware(exception_handlers)
-        self._impl_http = self.exception_middleware(self._impl_raw_http)
+        self.exception_contextmanager = ExceptionContextManager(exception_handlers)
         # We expect to be able to catch all code errors, so as an ASGI middleware.
         self.app_with_debug = DebugMiddleware(app=self.app, debug=self.debug)
 
@@ -139,26 +138,24 @@ class Index:
         request = self.factory_class.http(scope, receive, send)
         token = request_var.set(request)
         try:
-            response = await self._impl_http()
-            return await response(scope, receive, send)
+            async with self.exception_contextmanager:
+                try:
+                    path_params, handler = self.router.search("http", request["path"])
+                    request["path_params"] = path_params
+                    response = convert_response(await handler())
+                except NoMatchFound:
+                    raise HTTPException(404)
+                else:
+                    return await response(scope, receive, send)
         finally:
             request_var.reset(token)
-
-    async def _impl_raw_http(self) -> HttpResponse:
-        try:
-            path_params, handler = self.router.search("http", request["path"])
-            request["path_params"] = path_params
-        except NoMatchFound:
-            raise HTTPException(404)
-        else:
-            return convert_response(await handler())
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = self.factory_class.websocket(scope, receive, send)
         token = websocket_var.set(websocket)
         try:
             path_params, handler = self.router.search("websocket", websocket["path"])
-            scope["path_params"] = path_params
+            websocket["path_params"] = path_params
         except NoMatchFound:
             return await websocket.close(1001)
         else:

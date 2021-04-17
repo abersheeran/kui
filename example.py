@@ -1,8 +1,7 @@
 import asyncio
-import os
 from pathlib import Path as FilePath
 
-from indexpy import HTTPException, Index, Path, required_method
+from indexpy import HTTPException, Index, Path, required_method, FileResponse
 from indexpy.routing import HttpRoute
 
 
@@ -39,7 +38,7 @@ async def sources(filepath: str = Path()):
     """
     realpath = FilePath(".") / filepath.lstrip("./")
     try:
-        return os.stat(realpath), str(realpath)
+        return FileResponse(realpath)
     except FileNotFoundError:
         raise HTTPException(404)
 

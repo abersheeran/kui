@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import functools
 import json
 from http import HTTPStatus
+from types import TracebackType
 from typing import (
     Any,
     Awaitable,
@@ -14,12 +14,14 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 from baize.asgi import HTTPException, PlainTextResponse
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 
+from .requests import request
 from .responses import HttpResponse
 
 
@@ -67,7 +69,7 @@ ErrorView = Callable[[Error], Awaitable[HttpResponse]]
 View = Callable[[], Coroutine[None, None, HttpResponse]]
 
 
-class ExceptionMiddleware:
+class ExceptionContextManager:
     def __init__(
         self,
         handlers: Dict[Union[int, Type[Exception]], ErrorView] = None,
@@ -98,22 +100,33 @@ class ExceptionMiddleware:
                 return self._exception_handlers[cls]
         return None
 
-    def __call__(self, endpoint: View) -> View:
-        @functools.wraps(endpoint)
-        async def wrapper() -> HttpResponse:
-            try:
-                return await endpoint()
-            except Exception as exc:
-                handler = None
-                if isinstance(exc, HTTPException):
-                    handler = self._status_handlers.get(exc.status_code)
-                if handler is None:
-                    handler = self._lookup_exception_handler(exc)
-                if handler is None:
-                    raise exc
-                return await handler(exc)
+    async def __aenter__(self) -> ExceptionContextManager:
+        return self
 
-        return wrapper
+    @overload
+    async def __aexit__(self, exc_type: None, exc: None, tb: None) -> None:
+        pass
+
+    @overload
+    async def __aexit__(
+        self, exc_type: Type[BaseException], exc: BaseException, tb: TracebackType
+    ) -> bool:
+        pass
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if exc_type is None:
+            return None
+        else:
+            handler = None
+            if isinstance(exc, HTTPException):
+                handler = self._status_handlers.get(exc.status_code)
+            if handler is None:
+                handler = self._lookup_exception_handler(exc)
+            if handler is None:
+                return False
+            response = await handler(exc)
+            await response(request._scope, request._receive, request._send)
+            return True
 
     @staticmethod
     async def http_exception(exc: HTTPException) -> HttpResponse:
