@@ -108,20 +108,3 @@ def _send_event(
     headers: typing.Mapping[str, str] = None,
 ) -> HttpResponse:
     return SendEventResponse(generator, status, headers)
-
-
-@automatic.register(os.stat_result)
-def _file(
-    stat_result: os.stat_result,
-    filepath: str,
-    download_name: str = None,
-    content_type: str = None,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return FileResponse(
-        filepath=filepath,
-        headers=headers,
-        content_type=content_type,
-        download_name=download_name,
-        stat_result=stat_result,
-    )
