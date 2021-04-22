@@ -1,5 +1,5 @@
-from itertools import chain
 from functools import partial as _partial
+from itertools import chain
 
 
 class partial(_partial):
