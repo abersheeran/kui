@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.1">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.2">
     
     
       
@@ -20,7 +20,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.9299cb39.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6f955dcd.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
@@ -218,6 +218,7 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+      
         <label class="md-nav__link md-nav__link--active" for="__toc">
           Route
           <span class="md-nav__icon md-icon"></span>
@@ -229,6 +230,7 @@
       
         
 <nav class="md-nav md-nav--secondary" aria-label="目录">
+  
   
   
   
@@ -507,6 +509,7 @@
   
   
   
+  
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       目录
@@ -756,7 +759,10 @@
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
 <span class="kn">from</span> <span class="nn">indexpy.routing</span> <span class="kn">import</span> <span class="n">HttpRoute</span><span class="p">,</span> <span class="n">SocketRoute</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
@@ -770,8 +776,11 @@
     <span class="o">...</span>
 
 
-<span class="n">app</span><span class="o">.</span><span class="n">router</span> <span class="o">&lt;</span> <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-<span class="n">app</span><span class="o">.</span><span class="n">router</span> <span class="o">&lt;</span> <span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello_ws</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello_ws&quot;</span><span class="p">)</span>
+<span class="p">(</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">router</span>
+    <span class="o">&lt;&lt;</span> <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+    <span class="o">&lt;&lt;</span> <span class="n">SocketRoute</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">,</span> <span class="n">hello_ws</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello_ws&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
 </td></tr></table>
 <p>Index-py 的路由对象有两种，分别对应 Http 和 WebSocket 方法。</p>
@@ -990,7 +999,7 @@
 <span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">app1_routes</span>
 </code></pre></div>
 </td></tr></table>
-<p>并且 <code>&lt;&lt;</code> 的结果同样是 <code>Routes</code> 对象，这意味着你可以链式调用它，如下所示。</p>
+<p>并且 <code>&lt;&lt;</code> 的结果是运算左侧的 <code>Routes</code> 对象，这意味着你可以链式调用它，如下所示。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1000,6 +1009,18 @@
 
 
 <span class="n">Routes</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">app1_routes</span> <span class="o">&lt;&lt;</span> <span class="n">app2_routes</span>
+</code></pre></div>
+</td></tr></table>
+<p>你也可以合并两个 <code>Routes</code> 成为一个新的 <code>Routes</code> 对象，而不是将其中一个合并到另一个里。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">.app1.urls</span> <span class="kn">import</span> <span class="n">routes</span> <span class="k">as</span> <span class="n">app1_routes</span>
+<span class="kn">from</span> <span class="nn">.app2.urls</span> <span class="kn">import</span> <span class="n">routes</span> <span class="k">as</span> <span class="n">app2_routes</span>
+
+
+<span class="n">new_routes</span> <span class="o">=</span> <span class="n">app1_routes</span> <span class="o">+</span> <span class="n">app2_routes</span>
 </code></pre></div>
 </td></tr></table>
 <h3 id="_11">名称空间</h3>
@@ -1237,7 +1258,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "\u590d\u5236", "clipboard.copied": "\u5df2\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.7353b375.min.js"></script>
+      <script src="../assets/javascripts/bundle.4ea5477f.min.js"></script>
       
     
   <div id="version-select">
