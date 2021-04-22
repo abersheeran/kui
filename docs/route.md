@@ -47,8 +47,11 @@ async def hello_ws():
     ...
 
 
-app.router < HttpRoute("/hello", hello, name="hello")
-app.router < SocketRoute("/hello", hello_ws, name="hello_ws")
+(
+    app.router
+    << HttpRoute("/hello", hello, name="hello")
+    << SocketRoute("/hello", hello_ws, name="hello_ws")
+)
 ```
 
 Index-py 的路由对象有两种，分别对应 Http 和 WebSocket 方法。
@@ -229,7 +232,7 @@ from .app1.urls import routes as app1_routes
 routes = Routes(...) << app1_routes
 ```
 
-并且 `<<` 的结果同样是 `Routes` 对象，这意味着你可以链式调用它，如下所示。
+并且 `<<` 的结果是运算左侧的 `Routes` 对象，这意味着你可以链式调用它，如下所示。
 
 ```python
 from .app1.urls import routes as app1_routes
@@ -237,6 +240,16 @@ from .app2.urls import routes as app2_routes
 
 
 Routes() << app1_routes << app2_routes
+```
+
+你也可以合并两个 `Routes` 成为一个新的 `Routes` 对象，而不是将其中一个合并到另一个里。
+
+```python
+from .app1.urls import routes as app1_routes
+from .app2.urls import routes as app2_routes
+
+
+new_routes = app1_routes + app2_routes
 ```
 
 ### 名称空间

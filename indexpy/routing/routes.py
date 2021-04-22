@@ -6,6 +6,7 @@ import operator
 import os
 import sys
 import typing
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import reduce, update_wrapper
 from pathlib import Path
@@ -18,6 +19,7 @@ else:
 from baize.routing import compile_path
 
 from indexpy.parameters import auto_params
+from indexpy.utils import F
 
 from .tree import RadixTree, RouteType
 
@@ -42,7 +44,7 @@ class BaseRoute:
     endpoint: typing.Any
     name: typing.Optional[str] = ""
 
-    def extend_middlewares(self, routes: typing.Sequence["BaseRoute"]) -> None:
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         raise NotImplementedError()
 
     def _extend_middlewares(
@@ -58,8 +60,7 @@ class BaseRoute:
         return self
 
     def __post_init__(self) -> None:
-        if not self.path.startswith("/"):
-            raise ValueError("Route path must start with '/'")
+        assert self.path.startswith("/"), "Route path must start with '/'"
         if self.name == "":
             self.name = self.endpoint.__name__
         self.endpoint = auto_params(self.endpoint)
@@ -67,13 +68,13 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
-    def extend_middlewares(self, routes: typing.Sequence[BaseRoute]) -> None:
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))
 
 
 @dataclass
 class SocketRoute(BaseRoute):
-    def extend_middlewares(self, routes: typing.Sequence[BaseRoute]) -> None:
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_socket_middlewares", []))
 
 
@@ -82,35 +83,31 @@ _RRMixinSelf = typing.TypeVar("_RRMixinSelf", bound="RouteRegisterMixin")
 
 class RouteRegisterMixin(abc.ABC):
     @abc.abstractmethod
-    def __lt__(self: _RRMixinSelf, route: BaseRoute) -> _RRMixinSelf:
-        """
-        self < route
-        """
+    def append(self: _RRMixinSelf, route: BaseRoute) -> _RRMixinSelf:
         raise NotImplementedError
 
     def __lshift__(
-        self: _RRMixinSelf, routes: typing.Sequence[BaseRoute]
+        self: _RRMixinSelf, other: typing.Union[BaseRoute, typing.Iterable[BaseRoute]]
     ) -> _RRMixinSelf:
         """
         self << routes
         """
-        if not isinstance(routes, typing.Sequence):
+        if isinstance(other, BaseRoute):
+            return self.append(other)
+        elif isinstance(other, typing.Iterable):
+            for route in other:
+                if isinstance(route, BaseRoute):
+                    if getattr(other, "namespace", None) is not None and route.name:
+                        route.name = getattr(other, "namespace") + ":" + route.name
+                    route.extend_middlewares(other)
+                self << route
+            return self
+        else:
             return NotImplemented
-
-        for route in routes:  # type: BaseRoute
-            if isinstance(routes, Routes):
-                route.extend_middlewares(routes)
-
-            if getattr(routes, "namespace", None) and route.name:
-                route.name = getattr(routes, "namespace") + ":" + route.name
-
-            self < route
-
-        return self
 
     def http(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
-        shortcut for `self < HttpRoute(path, endpoint, name, method)`
+        shortcut for `self << HttpRoute(path, endpoint, name, method)`
 
         example:
             @routes.http("/path", name="endpoint-name")
@@ -118,14 +115,14 @@ class RouteRegisterMixin(abc.ABC):
         """
 
         def register(endpoint: T) -> T:
-            self < HttpRoute(path, endpoint, name)
+            self << HttpRoute(path, endpoint, name)
             return endpoint
 
         return register
 
     def websocket(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
         """
-        shortcut for `self < SocketRoute(path, endpoint, name)`
+        shortcut for `self << SocketRoute(path, endpoint, name)`
 
         example:
             @routes.websocket("/path", name="endpoint-name")
@@ -133,7 +130,7 @@ class RouteRegisterMixin(abc.ABC):
         """
 
         def register(endpoint: T) -> T:
-            self < SocketRoute(path, endpoint, name)
+            self << SocketRoute(path, endpoint, name)
             return endpoint
 
         return register
@@ -142,10 +139,10 @@ class RouteRegisterMixin(abc.ABC):
 _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="Routes")
 
 
-class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
+class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
-        *iterable: typing.Union[BaseRoute, typing.Sequence[BaseRoute]],
+        *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
         namespace: str = "",
         http_middlewares: typing.Sequence[typing.Any] = [],
         socket_middlewares: typing.Sequence[typing.Any] = [],
@@ -155,18 +152,12 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         self._http_middlewares = list(http_middlewares)
         self._socket_middlewares = list(socket_middlewares)
         for route in iterable:
-            if not isinstance(route, typing.Sequence):
-                self < route
-            else:
-                self << route
+            self << route
 
-    def __getitem__(self, key: int) -> BaseRoute:  # type: ignore
-        return self._list[key]
+    def __iter__(self) -> typing.Iterator[BaseRoute]:
+        return iter(self._list)
 
-    def __len__(self) -> int:
-        return len(self._list)
-
-    def __lt__(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
+    def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
         self._list.append(route)
         return self
 
@@ -179,13 +170,13 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
 
         return Prefix(other) // self
 
-    def __add__(self, routes: typing.Sequence[BaseRoute]) -> Routes:
+    def __add__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
         self + routes
         """
         return Routes(*self, *routes)
 
-    def __radd__(self, routes: typing.Sequence[BaseRoute]) -> Routes:
+    def __radd__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
         routes + self
         """
@@ -224,7 +215,7 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         return middleware
 
 
-_RouteSequence = typing.TypeVar("_RouteSequence", bound=typing.Sequence[BaseRoute])
+_RouteSequence = typing.TypeVar("_RouteSequence", bound=typing.Iterable[BaseRoute])
 
 
 class Prefix(str):
@@ -235,19 +226,19 @@ class Prefix(str):
         """
         self // other
         """
-        if not isinstance(other, typing.Sequence):
+        if not isinstance(other, typing.Iterable):
             return NotImplemented
-
-        for route in other:
+        result = deepcopy(other)
+        for route in result:
             route.path = self + route.path
-        return typing.cast(_RouteSequence, other)
+        return typing.cast(_RouteSequence, result)
 
 
 _RouterSelf = typing.TypeVar("_RouterSelf", bound="Router")
 
 
 class Router(RouteRegisterMixin):
-    def __init__(self, routes: typing.Sequence[BaseRoute]) -> None:
+    def __init__(self, routes: typing.Iterable[BaseRoute]) -> None:
         self.http_tree = RadixTree()
         self.websocket_tree = RadixTree()
 
@@ -256,7 +247,7 @@ class Router(RouteRegisterMixin):
 
         self << routes
 
-    def __lt__(self: _RouterSelf, route: BaseRoute) -> _RouterSelf:
+    def append(self: _RouterSelf, route: BaseRoute) -> _RouterSelf:
         if isinstance(route, HttpRoute):
             radix_tree = self.http_tree
             routes = self.http_routes
@@ -323,7 +314,7 @@ class Router(RouteRegisterMixin):
         )
 
 
-class FileRoutes(typing.Sequence[BaseRoute], RouteRegisterMixin):
+class FileRoutes(typing.Iterable[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
         module_name: str,
@@ -361,41 +352,35 @@ class FileRoutes(typing.Sequence[BaseRoute], RouteRegisterMixin):
             serve_socket = getattr(module, "Socket", None)
 
             if get_response:
-                get_response = reduce(
-                    lambda handler, middleware: update_wrapper(
-                        middleware(handler), handler
-                    ),
-                    (
-                        middleware
-                        for middleware in (
-                            getattr(module, "HTTPMiddleware", None)
-                            for module in (
-                                importlib.import_module(".".join(path_list[:deep]))
-                                for deep in range(len(path_list), 0, -1)
-                            )
-                        )
-                        if middleware is not None
-                    ),
-                    get_response,
+                get_response = (
+                    range(len(path_list), 0, -1)
+                    | F(map, lambda deep: ".".join(path_list[:deep]))
+                    | F(map, lambda module_name: importlib.import_module(module_name))
+                    | F(map, lambda module: getattr(module, "HTTPMiddleware", None))
+                    | F(
+                        reduce,
+                        lambda handler, middleware: update_wrapper(
+                            middleware(handler), handler
+                        ),
+                        ...,
+                        get_response,
+                    )
                 )
-                self < HttpRoute(url_path, get_response, url_name)
+                self << HttpRoute(url_path, get_response, url_name)
 
             if serve_socket:
-                serve_socket = reduce(
-                    lambda handler, middleware: update_wrapper(
-                        middleware(handler), handler
-                    ),
-                    (
-                        middleware
-                        for middleware in (
-                            getattr(module, "HTTPMiddleware", None)
-                            for module in (
-                                importlib.import_module(".".join(path_list[:deep]))
-                                for deep in range(len(path_list), 0, -1)
-                            )
-                        )
-                        if middleware is not None
-                    ),
-                    serve_socket,
+                serve_socket = (
+                    range(len(path_list), 0, -1)
+                    | F(map, lambda deep: ".".join(path_list[:deep]))
+                    | F(map, lambda module_name: importlib.import_module(module_name))
+                    | F(map, lambda module: getattr(module, "SocketMiddleware", None))
+                    | F(
+                        reduce,
+                        lambda handler, middleware: update_wrapper(
+                            middleware(handler), handler
+                        ),
+                        ...,
+                        serve_socket,
+                    )
                 )
-                self < SocketRoute(url_path, serve_socket, url_name)
+                self << SocketRoute(url_path, serve_socket, url_name)

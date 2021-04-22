@@ -57,6 +57,7 @@ omit = ["*/.venv/*", "*/tests/*", "indexpy/cli.py"]
 exclude_lines = [
   "pragma: no cover",
   "raise NotImplementedError",
+  "return NotImplemented",
   "if False:",
   "assert False",
   "if typing.TYPE_CHECKING:",

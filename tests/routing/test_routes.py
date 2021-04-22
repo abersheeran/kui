@@ -19,6 +19,32 @@ def test_decorator():
     )
 
 
+def test_lshift():
+    from indexpy import Index
+    from indexpy.routing import HttpRoute, SocketRoute
+
+    app = Index()
+
+    async def hello():
+        return "hello world"
+
+    async def hello_ws():
+        ...
+
+    (
+        app.router
+        << HttpRoute("/hello", hello, name="hello")
+        << SocketRoute("/hello", hello_ws, name="hello_ws")
+    )
+
+    assert app.router.search("http", "/hello")[0] == {}
+    assert app.router.search("websocket", "/hello")[0] == {}
+
+    assert app.router.search("http", "/hello") != (
+        app.router.search("websocket", "/hello")
+    )
+
+
 def test_url_for():
     from indexpy import Index
 
@@ -54,3 +80,34 @@ def test_prefix():
             )
         )
     ]
+
+
+def test_routes_operator():
+    from indexpy import HttpRoute, Routes
+
+    routes = Routes()
+    routes << Routes(
+        HttpRoute("/login", test_routes_operator),
+        HttpRoute("/register", test_routes_operator),
+    )
+    routes == Routes(
+        HttpRoute("/login", test_routes_operator),
+        HttpRoute("/register", test_routes_operator),
+    )
+
+    (
+        routes
+        << Routes(
+            HttpRoute("/login", test_routes_operator),
+            HttpRoute("/register", test_routes_operator),
+        )
+    ) == (
+        Routes(
+            HttpRoute("/login", test_routes_operator),
+            HttpRoute("/register", test_routes_operator),
+        )
+        + Routes(
+            HttpRoute("/login", test_routes_operator),
+            HttpRoute("/register", test_routes_operator),
+        )
+    )
