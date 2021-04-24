@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import typing
+from pathlib import PurePath
 from types import AsyncGeneratorType
 
 from baize.asgi import (
@@ -107,3 +108,8 @@ def _send_event(
     headers: typing.Mapping[str, str] = None,
 ) -> HttpResponse:
     return SendEventResponse(generator, status, headers)
+
+
+@automatic.register(PurePath)
+def _file(filepath: PurePath, download_name: str = None):
+    return FileResponse(str(filepath), download_name=download_name)
