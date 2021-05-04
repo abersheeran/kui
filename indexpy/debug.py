@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import os
 import html
 import inspect
-import pprint
 import traceback
 import typing
 
@@ -12,6 +12,7 @@ if typing.TYPE_CHECKING:
     from .requests import HttpRequest
     from .responses import HttpResponse
 
+from .utils import F
 from .responses import HTMLResponse, PlainTextResponse
 
 STYLES = """
@@ -21,11 +22,15 @@ STYLES = """
 * {
     box-sizing: border-box;
 }
+body {
+    margin: 0 auto;
+    padding: 0 3em;
+    min-height: calc(100vh - 3em + 1px);
+}
 code, pre, .code {
     font-family: "Biaodian Pro Sans CNS", Menlo, Consolas, Courier, "Zhuyin Heiti", "Han Heiti", monospace;
 }
 .traceback-container {
-    max-width: 1000px;
     border: 3px solid #038BB8;
 }
 .traceback-title {
@@ -85,8 +90,9 @@ table {
     border-spacing: 0px;
     padding: 0 10px;
 }
-table pre {
+table pre.value {
     white-space: pre-wrap;
+    word-break: break-all;
 }
 table tr {
     max-width: 100%;
@@ -108,11 +114,14 @@ TEMPLATE = """
         </style>
         <title>Index.py Debugger</title>
     </head>
-    <body style="max-width: 1000px; margin: 0 auto 3em; min-height: calc(100vh - 3em + 1px);">
+    <body>
         <h1>500 Server Error</h1>
         <div class="traceback-container">
             <p class="traceback-title">{error}</p>
             <div>{exc_html}</div>
+        </div>
+        <div class="environs">
+            {environs}
         </div>
     </body>
 </html>
@@ -132,12 +141,46 @@ FRAME_TEMPLATE = """
 </div>
 """
 
-VARS = """
-<table>
+LOCAL_VARS = """
+<table class="local-vars">
     <tbody>
         {vars}
     </tbody>
 </table>
+"""
+
+ENVIRON_VARS = """
+<table class="environ-vars">
+    <thead>
+        <tr>
+            <td>
+                <strong>OS Environ</strong>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <strong>Name</strong>
+            </td>
+            <td>
+                <strong>Value</strong>
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        {vars}
+    </tbody>
+</table>
+"""
+
+VAR = """
+<tr>
+    <td>
+        <pre class="name">{name}</pre>
+    </td>
+    <td>
+        <pre class="value">{value}</pre>
+    </td>
+</tr>
 """
 
 LINE = """
@@ -213,15 +256,14 @@ class DebugMiddleware:
             for index, line in enumerate(frame.code_context or [])
         )
         _locals_vars = frame.frame.f_locals.copy()
-        locals_var = VARS.format(
-            vars="".join(
-                [
-                    "<tr><td><pre>{name}</pre></td><td><pre>{value}</pre></td></tr>".format(
-                        name=name, value=html.escape(pprint.pformat(value))
-                    )
+        locals_var = LOCAL_VARS.format(
+            vars=(
+                (
+                    VAR.format(name=name, value=value | F(format) | F(html.escape))
                     for name, value in _locals_vars.items()
-                ]
-            ),
+                )
+                | F("".join)
+            )
         )
 
         values = {
@@ -250,10 +292,18 @@ class DebugMiddleware:
                 exc_html += self.generate_frame_html(frame, is_collapsed)
                 is_collapsed = True
 
-        # escape error class and text
         error = f"{html.escape(traceback_obj.exc_type.__name__)}: {html.escape(str(traceback_obj))}"
 
-        return TEMPLATE.format(styles=STYLES, error=error, exc_html=exc_html)
+        environs = ENVIRON_VARS.format(
+            vars="".join(
+                VAR.format(name=name, value=html.escape(value))
+                for name, value in os.environ.items()
+            )
+        )
+
+        return TEMPLATE.format(
+            styles=STYLES, error=error, exc_html=exc_html, environs=environs
+        )
 
     def generate_plain_text(self, exc: Exception) -> str:
         return "".join(traceback.format_tb(exc.__traceback__))
