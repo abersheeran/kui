@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Generator, List, Optional, Pattern, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple, Union
 from typing import cast as typing_cast
 
 from baize.routing import Convertor, PathConvertor, compile_path
@@ -43,9 +43,9 @@ def append(
     if point.next_nodes is None:
         point.next_nodes = list()
 
-    matched = re.match(r"{\w+}", path_format)
+    matched = re.match(r"^{\w+}", path_format)
 
-    if path_format[0] == "{" and matched is not None:
+    if matched is not None:
         length = matched.end()
         param_name = path_format[1 : length - 1]
         convertor = param_convertors[param_name]
@@ -68,62 +68,35 @@ def append(
         new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
         point.next_nodes.insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
+    else:
+        length = path_format.find("{")
+        if length == -1:
+            length = len(path_format)
 
-    length = path_format.find("{")
-    if length == -1:
-        length = len(path_format)
+        for node in (
+            node for node in point.next_nodes or () if node.re_pattern is None
+        ):
+            prefix = find_common_prefix(node.characters, path_format[:length])
+            if prefix == "":
+                continue
+            if node.characters == prefix:
+                return append(node, path_format[len(prefix) :], param_convertors)
 
-    for node in (node for node in point.next_nodes or () if node.re_pattern is None):
-        prefix = find_common_prefix(node.characters, path_format[:length])
-        if prefix == "":
-            continue
-        if node.characters == prefix:
-            return append(node, path_format[len(prefix) :], param_convertors)
+            node_index = point.next_nodes.index(node)
+            prefix_node = TreeNode(characters=prefix, next_nodes=[])
+            point.next_nodes[node_index] = prefix_node
+            node.characters = node.characters[len(prefix) :]
+            typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, node)
+            if path_format[:length] == prefix:
+                return append(prefix_node, path_format[length:], param_convertors)
 
-        node_index = point.next_nodes.index(node)
-        prefix_node = TreeNode(characters=prefix, next_nodes=[])
-        point.next_nodes[node_index] = prefix_node
-        node.characters = node.characters[len(prefix) :]
-        typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, node)
-        if path_format[:length] == prefix:
-            return append(prefix_node, path_format[length:], param_convertors)
+            new_node = TreeNode(characters=path_format[len(prefix) : length])
+            typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, new_node)
+            return append(new_node, path_format[length:], param_convertors)
 
-        new_node = TreeNode(characters=path_format[len(prefix) : length])
-        typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, new_node)
+        new_node = TreeNode(characters=path_format[:length])
+        point.next_nodes.insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
-
-    new_node = TreeNode(characters=path_format[:length])
-    point.next_nodes.insert(0, new_node)
-    return append(new_node, path_format[length:], param_convertors)
-
-
-def search(point: TreeNode, path: str) -> Optional[Tuple[Dict[str, str], TreeNode]]:
-    stack: List[Tuple[str, TreeNode]] = [(path, point)]
-    params: Dict[str, Any] = {}
-
-    while stack:
-        path, point = stack.pop()
-
-        if point.re_pattern is None:
-            length = len(point.characters)
-            if path[:length] != point.characters:
-                continue
-        else:
-            none_or_match = re.match(point.re_pattern, path)
-            if none_or_match is None:
-                continue
-            result = none_or_match.group()
-            params[point.characters] = result
-            length = len(result)
-
-        path = path[length:]
-        if not path:  # path == "", found the first suitable route
-            return params, point
-
-        for node in point.next_nodes or ():
-            stack.append((path, node))
-
-    return None
 
 
 class RadixTree:
@@ -144,25 +117,45 @@ class RadixTree:
     def search(
         self, path: str
     ) -> Union[Tuple[Dict[str, Any], Callable], Tuple[None, None]]:
-        result = search(self.root, path)
-        if result is None:
-            return None, None
+        stack: List[Tuple[str, TreeNode]] = [(path, self.root)]
+        params: Dict[str, Any] = {}
 
-        raw_params, node = result
-        if node.route is None:
-            return None, None
+        while stack:
+            path, point = stack.pop()
 
-        _, param_convertors, endpoint = node.route
-        return (
-            {
-                name: param_convertors[name].to_python(value)
-                for name, value in raw_params.items()
-                if name in param_convertors
-            },
-            endpoint,
-        )
+            if point.re_pattern is None:
+                if not path.startswith(point.characters):
+                    continue
+                length = len(point.characters)
+            else:
+                none_or_match = re.match(point.re_pattern, path)
+                if none_or_match is None:
+                    continue
+                result = none_or_match.group()
+                params[point.characters] = result
+                length = len(result)
 
-    def iterator(self) -> Generator[Tuple[str, Callable], None, None]:
+            if length == len(path):  # found the first suitable route
+                if point.route is None:
+                    return None, None
+                else:
+                    _, param_convertors, endpoint = point.route
+                    return (
+                        {
+                            name: param_convertors[name].to_python(value)
+                            for name, value in params.items()
+                            if name in param_convertors
+                        },
+                        endpoint,
+                    )
+
+            path = path[length:]
+            for node in point.next_nodes or ():
+                stack.append((path, node))
+
+        return None, None
+
+    def iterator(self) -> Iterator[Tuple[str, Callable]]:
         stack: List[TreeNode] = [self.root]
 
         while stack:
