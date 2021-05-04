@@ -341,11 +341,11 @@ async def return_stream(scope, receive, send):
 
 异步传输文件作为响应。
 
-与其他响应类型相比，采用不同的参数进行实例化：
+与其他响应类型相比，它采用不同的参数进行实例化：
 
 * `filepath` - 要流式传输的文件的文件路径。
 * `headers` - 与 `Response` 中的 `headers` 参数的作用相同。
-* `media_type` - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。
+* `content_type` - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。
 * `download_name` - 如果设置此参数，它将包含在响应的 `Content-Disposition` 中。
 * `stat_result` - 接受一个 `os.stat_result` 对象，如果不传入则会自动使用 `os.stat(filepath)` 的结果。
 
