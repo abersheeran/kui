@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path as FilePath
 
-from indexpy import HTTPException, Index, Path, required_method, FileResponse
+from indexpy import FileResponse, HTTPException, Index, Path, required_method
 from indexpy.routing import HttpRoute
 
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import os
 import html
 import inspect
+import os
 import traceback
 import typing
 
@@ -12,8 +12,8 @@ if typing.TYPE_CHECKING:
     from .requests import HttpRequest
     from .responses import HttpResponse
 
-from .utils import F
 from .responses import HTMLResponse, PlainTextResponse
+from .utils import F
 
 STYLES = """
 :root {
