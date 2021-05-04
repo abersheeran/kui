@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
 from .utils import State, bind_contextvar
 
 
-class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping):
+class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]):
     def __setitem__(self, name: str, value: typing.Any) -> None:
         self._scope[name] = value
 
