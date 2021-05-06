@@ -20,6 +20,7 @@ from baize.routing import compile_path
 
 from indexpy.parameters import auto_params
 from indexpy.utils import F
+from indexpy.views import required_method
 
 from .tree import RadixTree, RouteType
 
@@ -79,6 +80,114 @@ class SocketRoute(BaseRoute):
 
 
 _RRMixinSelf = typing.TypeVar("_RRMixinSelf", bound="RouteRegisterMixin")
+View = typing.TypeVar("View", bound=typing.Callable)
+
+
+class HttpRegister:
+    def __init__(self, routes: RouteRegisterMixin) -> None:
+        self.__routes = routes
+
+    def __call__(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, endpoint, name)`
+
+        example:
+        ```python
+            @routes.http("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, endpoint, name)
+            return endpoint
+
+        return register
+
+    def get(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, required_method("GET")(endpoint), name)`
+
+        example:
+        ```python
+            @routes.http.get("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, required_method("GET")(endpoint), name)
+            return endpoint
+
+        return register
+
+    def post(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, required_method("POST")(endpoint), name)`
+
+        example:
+        ```python
+            @routes.http.post("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, required_method("POST")(endpoint), name)
+            return endpoint
+
+        return register
+
+    def put(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, required_method("PUT")(endpoint), name)`
+
+        example:
+        ```python
+            @routes.http.put("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, required_method("PUT")(endpoint), name)
+            return endpoint
+
+        return register
+
+    def patch(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, required_method("PATCH")(endpoint), name)`
+
+        example:
+        ```python
+            @routes.http.patch("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, required_method("PATCH")(endpoint), name)
+            return endpoint
+
+        return register
+
+    def delete(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
+        """
+        shortcut for `self << HttpRoute(path, required_method("DELETE")(endpoint), name)`
+
+        example:
+        ```python
+            @routes.http.delete("/path", name="endpoint-name")
+            class Endpoint(HttpView): ...
+        ```
+        """
+
+        def register(endpoint: View) -> View:
+            self.__routes << HttpRoute(path, required_method("DELETE")(endpoint), name)
+            return endpoint
+
+        return register
 
 
 class RouteRegisterMixin(abc.ABC):
@@ -105,31 +214,31 @@ class RouteRegisterMixin(abc.ABC):
         else:
             return NotImplemented
 
-    def http(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
+    @property
+    def http(self) -> HttpRegister:
         """
-        shortcut for `self << HttpRoute(path, endpoint, name, method)`
+        shortcut for `self << HttpRoute(path, endpoint, name)`
 
         example:
+        ```python
             @routes.http("/path", name="endpoint-name")
             class Endpoint(HttpView): ...
+        ```
         """
+        return HttpRegister(self)
 
-        def register(endpoint: T) -> T:
-            self << HttpRoute(path, endpoint, name)
-            return endpoint
-
-        return register
-
-    def websocket(self, path: str, *, name: str = "") -> typing.Callable[[T], T]:
+    def websocket(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
         shortcut for `self << SocketRoute(path, endpoint, name)`
 
         example:
+        ```python
             @routes.websocket("/path", name="endpoint-name")
             class Endpoint(SocketView): ...
+        ```
         """
 
-        def register(endpoint: T) -> T:
+        def register(endpoint: View) -> View:
             self << SocketRoute(path, endpoint, name)
             return endpoint
 

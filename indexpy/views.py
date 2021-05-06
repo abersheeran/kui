@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import json
 import sys
+from inspect import isfunction
 from typing import TYPE_CHECKING, Any, Callable, Generator, List, TypeVar
 from typing import cast as typing_cast
 
@@ -27,6 +28,9 @@ def required_method(method: str) -> Callable[[FuncView], FuncView]:
     headers = {"Allow": ", ".join(allow_methods)}
 
     def decorator(function: FuncView) -> FuncView:
+        if not isfunction(function):
+            raise TypeError("`required_method` can only decorate function")
+
         @functools.wraps(function)
         async def wrapper(*args, **kwargs):
             if request.method in allow_methods:

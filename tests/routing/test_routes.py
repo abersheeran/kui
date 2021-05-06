@@ -19,6 +19,38 @@ def test_decorator():
     )
 
 
+def test_decorator_required_method():
+    from indexpy import Index
+
+    app = Index()
+
+    @app.router.http.get("/get")
+    async def need_get():
+        ...
+
+    @app.router.http.post("/post")
+    async def need_post():
+        ...
+
+    @app.router.http.put("/put")
+    async def need_put():
+        ...
+
+    @app.router.http.patch("/patch")
+    async def need_patch():
+        ...
+
+    @app.router.http.delete("/delete")
+    async def need_delete():
+        ...
+
+    assert app.router.search("http", "/get")[1].__name__ == "need_get"
+    assert app.router.search("http", "/post")[1].__name__ == "need_post"
+    assert app.router.search("http", "/put")[1].__name__ == "need_put"
+    assert app.router.search("http", "/patch")[1].__name__ == "need_patch"
+    assert app.router.search("http", "/delete")[1].__name__ == "need_delete"
+
+
 def test_lshift():
     from indexpy import Index
     from indexpy.routing import HttpRoute, SocketRoute

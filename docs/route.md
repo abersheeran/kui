@@ -112,6 +112,68 @@ def socket_middleware(endpoint):
 !!! tip ""
     WebSocket 处理器一定会返回 `None`，所以你可以省略 `return` 语句，就像上例一样。
 
+### 限定请求方法
+
+!!! notice ""
+    指定支持 GET 方法时，HEAD 将被自动允许。
+
+!!! tip ""
+    限定了请求方法后，OPTIONS 的请求将被自动处理。反之，你需要自行处理 OPTIONS 方法。
+
+在使用装饰器注册时可以直接限定该路由能够接受的请求方法，目前仅支持以下五种 HTTP 方法的限定。如果你没有指定，则默认允许所有请求方法。
+
+```python
+from indexpy import Index
+
+app = Index()
+
+
+@app.router.http.get("/get")
+async def need_get():
+    ...
+
+
+@app.router.http.post("/post")
+async def need_post():
+    ...
+
+
+@app.router.http.put("/put")
+async def need_put():
+    ...
+
+
+@app.router.http.patch("/patch")
+async def need_patch():
+    ...
+
+
+@app.router.http.delete("/delete")
+async def need_delete():
+    ...
+```
+
+如上代码是在内部使用了 `required_method` 装饰器来达到限定请求方法的目的，你也可以选择手动注册装饰器，这将能限定更多种类的请求。代码样例如下：
+
+```python
+from indexpy import Index, required_method
+
+app = Index()
+
+
+@app.router.http("/get")
+@required_method("GET")
+async def need_get():
+    ...
+
+
+@app.router.http("/connect")
+@required_method("CONNECT")
+async def need_connect():
+    ...
+```
+
+
 ### 列表式注册
 
 Index-py 同样支持类似于 Django 的列表式写法：
