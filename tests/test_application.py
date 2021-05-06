@@ -23,6 +23,9 @@ async def test_example_application():
         with pytest.raises(Exception, match="For get debug page."):
             response = await client.get("/exc")
 
+        with pytest.raises(Exception, match="For get debug page."):
+            response = await client.get("/exc", headers={"accept": "text/plain;"})
+
         response = await client.get("/sources/README.md")
         assert response.status_code == 200
         assert response.content == (Path(".").absolute() / "README.md").read_bytes()
