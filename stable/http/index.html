@@ -1305,11 +1305,11 @@
 </td></tr></table>
 <h3 id="fileresponse">FileResponse</h3>
 <p>异步传输文件作为响应。</p>
-<p>与其他响应类型相比，采用不同的参数进行实例化：</p>
+<p>与其他响应类型相比，它采用不同的参数进行实例化：</p>
 <ul>
 <li><code>filepath</code> - 要流式传输的文件的文件路径。</li>
 <li><code>headers</code> - 与 <code>Response</code> 中的 <code>headers</code> 参数的作用相同。</li>
-<li><code>media_type</code> - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。</li>
+<li><code>content_type</code> - 文件的 MIME 媒体类型。如果未设置，则文件名或路径将用于推断媒体类型。</li>
 <li><code>download_name</code> - 如果设置此参数，它将包含在响应的 <code>Content-Disposition</code> 中。</li>
 <li><code>stat_result</code> - 接受一个 <code>os.stat_result</code> 对象，如果不传入则会自动使用 <code>os.stat(filepath)</code> 的结果。</li>
 </ul>
@@ -1690,6 +1690,10 @@
     
         <div class="version-select">
             <a href="/stable/http/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.18/http/">0.18</a>
         </div>
     
         <div class="version-select">
