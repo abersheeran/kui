@@ -283,13 +283,13 @@ class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
         """
         self + routes
         """
-        return Routes(*self, *routes)
+        return Routes() << self << routes
 
     def __radd__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
         routes + self
         """
-        return Routes(*routes, *self)
+        return Routes() << routes << self
 
     def http_middleware(self, middleware: T) -> T:
         """
