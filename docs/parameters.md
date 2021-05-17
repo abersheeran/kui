@@ -77,7 +77,7 @@ class ClassHandler(HTTPView):
 
 ## 标注请求参数
 
-先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为值，`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：`?page_num=1&page_size=10`。
+先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为值，`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：`?page_num=1&page_size=10`。如果你使用 `Query(10)` 则意味着这个值可以不由前端传递，其默认值为 `10`。
 
 ```python
 from indexpy import Query
@@ -107,7 +107,21 @@ async def getlist(query: PageQuery = Query(exclusive=True)):
     ...
 ```
 
-或者你需要直接读取 `request` 的某些属性。如下例所示，当 `code` 被调用时会自动读取 `request.user` 并作为函数参数传入函数中。
+同样的，你还可以使用其他对象来获取对应部分的参数，以下是对照：
+
+- `Path`：`request.path_params`
+- `Query`：`request.query_params`
+- `Header`：`request.headers`
+- `Cookie`：`request.cookies`
+- `Body`：`await request.data()`
+
+通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。
+
+---
+
+或许有时候你需要直接读取 `request` 的某些属性，以配合中间件使用。
+
+如下例所示，当 `code` 被调用时会自动读取 `request.user` 并作为函数参数传入函数中。
 
 ```python
 from indexpy import Request

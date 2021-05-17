@@ -152,7 +152,7 @@ class Cat(HttpView):
 
 - `await request.json`：将 `body` 作为 JSON 字符串解析并返回结果。
 
-- `await request.data`：将 `body` 根据 `content_type` 提供的信息进行解析并返回。
+- `await request.data()`：将 `body` 根据 `content_type` 提供的信息进行解析并返回。
 
 你也可以使用 `async for` 语法将 `body` 作为一个 `bytes` 流进行读取：
 
@@ -411,45 +411,30 @@ async def message():
 !!! tip ""
     如果需要手动把函数的返回值转换为 `HttpResponse` 对象，则可以使用 `indexpy.responses.convert_response`。
 
-Index-py 内置了一些处理函数用于处理常见的类型：
+在下例中，视图函数返回一个 `dict` 对象，但客户端接收到的却是一个 JSON。这是因为 Index-py 内置了一些处理函数用于处理常见的类型：
+
+- `dict | tuple | list`：自动转换为 `JSONResponse`
+- `str | bytes`：自动转换为 `PlainTextResponse`
+- `typing.AsyncGeneratorType`：自动转换为 `SendEventResponse`
+- `pathlib.PurePath`：自动转换为 `FileResponse`
 
 ```python
-@automatic.register(type(None))
-def _none(ret: typing.Type[None]) -> typing.NoReturn:
-    raise TypeError(
-        "Get 'None'. Maybe you need to add a return statement to the function."
-    )
-
-
-@automatic.register(tuple)
-@automatic.register(list)
-@automatic.register(dict)
-def _json(
-    body, status: int = 200, headers: typing.Mapping[str, str] = None
-) -> HttpResponse:
-    return JSONResponse(body, status, headers)
-
-
-@automatic.register(str)
-@automatic.register(bytes)
-def _plain_text(
-    body: typing.Union[str, bytes],
-    status: int = 200,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return PlainTextResponse(body, status, headers)
-
-
-@automatic.register(AsyncGeneratorType)
-def _send_event(
-    generator: typing.AsyncGenerator[ServerSentEvent, None],
-    status: int = 200,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return SendEventResponse(generator, status, headers)
+async def get_detail():
+    return {"key": "value"}
 ```
 
-同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 `TypedDict`，Python 的 `Dict` 约束依旧很弱，但 dataclass 则有效得多），例如：
+你还可以返回多个值来自定义 HTTP Status 和 HTTP Headers：
+
+```python
+async def not_found():
+    return {"message": "Not found"}, 404
+
+
+async def no_content():
+    return "", 301, {"location": "https://index-py.aber.sh"}
+```
+
+同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 `TypedDict`，Python 的 `Dict` 约束依旧很弱，但 dataclass 则有效得多），如下例所示，当你在视图函数里返回 `Error` 对象时，它都会自动被转换为 `JSONResponse`，并且状态码默认为 `400`：
 
 ```python
 from dataclasses import dataclass, asdict

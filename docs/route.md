@@ -2,7 +2,7 @@ Index-py 的路由基于 [Radix Tree](https://en.wikipedia.org/wiki/Radix_tree)�
 
 ## 基本用法
 
-### 装饰器注册
+### 使用装饰器
 
 与 bottle/flask 之类的框架一样，Index-py 支持使用装饰器注册路由。下面的例子里，`name` 是路由名称，这在反向查找路由时会起到作用。
 
@@ -74,15 +74,15 @@ SocketRoute(path: str, endpoint: Any, name: Optional[str] = "")
 
 使用路由对象注册的可调用对象 endpoint，Index-py 会自动为其注册一个装饰器，用于处理部分参数的自动校验和注入。
 
-#### 装饰器
+#### 中间件
 
 你可以对路由对象使用装饰器，这将会作用到 endpoint 上，但与直接对 endpoint 使用装饰器不同的是它作用于 Index-py 预处理后的 endpoint 上。
 
 !!! tip ""
-    你可以在这样注册的装饰器里捕捉到可能抛出的参数校验异常。
+    你可以在注册的中间件里捕捉到可能抛出的参数校验异常。
 
 !!! notice ""
-    在本文档其他地方，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。
+    在本文档里，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。
 
 ```python
 HttpRoute(...) @ decorator
@@ -93,24 +93,6 @@ HttpRoute(...) @ decorator
 ```python
 HttpRoute(...) @ decorator1 @ decorator2 @ decorator3
 ```
-
-以下是两个定义装饰器的模板，只需要填充进你自己的代码，就可以使用了。
-
-```python
-def http_middleware(endpoint):
-    async def wrapper():
-        return await endpoint()
-    return wrapper
-
-
-def socket_middleware(endpoint):
-    async def wrapper():
-        await endpoint()
-    return wrapper
-```
-
-!!! tip ""
-    WebSocket 处理器一定会返回 `None`，所以你可以省略 `return` 语句，就像上例一样。
 
 ### 限定请求方法
 
@@ -326,7 +308,7 @@ routes = Routes(..., namespace="namespace")
 
     在使用 `app.router.url_for` 时不要忘记加上路由所在的名称空间前缀。
 
-### 注册中间件
+### 中间件注册
 
 通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例：
 
@@ -387,6 +369,10 @@ routes = Routes(
     HttpRoute("/auth/register", ...),
 )
 ```
+
+!!! Warning "注意事项"
+
+    在使用 `routes = "prefix" // Routes(......)` 之后再调用 `@routes.http` 等方法注册路由时，并不会给后续的路由自动加上 `"prefix"` 前缀。你应当在一个路由分组内所有路由注册完成之后，再进行 `"prefix" // routes` 运算。
 
 ## 路由冲突
 
