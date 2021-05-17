@@ -438,6 +438,7 @@ async def no_content():
 
 ```python
 from dataclasses import dataclass, asdict
+from typing import Mapping
 
 from indexpy.http.responses import automatic, HttpResponse, JSONResponse
 
@@ -450,8 +451,8 @@ class Error:
 
 
 @automatic.register(Error)
-def _error_json(error: Error, status: int = 400) -> HttpResponse:
-    return JSONResponse(asdict(error), status)
+def _error_json(error: Error, status: int = 400, headers: Mapping[str, str] = None) -> HttpResponse:
+    return JSONResponse(asdict(error), status, headers)
 ```
 
 或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`：
