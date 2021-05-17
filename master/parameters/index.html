@@ -565,7 +565,7 @@
 </code></pre></div>
 </td></tr></table>
 <h2 id="_2">标注请求参数</h2>
-<p>先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 <code>int</code> 类型，在给予它们 <code>Query(...)</code> 作为值，<code>Query</code> 代表它们将会从 <code>request.query_params</code> 中读取值，<code>...</code> 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：<code>?page_num=1&amp;page_size=10</code>。</p>
+<p>先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 <code>int</code> 类型，在给予它们 <code>Query(...)</code> 作为值，<code>Query</code> 代表它们将会从 <code>request.query_params</code> 中读取值，<code>...</code> 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：<code>?page_num=1&amp;page_size=10</code>。如果你使用 <code>Query(10)</code> 则意味着这个值可以不由前端传递，其默认值为 <code>10</code>。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -609,7 +609,18 @@
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
-<p>或者你需要直接读取 <code>request</code> 的某些属性。如下例所示，当 <code>code</code> 被调用时会自动读取 <code>request.user</code> 并作为函数参数传入函数中。</p>
+<p>同样的，你还可以使用其他对象来获取对应部分的参数，以下是对照：</p>
+<ul>
+<li><code>Path</code>：<code>request.path_params</code></li>
+<li><code>Query</code>：<code>request.query_params</code></li>
+<li><code>Header</code>：<code>request.headers</code></li>
+<li><code>Cookie</code>：<code>request.cookies</code></li>
+<li><code>Body</code>：<code>await request.data()</code></li>
+</ul>
+<p>通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。</p>
+<hr />
+<p>或许有时候你需要直接读取 <code>request</code> 的某些属性，以配合中间件使用。</p>
+<p>如下例所示，当 <code>code</code> 被调用时会自动读取 <code>request.user</code> 并作为函数参数传入函数中。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>

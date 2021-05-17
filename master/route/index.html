@@ -250,7 +250,7 @@
         
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    装饰器注册
+    使用装饰器
   </a>
   
 </li>
@@ -272,7 +272,7 @@
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
-    装饰器
+    中间件
   </a>
   
 </li>
@@ -339,7 +339,7 @@
         
           <li class="md-nav__item">
   <a href="#_13" class="md-nav__link">
-    注册中间件
+    中间件注册
   </a>
   
 </li>
@@ -533,7 +533,7 @@
         
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    装饰器注册
+    使用装饰器
   </a>
   
 </li>
@@ -555,7 +555,7 @@
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
-    装饰器
+    中间件
   </a>
   
 </li>
@@ -622,7 +622,7 @@
         
           <li class="md-nav__item">
   <a href="#_13" class="md-nav__link">
-    注册中间件
+    中间件注册
   </a>
   
 </li>
@@ -721,7 +721,7 @@
                 
                 <p>Index-py 的路由基于 <a href="https://en.wikipedia.org/wiki/Radix_tree">Radix Tree</a>。</p>
 <h2 id="_1">基本用法</h2>
-<h3 id="_2">装饰器注册</h3>
+<h3 id="_2">使用装饰器</h3>
 <p>与 bottle/flask 之类的框架一样，Index-py 支持使用装饰器注册路由。下面的例子里，<code>name</code> 是路由名称，这在反向查找路由时会起到作用。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -822,13 +822,13 @@
 </ul>
 <h4 id="_4">预处理</h4>
 <p>使用路由对象注册的可调用对象 endpoint，Index-py 会自动为其注册一个装饰器，用于处理部分参数的自动校验和注入。</p>
-<h4 id="_5">装饰器</h4>
+<h4 id="_5">中间件</h4>
 <p>你可以对路由对象使用装饰器，这将会作用到 endpoint 上，但与直接对 endpoint 使用装饰器不同的是它作用于 Index-py 预处理后的 endpoint 上。</p>
 <div class="admonition tip">
-<p>你可以在这样注册的装饰器里捕捉到可能抛出的参数校验异常。</p>
+<p>你可以在注册的中间件里捕捉到可能抛出的参数校验异常。</p>
 </div>
 <div class="admonition notice">
-<p>在本文档其他地方，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。</p>
+<p>在本文档里，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。</p>
 </div>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">@</span> <span class="n">decorator</span>
 </code></pre></div>
@@ -837,31 +837,6 @@
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">@</span> <span class="n">decorator1</span> <span class="o">@</span> <span class="n">decorator2</span> <span class="o">@</span> <span class="n">decorator3</span>
 </code></pre></div>
 </td></tr></table>
-<p>以下是两个定义装饰器的模板，只需要填充进你自己的代码，就可以使用了。</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">http_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">():</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-
-
-<span class="k">def</span> <span class="nf">socket_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">():</span>
-        <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</code></pre></div>
-</td></tr></table>
-<div class="admonition tip">
-<p>WebSocket 处理器一定会返回 <code>None</code>，所以你可以省略 <code>return</code> 语句，就像上例一样。</p>
-</div>
 <h3 id="_6">限定请求方法</h3>
 <div class="admonition notice">
 <p>指定支持 GET 方法时，HEAD 将被自动允许。</p>
@@ -1142,7 +1117,7 @@
 <div class="admonition notice">
 <p>在使用 <code>app.router.url_for</code> 时不要忘记加上路由所在的名称空间前缀。</p>
 </div>
-<h3 id="_13">注册中间件</h3>
+<h3 id="_13">中间件注册</h3>
 <p>通过 <code>Routes</code> 你可以为整组路由注册一个或多个中间件。以下为简单的样例：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -1231,6 +1206,10 @@
 <span class="p">)</span>
 </code></pre></div>
 </td></tr></table>
+<div class="admonition warning">
+<p class="admonition-title">注意事项</p>
+<p>在使用 <code>routes = "prefix" // Routes(......)</code> 之后再调用 <code>@routes.http</code> 等方法注册路由时，并不会给后续的路由自动加上 <code>"prefix"</code> 前缀。你应当在一个路由分组内所有路由注册完成之后，再进行 <code>"prefix" // routes</code> 运算。</p>
+</div>
 <h2 id="_15">路由冲突</h2>
 <div class="admonition notice">
 <p>如果你没有遇到路由问题，请跳过本章节。</p>

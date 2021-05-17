@@ -1090,7 +1090,7 @@
 <p><code>await request.json</code>：将 <code>body</code> 作为 JSON 字符串解析并返回结果。</p>
 </li>
 <li>
-<p><code>await request.data</code>：将 <code>body</code> 根据 <code>content_type</code> 提供的信息进行解析并返回。</p>
+<p><code>await request.data()</code>：将 <code>body</code> 根据 <code>content_type</code> 提供的信息进行解析并返回。</p>
 </li>
 </ul>
 <p>你也可以使用 <code>async for</code> 语法将 <code>body</code> 作为一个 <code>bytes</code> 流进行读取：</p>
@@ -1382,75 +1382,33 @@
 <div class="admonition tip">
 <p>如果需要手动把函数的返回值转换为 <code>HttpResponse</code> 对象，则可以使用 <code>indexpy.responses.convert_response</code>。</p>
 </div>
-<p>Index-py 内置了一些处理函数用于处理常见的类型：</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
-<span class="k">def</span> <span class="nf">_none</span><span class="p">(</span><span class="n">ret</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">NoReturn</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-        <span class="s2">&quot;Get &#39;None&#39;. Maybe you need to add a return statement to the function.&quot;</span>
-    <span class="p">)</span>
-
-
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">tuple</span><span class="p">)</span>
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_json</span><span class="p">(</span>
-    <span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-
-
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_plain_text</span><span class="p">(</span>
-    <span class="n">body</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
-    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
-    <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
-
-
-<span class="nd">@automatic</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">AsyncGeneratorType</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_send_event</span><span class="p">(</span>
-    <span class="n">generator</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">ServerSentEvent</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
-    <span class="n">headers</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HttpResponse</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">SendEventResponse</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+<p>在下例中，视图函数返回一个 <code>dict</code> 对象，但客户端接收到的却是一个 JSON。这是因为 Index-py 内置了一些处理函数用于处理常见的类型：</p>
+<ul>
+<li><code>dict | tuple | list</code>：自动转换为 <code>JSONResponse</code></li>
+<li><code>str | bytes</code>：自动转换为 <code>PlainTextResponse</code></li>
+<li><code>typing.AsyncGeneratorType</code>：自动转换为 <code>SendEventResponse</code></li>
+<li><code>pathlib.PurePath</code>：自动转换为 <code>FileResponse</code></li>
+</ul>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">get_detail</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">}</span>
 </code></pre></div>
 </td></tr></table>
-<p>同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 <code>TypedDict</code>，Python 的 <code>Dict</code> 约束依旧很弱，但 dataclass 则有效得多），例如：</p>
+<p>你还可以返回多个值来自定义 HTTP Status 和 HTTP Headers：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">not_found</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Not found&quot;</span><span class="p">},</span> <span class="mi">404</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">no_content</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">301</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="s2">&quot;https://index-py.aber.sh&quot;</span><span class="p">}</span>
+</code></pre></div>
+</td></tr></table>
+<p>同样的，你也可以自定义响应值的简化写法以统一项目的响应规范（哪怕有 <code>TypedDict</code>，Python 的 <code>Dict</code> 约束依旧很弱，但 dataclass 则有效得多），如下例所示，当你在视图函数里返回 <code>Error</code> 对象时，它都会自动被转换为 <code>JSONResponse</code>，并且状态码默认为 <code>400</code>：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
