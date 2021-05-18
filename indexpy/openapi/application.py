@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
-from indexpy.responses import HTMLResponse, HttpResponse, JSONResponse
+from indexpy.responses import HTMLResponse, HttpResponse, JSONResponse, RedirectResponse
 from indexpy.routing import HttpRoute, Routes
 from indexpy.utils import F
 
@@ -175,6 +175,9 @@ class OpenAPI:
 
     @property
     def routes(self) -> Routes:
+        async def redirect():
+            return RedirectResponse(str(request.url) + "/")
+
         async def template() -> HttpResponse:
             return HTMLResponse(self.html_template)
 
@@ -190,7 +193,7 @@ class OpenAPI:
             return JSONResponse(openapi)
 
         return Routes(
-            HttpRoute("", template),
+            HttpRoute("", redirect),
             HttpRoute("/", template),
             HttpRoute("/docs", docs),
             HttpRoute("/json", json),
