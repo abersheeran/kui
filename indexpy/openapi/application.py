@@ -190,8 +190,8 @@ class OpenAPI:
             return JSONResponse(openapi)
 
         return Routes(
-            HttpRoute("", template), 
-            HttpRoute("/", template), 
-            HttpRoute("/docs", docs), 
+            HttpRoute("", template),
+            HttpRoute("/", template),
+            HttpRoute("/docs", docs),
             HttpRoute("/json", json),
         )
