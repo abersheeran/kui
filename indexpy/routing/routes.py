@@ -61,7 +61,9 @@ class BaseRoute:
         return self
 
     def __post_init__(self) -> None:
-        assert self.path.startswith("/"), "Route path must start with '/'"
+        assert (
+            self.path.startswith("/") or self.path == ""
+        ), "Route path must start with '/'"
         if self.name == "":
             self.name = self.endpoint.__name__
         self.endpoint = auto_params(self.endpoint)
@@ -206,7 +208,7 @@ class RouteRegisterMixin(abc.ABC):
         elif isinstance(other, typing.Iterable):
             for route in other:
                 if isinstance(route, BaseRoute):
-                    if getattr(other, "namespace", None) is not None and route.name:
+                    if getattr(other, "namespace", "") and route.name:
                         route.name = getattr(other, "namespace") + ":" + route.name
                     route.extend_middlewares(other)
                 self << route
@@ -367,6 +369,9 @@ class Router(RouteRegisterMixin):
             raise TypeError(
                 f"Need type: `HttpRoute` or `SocketRoute`, but got type: {type(route)}"
             )
+
+        if route.path == "":
+            route.path = "/"
 
         if route.name in routes:
             raise ValueError(f"Duplicate route name: {route.name}")
