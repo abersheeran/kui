@@ -181,17 +181,17 @@ class OpenAPI:
         async def docs() -> HttpResponse:
             warnings.warn(
                 "/docs endpoint is going to be deprecated in next major version since it's misleading, please use /json instead",
-                PendingDeprecationWarning
+                PendingDeprecationWarning,
             )
             return await json()
-        
+
         async def json() -> HttpResponse:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
-        
+
         return Routes(
             HttpRoute("", template), 
             HttpRoute("/", template), 
             HttpRoute("/docs", docs), 
-            HttpRoute("/json", json)
+            HttpRoute("/json", json),
         )
