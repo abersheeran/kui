@@ -189,5 +189,4 @@ class OpenAPI:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
         
-        return sorted(self.items)
         return Routes(HttpRoute("", template), HttpRoute("/", template), HttpRoute("/docs", docs), HttpRoute("/json", json))
