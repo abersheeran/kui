@@ -3,6 +3,7 @@ from __future__ import annotations
 import operator
 import sys
 import typing
+import warnings
 from copy import deepcopy
 from functools import reduce
 from pathlib import Path
@@ -178,7 +179,15 @@ class OpenAPI:
             return HTMLResponse(self.html_template)
 
         async def docs() -> HttpResponse:
+            warnings.warn(
+                "/docs endpoint is going to be deprecated in next major version since it's misleading, please use /json instead",
+                 PendingDeprecationWarning
+            )
+            return await json()
+        
+        async def json() -> HttpResponse:
             openapi = self.create_docs(request)
             return JSONResponse(openapi)
-
-        return Routes(HttpRoute("/", template), HttpRoute("/docs", docs))
+        
+        return sorted(self.items)
+        return Routes(HttpRoute("", template), HttpRoute("/", template), HttpRoute("/docs", docs), HttpRoute("/json", json))
