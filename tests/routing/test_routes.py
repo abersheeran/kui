@@ -143,3 +143,15 @@ def test_routes_operator():
             HttpRoute("/register", test_routes_operator),
         )
     )
+
+
+def test_empty_path():
+    from indexpy import Index
+
+    app = Index()
+
+    @app.router.http("")
+    async def homepage():
+        return "homepage"
+
+    assert app.router.search("http", "/")[0] == {}
