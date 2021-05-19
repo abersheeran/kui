@@ -21,8 +21,7 @@ class FileRoutes(typing.Iterable[BaseRoute]):
         self.namespace = namespace
         self._list: typing.List[typing.Union[HttpRoute, SocketRoute]] = []
 
-        for relpath in dirpath.glob("**/*.py") | F(
-            map,
+        for relpath in map(
             lambda pypath: (
                 dirpath
                 | F(pypath.relative_to)
@@ -30,6 +29,7 @@ class FileRoutes(typing.Iterable[BaseRoute]):
                 | F(lambda path: path.replace("\\", "/"))
                 | F(lambda path: path[:-3])
             ),
+            dirpath.glob("**/*.py"),
         ):
             url_path = (
                 ("/" + relpath)
