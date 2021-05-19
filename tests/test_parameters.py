@@ -95,11 +95,21 @@ async def test_request():
     app0 = Index()
 
     @app0.router.http.get("/")
-    async def homepage(app: str = Request()):
+    async def homepage(app: Index = Request()):
         return str(app is app0)
 
     @app0.router.http.get("/no-attr")
-    async def no_attr(application: str = Request()):
+    async def no_attr(application: Index = Request()):
+        return str(application is app0)
+
+    @app0.router.http.get("/no-attr-with-default")
+    async def no_attr_with_default(application: Index = Request(app0)):
+        return str(application is app0)
+
+    @app0.router.http.get("/no-attr-with-default-factory")
+    async def no_attr_with_default_factory(
+        application: Index = Request(default_factory=lambda: app0),
+    ):
         return str(application is app0)
 
     async with TestClient(app0) as client:
@@ -108,3 +118,9 @@ async def test_request():
 
         with pytest.raises(AttributeError):
             await client.get("/no-attr")
+
+        resp = await client.get("/no-attr-with-default")
+        assert resp.text == "True"
+
+        resp = await client.get("/no-attr-with-default-factory")
+        assert resp.text == "True"

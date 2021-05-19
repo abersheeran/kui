@@ -189,10 +189,21 @@ def Body(
     return field_info
 
 
-def Request(alias: str = None) -> Any:
+def Request(
+    default: Any = Undefined,
+    *,
+    default_factory: Optional[NoArgAnyCallable] = None,
+    alias: str = None,
+) -> Any:
     """
     Used to provide extra information about a field.
 
+    :param default: since this is replacing the field’s default, its first argument is used
+      to set the default, use ellipsis (``...``) to indicate the field is required
+    :param default_factory: callable that will be called when a default value is needed for this field
+      If both `default` and `default_factory` are set, an error is raised.
     :param alias: the public name of the field
     """
-    return RequestInfo(alias or "")
+    if default is not Undefined and default_factory is not None:
+        raise ValueError("cannot specify both default and default_factory")
+    return RequestInfo(default, default_factory=default_factory, alias=alias)

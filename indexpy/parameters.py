@@ -13,7 +13,7 @@ from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
 from indexpy.utils import safe_issubclass
 
-from .fields import FieldInfo, RequestInfo
+from .fields import FieldInfo, RequestInfo, Undefined
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
@@ -173,11 +173,19 @@ async def verify_params(handler: CallableObject) -> CallableObject:
         # try to get request instance attributes
         if request_attrs:
             for name, info in request_attrs.items():
-                value: Any = functools.reduce(
-                    lambda attr, name: getattr(attr, name),
-                    (info.alias or name).split("."),
-                    request,
-                )
+                try:
+                    value: Any = functools.reduce(
+                        lambda attr, name: getattr(attr, name),
+                        (info.alias or name).split("."),
+                        request,
+                    )
+                except AttributeError:
+                    if info.default is not Undefined:
+                        value = info.default
+                    elif info.default_factory is not None:
+                        value = info.default_factory()
+                    else:
+                        raise
                 kwargs[name] = (await value) if inspect.isawaitable(value) else value
 
     except ValidationError as e:

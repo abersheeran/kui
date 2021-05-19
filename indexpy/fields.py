@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -10,7 +10,7 @@ else:
     from typing import Literal
 
 from pydantic.fields import FieldInfo as _FieldInfo
-from pydantic.fields import Undefined
+from pydantic.fields import NoArgAnyCallable, Undefined
 
 
 class FieldInfo(_FieldInfo):
@@ -71,6 +71,8 @@ class BodyInfo(FieldInfo):
 
 @dataclass
 class RequestInfo:
-    __slots__ = ("alias",)
+    __slots__ = ("default", "default_factory", "alias")
 
-    alias: str
+    default: Any
+    default_factory: Optional[NoArgAnyCallable]
+    alias: Optional[str]
