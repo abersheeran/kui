@@ -41,15 +41,13 @@ class FileRoutes(typing.Iterable[BaseRoute]):
             path_list = [module_name, *relpath.split("/")]
             module = importlib.import_module(".".join(path_list))
 
-            append_route = (
-                lambda view, middleware_name, route_type: (
-                    range(len(path_list), 0, -1)
-                    | F(map, lambda deep: ".".join(path_list[:deep]))
-                    | F(map, lambda module_name: importlib.import_module(module_name))
-                    | F(map, lambda module: getattr(module, middleware_name, None))
-                    | F(filter, lambda middleware: middleware is not None)
-                    | F(reduce, lambda h, m: update_wrapper(m(h), h), ..., view)
-                )
+            append_route = lambda view, middleware_name, route_type: (
+                range(len(path_list), 0, -1)
+                | F(map, lambda deep: ".".join(path_list[:deep]))
+                | F(map, lambda module_name: importlib.import_module(module_name))
+                | F(map, lambda module: getattr(module, middleware_name, None))
+                | F(filter, lambda middleware: middleware is not None)
+                | F(reduce, lambda h, m: update_wrapper(m(h), h), ..., view)
                 | F(route_type, url_path, ..., getattr(module, "name", None))
                 | F(self._list.append)
             )
