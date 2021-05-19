@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import abc
-import importlib
 import operator
-import os
 import sys
 import typing
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import reduce, update_wrapper
-from pathlib import Path
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -19,7 +16,6 @@ else:
 from baize.routing import compile_path
 
 from indexpy.parameters import auto_params
-from indexpy.utils import F
 from indexpy.views import required_method
 
 from .tree import RadixTree, RouteType
@@ -482,75 +478,3 @@ class Router(RouteRegisterMixin):
                 for name, value in path_params.items()
             }
         )
-
-
-class FileRoutes(typing.Iterable[BaseRoute], RouteRegisterMixin):
-    def __init__(
-        self,
-        module_name: str,
-        *,
-        namespace: str = "",
-        allow_underline: bool = False,
-        suffix: str = "",
-    ) -> None:
-        dirpath = Path(
-            os.path.abspath(importlib.import_module(module_name).__file__)
-        ).parent
-        assert dirpath.name == module_name
-
-        self.namespace = namespace
-
-        for pypath in dirpath.glob("**/*.py"):
-            relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
-
-            path_list = relpath.split("/")
-            path_list.insert(0, module_name)
-
-            url_path = "/" + relpath
-
-            if not allow_underline:
-                url_path = url_path.replace("_", "-")
-
-            if url_path.endswith("/index"):
-                url_path = url_path[: -len("index")]
-            else:
-                url_path = url_path + suffix
-
-            module = importlib.import_module(".".join(path_list))
-            url_name = getattr(module, "name", None)
-            get_response = getattr(module, "HTTP", None)
-            serve_socket = getattr(module, "Socket", None)
-
-            if get_response:
-                get_response = (
-                    range(len(path_list), 0, -1)
-                    | F(map, lambda deep: ".".join(path_list[:deep]))
-                    | F(map, lambda module_name: importlib.import_module(module_name))
-                    | F(map, lambda module: getattr(module, "HTTPMiddleware", None))
-                    | F(
-                        reduce,
-                        lambda handler, middleware: update_wrapper(
-                            middleware(handler), handler
-                        ),
-                        ...,
-                        get_response,
-                    )
-                )
-                self << HttpRoute(url_path, get_response, url_name)
-
-            if serve_socket:
-                serve_socket = (
-                    range(len(path_list), 0, -1)
-                    | F(map, lambda deep: ".".join(path_list[:deep]))
-                    | F(map, lambda module_name: importlib.import_module(module_name))
-                    | F(map, lambda module: getattr(module, "SocketMiddleware", None))
-                    | F(
-                        reduce,
-                        lambda handler, middleware: update_wrapper(
-                            middleware(handler), handler
-                        ),
-                        ...,
-                        serve_socket,
-                    )
-                )
-                self << SocketRoute(url_path, serve_socket, url_name)
