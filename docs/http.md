@@ -513,12 +513,12 @@ app = Index()
 
 
 @app.exception_handler(404)
-def not_found(exc: HTTPException) -> HttpResponse:
+async def not_found(exc: HTTPException) -> HttpResponse:
     return PlainTextResponse("what do you want to do?", status_code=404)
 
 
 @app.exception_handler(ValueError)
-def value_error(exc: ValueError) -> HttpResponse:
+async def value_error(exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 ```
 
@@ -528,11 +528,11 @@ def value_error(exc: ValueError) -> HttpResponse:
 from indexpy import Index, HTTPException, HttpResponse, PlainTextResponse
 
 
-def not_found(exc: HTTPException) -> HttpResponse:
+async def not_found(exc: HTTPException) -> HttpResponse:
     return PlainTextResponse("what do you want to do?", status_code=404)
 
 
-def value_error(exc: ValueError) -> HttpResponse:
+async def value_error(exc: ValueError) -> HttpResponse:
     return PlainTextResponse("Something went wrong with the server.", status_code=500)
 
 
