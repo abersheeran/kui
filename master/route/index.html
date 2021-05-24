@@ -823,6 +823,12 @@
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">@</span> <span class="n">decorator1</span> <span class="o">@</span> <span class="n">decorator2</span> <span class="o">@</span> <span class="n">decorator3</span>
 </code></pre></div>
 </td></tr></table>
+<p>并且，你同样可以在使用装饰器进行路由注册时注册中间件，如下所示，其执行顺序同样是由右到左。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/path&quot;</span><span class="p">,</span> <span class="n">middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">decorator1</span><span class="p">,</span> <span class="n">decorator2</span><span class="p">,</span> <span class="n">decorator3</span><span class="p">])</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">path</span><span class="p">():</span> <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
 <h3 id="_6">限定请求方法</h3>
 <div class="admonition notice">
 <p>指定支持 GET 方法时，HEAD 将被自动允许。</p>
