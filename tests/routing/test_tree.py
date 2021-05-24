@@ -62,7 +62,8 @@ def test_tree_fail_search(tree: RadixTree, path):
         "/path/{urlpath:path}/",
         "/sayhi/{name:int}/suffix",
         "/sayhi/{hi}/suffix",
-        "/hello",
+        "/sayhi/aber",
+        "/hello/{time:int}",
         "a",
     ],
 )

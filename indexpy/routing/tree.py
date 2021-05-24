@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple
 from typing import cast as typing_cast
 
 from baize.routing import Convertor, PathConvertor, compile_path
@@ -107,6 +107,10 @@ class RadixTree:
         if path[0] != "/":
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
+        if path_format == path and self.search(path) != (None, None):
+            raise ValueError(
+                f"This constant route {path} can be matched by the added routes."
+            )
         point = append(self.root, path_format[1:], param_convertors)
 
         if point.route is not None:
@@ -114,9 +118,7 @@ class RadixTree:
 
         point.route = (path_format, param_convertors, endpoint)
 
-    def search(
-        self, path: str
-    ) -> Union[Tuple[Dict[str, Any], Callable], Tuple[None, None]]:
+    def search(self, path: str) -> Tuple[Dict[str, Any], Callable] | Tuple[None, None]:
         stack: List[Tuple[str, TreeNode]] = [(path, self.root)]
         params: Dict[str, Any] = {}
 
