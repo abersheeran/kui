@@ -108,7 +108,7 @@ class HttpRegister:
 
     def get(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
-        shortcut for `self << HttpRoute(path, required_method("GET")(endpoint), name)`
+        shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("GET")`
 
         example:
         ```python
@@ -118,14 +118,14 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            self.__routes << HttpRoute(path, required_method("GET")(endpoint), name)
+            self.__routes << HttpRoute(path, endpoint, name) @ required_method("GET")
             return endpoint
 
         return register
 
     def post(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
-        shortcut for `self << HttpRoute(path, required_method("POST")(endpoint), name)`
+        shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("POST")`
 
         example:
         ```python
@@ -135,14 +135,14 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            self.__routes << HttpRoute(path, required_method("POST")(endpoint), name)
+            self.__routes << HttpRoute(path, endpoint, name) @ required_method("POST")
             return endpoint
 
         return register
 
     def put(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
-        shortcut for `self << HttpRoute(path, required_method("PUT")(endpoint), name)`
+        shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("PUT")`
 
         example:
         ```python
@@ -152,14 +152,14 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            self.__routes << HttpRoute(path, required_method("PUT")(endpoint), name)
+            self.__routes << HttpRoute(path, endpoint, name) @ required_method("PUT")
             return endpoint
 
         return register
 
     def patch(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
-        shortcut for `self << HttpRoute(path, required_method("PATCH")(endpoint), name)`
+        shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("PATCH")`
 
         example:
         ```python
@@ -169,14 +169,14 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            self.__routes << HttpRoute(path, required_method("PATCH")(endpoint), name)
+            self.__routes << HttpRoute(path, endpoint, name) @ required_method("PATCH")
             return endpoint
 
         return register
 
     def delete(self, path: str, *, name: str = "") -> typing.Callable[[View], View]:
         """
-        shortcut for `self << HttpRoute(path, required_method("DELETE")(endpoint), name)`
+        shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("DELETE")`
 
         example:
         ```python
@@ -186,7 +186,7 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            self.__routes << HttpRoute(path, required_method("DELETE")(endpoint), name)
+            self.__routes << HttpRoute(path, endpoint, name) @ required_method("DELETE")
             return endpoint
 
         return register
