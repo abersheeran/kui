@@ -94,6 +94,13 @@ HttpRoute(...) @ decorator
 HttpRoute(...) @ decorator1 @ decorator2 @ decorator3
 ```
 
+并且，你同样可以在使用装饰器进行路由注册时注册中间件，如下所示，其执行顺序同样是由右到左。
+
+```python
+@app.router.http("/path", middlewares=[decorator1, decorator2, decorator3])
+async def path(): ...
+```
+
 ### 限定请求方法
 
 !!! notice ""
