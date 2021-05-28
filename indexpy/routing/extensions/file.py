@@ -33,7 +33,7 @@ class FileRoutes(typing.Iterable[BaseRoute]):
         ):
             url_path = (
                 ("/" + relpath)
-                | F(lambda path: allow_underline and path.replace("_", "-"))
+                | F(lambda path: (allow_underline or path) and path.replace("_", "-"))
                 | F(
                     lambda path: path[:-5] if path.endswith("/index") else path + suffix
                 )

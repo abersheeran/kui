@@ -16,6 +16,7 @@ else:
 from baize.routing import compile_path
 
 from indexpy.parameters import auto_params
+from indexpy.utils import FF, F
 from indexpy.views import required_method
 
 from .tree import RadixTree, RouteType
@@ -302,7 +303,7 @@ class RouteRegisterMixin(abc.ABC):
 _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="Routes")
 
 
-class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
+class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
         *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
@@ -317,8 +318,11 @@ class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
         for route in iterable:
             self << route
 
-    def __iter__(self) -> typing.Iterator[BaseRoute]:
-        return iter(self._list)
+    def __getitem__(self, index: int) -> BaseRoute:
+        return self._list[index]
+
+    def __len__(self) -> int:
+        return len(self._list)
 
     def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
         self._list.append(route)
@@ -344,6 +348,13 @@ class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
         routes + self
         """
         return Routes() << routes << self
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, typing.Sequence):
+            return NotImplemented
+        return len(o) == len(self) and all(
+            zip(self, o) | F(map, FF(lambda r, r_: r == r_))
+        )
 
     def http_middleware(self, middleware: T) -> T:
         """
