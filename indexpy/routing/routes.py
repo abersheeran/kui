@@ -318,8 +318,19 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         for route in iterable:
             self << route
 
+    @typing.overload
     def __getitem__(self, index: int) -> BaseRoute:
-        return self._list[index]
+        ...
+
+    @typing.overload
+    def __getitem__(self, index: slice) -> typing.NoReturn:
+        ...
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self._list[index]
+        else:
+            raise TypeError("Slicing syntax is not allowed")
 
     def __len__(self) -> int:
         return len(self._list)
