@@ -250,7 +250,7 @@
         
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    装饰器注册
+    使用装饰器
   </a>
   
 </li>
@@ -272,7 +272,7 @@
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
-    装饰器
+    中间件
   </a>
   
 </li>
@@ -339,7 +339,7 @@
         
           <li class="md-nav__item">
   <a href="#_13" class="md-nav__link">
-    注册中间件
+    中间件注册
   </a>
   
 </li>
@@ -358,13 +358,6 @@
       
         <li class="md-nav__item">
   <a href="#_15" class="md-nav__link">
-    路由冲突
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_16" class="md-nav__link">
     路由拓展
   </a>
   
@@ -380,28 +373,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_17" class="md-nav__link">
+  <a href="#_16" class="md-nav__link">
     中间件定义
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_18" class="md-nav__link">
+  <a href="#_17" class="md-nav__link">
     处理器定义
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_19" class="md-nav__link">
+  <a href="#_18" class="md-nav__link">
     路由名称
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_20" class="md-nav__link">
+  <a href="#_19" class="md-nav__link">
     映射规则
   </a>
   
@@ -533,7 +526,7 @@
         
           <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    装饰器注册
+    使用装饰器
   </a>
   
 </li>
@@ -555,7 +548,7 @@
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
-    装饰器
+    中间件
   </a>
   
 </li>
@@ -622,7 +615,7 @@
         
           <li class="md-nav__item">
   <a href="#_13" class="md-nav__link">
-    注册中间件
+    中间件注册
   </a>
   
 </li>
@@ -641,13 +634,6 @@
       
         <li class="md-nav__item">
   <a href="#_15" class="md-nav__link">
-    路由冲突
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_16" class="md-nav__link">
     路由拓展
   </a>
   
@@ -663,28 +649,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_17" class="md-nav__link">
+  <a href="#_16" class="md-nav__link">
     中间件定义
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_18" class="md-nav__link">
+  <a href="#_17" class="md-nav__link">
     处理器定义
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_19" class="md-nav__link">
+  <a href="#_18" class="md-nav__link">
     路由名称
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_20" class="md-nav__link">
+  <a href="#_19" class="md-nav__link">
     映射规则
   </a>
   
@@ -721,7 +707,7 @@
                 
                 <p>Index-py 的路由基于 <a href="https://en.wikipedia.org/wiki/Radix_tree">Radix Tree</a>。</p>
 <h2 id="_1">基本用法</h2>
-<h3 id="_2">装饰器注册</h3>
+<h3 id="_2">使用装饰器</h3>
 <p>与 bottle/flask 之类的框架一样，Index-py 支持使用装饰器注册路由。下面的例子里，<code>name</code> 是路由名称，这在反向查找路由时会起到作用。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -822,13 +808,13 @@
 </ul>
 <h4 id="_4">预处理</h4>
 <p>使用路由对象注册的可调用对象 endpoint，Index-py 会自动为其注册一个装饰器，用于处理部分参数的自动校验和注入。</p>
-<h4 id="_5">装饰器</h4>
+<h4 id="_5">中间件</h4>
 <p>你可以对路由对象使用装饰器，这将会作用到 endpoint 上，但与直接对 endpoint 使用装饰器不同的是它作用于 Index-py 预处理后的 endpoint 上。</p>
 <div class="admonition tip">
-<p>你可以在这样注册的装饰器里捕捉到可能抛出的参数校验异常。</p>
+<p>你可以在注册的中间件里捕捉到可能抛出的参数校验异常。</p>
 </div>
 <div class="admonition notice">
-<p>在本文档其他地方，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。</p>
+<p>在本文档里，这样注册的装饰器被称为中间件。“中间件”这一名称主要是为了沿用其他框架中的说法。</p>
 </div>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">@</span> <span class="n">decorator</span>
 </code></pre></div>
@@ -837,31 +823,12 @@
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">HttpRoute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">@</span> <span class="n">decorator1</span> <span class="o">@</span> <span class="n">decorator2</span> <span class="o">@</span> <span class="n">decorator3</span>
 </code></pre></div>
 </td></tr></table>
-<p>以下是两个定义装饰器的模板，只需要填充进你自己的代码，就可以使用了。</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">http_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">():</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-
-
-<span class="k">def</span> <span class="nf">socket_middleware</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">():</span>
-        <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
+<p>并且，你同样可以在使用装饰器进行路由注册时注册中间件，如下所示，其执行顺序同样是由右到左。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/path&quot;</span><span class="p">,</span> <span class="n">middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">decorator1</span><span class="p">,</span> <span class="n">decorator2</span><span class="p">,</span> <span class="n">decorator3</span><span class="p">])</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">path</span><span class="p">():</span> <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
-<div class="admonition tip">
-<p>WebSocket 处理器一定会返回 <code>None</code>，所以你可以省略 <code>return</code> 语句，就像上例一样。</p>
-</div>
 <h3 id="_6">限定请求方法</h3>
 <div class="admonition notice">
 <p>指定支持 GET 方法时，HEAD 将被自动允许。</p>
@@ -1142,7 +1109,7 @@
 <div class="admonition notice">
 <p>在使用 <code>app.router.url_for</code> 时不要忘记加上路由所在的名称空间前缀。</p>
 </div>
-<h3 id="_13">注册中间件</h3>
+<h3 id="_13">中间件注册</h3>
 <p>通过 <code>Routes</code> 你可以为整组路由注册一个或多个中间件。以下为简单的样例：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -1231,63 +1198,25 @@
 <span class="p">)</span>
 </code></pre></div>
 </td></tr></table>
-<h2 id="_15">路由冲突</h2>
-<div class="admonition notice">
-<p>如果你没有遇到路由问题，请跳过本章节。</p>
+<div class="admonition warning">
+<p class="admonition-title">注意事项</p>
+<p>在使用 <code>routes = "prefix" // Routes(......)</code> 之后再调用 <code>@routes.http</code> 等方法注册路由时，并不会给后续的路由自动加上 <code>"prefix"</code> 前缀。你应当在一个路由分组内所有路由注册完成之后，再进行 <code>"prefix" // routes</code> 运算。</p>
 </div>
-<p>当多个路由匹配可以匹配到同一个 url path 时，称为路由冲突。</p>
-<p>Index-py 做了大量的路由构造时检查，避免了很多没必要的路由错误与冲突，但仍然有一些路由冲突是一定会存在的。Index-py 的路由构造使用 Radix Tree，而遍历 Radix Tree 方式为深度优先遍历。但对于同一层级的节点来说，匹配顺序由插入顺序决定。</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<ul>
-<li>在上例中，两个路由同为 <code>/static/</code> 节点下的子节点，故而在匹配 url 为 <code>/static/verify.txt</code> 的请求时，按照注册顺序，会匹配到第一条。</li>
-<li>在下例中，<code>/static/verify/google.txt</code> 能匹配到的是第三条路由而不是第二条——因为第三条路由与第一条路由同为 <code>/static/verify/</code> 节点下的子节点，第二条路由属于 <code>/static/</code> 节点下，<code>/static/</code> 的子节点里优先匹配到 <code>verify</code> 节点与其子节点，后匹配 <code>{filepath:path}</code> 节点。故而匹配到第三条路由，而不是第二条。</li>
-</ul>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/bing.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/google.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<p>但如果注册顺序如下例，则 <code>/static/verify/google.txt</code> 匹配到的路由为第一条，</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">Routes</span><span class="p">(</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/{filepath:path}&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/bing.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-    <span class="n">HttpRoute</span><span class="p">(</span><span class="s2">&quot;/static/verify/google.txt&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
-<span class="p">)</span>
-</code></pre></div>
-</td></tr></table>
-<h2 id="_16">路由拓展</h2>
+<h2 id="_15">路由拓展</h2>
 <p>通过构建路由对象的序列（<code>Sequence[BaseRoute]</code>）可以编写自己喜爱的路由注册方式，在最终都会合并进 Radix Tree 里。</p>
 <h3 id="fileroutes">FileRoutes</h3>
 <div class="admonition notice">
 <p>这也是 Index.py 此项目的命名来源之一。</p>
 </div>
 <p><code>FileRoutes</code> 是一个特殊的路由列表，它允许你将某一个 <code>module</code> 下所有的 <code>.py</code> 文件一一对应到其相对路径相同的路由。</p>
-<h4 id="_17">中间件定义</h4>
+<h4 id="_16">中间件定义</h4>
 <p><code>__init__.py</code> 中名为 <code>HTTPMiddleware</code> 的对象将被作为 HTTP 中间件、<code>SocketMiddleware</code> 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。</p>
-<h4 id="_18">处理器定义</h4>
+<h4 id="_17">处理器定义</h4>
 <p>除了 <code>__init__.py</code> 文件以外的 <code>.py</code> 文件中，名为 <code>HTTP</code> 的对象（任何可调用对象均可，函数、类等）将被视为 HTTP 处理器，名为 <code>Socket</code> 的对象（任何可调用对象均可，函数、类等）将被视为 WebSocket 处理器。</p>
-<h4 id="_19">路由名称</h4>
+<h4 id="_18">路由名称</h4>
 <p>在文件中定义名称为 <code>name</code> 的字符串将作为该文件对应的路由名称。</p>
 <p><code>FileRoutes</code> 同样拥有 <code>namespace</code> 参数，并且拥有同样的作用。</p>
-<h4 id="_20">映射规则</h4>
+<h4 id="_19">映射规则</h4>
 <p><code>module/filename.py</code> 文件将对应路由 <code>/filename</code>，<code>module/dirname/filename.py</code> 将对应 <code>/dirname/filename</code>，以此类推。</p>
 <p>文件映射有一个特殊规则：<code>module/**/index.py</code> 将负责处理 <code>/**/</code> 路径的内容。</p>
 <div class="admonition tip">
