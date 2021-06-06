@@ -31,7 +31,9 @@ class MultimethodRoutes(Routes):
     def __iter__(self) -> typing.Iterator[BaseRoute]:
         result: typing.List[BaseRoute] = []
         for route in self._list:
-            if isinstance(route, HttpRoute):
+            if not isinstance(route, HttpRoute):
+                result.append(route)
+            else:
                 pass  # TODO
 
         return iter(result)
