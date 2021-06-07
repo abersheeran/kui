@@ -16,7 +16,7 @@
     
     
       
-        <title>Index.py</title>
+        <title>Background Task - Index.py</title>
       
     
     
@@ -32,8 +32,8 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
-        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
       
     
     
@@ -50,7 +50,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
   
     
     <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
@@ -91,7 +91,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              概览
+              Background Task
             
           </span>
         </div>
@@ -195,58 +195,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          概览
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="index.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
         概览
       </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    设计灵感
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    安装方法
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -275,7 +228,7 @@
   
     <li class="md-nav__item">
       <a href="http.html" class="md-nav__link">
-        Http
+        HTTP
       </a>
     </li>
   
@@ -319,9 +272,89 @@
   
   
     <li class="md-nav__item">
-      <a href="parameters.html" class="md-nav__link">
-        Parameters
+      <a href="middleware.html" class="md-nav__link">
+        Middleware
       </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="openapi.html" class="md-nav__link">
+        OpenAPI
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Background Task
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="background.html" class="md-nav__link md-nav__link--active">
+        Background Task
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    单一后台任务
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    多后台任务
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    同步任务
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -357,8 +390,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -367,15 +398,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    单一后台任务
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    设计灵感
+    多后台任务
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    安装方法
+    同步任务
   </a>
   
 </li>
@@ -392,30 +430,71 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/index.md" title="编辑此页" class="md-content__button md-icon">
+                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/background.md" title="编辑此页" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
                 
-                <h1 id="_1"><img alt="" src="img/index-py.png" /></h1>
-<p>这是一个异步 web 框架，设计目的在于快速的构建需要的 web 服务，无论是 Templates 还是 API。到目前为止，Index.py 不内置数据库、缓存等其他功能。选择困难者请直接使用 <a href="https://www.djangoproject.com/">Django</a>。</p>
-<p>如果你发现了任何的 BUG，欢迎访问 <a href="https://github.com/abersheeran/index.py/issues">Github Issues</a> 反馈；如果你有需要与其他人共同分享、讨论的事情或希望增加的特性，欢迎访问 <a href="https://github.com/abersheeran/index.py/discussions">Github Discussions</a> 发起讨论。</p>
-<h2 id="_2">设计灵感</h2>
-<p>名称来源于 kennethreitz 的<a href="https://github.com/kennethreitz-archive/index.py">同名项目</a>，但随着各种想法的发展……逐渐偏离原本的设计。</p>
-<h2 id="_3">安装方法</h2>
-<p>Index.py 要求 Python 的版本至少是 3.7，对系统无要求。如果不能/不愿升级 Python 版本，可以使用 docker 来运行 Index.py。</p>
-<p>安装 <a href="https://pypi.org">pypi</a> 上的包</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -U index.py
+                  <h1>Background Task</h1>
+                
+                <p>在传统的多线程 web 开发里，要正常的启动一个后台任务是十分困难的，想想线程安全和变量作用域之类的事情。饶是你经验丰富，解决这些问题依旧是痛苦的。</p>
+<p>在 Index-py 中你只需要一些 <a href="https://docs.python.org/3/library/asyncio.html"><code>asyncio</code></a> 的知识就可以做到轻松的启动后台任务。</p>
+<h2 id="_1">单一后台任务</h2>
+<p>很多情况下我们需要这样一种后台任务——在响应结束后，执行某种耗时的 IO 操作。</p>
+<p><code>indexpy.http.BackgroundTask</code> 是一个神奇的包装类，它可以帮助你把函数提交到此次 http 响应结束后执行——如果响应未完成就失败了，后台任务将不会执行。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">Background</span>
+<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">send_welcome_email</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/signup&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">signup</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">BackgroundTask</span><span class="p">(</span><span class="n">send_welcome_email</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;Signup successful&#39;</span><span class="p">},</span> <span class="n">background</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
 </code></pre></div>
-</td></tr></table>
-<p>或者直接从 Github 上安装最新版本</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -U git+https://github.com/abersheeran/index.py@setup.py
+
+<h2 id="_2">多后台任务</h2>
+<p>如果需要顺序的执行多个后台任务(执行顺序由添加顺序决定，先添加、先执行)，需要使用 <code>BackgroundTasks</code> 代替 <code>BackgroundTask</code>，它们的工作原理是一样的。</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.http</span> <span class="kn">import</span> <span class="n">BackgroundTasks</span>
+<span class="kn">from</span> <span class="nn">indexpy.http.responses</span> <span class="kn">import</span> <span class="n">JSONResponse</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">send_welcome_email</span><span class="p">(</span><span class="n">to_address</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">send_admin_notification</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s2">&quot;/signup&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;get&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="k">await</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">]</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="n">BackgroundTasks</span><span class="p">()</span>
+    <span class="n">tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">send_welcome_email</span><span class="p">,</span> <span class="n">to_address</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
+    <span class="n">tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">send_admin_notification</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">JSONResponse</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;Signup successful&#39;</span><span class="p">},</span> <span class="n">background</span><span class="o">=</span><span class="n">tasks</span><span class="p">)</span>
 </code></pre></div>
-</td></tr></table>
-<p>中国大陆内的用户可从 Gitee 上的镜像仓库拉取</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>pip install -U git+https://gitee.com/abersheeran/index.py.git@setup.py
-</code></pre></div>
-</td></tr></table>
+
+<h2 id="_3">同步任务</h2>
+<p>以上的用法都仅限于使用 <code>async def</code> 定义的异步函数，如果你想在后台运行同步 IO 的任务函数，你应该使用 <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor"><code>asyncio.loop.run_in_executor</code></a> 对同步函数进行改造，让它变成一个异步函数。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>在 Python 3.9 与 3.9 以上的版本，你还可以使用 <a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread"><code>asyncio.to_thread</code></a> 来改造同步函数，它允许你传递关键词参数，而不是像 <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor"><code>asyncio.loop.run_in_executor</code></a> 一样只能传递位置参数。</p>
+</div>
                 
               
               
@@ -434,15 +513,30 @@
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
+        
+        <a href="openapi.html" class="md-footer__link md-footer__link--prev" aria-label="上一页: OpenAPI" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              OpenAPI
+            </div>
+          </div>
+        </a>
+      
       
         
-        <a href="route.html" class="md-footer__link md-footer__link--next" aria-label="下一页: Route" rel="next">
+        <a href="command.html" class="md-footer__link md-footer__link--next" aria-label="下一页: Command" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 下一页
               </span>
-              Route
+              Command
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -455,10 +549,6 @@
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-footer-copyright">
-        
-          <div class="md-footer-copyright__highlight">
-            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
-          </div>
         
         Made with
         <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
@@ -483,27 +573,27 @@
     
   <div id="version-select">
     <div class="version-select">
-        Version: 0.18
+        Version: 0.16
     </div>
     
         <div class="version-select">
-            <a href="/master/">master</a>
+            <a href="/master/background.html">master</a>
         </div>
     
         <div class="version-select">
-            <a href="/stable/">stable</a>
+            <a href="/stable/background.html">stable</a>
         </div>
     
         <div class="version-select">
-            <a href="/0.18/">0.18</a>
+            <a href="/0.18/background.html">0.18</a>
         </div>
     
         <div class="version-select">
-            <a href="/0.17/">0.17</a>
+            <a href="/0.17/background.html">0.17</a>
         </div>
     
         <div class="version-select">
-            <a href="/0.16/">0.16</a>
+            <a href="/0.16/background.html">0.16</a>
         </div>
     
         <style>
