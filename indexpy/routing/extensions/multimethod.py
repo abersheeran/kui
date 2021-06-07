@@ -33,36 +33,49 @@ class MultimethodRoutes(Routes):
         for route in self._list:
             if not isinstance(route, HttpRoute):
                 result.append(route)
-            else:
-                for r in filter(
-                    lambda r: isinstance(r, HttpRoute) and r.path == route.path, result
-                ):
-                    if hasattr(r.endpoint, "__methods__"):
-                        endpoint = type(
-                            r.endpoint.__name__,
-                            (HttpView,),
-                            {
-                                **{
-                                    method: getattr(r.endpoint, method)
-                                    for method in r.endpoint.__methods__
-                                },
-                                route.endpoint.__method__: route.endpoint,
-                            },
-                        )
-                    else:
-                        endpoint = type(
-                            "_Endpoint",
-                            (HttpView,),
-                            {
-                                r.endpoint.__method__: r.endpoint,
-                                route.endpoint.__method__: route.endpoint,
-                            },
-                        )
-                    result.append(
-                        HttpRoute(route.path, endpoint=endpoint, name=route.name)
+                continue
+
+            try:
+                r = next(
+                    filter(
+                        lambda r: isinstance(r, HttpRoute) and r.path == route.path,
+                        result,
                     )
-                    break
+                )
+                if not hasattr(route.endpoint, "__method__") or not (
+                    hasattr(r.endpoint, "__method__")
+                    or hasattr(r.endpoint, "__methods__")
+                ):
+                    raise RuntimeError(
+                        f"Routing '{route.path}' conflict, can be resolved by restricting the request method."
+                    )
+            except StopIteration:
+                result.append(route)
+            else:
+                if hasattr(r.endpoint, "__methods__"):
+                    endpoint = type(
+                        r.endpoint.__name__,
+                        (self.base_class,),
+                        {
+                            **{
+                                method.lower(): getattr(r.endpoint, method.lower())
+                                for method in r.endpoint.__methods__
+                            },
+                            route.endpoint.__method__.lower(): route.endpoint,
+                        },
+                    )
                 else:
-                    result.append(route)
+                    endpoint = type(
+                        "_Endpoint",
+                        (self.base_class,),
+                        {
+                            r.endpoint.__method__.lower(): r.endpoint,
+                            route.endpoint.__method__.lower(): route.endpoint,
+                        },
+                    )
+                # replacing route inplace
+                result[result.index(r)] = HttpRoute(
+                    route.path, endpoint=endpoint, name=route.name
+                )
 
         return iter(result)
