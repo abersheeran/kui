@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import abc
-import importlib
 import operator
-import os
 import sys
 import typing
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import reduce, update_wrapper
-from pathlib import Path
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -19,7 +16,7 @@ else:
 from baize.routing import compile_path
 
 from indexpy.parameters import auto_params
-from indexpy.utils import F
+from indexpy.utils import FF, F
 from indexpy.views import required_method
 
 from .tree import RadixTree, RouteType
@@ -306,7 +303,7 @@ class RouteRegisterMixin(abc.ABC):
 _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="Routes")
 
 
-class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
+class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
     def __init__(
         self,
         *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
@@ -321,8 +318,22 @@ class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
         for route in iterable:
             self << route
 
-    def __iter__(self) -> typing.Iterator[BaseRoute]:
-        return iter(self._list)
+    @typing.overload
+    def __getitem__(self, index: int) -> BaseRoute:
+        ...
+
+    @typing.overload
+    def __getitem__(self, index: slice) -> typing.NoReturn:
+        ...
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self._list[index]
+        else:
+            raise TypeError("Slicing syntax is not allowed")
+
+    def __len__(self) -> int:
+        return len(self._list)
 
     def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
         self._list.append(route)
@@ -348,6 +359,13 @@ class Routes(typing.Iterable[BaseRoute], RouteRegisterMixin):
         routes + self
         """
         return Routes() << routes << self
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, typing.Sequence):
+            return NotImplemented
+        return len(o) == len(self) and all(
+            zip(self, o) | F(map, FF(lambda r, r_: r == r_))
+        )
 
     def http_middleware(self, middleware: T) -> T:
         """
@@ -482,75 +500,3 @@ class Router(RouteRegisterMixin):
                 for name, value in path_params.items()
             }
         )
-
-
-class FileRoutes(typing.Iterable[BaseRoute], RouteRegisterMixin):
-    def __init__(
-        self,
-        module_name: str,
-        *,
-        namespace: str = "",
-        allow_underline: bool = False,
-        suffix: str = "",
-    ) -> None:
-        dirpath = Path(
-            os.path.abspath(importlib.import_module(module_name).__file__)
-        ).parent
-        assert dirpath.name == module_name
-
-        self.namespace = namespace
-
-        for pypath in dirpath.glob("**/*.py"):
-            relpath = str(pypath.relative_to(dirpath)).replace("\\", "/")[:-3]
-
-            path_list = relpath.split("/")
-            path_list.insert(0, module_name)
-
-            url_path = "/" + relpath
-
-            if not allow_underline:
-                url_path = url_path.replace("_", "-")
-
-            if url_path.endswith("/index"):
-                url_path = url_path[: -len("index")]
-            else:
-                url_path = url_path + suffix
-
-            module = importlib.import_module(".".join(path_list))
-            url_name = getattr(module, "name", None)
-            get_response = getattr(module, "HTTP", None)
-            serve_socket = getattr(module, "Socket", None)
-
-            if get_response:
-                get_response = (
-                    range(len(path_list), 0, -1)
-                    | F(map, lambda deep: ".".join(path_list[:deep]))
-                    | F(map, lambda module_name: importlib.import_module(module_name))
-                    | F(map, lambda module: getattr(module, "HTTPMiddleware", None))
-                    | F(
-                        reduce,
-                        lambda handler, middleware: update_wrapper(
-                            middleware(handler), handler
-                        ),
-                        ...,
-                        get_response,
-                    )
-                )
-                self << HttpRoute(url_path, get_response, url_name)
-
-            if serve_socket:
-                serve_socket = (
-                    range(len(path_list), 0, -1)
-                    | F(map, lambda deep: ".".join(path_list[:deep]))
-                    | F(map, lambda module_name: importlib.import_module(module_name))
-                    | F(map, lambda module: getattr(module, "SocketMiddleware", None))
-                    | F(
-                        reduce,
-                        lambda handler, middleware: update_wrapper(
-                            middleware(handler), handler
-                        ),
-                        ...,
-                        serve_socket,
-                    )
-                )
-                self << SocketRoute(url_path, serve_socket, url_name)

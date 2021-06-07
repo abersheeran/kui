@@ -387,10 +387,14 @@ routes = Routes(
 
 ### FileRoutes
 
+```
+from indexpy.routing.extensions import FileRoutes
+```
+
 !!! notice ""
     这也是 Index.py 此项目的命名来源之一。
 
-`FileRoutes` 是一个特殊的路由列表，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。
+`FileRoutes` 是一个特殊的路由序列，它允许你将某一个 `module` 下所有的 `.py` 文件一一对应到其相对路径相同的路由。
 
 #### 中间件定义
 
@@ -416,3 +420,33 @@ routes = Routes(
     你可以将文件名或文件夹名修改为 `module/{name}.py` 以此接受路径参数。
 
 可以为 `FileRoutes` 设置 `suffix` 参数，给每个路由加上后缀，譬如 `suffix=".php"` 这将使路径看起来很像 PHP 😀。
+
+### MultimethodRoutes
+
+```
+from indexpy.routing.extensions import MultimethodRoutes
+```
+
+`MultimethodRoutes` 是一个特殊的路由序列，它允许你使用如下方式注册路由，在不显式使用类的情况下拆分同一个 PATH 下的不同方法到多个函数中。除此之外，均与 `Routes` 相同。
+
+```python
+from indexpy import Index
+from indexpy.routing.extensions import MultimethodRoutes
+
+routes = MultimethodRoutes()
+
+
+@routes.http.get("/user")
+async def list_user():
+    pass
+
+
+@routes.http.post("/user")
+async def create_user():
+    pass
+
+
+@routes.http.delete("/user")
+async def delete_user():
+    pass
+```

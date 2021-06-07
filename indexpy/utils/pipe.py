@@ -16,6 +16,6 @@ class F(partial):
         return self(other)
 
 
-class FF(partial):
-    def __ror__(self, other):
-        return self(*other)
+class FF(F):
+    def __call__(self, other):
+        return super().__call__(*other)
