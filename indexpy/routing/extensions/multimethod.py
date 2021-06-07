@@ -10,10 +10,10 @@ class MultimethodRoutes(Routes):
     def __init__(
         self,
         *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
-        namespace: str,
-        http_middlewares: typing.Sequence[typing.Any],
-        socket_middlewares: typing.Sequence[typing.Any],
-        base_class: typing.Type[HttpView] = HttpView
+        namespace: str = "",
+        http_middlewares: typing.Sequence[typing.Any] = [],
+        socket_middlewares: typing.Sequence[typing.Any] = [],
+        base_class: typing.Type[HttpView] = HttpView,
     ) -> None:
         super().__init__(
             *iterable,
@@ -34,6 +34,35 @@ class MultimethodRoutes(Routes):
             if not isinstance(route, HttpRoute):
                 result.append(route)
             else:
-                pass  # TODO
+                for r in filter(
+                    lambda r: isinstance(r, HttpRoute) and r.path == route.path, result
+                ):
+                    if hasattr(r.endpoint, "__methods__"):
+                        endpoint = type(
+                            r.endpoint.__name__,
+                            (HttpView,),
+                            {
+                                **{
+                                    method: getattr(r.endpoint, method)
+                                    for method in r.endpoint.__methods__
+                                },
+                                route.endpoint.__method__: route.endpoint,
+                            },
+                        )
+                    else:
+                        endpoint = type(
+                            "_Endpoint",
+                            (HttpView,),
+                            {
+                                r.endpoint.__method__: r.endpoint,
+                                route.endpoint.__method__: route.endpoint,
+                            },
+                        )
+                    result.append(
+                        HttpRoute(route.path, endpoint=endpoint, name=route.name)
+                    )
+                    break
+                else:
+                    result.append(route)
 
         return iter(result)
