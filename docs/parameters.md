@@ -138,7 +138,7 @@ async def code(user: User = Request()):
 from indexpy import Request
 
 
-async def code(username: str = Request("user.name")):
+async def code(username: str = Request(alias="user.name")):
     ...
 ```
 
