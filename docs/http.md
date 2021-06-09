@@ -541,3 +541,26 @@ app = Index(exception_handlers={
     ValueError: value_error,
 })
 ```
+
+## 内置中间件
+
+### CORS
+
+在现代浏览器中解决跨域问题一般使用 [Cross-Origin Resource Sharing](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS)，在 Index-py 使用如下代码即可快速配置 API 允许跨域。
+
+```python
+from indexpy import Routes
+from indexpy.middlewares import CORSMiddleware
+
+
+routes = Routes(..., http_middlewares=[CORSMiddleware()])
+```
+
+`CORSMiddleware` 有如下选项：
+
+- `allow_origins: Iterable[Pattern]`：允许的 Origin，需要 `re.compile` 预编译后的 `Pattern` 对象；默认值为 `(re.compile(".*"), )`
+- `allow_methods: Iterable[str]`：允许的请求方法；默认值为 `("GET"，"POST"，"PUT"，"PATCH"，"DELETE"，"HEAD"，"OPTIONS"，"TRACE")`。
+- `allow_headers: Iterable[str]`：允许的请求头，对应 [`Access-Control-Allow-Headers`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Headers)。
+- `expose_headers: Iterable[str]`：能在响应中列出的请求头，对应 [`Access-Control-Expose-Headers`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Expose-Headers)。
+- `allow_credentials: bool`：为真时则允许跨域请求携带 Cookies，反之不允许；默认为 `False`。
+- `max_age: int`：预请求的缓存时间；默认为 `600` 秒。
