@@ -8,7 +8,7 @@ from indexpy.middlewares import CORSMiddleware
 async def test_cors():
     cors_middleware = CORSMiddleware()
 
-    from indexpy import Index, HttpRoute
+    from indexpy import HttpRoute, Index
 
     app = Index()
 
