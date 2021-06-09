@@ -405,6 +405,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#multimethodroutes" class="md-nav__link">
+    MultimethodRoutes
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -678,6 +685,13 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multimethodroutes" class="md-nav__link">
+    MultimethodRoutes
+  </a>
   
 </li>
         
@@ -1205,10 +1219,13 @@
 <h2 id="_15">路由拓展</h2>
 <p>通过构建路由对象的序列（<code>Sequence[BaseRoute]</code>）可以编写自己喜爱的路由注册方式，在最终都会合并进 Radix Tree 里。</p>
 <h3 id="fileroutes">FileRoutes</h3>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>from indexpy.routing.extensions import FileRoutes
+</code></pre></div>
+</td></tr></table>
 <div class="admonition notice">
 <p>这也是 Index.py 此项目的命名来源之一。</p>
 </div>
-<p><code>FileRoutes</code> 是一个特殊的路由列表，它允许你将某一个 <code>module</code> 下所有的 <code>.py</code> 文件一一对应到其相对路径相同的路由。</p>
+<p><code>FileRoutes</code> 是一个特殊的路由序列，它允许你将某一个 <code>module</code> 下所有的 <code>.py</code> 文件一一对应到其相对路径相同的路由。</p>
 <h4 id="_16">中间件定义</h4>
 <p><code>__init__.py</code> 中名为 <code>HTTPMiddleware</code> 的对象将被作为 HTTP 中间件、<code>SocketMiddleware</code> 将被作为 WebSocket 中间件，并作用于同目录下所有的路由。</p>
 <h4 id="_17">处理器定义</h4>
@@ -1223,6 +1240,50 @@
 <p>你可以将文件名或文件夹名修改为 <code>module/{name}.py</code> 以此接受路径参数。</p>
 </div>
 <p>可以为 <code>FileRoutes</code> 设置 <code>suffix</code> 参数，给每个路由加上后缀，譬如 <code>suffix=".php"</code> 这将使路径看起来很像 PHP 😀。</p>
+<h3 id="multimethodroutes">MultimethodRoutes</h3>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>from indexpy.routing.extensions import MultimethodRoutes
+</code></pre></div>
+</td></tr></table>
+<p><code>MultimethodRoutes</code> 是一个特殊的路由序列，它允许你使用如下方式注册路由，在不显式使用类的情况下拆分同一个 PATH 下的不同方法到多个函数中。除此之外，均与 <code>Routes</code> 相同。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.routing.extensions</span> <span class="kn">import</span> <span class="n">MultimethodRoutes</span>
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">MultimethodRoutes</span><span class="p">()</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/user&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">list_user</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/user&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">create_user</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/user&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">delete_user</span><span class="p">():</span>
+    <span class="k">pass</span>
+</code></pre></div>
+</td></tr></table>
                 
               
               

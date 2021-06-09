@@ -535,6 +535,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    内置中间件
+  </a>
+  
+    <nav class="md-nav" aria-label="内置中间件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cors" class="md-nav__link">
+    CORS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -897,6 +917,26 @@
           <li class="md-nav__item">
   <a href="#_8" class="md-nav__link">
     自定义异常处理
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    内置中间件
+  </a>
+  
+    <nav class="md-nav" aria-label="内置中间件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cors" class="md-nav__link">
+    CORS
   </a>
   
 </li>
@@ -1561,6 +1601,29 @@
 <span class="p">})</span>
 </code></pre></div>
 </td></tr></table>
+<h2 id="_9">内置中间件</h2>
+<h3 id="cors">CORS</h3>
+<p>在现代浏览器中解决跨域问题一般使用 <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS">Cross-Origin Resource Sharing</a>，在 Index-py 使用如下代码即可快速配置 API 允许跨域。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Routes</span>
+<span class="kn">from</span> <span class="nn">indexpy.middlewares</span> <span class="kn">import</span> <span class="n">CORSMiddleware</span>
+
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">http_middlewares</span><span class="o">=</span><span class="p">[</span><span class="n">CORSMiddleware</span><span class="p">()])</span>
+</code></pre></div>
+</td></tr></table>
+<p><code>CORSMiddleware</code> 有如下选项：</p>
+<ul>
+<li><code>allow_origins: Iterable[Pattern]</code>：允许的 Origin，需要 <code>re.compile</code> 预编译后的 <code>Pattern</code> 对象；默认值为 <code>(re.compile(".*"), )</code></li>
+<li><code>allow_methods: Iterable[str]</code>：允许的请求方法；默认值为 <code>("GET"，"POST"，"PUT"，"PATCH"，"DELETE"，"HEAD"，"OPTIONS"，"TRACE")</code>。</li>
+<li><code>allow_headers: Iterable[str]</code>：允许的请求头，对应 <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Headers"><code>Access-Control-Allow-Headers</code></a>。</li>
+<li><code>expose_headers: Iterable[str]</code>：能在响应中列出的请求头，对应 <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Expose-Headers"><code>Access-Control-Expose-Headers</code></a>。</li>
+<li><code>allow_credentials: bool</code>：为真时则允许跨域请求携带 Cookies，反之不允许；默认为 <code>False</code>。</li>
+<li><code>max_age: int</code>：预请求的缓存时间；默认为 <code>600</code> 秒。</li>
+</ul>
                 
               
               
