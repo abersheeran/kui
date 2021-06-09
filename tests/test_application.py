@@ -8,6 +8,8 @@ from async_asgi_testclient import TestClient
 async def test_example_application():
     from example import app
 
+    app.state.wait_time = 0.00000001
+
     async with TestClient(app) as client:
         response = await client.get("/")
         assert response.status_code == 200

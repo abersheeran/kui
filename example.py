@@ -25,7 +25,7 @@ async def message():
 
     async def message_gen():
         for i in range(5):
-            await asyncio.sleep(1)
+            await asyncio.sleep(app.state.wait_time)
             yield {"id": i, "data": "hello"}
 
     return message_gen()
@@ -52,3 +52,4 @@ app = Index(
         HttpRoute("/sources/{filepath:path}", sources),
     ],
 )
+app.state.wait_time = 1

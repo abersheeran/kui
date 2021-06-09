@@ -38,12 +38,13 @@ def allow_cors(
         "Access-Control-Allow-Credentials": "true" if allow_credentials else "false",
         "Access-Control-Max-Age": str(max_age),
     }
+    config_dict = {k: v for k, v in config_dict.items() if v}
 
     def decorator(endpoint: View) -> View:
         @functools.wraps(endpoint)
         async def cors_wrapper(*args: Any, **kwargs: Any) -> Any:
-            origin = request.headers["origin"]
-            if any(
+            origin = request.headers.get("origin", None)
+            if origin and any(
                 origin_pattern.fullmatch(origin) for origin_pattern in allow_origins
             ):
                 response = convert_response(await endpoint(*args, **kwargs))
