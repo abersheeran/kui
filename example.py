@@ -37,9 +37,9 @@ async def sources(filepath: str = Path()):
     Return source files
     """
     realpath = FilePath(".") / filepath.lstrip("./")
-    try:
-        return FileResponse(str(realpath))
-    except FileNotFoundError:
+    if realpath.exists() and realpath.is_file():
+        return realpath
+    else:
         raise HTTPException(404)
 
 
