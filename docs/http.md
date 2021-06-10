@@ -417,6 +417,7 @@ async def message():
 - `str | bytes`：自动转换为 `PlainTextResponse`
 - `typing.AsyncGeneratorType`：自动转换为 `SendEventResponse`
 - `pathlib.PurePath`：自动转换为 `FileResponse`
+- `baize.datastructures.URL`：自动转换为 `RedirectResponse`
 
 ```python
 async def get_detail():
@@ -499,6 +500,9 @@ async def endpoint():
     raise HTTPException(405, headers={"Allow": "HEAD, GET, POST"})
     ...
 ```
+
+!!! tip ""
+    如果你想在 `lambda` 函数里抛出 `HTTPException`，则可以使用 `baize.exceptions.abort`。
 
 ### 自定义异常处理
 
