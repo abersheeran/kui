@@ -23,7 +23,7 @@ index-cli = "indexpy.cli:index_cli"
 [tool.poetry.dependencies]
 python = "^3.7"
 
-baize = {version = "^0.8.0", extras = ["multipart"]}
+baize = {version = "^0.8.1", extras = ["multipart"]}
 click = {version = "^7.1.2", optional = true}
 pydantic = "^1.8"
 
@@ -33,6 +33,7 @@ cli = ["click"] # for index-cli commands
 [tool.poetry.dev-dependencies]
 flake8 = "*"
 mypy = {version = "*", allow-prereleases = true}
+types-click = "^7.1.0"
 
 black = {version = "*", allow-prereleases = true}
 isort = "*"
