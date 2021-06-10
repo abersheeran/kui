@@ -6,6 +6,7 @@ from pathlib import PurePath
 from types import AsyncGeneratorType
 
 from baize.asgi import (
+    URL,
     FileResponse,
     HTMLResponse,
     JSONResponse,
@@ -113,3 +114,10 @@ def _send_event(
 @automatic.register(PurePath)
 def _file(filepath: PurePath, download_name: str = None):
     return FileResponse(str(filepath), download_name=download_name)
+
+
+@automatic.register(URL)
+def _redirect(
+    url: URL, status: int = 307, headers: typing.Mapping[str, str] = None
+) -> HttpResponse:
+    return RedirectResponse(url, status_code=status, headers=headers)

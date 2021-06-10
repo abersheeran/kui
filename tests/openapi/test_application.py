@@ -90,6 +90,13 @@ async def test_openapi_page():
     app.router << middleware_routes
 
     client = TestClient(app)
+    response = await client.get("/openapi", allow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "http://localhost/openapi/"
+
+    response = await client.get("/openapi/")
+    assert response.status_code == 200
+
     response = await client.get("/openapi/json")
     assert response.status_code == 200
     openapi_docs_text = response.text
