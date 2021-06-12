@@ -48,9 +48,10 @@ def test_mulitmethodroutes():
     async def delete_user():
         pass
 
-    app = Index(routes=routes)
+    app = Index()
+    app.router << "/test" // routes
 
-    endpoint = app.router.search("http", "/user")[1]
+    endpoint = app.router.search("http", "/test/user")[1]
     assert issubclass(endpoint, routes.base_class)
     assert hasattr(endpoint, "__methods__")
     assert (
