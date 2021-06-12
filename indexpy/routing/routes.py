@@ -346,7 +346,7 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         if not isinstance(other, str):
             return NotImplemented
 
-        return Prefix(other) // self
+        return Prefix(other) // Routes(self)
 
     def __add__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
