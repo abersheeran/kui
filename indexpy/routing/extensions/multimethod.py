@@ -26,56 +26,50 @@ class MultimethodRoutes(Routes):
     def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
         if hasattr(route.endpoint, "__methods__"):
             raise TypeError("MultimethodRoutes not allow use class-base view.")
-        return super().append(route)
 
-    def __iter__(self) -> typing.Iterator[BaseRoute]:
-        result: typing.List[BaseRoute] = []
-        for route in self._list:
-            if not isinstance(route, HttpRoute):
-                result.append(route)
-                continue
+        if not isinstance(route, HttpRoute):
+            self._list.append(route)
+            return self
 
-            try:
-                r = next(
-                    filter(
-                        lambda r: isinstance(r, HttpRoute) and r.path == route.path,
-                        result,
-                    )
+        try:
+            r = next(
+                filter(
+                    lambda r: isinstance(r, HttpRoute) and r.path == route.path,
+                    self._list,
                 )
-                if not hasattr(route.endpoint, "__method__") or not (
-                    hasattr(r.endpoint, "__method__")
-                    or hasattr(r.endpoint, "__methods__")
-                ):
-                    raise RuntimeError(
-                        f"Routing '{route.path}' conflict, can be resolved by restricting the request method."
-                    )
-            except StopIteration:
-                result.append(route)
+            )
+            if not hasattr(route.endpoint, "__method__") or not (
+                hasattr(r.endpoint, "__method__") or hasattr(r.endpoint, "__methods__")
+            ):
+                raise RuntimeError(
+                    f"Routing '{route.path}' conflict, can be resolved by restricting the request method."
+                )
+        except StopIteration:
+            self._list.append(route)
+        else:
+            if hasattr(r.endpoint, "__methods__"):
+                endpoint = type(
+                    r.endpoint.__name__,
+                    (self.base_class,),
+                    {
+                        **{
+                            method.lower(): getattr(r.endpoint, method.lower())
+                            for method in r.endpoint.__methods__
+                        },
+                        route.endpoint.__method__.lower(): route.endpoint,
+                    },
+                )
             else:
-                if hasattr(r.endpoint, "__methods__"):
-                    endpoint = type(
-                        r.endpoint.__name__,
-                        (self.base_class,),
-                        {
-                            **{
-                                method.lower(): getattr(r.endpoint, method.lower())
-                                for method in r.endpoint.__methods__
-                            },
-                            route.endpoint.__method__.lower(): route.endpoint,
-                        },
-                    )
-                else:
-                    endpoint = type(
-                        "_Endpoint",
-                        (self.base_class,),
-                        {
-                            r.endpoint.__method__.lower(): r.endpoint,
-                            route.endpoint.__method__.lower(): route.endpoint,
-                        },
-                    )
-                # replacing route inplace
-                result[result.index(r)] = HttpRoute(
-                    route.path, endpoint=endpoint, name=route.name
+                endpoint = type(
+                    "_Endpoint",
+                    (self.base_class,),
+                    {
+                        r.endpoint.__method__.lower(): r.endpoint,
+                        route.endpoint.__method__.lower(): route.endpoint,
+                    },
                 )
-
-        return iter(result)
+            # replacing route inplace
+            self._list[self._list.index(r)] = HttpRoute(
+                route.path, endpoint=endpoint, name=route.name
+            )
+        return self

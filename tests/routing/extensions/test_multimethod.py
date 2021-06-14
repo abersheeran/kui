@@ -58,3 +58,32 @@ def test_mulitmethodroutes():
         and hasattr(endpoint, "post")
         and hasattr(endpoint, "delete")
     )
+
+
+def test_mulitmethodroutes_with_prefix():
+    from indexpy import Index
+
+    routes = Routes()
+
+    @routes.http.get("/user")
+    async def list_user():
+        pass
+
+    @routes.http.post("/user")
+    async def create_user():
+        pass
+
+    @routes.http.delete("/user")
+    async def delete_user():
+        pass
+
+    app = Index(routes="/api" // routes)
+
+    endpoint = app.router.search("http", "/api/user")[1]
+    assert issubclass(endpoint, routes.base_class)
+    assert hasattr(endpoint, "__methods__")
+    assert (
+        hasattr(endpoint, "get")
+        and hasattr(endpoint, "post")
+        and hasattr(endpoint, "delete")
+    )
