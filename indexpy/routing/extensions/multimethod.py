@@ -56,7 +56,7 @@ class MultimethodRoutes(Routes):
                             method.lower(): getattr(r.endpoint, method.lower())
                             for method in r.endpoint.__methods__
                         },
-                        route.endpoint.__method__.lower(): route.endpoint,
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
                     },
                 )
             else:
@@ -64,8 +64,8 @@ class MultimethodRoutes(Routes):
                     "_Endpoint",
                     (self.base_class,),
                     {
-                        r.endpoint.__method__.lower(): r.endpoint,
-                        route.endpoint.__method__.lower(): route.endpoint,
+                        r.endpoint.__method__.lower(): staticmethod(r.endpoint),
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
                     },
                 )
             # replacing route inplace

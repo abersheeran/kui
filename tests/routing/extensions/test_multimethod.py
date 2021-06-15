@@ -1,3 +1,6 @@
+import pytest
+from async_asgi_testclient import TestClient
+
 from indexpy import HttpRoute
 from indexpy.routing.extensions import MultimethodRoutes as Routes
 
@@ -87,3 +90,27 @@ def test_mulitmethodroutes_with_prefix():
         and hasattr(endpoint, "post")
         and hasattr(endpoint, "delete")
     )
+
+
+@pytest.mark.asyncio
+async def test_mulitmethodroutes_with_parameters():
+    from indexpy import Index, Path
+
+    routes = Routes()
+
+    @routes.http.get("/{name}", name=None)
+    @routes.http.post("/{name}", name=None)
+    @routes.http.put("/{name}", name=None)
+    @routes.http.patch("/{name}", name=None)
+    @routes.http.delete("/{name}", name=None)
+    async def name(name: str = Path(...)):
+        return name
+
+    app = Index(routes=routes)
+
+    async with TestClient(app) as client:
+        resp = await client.get("/aber")
+        assert resp.text == "aber"
+
+        resp = await client.get("/")
+        assert resp.status_code == 404
