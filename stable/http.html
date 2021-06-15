@@ -1430,6 +1430,7 @@
 <li><code>str | bytes</code>：自动转换为 <code>PlainTextResponse</code></li>
 <li><code>typing.AsyncGeneratorType</code>：自动转换为 <code>SendEventResponse</code></li>
 <li><code>pathlib.PurePath</code>：自动转换为 <code>FileResponse</code></li>
+<li><code>baize.datastructures.URL</code>：自动转换为 <code>RedirectResponse</code></li>
 </ul>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">get_detail</span><span class="p">():</span>
@@ -1541,6 +1542,9 @@
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
+<div class="admonition tip">
+<p>如果你想在 <code>lambda</code> 函数里抛出 <code>HTTPException</code>，则可以使用 <code>baize.exceptions.abort</code>。</p>
+</div>
 <h3 id="_8">自定义异常处理</h3>
 <p>对于一些故意抛出的异常，Index-py 提供了方法进行统一处理。</p>
 <p>你可以捕捉指定的 HTTP 状态码，那么在应对包含对应 HTTP 状态码的 <code>HTTPException</code> 异常时，Index-py 会使用你定义的函数而不是默认行为。你也可以捕捉其他继承自 <code>Exception</code> 的异常，通过自定义函数，返回指定的内容给客户端。</p>
