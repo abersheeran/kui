@@ -62,6 +62,7 @@ jobs:
           python -m pip install --upgrade pip poetry
           poetry config virtualenvs.create false --local
           poetry install -E docs
+          pip install mkdocs-version
 
       - name: Build
         run: |
