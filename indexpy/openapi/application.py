@@ -106,14 +106,25 @@ class OpenAPI:
     ) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
 
-        doc = func.__doc__
-        if isinstance(doc, str):
-            result.update(
-                zip(
-                    ("summary", "description"),
-                    doc.strip().split("\n\n", 1) | F(map, lambda i: i.strip()),
+        if getattr(func, "__summary__", None) | F(isinstance, ..., str):
+            result["summary"] = func.__summary__  # type: ignore
+
+        if getattr(func, "__description__", None) | F(isinstance, ..., str):
+            result["description"] = func.__description__  # type: ignore
+
+        if isinstance(func.__doc__, str):
+            if "summary" not in result and "description" not in result:
+                result.update(
+                    zip(
+                        ("summary", "description"),
+                        func.__doc__.strip().split("\n\n", 1)
+                        | F(map, lambda i: i.strip()),
+                    )
                 )
-            )
+            elif "description" not in result:
+                result["description"] = func.__doc__
+            else:
+                result["summary"] = ""
 
         # generate params schema
         parameters = (
@@ -153,6 +164,8 @@ class OpenAPI:
         # set path tags
         if result and path in self.path2tag:
             result["tags"] = self.path2tag[path]
+
+        result["tags"] = getattr(func, "__tags__", []) + result.get("tags", [])
 
         # merge user custom operation info
         return merge_openapi_info(
