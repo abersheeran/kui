@@ -30,7 +30,7 @@ theme:
       quote: octicons/quote-16
 
 nav:
-  - 概览: "index.md"
+  - Homepage: index.md
   - Route: route.md
   - Http: "http.md"
   - WebSocket: "websocket.md"
@@ -48,5 +48,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - i18n:
+      default_language: zh
+      languages:
+        zh: 中文
+        en: English
 
 copyright: Copyright &copy; <a href="https://abersheeran.com">AberSh</a>

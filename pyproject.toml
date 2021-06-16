@@ -29,6 +29,7 @@ pydantic = "^1.8"
 
 [tool.poetry.extras]
 cli = ["click"] # for index-cli commands
+docs = ["mkdocs", "mkdocs-material", "mkdocs-static-i18n"]
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
@@ -45,8 +46,9 @@ pytest-asyncio = "^0.12"
 pytest-cov = "^2.8.1"
 
 # only docs
-mkdocs = "*"
-mkdocs-material = "*"
+mkdocs = {extras = ["i18n"], version = "^1.2.1"}
+mkdocs-material = "^7.1.8"
+mkdocs-static-i18n = "^0.16"
 
 [tool.isort]
 profile = "black"
