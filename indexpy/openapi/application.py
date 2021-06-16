@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import inspect
 import operator
 import sys
 import typing
 import warnings
-import inspect
 from copy import deepcopy
 from functools import reduce
 from pathlib import Path

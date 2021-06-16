@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from os import name
 from typing import List
 
 import pytest
@@ -19,7 +18,7 @@ async def test_openapi_page():
 
     @app.router.http("/hello")
     @describe_response(200, content=List[str])
-    async def hello(request):
+    async def hello():
         """
         hello
         """
@@ -29,7 +28,7 @@ async def test_openapi_page():
         name: str
 
     @app.router.http("/path/{name}")
-    async def path(request, name: str = Path(...)):
+    async def path(name: str = Path(...)):
         pass
 
     @app.router.http("/http-view")
