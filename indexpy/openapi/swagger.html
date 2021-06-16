@@ -8,16 +8,17 @@
 
 <body>
     <div id="swagger-ui"></div>
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.50.0/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.48.0/swagger-ui-bundle.js"></script>
     <script>
         let version = null;
 
         const renderUI = async () => {
-            const resp = await fetch('./json');
+            const resp = await fetch("./json");
             const spec = await resp.json();
-
-            if (resp.headers.get("hash") === version)
+            
+            if (resp.headers.get("hash") === version){
                 return;
+            }
             
             version = resp.headers.get("hash");
             SwaggerUIBundle({
