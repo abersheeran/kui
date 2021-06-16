@@ -10,19 +10,33 @@
     <div id="swagger-ui"></div>
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.50.0/swagger-ui-bundle.js"></script>
     <script>
-        SwaggerUIBundle({
-            url: './json',
-            dom_id: '#swagger-ui',
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.SwaggerUIStandalonePreset
-            ],
-            layout: "BaseLayout",
-            deepLinking: true,
-            showExtensions: true,
-            showCommonExtensions: true,
-            persistAuthorization: true
-        })
+        let version = null;
+
+        const renderUI = async () => {
+            const resp = await fetch('./json');
+            const spec = await resp.json();
+
+            if (resp.headers.get("hash") === version)
+                return;
+            
+            version = resp.headers.get("hash");
+            SwaggerUIBundle({
+                spec,
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                deepLinking: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                persistAuthorization: true
+            })
+        }
+
+        renderUI();
+        setInterval(renderUI, 2000);
 
     </script>
 </body>

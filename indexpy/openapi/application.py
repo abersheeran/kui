@@ -42,7 +42,6 @@ class OpenAPI:
         *,
         tags: Dict[str, Tag] = {},
         template_name: Literal["redoc", "swagger", "rapidoc"] = "swagger",
-        template: str = "",
     ) -> None:
         if template == "":
             template = (
