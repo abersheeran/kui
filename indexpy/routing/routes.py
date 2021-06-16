@@ -86,12 +86,51 @@ class HttpRegister:
     def __init__(self, routes: RouteRegisterMixin) -> None:
         self.__routes = routes
 
+    def _register_with_method(
+        self,
+        method: str,
+        path: str,
+        *,
+        name: str = "",
+        middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
+    ) -> typing.Callable[[View], View]:
+        """
+        if method == "any", all request method would be allowed.
+        """
+
+        def register(endpoint: View) -> View:
+            if summary:
+                setattr(endpoint, "__summary__", summary)
+
+            if description:
+                setattr(endpoint, "__description__", description)
+
+            if tags:
+                setattr(endpoint, "__tags__", list(tags))
+
+            route: HttpRoute = reduce(
+                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
+            )
+            if method != "any":
+                route = route @ required_method(method.upper())
+
+            self.__routes << route
+            return endpoint
+
+        return register
+
     def __call__(
         self,
         path: str,
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name)`
@@ -102,14 +141,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            )
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "any",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
     def get(
         self,
@@ -117,6 +157,9 @@ class HttpRegister:
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("GET")`
@@ -127,14 +170,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            ) @ required_method("GET")
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "get",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
     def post(
         self,
@@ -142,6 +186,9 @@ class HttpRegister:
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("POST")`
@@ -152,14 +199,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            ) @ required_method("POST")
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "post",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
     def put(
         self,
@@ -167,6 +215,9 @@ class HttpRegister:
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("PUT")`
@@ -177,14 +228,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            ) @ required_method("PUT")
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "put",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
     def patch(
         self,
@@ -192,6 +244,9 @@ class HttpRegister:
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("PATCH")`
@@ -202,14 +257,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            ) @ required_method("PATCH")
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "patch",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
     def delete(
         self,
@@ -217,6 +273,9 @@ class HttpRegister:
         *,
         name: str = "",
         middlewares: typing.Iterable[typing.Callable[[View], View]] = [],
+        summary: str = None,
+        description: str = None,
+        tags: typing.Iterable[str] = None,
     ) -> typing.Callable[[View], View]:
         """
         shortcut for `self << HttpRoute(path, endpoint, name) @ required_method("DELETE")`
@@ -227,14 +286,15 @@ class HttpRegister:
             class Endpoint(HttpView): ...
         ```
         """
-
-        def register(endpoint: View) -> View:
-            self.__routes << reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
-            ) @ required_method("DELETE")
-            return endpoint
-
-        return register
+        return self._register_with_method(
+            "delete",
+            path,
+            name=name,
+            middlewares=middlewares,
+            summary=summary,
+            description=description,
+            tags=tags,
+        )
 
 
 class RouteRegisterMixin(abc.ABC):
@@ -263,15 +323,6 @@ class RouteRegisterMixin(abc.ABC):
 
     @property
     def http(self) -> HttpRegister:
-        """
-        shortcut for `self << HttpRoute(path, endpoint, name)`
-
-        example:
-        ```python
-            @routes.http("/path", name="endpoint-name")
-            class Endpoint(HttpView): ...
-        ```
-        """
         return HttpRegister(self)
 
     def websocket(
