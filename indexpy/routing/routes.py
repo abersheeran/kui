@@ -148,6 +148,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
     def get(
@@ -176,6 +177,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
     def post(
@@ -204,6 +206,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
     def put(
@@ -232,6 +235,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
     def patch(
@@ -260,6 +264,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
     def delete(
@@ -288,6 +293,7 @@ class HttpRegister:
             middlewares=middlewares,
             summary=summary,
             description=description,
+            tags=tags,
         )
 
 

@@ -4,6 +4,7 @@ import operator
 import sys
 import typing
 import warnings
+import inspect
 from copy import deepcopy
 from functools import reduce
 from pathlib import Path
@@ -113,16 +114,13 @@ class OpenAPI:
             result["description"] = func.__description__  # type: ignore
 
         if isinstance(func.__doc__, str):
+            clean_doc = inspect.cleandoc(func.__doc__)
             if "summary" not in result and "description" not in result:
                 result.update(
-                    zip(
-                        ("summary", "description"),
-                        func.__doc__.strip().split("\n\n", 1)
-                        | F(map, lambda i: i.strip()),
-                    )
+                    zip(("summary", "description"), clean_doc.split("\n\n", 1))
                 )
             elif "description" not in result:
-                result["description"] = func.__doc__
+                result["description"] = clean_doc
             else:
                 result["summary"] = ""
 

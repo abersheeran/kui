@@ -2,7 +2,7 @@ Index-py 使用 [pydantic](https://pydantic-docs.helpmanual.io/) 用于更轻松
 
 ## 显示 OpenAPI 文档
 
-将 `indexpy.openapi.application.OpenAPI` 挂载进 Index-py 中。启动 index，访问你服务上 `/openapi/` 即可看到生成的文档。
+将 `indexpy.openapi.application.OpenAPI` 挂载进 Index-py 中。启动 index，访问你服务上 `/docs/` 即可看到生成的文档。
 
 !!! tip ""
     如果你不需要生成文档，仅仅只需要自动校验参数功能，这一步可以跳过。
@@ -13,7 +13,7 @@ from indexpy.openapi import OpenAPI
 
 app = Index()
 
-app.router << ("/openapi" // OpenAPI("Title", "description", "1.0").routes)
+app.router << ("/docs" // OpenAPI("Title", "description", "1.0").routes)
 ```
 
 默认的文档模板使用 [swagger](https://swagger.io/tools/swagger-ui/)，如果你更喜欢 [redoc](https://github.com/Redocly/redoc) 或 [rapidoc](https://mrin9.github.io/RapiDoc/) 的样式，可以通过更改 `template_name` 来达到目的，例如：`OpenAPI(..., template_name="redoc")`。
@@ -28,9 +28,7 @@ OpenAPI 的 Tags 是一个有用的功能，在 Index-py 里，你可以通过�
 
 ```python
 OpenAPI(
-    title="index.py example",
-    description="just a example, power by index.py",
-    version="v1",
+    ......,
     tags={
         "something": {
             "description": "test over two tags in one path",
@@ -44,6 +42,19 @@ OpenAPI(
 )
 ```
 
+你也可以在使用[装饰器注册](./route.md)时，给装饰器传入 `tags` 参数，如下。虽然这种方式没办法为 `tag` 增加 `description`，但它可以与上述用法同时使用——换句话来说，你可以在 `OpenAPI` 的 `tags` 里定义 `tag` 的信息，再在装饰器里传入对应的 `tag` 名称。
+
+```python
+from indexpy import Routes
+
+routes = Routes()
+
+
+@routes.http('/', tags=["tag0", "tag1"])
+async def handler():
+    return "/"
+```
+
 ## 接口描述
 
 对于所有可处理 HTTP 请求的方法，它们的 `__doc__` 都会用于生成 OpenAPI 文档。第一行将被当作概要描述，所以尽量简明扼要，不要太长。空一行之后，后续的文字都会被当作详细介绍，被安置在 OpenAPI 文档中。
@@ -54,7 +65,7 @@ OpenAPI(
 from indexpy import HTTPView
 
 
-async def handler(request):
+async def handler():
     """
     api summary
 
@@ -75,6 +86,37 @@ class ClassHandler(HTTPView):
         """
 ```
 
+你也可以在使用[装饰器注册](./route.md)时，给装饰器传入参数，如下。
+
+```python
+from indexpy import Routes
+
+routes = Routes()
+
+
+@routes.http('/', summary="api summary", description="api description.............")
+async def handler():
+    return "/"
+```
+
+如果你的 description 很长，也可以只给装饰器传入 `summary` 参数，`description` 将自动使用整个 `__doc__`。
+
+```python
+from indexpy import Routes
+
+routes = Routes()
+
+
+@routes.http('/', summary="api summary")
+async def handler():
+    """
+    api description..........................
+    .........................................
+    .........................................
+    """
+    return "/"
+```
+
 ## 标注请求参数
 
 先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为值，`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：`?page_num=1&page_size=10`。如果你使用 `Query(10)` 则意味着这个值可以不由前端传递，其默认值为 `10`。
@@ -84,7 +126,6 @@ from indexpy import Query
 
 
 async def getlist(
-    request,
     page_num: int = Query(...),
     page_size: int = Query(...)
 ):
@@ -211,8 +252,8 @@ def judge_jwt(endpoint):
         },
     )
 
-    async def judge(request):
-        ...
+    async def judge():
+        return await endpoint()
 
     return judge
 ```
