@@ -11,6 +11,7 @@ class MultimethodRoutes(Routes):
         self,
         *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
         namespace: str = "",
+        tags: typing.Iterable[str] = None,
         http_middlewares: typing.Sequence[typing.Any] = [],
         socket_middlewares: typing.Sequence[typing.Any] = [],
         base_class: typing.Type[HttpView] = HttpView,
@@ -18,6 +19,7 @@ class MultimethodRoutes(Routes):
         super().__init__(
             *iterable,
             namespace=namespace,
+            tags=tags,
             http_middlewares=http_middlewares,
             socket_middlewares=socket_middlewares,
         )

@@ -53,7 +53,7 @@ class BaseRoute:
     def __matmul__(self, decorator: typing.Callable[[T], T]):
         endpoint = self.endpoint
         self.endpoint = decorator(self.endpoint)
-        if not (getattr(self.endpoint, "__wrapped__", self.endpoint) is endpoint):
+        if not (hasattr(self.endpoint, "__wrapped__") or self.endpoint is endpoint):
             self.endpoint = update_wrapper(self.endpoint, endpoint)
         return self
 
@@ -359,12 +359,18 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         self,
         *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
         namespace: str = "",
+        tags: typing.Iterable[str] = None,
         http_middlewares: typing.Sequence[typing.Any] = [],
         socket_middlewares: typing.Sequence[typing.Any] = [],
     ) -> None:
         self.namespace = namespace
         self._list: typing.List[BaseRoute] = []
-        self._http_middlewares = list(http_middlewares)
+        self._http_middlewares = list(http_middlewares) + [
+            lambda endpoint: (
+                setattr(endpoint, "__tags__", list(tags)) if tags else None
+            )
+            or endpoint
+        ]
         self._socket_middlewares = list(socket_middlewares)
         for route in iterable:
             self << route

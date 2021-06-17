@@ -5,7 +5,7 @@ import pytest
 from async_asgi_testclient import TestClient
 from pydantic import BaseModel
 
-from indexpy import HttpRoute, HttpView, Index, Path, Routes
+from indexpy import HttpRoute, HttpView, Index, Path, Routes, required_method
 from indexpy.openapi import describe_extra_docs, describe_response
 from indexpy.openapi.application import OpenAPI
 
@@ -159,6 +159,23 @@ def test_openapi_single_function_tags():
     @app.router.http.get("/", name=None, tags=["tag0"])
     async def homepage():
         return ""
+
+    assert openapi._generate_path(app.router.search("http", "/")[1], "/", {}) == {
+        "get": {"tags": ["tag0"]}
+    }
+
+
+def test_openapi_routes_tags():
+    app = Index()
+    openapi = OpenAPI("Title", "description", "1.0")
+    app.router << "/docs" // openapi.routes
+
+    async def homepage():
+        return ""
+
+    app.router << Routes(
+        HttpRoute("/", homepage) @ required_method("GET"), tags=["tag0"]
+    )
 
     assert openapi._generate_path(app.router.search("http", "/")[1], "/", {}) == {
         "get": {"tags": ["tag0"]}
