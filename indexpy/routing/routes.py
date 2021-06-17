@@ -367,7 +367,7 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         self._list: typing.List[BaseRoute] = []
         self._http_middlewares = list(http_middlewares) + [
             lambda endpoint: (
-                setattr(endpoint, "__tags__", list(tags)) if tags else None
+                setattr(endpoint, "__tags__", list(tags)) if tags else None  # type: ignore
             )
             or endpoint
         ]
