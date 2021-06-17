@@ -82,7 +82,7 @@ You can add middlewares to route objects, and these will affect the endpoint. Ve
     You can catch potentional parameters validation exception in registered middlewares. 
 
 !!! notice ""
-    In this document, decorators registered like this is called `middlwares`. 
+    In this document, decorators registered like this is called a `middlware`. 
 
 ```python
 HttpRoute(...) @ decorator
