@@ -183,6 +183,10 @@ class OpenAPI:
             }
         ]
         openapi["paths"] = deepcopy(self._generate_paths(request.app, definitions))
+        for path_obj in openapi["paths"].values():
+            for method_obj in path_obj.values():
+                if "responses" not in method_obj:
+                    method_obj["responses"] = {}
         openapi["definitions"] = deepcopy(definitions)
         return openapi
 
