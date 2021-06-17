@@ -82,19 +82,19 @@ You can add middlewares to route objects, and these will affect the endpoint. Ve
     You can catch potentional parameters validation exception in registered middlewares. 
 
 !!! notice ""
-    In this document, decorators registered like this is called a `middlware`. 
+    In this document, decorator registered like this is called a `middleware`. 
 
 ```python
 HttpRoute(...) @ decorator
 ```
 
-像注册普通的装饰器一样，你可以注册多个；执行顺序也一样，由远到近的执行。
+Just like registering a normal decorator, you can register many. And they will be execute from far to near.
 
 ```python
 HttpRoute(...) @ decorator1 @ decorator2 @ decorator3
 ```
 
-并且，你同样可以在使用装饰器进行路由注册时注册中间件，如下所示，其执行顺序同样是由右到左。
+What's more, you can also register middlewares when you are using the decorator method to register route. As the following shows, they will be execute from far to near too.
 
 ```python
 @app.router.http("/path", middlewares=[decorator1, decorator2, decorator3])
