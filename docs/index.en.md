@@ -8,7 +8,7 @@ If you find any bugs, please visit [Github Issues](https://github.com/abersheera
 
 The name comes from kennethreitz's [project of the same name](https://github.com/kennethreitz-archive/index.py), but with the development of various ideas...it gradually deviates from the original design.
 
-## installation method
+## Install
 
 Index.py requires Python to be at least 3.7 and has no system requirements. If you cannot/do not want to upgrade the Python version, you can use docker to run Index.py.
 
