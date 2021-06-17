@@ -30,13 +30,13 @@ theme:
       quote: octicons/quote-16
 
 nav:
-  - Homepage: index.md
-  - Route: route.md
+  - 介绍: index.md
+  - 路由: route.md
   - Http: "http.md"
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
-  - Parameters: "parameters.md"
-  - Command: "command.md"
+  - OpenAPI: "parameters.md"
+  - 命令: "command.md"
 
 markdown_extensions:
   - admonition
@@ -53,5 +53,15 @@ plugins:
       languages:
         zh: 中文
         en: English
+      nav_translations:
+        en:
+          介绍: Introduction
+          路由: Routing
+          命令: Commands
+
+extra:
+  analytics:
+    provider: google
+    property: G-48LLZS5518
 
 copyright: Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
