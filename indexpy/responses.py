@@ -5,16 +5,12 @@ import typing
 from pathlib import PurePath
 from types import AsyncGeneratorType
 
-from baize.asgi import (
-    URL,
-    FileResponse,
-    HTMLResponse,
-    JSONResponse,
-    PlainTextResponse,
-    RedirectResponse,
-)
+from baize.asgi import URL, FileResponse, HTMLResponse
+from baize.asgi import JSONResponse as SimpleJSONResponse
+from baize.asgi import PlainTextResponse, RedirectResponse
 from baize.asgi import Response as HttpResponse
 from baize.asgi import SendEventResponse, ServerSentEvent, StreamResponse
+from pydantic.json import pydantic_encoder
 
 from .requests import request
 
@@ -31,6 +27,23 @@ __all__ = [
     "StreamResponse",
     "TemplateResponse",
 ]
+
+
+class JSONResponse(SimpleJSONResponse):
+    def __init__(
+        self,
+        content: typing.Any,
+        status_code: int = 200,
+        headers: typing.Mapping[str, str] = None,
+        **kwargs: typing.Any,
+    ) -> None:
+        json_kwargs: typing.Dict[str, typing.Any] = {
+            "default": pydantic_encoder,
+        }
+        json_kwargs.update(**kwargs)
+        super().__init__(
+            content, status_code=status_code, headers=headers, **json_kwargs
+        )
 
 
 def TemplateResponse(
