@@ -99,6 +99,8 @@ async def test_openapi_page():
 
     response = await client.get("/docs/json")
     assert response.status_code == 200
+    assert len(response.headers["hash"]) == 32
+
     openapi_docs_text = response.text
     assert (
         openapi_docs_text

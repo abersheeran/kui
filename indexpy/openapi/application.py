@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import inspect
+import json
 import operator
 import sys
 import typing
 import warnings
 from copy import deepcopy
 from functools import reduce
+from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
@@ -197,15 +199,17 @@ class OpenAPI:
                 "/docs endpoint is going to be deprecated in next major version since it's misleading, please use /json instead",
                 PendingDeprecationWarning,
             )
-            return await json()
+            return await json_docs()
 
-        async def json() -> HttpResponse:
+        async def json_docs() -> HttpResponse:
             openapi = self.create_docs(request)
-            return JSONResponse(openapi)
+            return JSONResponse(
+                openapi, headers={"hash": md5(json.dumps(openapi).encode()).hexdigest()}
+            )
 
         return Routes(
             HttpRoute("", redirect),
             HttpRoute("/", template),
             HttpRoute("/docs", docs),
-            HttpRoute("/json", json),
+            HttpRoute("/json", json_docs),
         )
