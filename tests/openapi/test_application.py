@@ -14,7 +14,8 @@ from indexpy.openapi.application import OpenAPI
 async def test_openapi_page():
     app = Index()
     openapi = OpenAPI("Title", "description", "1.0")
-    app.router << "/docs" // openapi.routes
+    app.router << Routes("/docs" // openapi.routes, namespace="docs")
+    assert app.router.url_for("docs:json_docs") == "/docs/json"
 
     @app.router.http("/hello")
     @describe_response(200, content=List[str])
