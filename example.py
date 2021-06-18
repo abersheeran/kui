@@ -1,7 +1,8 @@
 import asyncio
+from indexpy.routing.routes import SocketRoute
 from pathlib import Path as FilePath
 
-from indexpy import FileResponse, HTTPException, Index, Path, required_method
+from indexpy import websocket, HTTPException, Index, Path, required_method
 from indexpy.routing import HttpRoute
 
 
@@ -31,7 +32,6 @@ async def message():
     return message_gen()
 
 
-@required_method("GET")
 async def sources(filepath: str = Path()):
     """
     Return source files
@@ -43,13 +43,22 @@ async def sources(filepath: str = Path()):
         raise HTTPException(404)
 
 
+async def ws():
+    await websocket.accept()
+    while not await websocket.is_disconnected():
+        await websocket.send_json({"data": "(^_^)"})
+        await asyncio.sleep(app.state.wait_time)
+    await websocket.close()
+
+
 app = Index(
     debug=True,
     routes=[
         HttpRoute("/", homepage),
         HttpRoute("/exc", exc),
         HttpRoute("/message", message),
-        HttpRoute("/sources/{filepath:path}", sources),
+        HttpRoute("/sources/{filepath:path}", sources) @ required_method("GET"),
+        SocketRoute("/", ws),
     ],
 )
 app.state.wait_time = 1

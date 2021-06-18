@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import typing
 from contextvars import ContextVar
@@ -55,6 +56,23 @@ request = bind_contextvar(request_var)
 
 
 class WebSocket(BaiZeWebSocket, HTTPConnection):
+    async def is_disconnected(self) -> bool:
+        """
+        The method used to determine whether the connection is interrupted.
+
+        NOTE: The call may discard the information sent by the client.
+        """
+        if not hasattr(self, "_is_disconnected"):
+            self._is_disconnected = False
+
+        if not self._is_disconnected:
+            try:
+                message = await asyncio.wait_for(self._receive(), timeout=0.0000001)
+                self._is_disconnected = message.get("type") == "websocket.disconnect"
+            except asyncio.TimeoutError:
+                pass
+        return self._is_disconnected
+
     async def receive_json(self, mode: str = "text") -> typing.Any:
         assert mode in ("text", "binary")
         assert self.application_state == WebSocketState.CONNECTED

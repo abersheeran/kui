@@ -34,3 +34,6 @@ async def test_example_application():
 
         response = await client.get("/sources/example")
         assert response.status_code == 404
+
+        async with client.websocket_connect("/") as socket:
+            assert await socket.receive_json() == {"data": "(^_^)"}

@@ -53,7 +53,7 @@ pytz = ">=2015.7"
 
 [[package]]
 name = "baize"
-version = "0.8.1"
+version = "0.8.2"
 description = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 category = "main"
 optional = false
@@ -606,7 +606,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-click"
-version = "7.1.1"
+version = "7.1.2"
 description = "Typing stubs for click"
 category = "dev"
 optional = false
@@ -671,7 +671,7 @@ docs = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "746754444244167205147ba07dc5aa5cdd28c7baf744d3156c0739e0f6795c69"
+content-hash = "7009e5b86f2138b8cf18e1acfc4381291a3f6dafc5894a606c13341554ac9d10"
 
 [metadata.files]
 appdirs = [
@@ -694,8 +694,8 @@ babel = [
     {file = "Babel-2.9.1.tar.gz", hash = "sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0"},
 ]
 baize = [
-    {file = "baize-0.8.1-py3-none-any.whl", hash = "sha256:ee4df5b813abead411a0e4e84f9460cd4c3bae525507fb504e76329ffe608830"},
-    {file = "baize-0.8.1.tar.gz", hash = "sha256:8b130a8731ecb3a6b3988617d2843c10193949e75249a8f3b830c4e33c0c40a4"},
+    {file = "baize-0.8.2-py3-none-any.whl", hash = "sha256:dfc76ef68d23bc767def023e5d9021c2b8676f93a1344716d88048bc68510adc"},
+    {file = "baize-0.8.2.tar.gz", hash = "sha256:1c08bd9a2b1bb8e6711a8e92a7063ac78828737eeee5c42e3e00723cfe102d26"},
 ]
 black = [
     {file = "black-21.6b0-py3-none-any.whl", hash = "sha256:dfb8c5a069012b2ab1e972e7b908f5fb42b6bbabcba0a788b86dc05067c7d9c7"},
@@ -1134,7 +1134,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
 types-click = [
-    {file = "types_click-7.1.1-py2.py3-none-any.whl", hash = "sha256:b1db0fb31a6d4a31c4282c231827cbdab628b0d504b016937822d943cd5e40a5"},
+    {file = "types-click-7.1.2.tar.gz", hash = "sha256:040897284e4f9466825c3865f708a985a8e7ba4d8e22cb9198ffb7b522160850"},
+    {file = "types_click-7.1.2-py2.py3-none-any.whl", hash = "sha256:4722746f1ec9fd3fc8b1d7fb8c840604dc22f9e32bcc7a31a36d6d85cc2bce24"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.0-py2-none-any.whl", hash = "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497"},
