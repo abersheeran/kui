@@ -1,9 +1,16 @@
 import asyncio
-from indexpy.routing.routes import SocketRoute
 from pathlib import Path as FilePath
 
-from indexpy import websocket, HTTPException, Index, Path, required_method
-from indexpy.routing import HttpRoute
+from indexpy import (
+    HTTPException,
+    HttpRoute,
+    Index,
+    Path,
+    SocketRoute,
+    required_method,
+    websocket,
+)
+from indexpy.openapi import OpenAPI
 
 
 async def homepage():
@@ -61,4 +68,5 @@ app = Index(
         SocketRoute("/", ws),
     ],
 )
+app.router << "/docs" // OpenAPI("", "", "").routes
 app.state.wait_time = 1

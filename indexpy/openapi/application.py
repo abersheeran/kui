@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import inspect
 import json
 import operator
 import sys
 import typing
-import warnings
 from copy import deepcopy
 from functools import reduce
 from hashlib import md5
@@ -23,7 +23,7 @@ if typing.TYPE_CHECKING:
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
-from indexpy.responses import HTMLResponse, HttpResponse, JSONResponse
+from indexpy.responses import HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute, Routes
 from indexpy.utils import F
 
@@ -195,25 +195,30 @@ class OpenAPI:
         async def redirect():
             return request.url.replace(path=request.url.path + "/")
 
-        async def template() -> HttpResponse:
+        async def template():
             return HTMLResponse(self.html_template)
 
-        async def docs() -> HttpResponse:
-            warnings.warn(
-                "/docs endpoint is going to be deprecated in next major version since it's misleading, please use /json instead",
-                PendingDeprecationWarning,
-            )
-            return await json_docs()
-
-        async def json_docs() -> HttpResponse:
+        async def json_docs():
             openapi = self.create_docs(request)
             return JSONResponse(
                 openapi, headers={"hash": md5(json.dumps(openapi).encode()).hexdigest()}
             )
 
+        async def heartbeat():
+            async def g():
+                openapi = self.create_docs(request)
+                yield {
+                    "id": md5(json.dumps(openapi).encode()).hexdigest(),
+                    "data": json.dumps(openapi),
+                }
+                while True:
+                    await asyncio.sleep(1)
+
+            return g()
+
         return Routes(
             HttpRoute("", redirect),
             HttpRoute("/", template),
-            HttpRoute("/docs", docs),
             HttpRoute("/json", json_docs),
+            HttpRoute("/heartbeat", heartbeat),
         )
