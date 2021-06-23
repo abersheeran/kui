@@ -7,9 +7,9 @@ from types import ModuleType
 from typing import Any, Dict, Generic, Optional, Tuple, TypeVar, Union
 
 from .contextvars import bind_contextvar
+from .importer import import_from_string
 from .pipe import FF, F
 from .state import State
-from .importer import import_from_string
 
 __all__ = [
     "bind_contextvar",
@@ -19,6 +19,7 @@ __all__ = [
     "safe_issubclass",
     "Singleton",
     "import_module",
+    "import_from_string",
     "ImmutableAttribute",
 ]
 

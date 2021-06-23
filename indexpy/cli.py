@@ -11,7 +11,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
-from .utils import F, import_module, import_from_string
+from .utils import F, import_from_string, import_module
 
 
 def execute(command: Union[List[str], str]) -> int:
@@ -99,7 +99,7 @@ else:
         config.worker_class = worker_class
 
         create_signal_handle = lambda shutdown_event: lambda sig, frame: (
-            setattr(asgi_app, "should_exit", True),
+            setattr(asgi_app, "should_exit", True),  # type: ignore
             shutdown_event.set(),
         )
         if worker_class == "uvloop":
@@ -108,6 +108,7 @@ else:
             uvloop.install()
         if worker_class in ("asyncio", "uvloop"):
             import asyncio
+
             from hypercorn.asyncio import serve
 
             loop = asyncio.get_event_loop()
@@ -117,17 +118,17 @@ else:
                 signal.signal(sig, create_signal_handle(shutdown_event))
 
             loop.run_until_complete(
-                serve(asgi_app, config, shutdown_trigger=shutdown_event.wait)
+                serve(asgi_app, config, shutdown_trigger=shutdown_event.wait)  # type: ignore
             )
         else:
             import trio
-            from hypercorn.trio import serve
+            from hypercorn.trio import serve  # type: ignore
 
             shutdown_event = trio.Event()
             for sig in {signal.SIGINT, signal.SIGTERM, signal.SIGBREAK}:
                 signal.signal(sig, create_signal_handle(shutdown_event))
 
-            trio.run(serve(asgi_app, config, shutdown_trigger=shutdown_event.wait))
+            trio.run(serve(asgi_app, config, shutdown_trigger=shutdown_event.wait))  # type: ignore
 
     index_cli.add_command(hypercorn_cli, name="hypercorn")
 
