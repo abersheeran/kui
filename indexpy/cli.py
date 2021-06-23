@@ -53,7 +53,6 @@ else:
         show_default=True,
         help="A string of the form: HOST:PORT, unix:PATH, fd://FD.",
     )
-    @click.option("--autoreload/--no-autoreload", default=False, show_default=True)
     @click.option(
         "--log-level",
         type=click.Choice(["critical", "error", "warning", "info", "debug"]),
@@ -79,9 +78,9 @@ else:
         configuration: str,
         application: str,
         bind: str,
-        autoreload: bool,
         log_level: str,
     ):
+        sys.path.insert(0, os.getcwd())
         asgi_app = import_from_string(application)
         config = hypercorn.Config()
         if configuration is not None:
@@ -97,7 +96,6 @@ else:
                 raise SystemExit(1)
         config.bind = [bind]
         config.loglevel = log_level.upper()
-        config.use_reloader = autoreload
         config.worker_class = worker_class
 
         create_signal_handle = lambda shutdown_event: lambda sig, frame: (
