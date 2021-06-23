@@ -23,7 +23,7 @@ def schema_parameter(
     if m is None:
         return []
 
-    _schemas = deepcopy(m.schema())
+    _schemas = deepcopy(m.schema(ref_template="#/components/{model}"))
     properties: Dict[str, Any] = _schemas["properties"]
     required = _schemas.get("required", ())
 
@@ -43,7 +43,7 @@ def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], D
     if body is None:
         return None, {}
 
-    _schema: Dict = deepcopy(body.schema())
+    _schema: Dict = deepcopy(body.schema(ref_template="#/components/{model}"))
     definitions = _schema.pop("definitions", {})
     content_type = "application/json"
 
@@ -60,6 +60,6 @@ def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], D
 def schema_response(content: Union[Type[BaseModel], Dict]) -> Tuple[Dict, Dict]:
     if isinstance(content, dict):
         return content, {}
-    schema = deepcopy(content.schema())
+    schema = deepcopy(content.schema(ref_template="#/components/{model}"))
     definitions = schema.pop("definitions", {})
     return {"application/json": {"schema": schema}}, definitions
