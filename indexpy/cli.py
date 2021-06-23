@@ -114,7 +114,7 @@ else:
             loop = asyncio.get_event_loop()
 
             shutdown_event = asyncio.Event(loop=loop)
-            for sig in {signal.SIGINT, signal.SIGTERM, signal.SIGBREAK}:
+            for sig in {signal.SIGINT, signal.SIGTERM}:
                 signal.signal(sig, create_signal_handle(shutdown_event))
 
             loop.run_until_complete(
@@ -125,7 +125,7 @@ else:
             from hypercorn.trio import serve  # type: ignore
 
             shutdown_event = trio.Event()
-            for sig in {signal.SIGINT, signal.SIGTERM, signal.SIGBREAK}:
+            for sig in {signal.SIGINT, signal.SIGTERM}:
                 signal.signal(sig, create_signal_handle(shutdown_event))
 
             trio.run(serve(asgi_app, config, shutdown_trigger=shutdown_event.wait))  # type: ignore
