@@ -211,7 +211,7 @@ class OpenAPI:
                     "id": md5(json.dumps(openapi).encode()).hexdigest(),
                     "data": json.dumps(openapi),
                 }
-                while True:
+                while not request.app.should_exit:
                     await asyncio.sleep(1)
 
             return g()

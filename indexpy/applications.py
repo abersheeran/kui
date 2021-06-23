@@ -5,6 +5,7 @@ import dataclasses
 import inspect
 import sys
 import traceback
+from functools import reduce
 from typing import (
     Any,
     Awaitable,
@@ -17,6 +18,8 @@ from typing import (
     TypeVar,
     Union,
 )
+
+from baize.typing import ASGIApp
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -32,7 +35,7 @@ from .requests import HttpRequest, WebSocket, request_var, websocket_var
 from .responses import convert_response
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
-from .utils import State
+from .utils import F, State
 
 NoArgumentCallable = Union[Callable[[], Any], Callable[[], Awaitable[Any]]]
 
@@ -95,14 +98,18 @@ class Index:
         exception_handlers: Dict[int | Type[Exception], ErrorView] = {},
         factory_class: FactoryClass = FactoryClass(),
     ) -> None:
+        self.should_exit = False
         self.__dict__["debug"] = debug
         self.factory_class = factory_class
         self.templates = templates
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
         self.exception_contextmanager = ExceptionContextManager(exception_handlers)
+        self.asgi_middlewares: List[F] = []
         # We expect to be able to catch all code errors, so as an ASGI middleware.
-        self.app_with_debug = DebugMiddleware(app=self.app, debug=self.debug)
+        self.app_with_debug = DebugMiddleware(
+            app=self.build_app_with_middlewares(), debug=self.debug
+        )
 
     @property
     def debug(self) -> bool:
@@ -112,6 +119,16 @@ class Index:
     def debug(self, value: bool) -> None:
         self.__dict__["debug"] = bool(value)
         self.app_with_debug.debug = bool(value)
+
+    def build_app_with_middlewares(self) -> ASGIApp:
+        return reduce(lambda a, m: m(a), self.asgi_middlewares, self.app)
+
+    def add_middleware(self, middleware_class: type, **options: Any) -> None:
+        """
+        Add ASGI middleware
+        """
+        self.asgi_middlewares.append(F(middleware_class, **options))
+        self.app_with_debug.app = self.build_app_with_middlewares()
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorView
