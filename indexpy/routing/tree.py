@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple
 from typing import cast as typing_cast
 
-from baize.routing import Convertor, PathConvertor, compile_path
+from baize.routing import AnyConvertor, Convertor, compile_path
 
 RouteType = Tuple[str, Dict[str, Convertor], Callable[[], Any]]
 
@@ -50,9 +50,9 @@ def append(
         param_name = path_format[1 : length - 1]
         convertor = param_convertors[param_name]
         re_pattern = re.compile(convertor.regex)
-        if isinstance(convertor, PathConvertor) and path_format[-1] != "}":
+        if isinstance(convertor, AnyConvertor) and path_format[-1] != "}":
             raise ValueError(
-                "`PathConvertor` is only allowed to appear at the end of path"
+                "`AnyConvertor` is only allowed to appear at the end of path"
             )
         for node in (
             node for node in point.next_nodes or () if node.re_pattern is not None
