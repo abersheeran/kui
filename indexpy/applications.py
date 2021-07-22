@@ -2,24 +2,28 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import functools
 import inspect
 import sys
 import traceback
 from functools import reduce
+from pathlib import PurePath
+from types import AsyncGeneratorType
 from typing import (
     Any,
+    AsyncGenerator,
     Awaitable,
     Callable,
     Dict,
     Iterable,
     List,
+    Mapping,
+    NoReturn,
     Optional,
     Type,
     TypeVar,
     Union,
 )
-
-from baize.typing import ASGIApp
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -27,12 +31,22 @@ else:
     from typing import Literal
 
 from baize.asgi import Receive, Scope, Send
+from baize.datastructures import URL
+from baize.typing import ASGIApp, ServerSentEvent
 from baize.utils import cached_property
 
 from .debug import DebugMiddleware
 from .exceptions import ErrorView, ExceptionContextManager, HTTPException
 from .requests import HttpRequest, WebSocket, request_var, websocket_var
-from .responses import convert_response
+from .responses import (
+    FileResponse,
+    HttpResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    SendEventResponse,
+    convert_response,
+)
 from .routing.routes import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
 from .utils import F, State
@@ -157,6 +171,61 @@ class Index:
     @cached_property
     def state(self) -> State:
         return State()
+
+    @cached_property
+    def response_convertor(self):
+        @functools.singledispatch
+        def automatic(*args: Any) -> HttpResponse:
+            raise TypeError(
+                f"Cannot find automatic handler for this type: {type(args[0])}"
+            )
+
+        @automatic.register(HttpResponse)
+        def raw_response(response: HttpResponse, *args: Any) -> HttpResponse:
+            return response
+
+        @automatic.register(type(None))
+        def _none(ret: Type[None]) -> NoReturn:
+            raise TypeError(
+                "Get 'None'. Maybe you need to add a return statement to the function."
+            )
+
+        @automatic.register(tuple)
+        @automatic.register(list)
+        @automatic.register(dict)
+        def _json(
+            body, status: int = 200, headers: Mapping[str, str] = None
+        ) -> HttpResponse:
+            return JSONResponse(body, status, headers)
+
+        @automatic.register(str)
+        @automatic.register(bytes)
+        def _plain_text(
+            body: str | bytes,
+            status: int = 200,
+            headers: Mapping[str, str] = None,
+        ) -> HttpResponse:
+            return PlainTextResponse(body, status, headers)
+
+        @automatic.register(AsyncGeneratorType)
+        def _send_event(
+            generator: AsyncGenerator[ServerSentEvent, None],
+            status: int = 200,
+            headers: Mapping[str, str] = None,
+        ) -> HttpResponse:
+            return SendEventResponse(generator, status, headers)
+
+        @automatic.register(PurePath)
+        def _file(filepath: PurePath, download_name: str = None):
+            return FileResponse(str(filepath), download_name=download_name)
+
+        @automatic.register(URL)
+        def _redirect(
+            url: URL, status: int = 307, headers: Mapping[str, str] = None
+        ) -> HttpResponse:
+            return RedirectResponse(url, status_code=status, headers=headers)
+
+        return automatic
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]

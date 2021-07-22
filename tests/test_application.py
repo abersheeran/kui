@@ -37,3 +37,37 @@ async def test_example_application():
 
         async with client.websocket_connect("/") as socket:
             assert await socket.receive_json() == {"data": "(^_^)"}
+
+
+def test_custom_application_response_convertor():
+    from dataclasses import asdict, dataclass
+    from typing import Mapping
+
+    from indexpy import HttpResponse, Index, JSONResponse, PlainTextResponse
+
+    app = Index()
+
+    @dataclass
+    class Error:
+        code: int = 0
+        title: str = ""
+        message: str = ""
+
+    @app.response_convertor.register(Error)
+    def _error_json(
+        error: Error, status: int = 400, headers: Mapping[str, str] = None
+    ) -> HttpResponse:
+        return JSONResponse(asdict(error), status, headers)
+
+    @app.response_convertor.register(tuple)
+    @app.response_convertor.register(list)
+    @app.response_convertor.register(dict)
+    def _more_json(
+        body, status: int = 200, headers: Mapping[str, str] = None
+    ) -> HttpResponse:
+        return PlainTextResponse(str(body), status, headers)
+
+    assert isinstance(app.response_convertor(Error()), JSONResponse)
+    assert isinstance(app.response_convertor(tuple()), PlainTextResponse)
+    assert isinstance(app.response_convertor(list()), PlainTextResponse)
+    assert isinstance(app.response_convertor(dict()), PlainTextResponse)

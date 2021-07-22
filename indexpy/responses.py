@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import functools
 import typing
-from pathlib import PurePath
-from types import AsyncGeneratorType
 
-from baize.asgi import URL, FileResponse, HTMLResponse
-from baize.asgi import JSONResponse as SimpleJSONResponse
+from baize.asgi import FileResponse, HTMLResponse
+from baize.asgi import JSONResponse as _JSONResponse
 from baize.asgi import PlainTextResponse, RedirectResponse
 from baize.asgi import Response as HttpResponse
 from baize.asgi import SendEventResponse, ServerSentEvent, StreamResponse
@@ -15,7 +12,6 @@ from pydantic.json import pydantic_encoder
 from .requests import request
 
 __all__ = [
-    "automatic",
     "convert_response",
     "HttpResponse",
     "FileResponse",
@@ -24,12 +20,13 @@ __all__ = [
     "PlainTextResponse",
     "RedirectResponse",
     "SendEventResponse",
+    "ServerSentEvent",
     "StreamResponse",
     "TemplateResponse",
 ]
 
 
-class JSONResponse(SimpleJSONResponse):
+class JSONResponse(_JSONResponse):
     def __init__(
         self,
         content: typing.Any,
@@ -75,62 +72,6 @@ def convert_response(response: typing.Any) -> HttpResponse:
 
     """
     if isinstance(response, tuple):
-        return automatic(*response)
+        return request.app.response_convertor(*response)
     else:
-        return automatic(response)
-
-
-@functools.singledispatch
-def automatic(*args: typing.Any) -> HttpResponse:
-    # Response or Response subclass
-    if isinstance(args[0], HttpResponse):
-        return args[0]
-
-    raise TypeError(f"Cannot find automatic handler for this type: {type(args[0])}")
-
-
-@automatic.register(type(None))
-def _none(ret: typing.Type[None]) -> typing.NoReturn:
-    raise TypeError(
-        "Get 'None'. Maybe you need to add a return statement to the function."
-    )
-
-
-@automatic.register(tuple)
-@automatic.register(list)
-@automatic.register(dict)
-def _json(
-    body, status: int = 200, headers: typing.Mapping[str, str] = None
-) -> HttpResponse:
-    return JSONResponse(body, status, headers)
-
-
-@automatic.register(str)
-@automatic.register(bytes)
-def _plain_text(
-    body: typing.Union[str, bytes],
-    status: int = 200,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return PlainTextResponse(body, status, headers)
-
-
-@automatic.register(AsyncGeneratorType)
-def _send_event(
-    generator: typing.AsyncGenerator[ServerSentEvent, None],
-    status: int = 200,
-    headers: typing.Mapping[str, str] = None,
-) -> HttpResponse:
-    return SendEventResponse(generator, status, headers)
-
-
-@automatic.register(PurePath)
-def _file(filepath: PurePath, download_name: str = None):
-    return FileResponse(str(filepath), download_name=download_name)
-
-
-@automatic.register(URL)
-def _redirect(
-    url: URL, status: int = 307, headers: typing.Mapping[str, str] = None
-) -> HttpResponse:
-    return RedirectResponse(url, status_code=status, headers=headers)
+        return request.app.response_convertor(response)

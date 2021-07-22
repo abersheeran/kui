@@ -441,7 +441,9 @@ async def no_content():
 from dataclasses import dataclass, asdict
 from typing import Mapping
 
-from indexpy.http.responses import automatic, HttpResponse, JSONResponse
+from indexpy import Index, HttpResponse, JSONResponse
+
+app = Index()
 
 
 @dataclass
@@ -451,7 +453,7 @@ class Error:
     message: str = ""
 
 
-@automatic.register(Error)
+@app.response_convertor.register(Error)
 def _error_json(error: Error, status: int = 400, headers: Mapping[str, str] = None) -> HttpResponse:
     return JSONResponse(asdict(error), status, headers)
 ```
@@ -459,15 +461,16 @@ def _error_json(error: Error, status: int = 400, headers: Mapping[str, str] = No
 或者你想覆盖默认的 `tuple`/`list`/`dict` 所对应的 `JSONResponse`：
 
 ```python
-from indexpy.responses import automatic, HttpResponse
+from typing import Mapping
+from indexpy import Index, HttpResponse
 
-...
+app = Index()
 
 
-@automatic.register(tuple)
-@automatic.register(list)
-@automatic.register(dict)
-def _more_json(body: dict, status: int = 200, headers: dict = None) -> HttpResponse:
+@app.response_convertor.register(tuple)
+@app.response_convertor.register(list)
+@app.response_convertor.register(dict)
+def _more_json(body, status: int = 200, headers: Mapping[str, str] = None) -> HttpResponse:
     return CustomizeJSONResponse(body, status, headers)
 ```
 
@@ -480,7 +483,7 @@ def _more_json(body: dict, status: int = 200, headers: dict = None) -> HttpRespo
 你可以通过抛出 `HTTPException` 来返回一个 HTTP 响应（不必担心它变成一个真正的异常抛出，Index-py 会将它变成一个普通的响应对象）。如果你没有给出一个类型为 `bytes` 或 `str` 的 `content` 值，那么它将使用 Python 标准库中的 `http.HTTPStatus(status_code).description` 作为最终结果。
 
 ```python
-from indexpy.http import HTTPException
+from indexpy import HTTPException
 
 
 async def endpoint():
@@ -492,7 +495,7 @@ async def endpoint():
 有时候也许你想返回更多的信息，可以像使用 `HttpResponse` 一样为它传递 `content`、`headers` 参数来控制最终实际的响应对象。下面是一个简单的例子。
 
 ```python
-from indexpy.http import HTTPException
+from indexpy import HTTPException
 
 
 async def endpoint():
