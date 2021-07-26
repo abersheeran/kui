@@ -187,7 +187,7 @@ class OpenAPI:
             for method_obj in path_obj.values():
                 if "responses" not in method_obj:
                     method_obj["responses"] = {}
-        openapi["components"] = deepcopy(definitions)
+        openapi.setdefault("components", {})["schemas"] = deepcopy(definitions)
         return openapi
 
     @property

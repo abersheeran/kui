@@ -14,6 +14,8 @@ from pydantic import BaseModel
 
 from .types import UploadFile
 
+REF_TEMPLATE = "#/components/schemas/{model}"
+
 
 def schema_parameter(
     m: Optional[Type[BaseModel]],
@@ -23,7 +25,7 @@ def schema_parameter(
     if m is None:
         return []
 
-    _schemas = deepcopy(m.schema(ref_template="#/components/{model}"))
+    _schemas = deepcopy(m.schema(ref_template=REF_TEMPLATE))
     properties: Dict[str, Any] = _schemas["properties"]
     required = _schemas.get("required", ())
 
@@ -43,7 +45,7 @@ def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], D
     if body is None:
         return None, {}
 
-    _schema: Dict = deepcopy(body.schema(ref_template="#/components/{model}"))
+    _schema: Dict = deepcopy(body.schema(ref_template=REF_TEMPLATE))
     definitions = _schema.pop("definitions", {})
     content_type = "application/json"
 
@@ -60,6 +62,6 @@ def schema_request_body(body: Type[BaseModel] = None) -> Tuple[Optional[Dict], D
 def schema_response(content: Union[Type[BaseModel], Dict]) -> Tuple[Dict, Dict]:
     if isinstance(content, dict):
         return content, {}
-    schema = deepcopy(content.schema(ref_template="#/components/{model}"))
+    schema = deepcopy(content.schema(ref_template=REF_TEMPLATE))
     definitions = schema.pop("definitions", {})
     return {"application/json": {"schema": schema}}, definitions
