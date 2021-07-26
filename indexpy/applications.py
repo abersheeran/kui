@@ -194,8 +194,10 @@ class Index:
         @automatic.register(list)
         @automatic.register(dict)
         def _json(
-            body, status: int = 200, headers: Mapping[str, str] = None
-        ) -> HttpResponse:
+            body: tuple | list | dict,
+            status: int = 200,
+            headers: Mapping[str, str] = None,
+        ) -> JSONResponse:
             return JSONResponse(body, status, headers)
 
         @automatic.register(str)
@@ -204,7 +206,7 @@ class Index:
             body: str | bytes,
             status: int = 200,
             headers: Mapping[str, str] = None,
-        ) -> HttpResponse:
+        ) -> PlainTextResponse:
             return PlainTextResponse(body, status, headers)
 
         @automatic.register(AsyncGeneratorType)
@@ -212,17 +214,17 @@ class Index:
             generator: AsyncGenerator[ServerSentEvent, None],
             status: int = 200,
             headers: Mapping[str, str] = None,
-        ) -> HttpResponse:
+        ) -> SendEventResponse:
             return SendEventResponse(generator, status, headers)
 
         @automatic.register(PurePath)
-        def _file(filepath: PurePath, download_name: str = None):
+        def _file(filepath: PurePath, download_name: str = None) -> FileResponse:
             return FileResponse(str(filepath), download_name=download_name)
 
         @automatic.register(URL)
         def _redirect(
             url: URL, status: int = 307, headers: Mapping[str, str] = None
-        ) -> HttpResponse:
+        ) -> RedirectResponse:
             return RedirectResponse(url, status_code=status, headers=headers)
 
         return automatic

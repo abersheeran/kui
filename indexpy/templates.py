@@ -31,6 +31,8 @@ except ImportError:
 else:
 
     class _Jinja2TemplateResponse(SmallResponse):
+        media_type = "text/html"
+
         def __init__(
             self,
             env: jinja2.Environment,
