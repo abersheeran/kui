@@ -36,6 +36,9 @@ class NoRouteFound(Exception):
     """
 
 
+_RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
+
+
 @dataclass
 class BaseRoute:
     path: str
@@ -50,7 +53,7 @@ class BaseRoute:
     ) -> None:
         reduce(operator.matmul, middlewares, self)
 
-    def __matmul__(self, decorator: typing.Callable[[T], T]):
+    def __matmul__(self: _RouteSelf, decorator: typing.Callable[[T], T]) -> _RouteSelf:
         endpoint = self.endpoint
         self.endpoint = decorator(self.endpoint)
         if not (hasattr(self.endpoint, "__wrapped__") or self.endpoint is endpoint):
@@ -68,6 +71,21 @@ class BaseRoute:
 
 @dataclass
 class HttpRoute(BaseRoute):
+    summary: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    tags: typing.Optional[typing.Iterable[str]] = None
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.summary:
+            setattr(self.endpoint, "__summary__", self.summary)
+
+        if self.description:
+            setattr(self.endpoint, "__description__", self.description)
+
+        if self.tags:
+            setattr(self.endpoint, "__tags__", list(self.tags))
+
     def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))
 
@@ -102,17 +120,10 @@ class HttpRegister:
         """
 
         def register(endpoint: View) -> View:
-            if summary:
-                setattr(endpoint, "__summary__", summary)
-
-            if description:
-                setattr(endpoint, "__description__", description)
-
-            if tags:
-                setattr(endpoint, "__tags__", list(tags))
-
             route: HttpRoute = reduce(
-                operator.matmul, middlewares, HttpRoute(path, endpoint, name)
+                operator.matmul,
+                middlewares,
+                HttpRoute(path, endpoint, name, summary, description, tags),
             )
             if method != "any":
                 route = route @ required_method(method.upper())

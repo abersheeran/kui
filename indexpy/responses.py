@@ -44,7 +44,10 @@ class JSONResponse(_JSONResponse):
 
 
 def TemplateResponse(
-    name: str, context: dict, status_code: int = 200, headers: dict = None
+    name: str,
+    context: typing.Mapping[str, typing.Any],
+    status_code: int = 200,
+    headers: typing.Mapping[str, str] = None,
 ) -> HttpResponse:
     templates = request.app.templates
     if templates is None:
