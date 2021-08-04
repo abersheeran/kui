@@ -68,5 +68,5 @@ app = Index(
         SocketRoute("/", ws),
     ],
 )
-app.router << "/docs" // OpenAPI("", "", "").routes
+app.router << "/docs" // OpenAPI().routes
 app.state.wait_time = 1

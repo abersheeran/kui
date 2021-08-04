@@ -1,21 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import inspect
 import json
 import operator
-import sys
 import typing
-from copy import deepcopy
 from functools import reduce
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, Iterable, List, Sequence, TypeVar
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal, TypedDict
-else:
-    from typing import Literal, TypedDict
+from typing_extensions import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
@@ -27,92 +23,94 @@ from indexpy.responses import HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute, Routes
 from indexpy.utils import F
 
+from . import specification as spec
 from .functions import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response
 
-Tag = TypedDict("Tag", {"description": str, "paths": Sequence[str]})
+TagDetail = TypedDict("TagDetail", {"description": str, "paths": Sequence[str]})
 
 
 class OpenAPI:
     def __init__(
         self,
-        title: str,
-        description: str,
-        version: str,
+        info: spec.Info = {"title": "IndexPy API", "version": "1.0.0"},
+        components: spec.Components = {},
         *,
-        tags: Dict[str, Tag] = {},
+        tags: Dict[str, TagDetail] = {},
         template_name: Literal["redoc", "swagger", "rapidoc"] = "swagger",
         template: str = "",
     ) -> None:
         if template == "":
             template = (
-                Path(__file__).absolute().parent / f"{template_name}.html"
+                Path(__file__).absolute().parent / "templates" / f"{template_name}.html"
             ).read_text(encoding="utf8")
 
         self.html_template = template
 
-        info = {"title": title, "description": description, "version": version}
-        self.openapi = {
-            "openapi": "3.0.0",
+        self.openapi: spec.OpenAPI = {
+            "openapi": "3.0.3",
             "info": info,
             "paths": {},
             "tags": [
                 {"name": tag_name, "description": tag_info.get("description", "")}
                 for tag_name, tag_info in tags.items()
             ],
+            "components": components,
         }
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
             for path in tag_info["paths"]:
                 self.path2tag.setdefault(path, []).append(tag_name)
+        self.definitions: dict = {}
 
-    def _generate_paths(self, app: Index, definitions: dict) -> Dict[str, Any]:
-        generate_path_docs = lambda path_format, handler: (
-            path_format,
-            self._generate_path(handler, path_format, definitions),
-        )
-        return dict(
-            app.router.http_tree.iterator()
-            | F(map, lambda x: generate_path_docs(*x))
-            | F(filter, lambda kv: bool(kv[1]))
-        )
+    def _generate_paths(self, app: Index) -> spec.Paths:
+        return {
+            path: openapi_path_item
+            for path, openapi_path_item in (
+                (
+                    path_format,
+                    self._generate_path(handler, path_format),
+                )
+                for path_format, handler in app.router.http_tree.iterator()
+            )
+            if openapi_path_item
+        }
 
-    def _generate_path(self, view: Any, path: str, definitions: dict) -> Dict[str, Any]:
+    def _generate_path(self, view: Any, path: str) -> spec.PathItem:
         """
         Generate documents under a path
         """
         if hasattr(view, "__methods__"):
-            generate_method_docs = lambda method: (
-                method,
-                self._generate_method(
-                    getattr(view, method),
-                    path,
-                    definitions,
-                ),
-            )
-            return dict(
-                view.__methods__
-                | F(map, lambda method: method.lower())
-                | F(filter, lambda method: method != "options")
-                | F(map, generate_method_docs)
-                | F(filter, lambda method_and_docs: bool(method_and_docs[1]))
+            result = clear_empty(
+                {
+                    method: self._generate_method(getattr(view, method), path)
+                    for method in (
+                        method.lower()
+                        for method in typing.cast(Iterable[str], view.__methods__)
+                        if method.lower() != "options"
+                    )
+                }
             )
         elif hasattr(view, "__method__"):
-            return {
-                view.__method__.lower(): self._generate_method(view, path, definitions),
-            } | F(lambda d: {k: v for k, v in d.items() if v})
+            result = clear_empty(
+                {
+                    typing.cast(str, view.__method__).lower(): self._generate_method(
+                        view, path
+                    ),
+                }
+            )
         else:
-            return {}
+            result = {}
 
-    def _generate_method(
-        self, func: object, path: str, definitions: dict
-    ) -> Dict[str, Any]:
+        return typing.cast(spec.PathItem, result)
+
+    def _generate_method(self, func: object, path: str) -> spec.Operation:
         result: Dict[str, Any] = {}
 
-        if getattr(func, "__summary__", None) | F(isinstance, ..., str):
+        # This is mypy check error, if you use pyright/pylance, this is all fine.
+        if hasattr(func, "__summary__") and isinstance(func.__summary__, str):  # type: ignore
             result["summary"] = func.__summary__  # type: ignore
-
-        if getattr(func, "__description__", None) | F(isinstance, ..., str):
+        if hasattr(func, "__description__") and isinstance(func.__description__, str):  # type: ignore
             result["description"] = func.__description__  # type: ignore
 
         if isinstance(func.__doc__, str):
@@ -140,13 +138,13 @@ class OpenAPI:
             getattr(func, "__request_body__", None)
         )
         result["requestBody"] = request_body
-        definitions.update(_definitions)
+        self.definitions.update(_definitions)
 
         # generate responses schema
         __responses__ = getattr(func, "__responses__", {})
-        responses: Dict[int, Any] = {}
+        responses: spec.Responses = {}
         if parameters or request_body:
-            responses[422] = {
+            responses["422"] = {
                 "content": {
                     "application/json": {"schema": RequestValidationError.schema()}
                 },
@@ -154,10 +152,10 @@ class OpenAPI:
             }
 
         for status, info in __responses__.items():
-            _ = responses[int(status)] = dict(info)
+            _ = responses[str(int(status))] = copy.copy(info)
             if _.get("content") is not None:
                 _["content"], _definitions = schema_response(_["content"])
-                definitions.update(_definitions)
+                self.definitions.update(_definitions)
 
         result["responses"] = responses
 
@@ -168,26 +166,28 @@ class OpenAPI:
         result["tags"] = getattr(func, "__tags__", []) + result.get("tags", [])
 
         # merge user custom operation info
-        return merge_openapi_info(
-            result | F(lambda d: {k: v for k, v in d.items() if v}),
-            getattr(func, "__extra_docs__", {}),
+        return typing.cast(
+            spec.Operation,
+            merge_openapi_info(
+                clear_empty(result), getattr(func, "__extra_docs__", {})
+            ),
         )
 
-    def create_docs(self, request: HttpRequest) -> dict:
-        openapi: dict = deepcopy(self.openapi)
-        definitions: Dict[str, Any] = {}
+    def create_docs(self, request: HttpRequest) -> spec.OpenAPI:
+        openapi = copy.deepcopy(self.openapi)
         openapi["servers"] = [
             {
                 "url": f"{request.url.scheme}://{request.url.netloc}",
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = deepcopy(self._generate_paths(request.app, definitions))
-        for path_obj in openapi["paths"].values():
-            for method_obj in path_obj.values():
-                if "responses" not in method_obj:
-                    method_obj["responses"] = {}
-        openapi.setdefault("components", {})["schemas"] = deepcopy(definitions)
+        openapi["paths"] = copy.deepcopy(self._generate_paths(request.app))
+        for path_item in openapi["paths"].values():
+            for operation in filter(lambda x: isinstance(x, dict), path_item.values()):
+                operation = typing.cast(spec.Operation, operation)
+                if "responses" not in operation:
+                    operation["responses"] = {}
+        openapi["components"]["schemas"] = copy.deepcopy(self.definitions)
         return openapi
 
     @property
@@ -222,3 +222,10 @@ class OpenAPI:
             HttpRoute("/json", json_docs),
             HttpRoute("/heartbeat", heartbeat),
         )
+
+
+T_Dict = TypeVar("T_Dict", bound=Dict)
+
+
+def clear_empty(d: T_Dict) -> T_Dict:
+    return typing.cast(T_Dict, {k: v for k, v in d.items() if v})

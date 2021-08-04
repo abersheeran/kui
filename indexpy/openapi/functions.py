@@ -6,7 +6,10 @@ from http import HTTPStatus
 from pydantic import BaseModel, create_model
 from pydantic.typing import display_as_type
 
-from indexpy.utils import F, safe_issubclass
+from indexpy.utils import safe_issubclass
+
+if typing.TYPE_CHECKING:
+    from .specification import Header, Link, MediaType, Reference, Response
 
 T = typing.TypeVar("T", bound=typing.Callable)
 
@@ -15,9 +18,11 @@ def describe_response(
     status: typing.Union[int, HTTPStatus],
     description: str = "",
     *,
-    content: typing.Union[typing.Type[BaseModel], type, dict] = None,
-    headers: dict = None,
-    links: dict = None,
+    content: typing.Optional[
+        typing.Type[BaseModel] | type | typing.Dict[str, MediaType]
+    ] = None,
+    headers: typing.Dict[str, Header | Reference] = None,
+    links: typing.Dict[str, Link | Reference] = None,
 ) -> typing.Callable[[T], T]:
     """
     describe a response in HTTP view function
@@ -50,18 +55,24 @@ def describe_response(
             )
 
         responses[status] = {
-            "description": description,
-            "content": real_content,
-            "headers": headers,
-            "links": links,
-        } | F(lambda d: {k: v for k, v in d.items() if v})
+            k: v
+            for k, v in {
+                "description": description,
+                "content": real_content,
+                "headers": headers,
+                "links": links,
+            }.items()
+            if v
+        }
 
         return func
 
     return decorator
 
 
-def describe_responses(responses: typing.Dict[int, dict]) -> typing.Callable[[T], T]:
+def describe_responses(
+    responses: typing.Dict[int, Response]
+) -> typing.Callable[[T], T]:
     """
     describe responses in HTTP view function
     """
@@ -95,7 +106,7 @@ def describe_extra_docs(handler: T, info: typing.Dict[str, typing.Any]) -> T:
     """
     describe more openapi info in HTTP handler
 
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject
+    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#operationObject
     """
     if isinstance(handler, type):
         for method in getattr(handler, "__methods__"):

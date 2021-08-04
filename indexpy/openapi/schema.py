@@ -36,6 +36,7 @@ def schema_parameter(
             "description": schema.pop("description", ""),
             "required": name in required,  # type: ignore
             "schema": schema,
+            "deprecated": schema.pop("deprecated", False),
         }
         for name, schema in properties.items()
     ]
