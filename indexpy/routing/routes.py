@@ -55,7 +55,7 @@ class BaseRoute:
 
     def __matmul__(self: _RouteSelf, decorator: typing.Callable[[T], T]) -> _RouteSelf:
         endpoint = self.endpoint
-        self.endpoint = decorator(self.endpoint)
+        self.endpoint = auto_params(decorator(self.endpoint))
         if not (hasattr(self.endpoint, "__wrapped__") or self.endpoint is endpoint):
             self.endpoint = update_wrapper(self.endpoint, endpoint)
         return self

@@ -3,7 +3,19 @@ from __future__ import annotations
 import functools
 import inspect
 from itertools import groupby
-from typing import Any, Callable, Dict, List, Sequence, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
+from typing import cast as typing_cast
 
 from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
@@ -28,13 +40,30 @@ def create_model_config(title: str = None, description: str = None) -> Type[Base
     return ExclusiveModelConfig
 
 
-def parse_signature(function: CallableObject) -> CallableObject:
-    sig = inspect.signature(function)
+def _merge_multi_value(
+    items: Sequence[Tuple[str, Any]]
+) -> Dict[str, Union[str, List[str]]]:
+    """
+    If there are values with the same key value, they are merged into a List.
+    """
+    return {
+        k: v_list if len(v_list) > 1 else v_list[0]
+        for k, v_list in (
+            (k, list(v for _, v in kv_iter))
+            for k, kv_iter in (
+                lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
+            )(items, lambda kv: kv[0])
+        )
+    }
 
-    __parameters__: Dict[str, Any] = {
+
+def create_new_callback(callback: CallableObject) -> CallableObject:
+    sig = inspect.signature(callback)
+
+    raw_parameters: Dict[str, Any] = {
         key: {} for key in ["path", "query", "header", "cookie", "body"]
     }
-    __exclusive_models__: Dict[BaseModel, str] = {}
+    exclusive_models: Dict[BaseModel, str] = {}
 
     for name, param in sig.parameters.items():
         if not isinstance(param.default, FieldInfo):
@@ -57,114 +86,93 @@ def parse_signature(function: CallableObject) -> CallableObject:
                     __config__=create_model_config(default.title, default.description),
                     __root__=(annotation, ...),
                 )
-            __parameters__[default._in] = model
-            __exclusive_models__[model] = name
+            raw_parameters[default._in] = model
+            exclusive_models[model] = name
         else:
-            if safe_issubclass(__parameters__[default._in], BaseModel):
+            if safe_issubclass(raw_parameters[default._in], BaseModel):
                 raise RuntimeError(
                     f"{default._in.capitalize()}(exclusive=True) "
                     f"and {default._in.capitalize()} cannot be used at the same time"
                 )
             if annotation == param.empty:
                 annotation = Any
-            __parameters__[default._in][name] = (annotation, default)
+            raw_parameters[default._in][name] = (annotation, default)
 
     for key, params in filter(
         lambda kv: kv[1],
-        ((key, __parameters__.pop(key)) for key in tuple(__parameters__.keys())),
+        ((key, raw_parameters.pop(key)) for key in tuple(raw_parameters.keys())),
     ):
         if safe_issubclass(params, BaseModel):
             model = params
         else:
             model = create_model("temporary_model", **params)
-        __parameters__[key] = model
+        raw_parameters[key] = model
 
-    if "body" in __parameters__:
-        setattr(function, "__request_body__", __parameters__.pop("body"))
+    if "body" in raw_parameters:
+        request_body: Optional[BaseModel] = raw_parameters.pop("body")
+    else:
+        request_body = None
 
-    if __parameters__:
-        setattr(function, "__parameters__", __parameters__)
+    if raw_parameters:
+        parameters: Optional[Dict[str, BaseModel]] = typing_cast(
+            Dict[str, BaseModel], raw_parameters
+        )
+    else:
+        parameters = None
 
-    if __exclusive_models__:
-        setattr(function, "__exclusive_models__", __exclusive_models__)
-
-    request_attrs = {
+    request_attrs: Dict[str, RequestInfo] = {
         name: param.default
         for name, param in sig.parameters.items()
         if isinstance(param.default, RequestInfo)
     }
-    if request_attrs:
-        setattr(function, "__request_attrs__", request_attrs)
 
-    __signature__ = inspect.Signature(
-        parameters=[
-            param
-            for param in sig.parameters.values()
-            if not isinstance(param.default, (FieldInfo, RequestInfo))
-        ],
-        return_annotation=sig.return_annotation,
-    )
-    setattr(function, "__signature__", __signature__)
+    @functools.wraps(callback)
+    async def callback_with_auto_bound_params(*args, **kwargs):
+        if not (parameters or request_body or request_attrs):
+            return await callback(*args, **kwargs)
 
-    return function
+        data: List[Any] = []
+        keyword_params: Dict[str, Any] = {}
 
-
-def _merge_multi_value(
-    items: Sequence[Tuple[str, Any]]
-) -> Dict[str, Union[str, List[str]]]:
-    """
-    If there are values with the same key value, they are merged into a List.
-    """
-    return {
-        k: v_list if len(v_list) > 1 else v_list[0]
-        for k, v_list in (
-            (k, list(v for _, v in kv_iter))
-            for k, kv_iter in (
-                lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
-            )(items, lambda kv: kv[0])
-        )
-    }
-
-
-async def verify_params(handler: CallableObject) -> CallableObject:
-    parameters: Dict[str, BaseModel] = getattr(handler, "__parameters__", None)
-    request_body: BaseModel = getattr(handler, "__request_body__", None)
-    request_attrs: Dict[str, RequestInfo] = getattr(handler, "__request_attrs__", None)
-    if not (parameters or request_body or request_attrs):
-        return handler
-
-    exclusive_models: Dict[Type[BaseModel], str] = getattr(
-        handler, "__exclusive_models__", {}
-    )
-
-    data: List[Any] = []
-    kwargs: Dict[str, Any] = {}
-
-    try:
         # try to get parameters model and parse
         if parameters:
             if "path" in parameters:
-                data.append(parameters["path"].parse_obj(request.path_params))
+                try:
+                    data.append(parameters["path"].parse_obj(request.path_params))
+                except ValidationError as e:
+                    raise RequestValidationError(e, "path")
 
             if "query" in parameters:
-                data.append(
-                    parameters["query"].parse_obj(
-                        _merge_multi_value(request.query_params.multi_items())
+                try:
+                    data.append(
+                        parameters["query"].parse_obj(
+                            _merge_multi_value(request.query_params.multi_items())
+                        )
                     )
-                )
+                except ValidationError as e:
+                    raise RequestValidationError(e, "query")
 
             if "header" in parameters:
-                data.append(parameters["header"].parse_obj(request.headers))
+                try:
+                    data.append(parameters["header"].parse_obj(request.headers))
+                except ValidationError as e:
+                    raise RequestValidationError(e, "header")
 
             if "cookie" in parameters:
-                data.append(parameters["cookie"].parse_obj(request.cookies))
+                try:
+                    data.append(parameters["cookie"].parse_obj(request.cookies))
+                except ValidationError as e:
+                    raise RequestValidationError(e, "cookie")
 
         # try to get body model and parse
         if request_body:
             _body_data = await request.data()
             if isinstance(_body_data, FormData):
                 _body_data = _merge_multi_value(_body_data.multi_items())
-            data.append(request_body.parse_obj(_body_data))
+            try:
+                data.append(request_body.parse_obj(_body_data))
+            except ValidationError as e:
+                raise RequestValidationError(e, "body")
 
         # try to get request instance attributes
         if request_attrs:
@@ -182,34 +190,49 @@ async def verify_params(handler: CallableObject) -> CallableObject:
                         value = info.default_factory()
                     else:
                         raise
-                kwargs[name] = (await value) if inspect.isawaitable(value) else value
+                keyword_params[name] = (
+                    (await value) if inspect.isawaitable(value) else value
+                )
 
-    except ValidationError as e:
-        raise RequestValidationError(e)
+        for _data in data:
+            if _data.__class__.__name__ == "temporary_model":
+                keyword_params.update(_data.dict())
+            elif _data.__class__.__name__ == "temporary_exclusive_model":
+                keyword_params[exclusive_models[_data.__class__]] = _data.__root__
+            else:
+                keyword_params[exclusive_models[_data.__class__]] = _data
+        return await callback(*args, **{**keyword_params, **kwargs})  # type: ignore
 
-    for _data in data:
-        if _data.__class__.__name__ == "temporary_model":
-            kwargs.update(_data.dict())
-        elif _data.__class__.__name__ == "temporary_exclusive_model":
-            kwargs[exclusive_models[_data.__class__]] = _data.__root__
-        else:
-            kwargs[exclusive_models[_data.__class__]] = _data
-    return functools.partial(handler, **kwargs)  # type: ignore
+    handler = callback_with_auto_bound_params
 
+    if request_body is not None:
+        __request_body__: List[BaseModel] = getattr(handler, "__request_body__", [])
+        __request_body__.append(request_body)
+        setattr(handler, "__request_body__", __request_body__)
 
-def create_new_callback(callback: CallableObject) -> CallableObject:
-    @functools.wraps(callback)
-    async def callback_with_auto_bound_params(*args, **kwargs):
-        p = await verify_params(callback)
-        return await p(*args, **kwargs)
+    if parameters is not None:
+        __parameters__: Dict[str, List[BaseModel]] = getattr(
+            handler, "__parameters__", {}
+        )
+        for key, value in parameters.items():
+            __parameters__.setdefault(key, []).append(value)
+        setattr(handler, "__parameters__", __parameters__)
+
+    __signature__ = inspect.Signature(
+        parameters=[
+            param
+            for param in sig.parameters.values()
+            if not isinstance(param.default, (FieldInfo, RequestInfo))
+        ],
+        return_annotation=sig.return_annotation,
+    )
+    setattr(callback_with_auto_bound_params, "__signature__", __signature__)
 
     return callback_with_auto_bound_params  # type: ignore
 
 
 has_wrapped_by_auto_params = lambda function: (
-    hasattr(function, "__parameters__")
-    or hasattr(function, "__request_body__")
-    or hasattr(function, "__request_attrs__")
+    hasattr(function, "__parameters__") or hasattr(function, "__request_body__")
 )
 
 
@@ -219,11 +242,9 @@ def auto_params(handler: CallableObject) -> CallableObject:
             function = getattr(handler, method)
             if has_wrapped_by_auto_params(function):
                 continue
-            callback = parse_signature(function)
-            setattr(handler, method, create_new_callback(callback))
+            setattr(handler, method, create_new_callback(function))
         return handler
     elif inspect.iscoroutinefunction(handler):
-        callback = parse_signature(handler)
-        return create_new_callback(callback)
+        return create_new_callback(handler)
     else:
         return handler

@@ -1,4 +1,5 @@
 import asyncio
+from indexpy.field_functions import Query
 from pathlib import Path as FilePath
 
 from indexpy import (
@@ -58,13 +59,22 @@ async def ws():
     await websocket.close()
 
 
+def middleware(endpoint):
+    async def middleware_wrapper(query: str = Query(...)):
+        return await endpoint()
+
+    return middleware_wrapper
+
+
 app = Index(
     debug=True,
     routes=[
         HttpRoute("/", homepage),
         HttpRoute("/exc", exc),
         HttpRoute("/message", message),
-        HttpRoute("/sources/{filepath:path}", sources) @ required_method("GET"),
+        HttpRoute("/sources/{filepath:path}", sources)
+        @ middleware
+        @ required_method("GET"),
         SocketRoute("/", ws),
     ],
 )

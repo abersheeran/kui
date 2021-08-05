@@ -127,7 +127,13 @@ class OpenAPI:
         # generate params schema
         parameters = (
             ["path", "query", "header", "cookie"]
-            | F(map, lambda key: (getattr(func, "__parameters__", {}).get(key), key))
+            | F(
+                map,
+                lambda key: (
+                    create_model(getattr(func, "__parameters__", {}).get(key, [])),
+                    key,
+                ),
+            )
             | F(map, lambda args: schema_parameter(*args))
             | F(reduce, operator.add)
         )
@@ -135,7 +141,7 @@ class OpenAPI:
 
         # generate request body schema
         request_body, _definitions = schema_request_body(
-            getattr(func, "__request_body__", None)
+            create_model(getattr(func, "__request_body__", []))
         )
         result["requestBody"] = request_body
         self.definitions.update(_definitions)
@@ -229,3 +235,10 @@ T_Dict = TypeVar("T_Dict", bound=Dict)
 
 def clear_empty(d: T_Dict) -> T_Dict:
     return typing.cast(T_Dict, {k: v for k, v in d.items() if v})
+
+
+def create_model(bases: List[type]) -> type:
+    if bases:
+        return type("T", tuple(bases), {})
+    else:
+        return None

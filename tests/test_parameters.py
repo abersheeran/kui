@@ -124,3 +124,25 @@ async def test_request():
 
         resp = await client.get("/no-attr-with-default-factory")
         assert resp.text == "True"
+
+
+@pytest.mark.asyncio
+async def test_middleware():
+    app = Index()
+
+    def middleware(endpoint):
+        async def middleware_wrapper(query: str = Query(...)):
+            return await endpoint()
+
+        return middleware_wrapper
+
+    @app.router.http.get("/", middlewares=[middleware])
+    async def cookie(name: str = Cookie()):
+        return name
+
+    async with TestClient(app) as client:
+        resp = await client.get("/", cookies={"name": "aber"})
+        assert resp.status_code == 422
+
+        resp = await client.get("/?query=123", cookies={"name": "aber"})
+        assert resp.text == "aber"
