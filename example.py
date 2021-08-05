@@ -72,9 +72,7 @@ app = Index(
         HttpRoute("/", homepage),
         HttpRoute("/exc", exc),
         HttpRoute("/message", message),
-        HttpRoute("/sources/{filepath:path}", sources)
-        @ middleware
-        @ required_method("GET"),
+        HttpRoute("/sources/{filepath:path}", sources) @ required_method("GET"),
         SocketRoute("/", ws),
     ],
 )
