@@ -5,7 +5,13 @@ https://swagger.io/specification/
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Union
+import sys
+from typing import Any, Dict, List, Union
+
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 from baize.typing import TypedDict
 
