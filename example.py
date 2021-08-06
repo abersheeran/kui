@@ -1,5 +1,4 @@
 import asyncio
-from indexpy.field_functions import Query
 from pathlib import Path as FilePath
 
 from indexpy import (
