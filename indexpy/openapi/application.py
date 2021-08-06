@@ -9,7 +9,7 @@ import typing
 from functools import reduce
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence, TypeVar
+from typing import Any, Dict, Iterable, List, Optional, Sequence, TypeVar
 
 from typing_extensions import Literal, TypedDict
 
@@ -237,7 +237,7 @@ def clear_empty(d: T_Dict) -> T_Dict:
     return typing.cast(T_Dict, {k: v for k, v in d.items() if v})
 
 
-def create_model(bases: List[type]) -> type:
+def create_model(bases: List[type]) -> Optional[type]:
     if bases:
         return type("T", tuple(bases), {})
     else:

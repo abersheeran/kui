@@ -5,6 +5,7 @@ import inspect
 from itertools import groupby
 from typing import (
     Any,
+    Awaitable,
     Callable,
     Dict,
     List,
@@ -26,7 +27,7 @@ from indexpy.utils import safe_issubclass
 
 from .fields import FieldInfo, RequestInfo, Undefined
 
-CallableObject = TypeVar("CallableObject", bound=Callable)
+CallableObject = TypeVar("CallableObject", bound=Callable[..., Awaitable[Any]])
 
 
 def create_model_config(title: str = None, description: str = None) -> Type[BaseConfig]:

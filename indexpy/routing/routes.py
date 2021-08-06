@@ -7,26 +7,27 @@ from functools import reduce, update_wrapper
 
 from indexpy.parameters import auto_params
 
-T = typing.TypeVar("T")
-
+T_Endpoint = typing.Callable[..., typing.Awaitable[typing.Any]]
 _RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
 
 
 @dataclass
 class BaseRoute:
     path: str
-    endpoint: typing.Any
+    endpoint: typing.Callable[..., typing.Awaitable[typing.Any]]
     name: typing.Optional[str] = ""
 
     def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         raise NotImplementedError()
 
     def _extend_middlewares(
-        self, middlewares: typing.Iterable[typing.Callable]
+        self, middlewares: typing.Iterable[typing.Callable[[T_Endpoint], T_Endpoint]]
     ) -> None:
         reduce(operator.matmul, middlewares, self)
 
-    def __matmul__(self: _RouteSelf, decorator: typing.Callable[[T], T]) -> _RouteSelf:
+    def __matmul__(
+        self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
+    ) -> _RouteSelf:
         endpoint = self.endpoint
         self.endpoint = auto_params(decorator(self.endpoint))
         if not (hasattr(self.endpoint, "__wrapped__") or self.endpoint is endpoint):

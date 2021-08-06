@@ -1,6 +1,6 @@
 import typing
 
-from indexpy.routing.routes import BaseRoute, HttpRoute, Routes
+from indexpy.routing import BaseRoute, HttpRoute, Routes
 from indexpy.views import HttpView
 
 _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="MultimethodRoutes")
@@ -56,9 +56,9 @@ class MultimethodRoutes(Routes):
                     {
                         **{
                             method.lower(): getattr(r.endpoint, method.lower())
-                            for method in r.endpoint.__methods__
+                            for method in r.endpoint.__methods__  # type: ignore
                         },
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
                     },
                 )
             else:
@@ -66,8 +66,8 @@ class MultimethodRoutes(Routes):
                     "_Endpoint",
                     (self.base_class,),
                     {
-                        r.endpoint.__method__.lower(): staticmethod(r.endpoint),
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
+                        r.endpoint.__method__.lower(): staticmethod(r.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
                     },
                 )
             # replacing route inplace
