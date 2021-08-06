@@ -59,13 +59,6 @@ async def ws():
     await websocket.close()
 
 
-def middleware(endpoint):
-    async def middleware_wrapper(query: str = Query(...)):
-        return await endpoint()
-
-    return middleware_wrapper
-
-
 app = Index(
     debug=True,
     routes=[
