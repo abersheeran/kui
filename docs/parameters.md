@@ -183,6 +183,19 @@ async def code(username: str = Request(alias="user.name")):
     ...
 ```
 
+### 在中间件中使用
+
+在中间件中的使用方式并没有什么不同，直接在参数里描述即可。
+
+```python
+def required_auth(endpoint):
+    async def wrapper(authorization: str = Header(...)):
+        ...
+        return await endpoint()
+
+    return wrapper
+```
+
 ## 描述响应结果
 
 为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
@@ -230,30 +243,4 @@ def handler():
 
 ## 描述额外的 OpenAPI 文档
 
-作为一个 Web 项目，在中间件中读取请求信息并作限制是很常见的，例如读取 JWT 用作鉴权。在每个视图都增加 `header` 参数是不现实的，这时候 `describe_extra_docs` 就派上用场了。
-
-!!! tip ""
-    `describe_extra_docs` 增加的内容，不仅限于 `parameters`，任何描述都会被合并进原本的文档里。具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
-
-```python
-def judge_jwt(endpoint):
-    describe_extra_docs(
-        endpoint,
-        {
-            "parameters": [
-                {
-                    "name": "Authorization",
-                    "in": "header",
-                    "description": "JWT Token",
-                    "required": True,
-                    "schema": {"type": "string"},
-                }
-            ]
-        },
-    )
-
-    async def judge():
-        return await endpoint()
-
-    return judge
-```
+可以使用 `describe_extra_docs` 对接口所对应的 OpenAPI 文档描述进行补充，使用 `describe_extra_docs` 增加的任何描述都会被合并进原本的文档里。具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
