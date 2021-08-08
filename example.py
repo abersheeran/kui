@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path as FilePath
 
 from indexpy import (
+    Body,
     HTTPException,
     HttpRoute,
     Index,
@@ -64,7 +65,7 @@ app = Index(
         HttpRoute("/", homepage),
         HttpRoute("/exc", exc),
         HttpRoute("/message", message),
-        HttpRoute("/sources/{filepath:path}", sources) @ required_method("GET"),
+        HttpRoute("/sources/{filepath:any}", sources) @ required_method("GET"),
         SocketRoute("/", ws),
     ],
 )

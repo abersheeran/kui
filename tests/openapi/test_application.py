@@ -105,7 +105,7 @@ async def test_openapi_page():
 
     openapi_docs_text = response.text
     assert json.loads(openapi_docs_text) == json.loads(
-        '{"openapi":"3.0.3","info":{"title":"IndexPy API","version":"1.0.0"},"paths":{"/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"title":"Username","type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}},"/middleware/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"title":"Username","type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}}},"tags":[],"components":{"schemas":{}},"servers":[{"url":"http://localhost","description":"Current server"}]}'
+        '{"openapi":"3.0.3","info":{"title":"IndexPy API","version":"1.0.0"},"paths":{"/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}},"/middleware/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}}},"tags":[],"components":{"schemas":{}},"servers":[{"url":"http://localhost","description":"Current server"}]}'
     )
 
 
@@ -138,16 +138,16 @@ def test_openapi_single_function_summary_and_description():
         """
         return ""
 
-    assert openapi._generate_path(app.router.search("http", "/0")[1], "/") == {
+    assert openapi._generate_path(app.router.search("http", "/0")[1], "/")[0] == {
         "get": {"summary": "Summary", "description": "Description"}
     }
-    assert openapi._generate_path(app.router.search("http", "/1")[1], "/") == {
+    assert openapi._generate_path(app.router.search("http", "/1")[1], "/")[0] == {
         "get": {"summary": "Summary"}
     }
-    assert openapi._generate_path(app.router.search("http", "/2")[1], "/") == {
+    assert openapi._generate_path(app.router.search("http", "/2")[1], "/")[0] == {
         "get": {"summary": "Summary", "description": "Description"}
     }
-    assert openapi._generate_path(app.router.search("http", "/3")[1], "/") == {
+    assert openapi._generate_path(app.router.search("http", "/3")[1], "/")[0] == {
         "get": {"summary": "Summary", "description": "Description"}
     }
 
@@ -161,9 +161,10 @@ def test_openapi_single_function_tags():
     async def homepage():
         return ""
 
-    assert openapi._generate_path(app.router.search("http", "/")[1], "/") == {
-        "get": {"tags": ["tag0"]}
-    }
+    assert openapi._generate_path(app.router.search("http", "/")[1], "/") == (
+        {"get": {"tags": ["tag0"]}},
+        {},
+    )
 
 
 def test_openapi_routes_tags():
@@ -178,6 +179,7 @@ def test_openapi_routes_tags():
         HttpRoute("/", homepage) @ required_method("GET"), tags=["tag0"]
     )
 
-    assert openapi._generate_path(app.router.search("http", "/")[1], "/") == {
-        "get": {"tags": ["tag0"]}
-    }
+    assert openapi._generate_path(app.router.search("http", "/")[1], "/") == (
+        {"get": {"tags": ["tag0"]}},
+        {},
+    )

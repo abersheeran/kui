@@ -26,6 +26,7 @@ python = "^3.7"
 baize = {version = "^0.10.0", extras = ["multipart"]}
 click = {version = "^8.0", optional = true}
 pydantic = "^1.8"
+typing-extensions = "^3.10.0"
 
 [tool.poetry.extras]
 cli = ["click"] # for index-cli commands

@@ -9,7 +9,7 @@ import typing
 from functools import reduce
 from hashlib import md5
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, TypeVar
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 
 from typing_extensions import Literal, TypedDict
 
@@ -21,7 +21,6 @@ from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
 from indexpy.responses import HTMLResponse, JSONResponse
 from indexpy.routing import HttpRoute, Routes
-from indexpy.utils import F
 
 from . import specification as spec
 from .functions import merge_openapi_info
@@ -63,27 +62,33 @@ class OpenAPI:
                 self.path2tag.setdefault(path, []).append(tag_name)
         self.definitions: dict = {}
 
-    def _generate_paths(self, app: Index) -> spec.Paths:
+    def _generate_paths(self, app: Index) -> Tuple[spec.Paths, dict]:
+        _definitions: dict = {}
+        update_definitions = lambda path_item, x: _definitions.update(x) or path_item
         return {
             path: openapi_path_item
             for path, openapi_path_item in (
                 (
                     path_format,
-                    self._generate_path(handler, path_format),
+                    update_definitions(*self._generate_path(handler, path_format)),
                 )
                 for path_format, handler in app.router.http_tree.iterator()
             )
             if openapi_path_item
-        }
+        }, _definitions
 
-    def _generate_path(self, view: Any, path: str) -> spec.PathItem:
+    def _generate_path(self, view: Any, path: str) -> Tuple[spec.PathItem, dict]:
         """
         Generate documents under a path
         """
+        _definitions: dict = {}
+        update_definitions = lambda path_item, x: _definitions.update(x) or path_item
         if hasattr(view, "__methods__"):
             result = clear_empty(
                 {
-                    method: self._generate_method(getattr(view, method), path)
+                    method: update_definitions(
+                        *self._generate_method(getattr(view, method), path)
+                    )
                     for method in (
                         method.lower()
                         for method in typing.cast(Iterable[str], view.__methods__)
@@ -94,18 +99,20 @@ class OpenAPI:
         elif hasattr(view, "__method__"):
             result = clear_empty(
                 {
-                    typing.cast(str, view.__method__).lower(): self._generate_method(
-                        view, path
+                    typing.cast(str, view.__method__).lower(): update_definitions(
+                        *self._generate_method(view, path)
                     ),
                 }
             )
         else:
             result = {}
 
-        return typing.cast(spec.PathItem, result)
+        return typing.cast(spec.PathItem, result), _definitions
 
-    def _generate_method(self, func: object, path: str) -> spec.Operation:
+    def _generate_method(self, func: object, path: str) -> Tuple[spec.Operation, dict]:
         result: Dict[str, Any] = {}
+        _definitions: dict = {}
+        update_definitions = lambda path_item, x: _definitions.update(x) or path_item
 
         # This is mypy check error, if you use pyright/pylance, this is all fine.
         if hasattr(func, "__summary__") and isinstance(func.__summary__, str):  # type: ignore
@@ -125,26 +132,23 @@ class OpenAPI:
                 result["summary"] = ""
 
         # generate params schema
-        parameters = (
-            ["path", "query", "header", "cookie"]
-            | F(
-                map,
-                lambda key: (
+        parameters = reduce(
+            operator.add,
+            map(
+                lambda key: schema_parameter(
                     create_model(getattr(func, "__parameters__", {}).get(key, [])),
-                    key,
+                    typing.cast(Literal["path", "query", "header", "cookie"], key),
                 ),
-            )
-            | F(map, lambda args: schema_parameter(*args))
-            | F(reduce, operator.add)
+                ["path", "query", "header", "cookie"],
+            ),
         )
         result["parameters"] = parameters
 
         # generate request body schema
-        request_body, _definitions = schema_request_body(
-            create_model(getattr(func, "__request_body__", []))
+        request_body = update_definitions(
+            *schema_request_body(create_model(getattr(func, "__request_body__", [])))
         )
         result["requestBody"] = request_body
-        self.definitions.update(_definitions)
 
         # generate responses schema
         __responses__ = getattr(func, "__responses__", {})
@@ -160,8 +164,7 @@ class OpenAPI:
         for status, info in __responses__.items():
             _ = responses[str(int(status))] = copy.copy(info)
             if _.get("content") is not None:
-                _["content"], _definitions = schema_response(_["content"])
-                self.definitions.update(_definitions)
+                _["content"] = update_definitions(*schema_response(_["content"]))
 
         result["responses"] = responses
 
@@ -172,11 +175,14 @@ class OpenAPI:
         result["tags"] = getattr(func, "__tags__", []) + result.get("tags", [])
 
         # merge user custom operation info
-        return typing.cast(
-            spec.Operation,
-            merge_openapi_info(
-                clear_empty(result), getattr(func, "__extra_docs__", {})
+        return (
+            typing.cast(
+                spec.Operation,
+                merge_openapi_info(
+                    clear_empty(result), getattr(func, "__extra_docs__", {})
+                ),
             ),
+            _definitions,
         )
 
     def create_docs(self, request: HttpRequest) -> spec.OpenAPI:
@@ -187,13 +193,13 @@ class OpenAPI:
                 "description": "Current server",
             }
         ]
-        openapi["paths"] = copy.deepcopy(self._generate_paths(request.app))
+        openapi["paths"], definitions = copy.deepcopy(self._generate_paths(request.app))
         for path_item in openapi["paths"].values():
             for operation in filter(lambda x: isinstance(x, dict), path_item.values()):
                 operation = typing.cast(spec.Operation, operation)
                 if "responses" not in operation:
                     operation["responses"] = {}
-        openapi["components"]["schemas"] = copy.deepcopy(self.definitions)
+        openapi["components"]["schemas"] = definitions
         return openapi
 
     @property
@@ -239,6 +245,6 @@ def clear_empty(d: T_Dict) -> T_Dict:
 
 def create_model(bases: List[type]) -> Optional[type]:
     if bases:
-        return type("T", tuple(bases), {})
+        return type("T_SchemaModel", tuple(bases), {})
     else:
         return None

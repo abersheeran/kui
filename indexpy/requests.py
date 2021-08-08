@@ -10,8 +10,10 @@ from baize.asgi import HTTPConnection as BaiZeHTTPConnection
 from baize.asgi import Request as BaiZeRequest
 from baize.asgi import WebSocket as BaiZeWebSocket
 from baize.asgi import WebSocketDisconnect, WebSocketState
+from baize.datastructures import ContentType
 from baize.exceptions import HTTPException
 from baize.utils import cached_property
+from typing_extensions import Annotated
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
@@ -37,7 +39,14 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
 
 
 class HttpRequest(BaiZeRequest, HTTPConnection):
-    async def data(self) -> typing.Any:
+    async def data(
+        self,
+    ) -> Annotated[
+        typing.Any,
+        ContentType("application/json"),
+        ContentType("application/x-www-form-urlencoded"),
+        ContentType("multipart/form-data"),
+    ]:
         content_type = self.content_type
         if content_type == "application/json":
             return await self.json
