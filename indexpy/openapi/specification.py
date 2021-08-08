@@ -166,7 +166,7 @@ class RequestBody(_RequestBodyRequired, total=False):
 
 
 class MediaType(TypedDict, total=False):
-    schema: str
+    schema: Schema | Reference
     example: Any
     examples: Dict[str, Example | Reference]
     encoding: Dict[str, Encoding]
