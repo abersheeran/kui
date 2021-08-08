@@ -16,7 +16,7 @@ def tree():
     tree.append("/sayhi/{name}", ...)
     tree.append("/sayhi/{name}/suffix", ...)
     tree.append("/sayhi/{name}/avatar.{suffix}", ...)
-    tree.append("/path/{filepath:path}", ...)
+    tree.append("/path/{filepath:any}", ...)
     tree.append("/decimal/{number:decimal}", ...)
     tree.append("/uuid/{id:uuid}", ...)
 
@@ -59,7 +59,7 @@ def test_tree_fail_search(tree: RadixTree, path):
 @pytest.mark.parametrize(
     "path",
     [
-        "/path/{urlpath:path}/",
+        "/path/{urlpath:any}/",
         "/sayhi/{name:int}/suffix",
         "/sayhi/{hi}/suffix",
         "/sayhi/aber",

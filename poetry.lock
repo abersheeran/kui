@@ -53,7 +53,7 @@ pytz = ">=2015.7"
 
 [[package]]
 name = "baize"
-version = "0.10.0"
+version = "0.10.1"
 description = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 category = "main"
 optional = false
@@ -285,7 +285,7 @@ i18n = ["babel (>=2.9.0)"]
 
 [[package]]
 name = "mkdocs-material"
-version = "7.2.0"
+version = "7.2.1"
 description = "A Material Design theme for MkDocs"
 category = "dev"
 optional = false
@@ -607,7 +607,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "tomli"
-version = "1.0.4"
+version = "1.1.0"
 description = "A lil' TOML parser"
 category = "dev"
 optional = false
@@ -688,7 +688,7 @@ docs = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0f787307ef80fdaa72b68bde2491a4ac16699667ff8770eb22c2970fdd7460b0"
+content-hash = "fca890e935cea3e3914740031142005aac1b6b8dad3383357bdad0b8a48d34bd"
 
 [metadata.files]
 appdirs = [
@@ -711,20 +711,16 @@ babel = [
     {file = "Babel-2.9.1.tar.gz", hash = "sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0"},
 ]
 baize = [
-    {file = "baize-0.10.0-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:70bd787088a210cbaf9824cb8faa8a93e4e689f0f5eec1296a0162e981b764cc"},
-    {file = "baize-0.10.0-cp36-cp36m-manylinux_2_31_x86_64.whl", hash = "sha256:e25f0df2ab90e8609677dba603484da2d221f334d5518c1dd22ef338be69b07f"},
-    {file = "baize-0.10.0-cp36-cp36m-win_amd64.whl", hash = "sha256:fca3fc90ec4499a0533bbb4d810775f1cefcc230dc5cabba6f87182e4de5626a"},
-    {file = "baize-0.10.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:5a0be2fba1cb3ab08f0526025c02144f530dba266017bc2e548511a30bcc5ba8"},
-    {file = "baize-0.10.0-cp37-cp37m-manylinux_2_31_x86_64.whl", hash = "sha256:0f1aa9b1f791a115b886ace8f5d231e6135ade65fffe9167bfee7d74fe1e4013"},
-    {file = "baize-0.10.0-cp37-cp37m-win_amd64.whl", hash = "sha256:9db6f55e4d0d3bc6ada6fed3525ad759bd5bd72f2e22505ae236eaf7be02f632"},
-    {file = "baize-0.10.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:2c6e56e77a765e25280e906845dd3834ec9ea4ef4646d84900c5154273bf15c6"},
-    {file = "baize-0.10.0-cp38-cp38-manylinux_2_31_x86_64.whl", hash = "sha256:d52742a136f72067fdbe66340bc415b71baae4bf8d14ae3a22b13e86319934f6"},
-    {file = "baize-0.10.0-cp38-cp38-win_amd64.whl", hash = "sha256:fc476397c40fc898e42f39454f96e8ed778f17848e46013e450128fed60e047e"},
-    {file = "baize-0.10.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:7421b2e96eee8513028a67ec018b3e0620b70eaa2cceb889aa46ec7b9aff9933"},
-    {file = "baize-0.10.0-cp39-cp39-manylinux_2_31_x86_64.whl", hash = "sha256:e14bbc652ac6763268c9b9ecf055f2d15f006d5ec9621a18e40443092dc015d5"},
-    {file = "baize-0.10.0-cp39-cp39-win_amd64.whl", hash = "sha256:4ab4ffcfe96c73eebf1c6eaefafdeabe2946743ab46c29a369f17429711a7fe2"},
-    {file = "baize-0.10.0-py3-none-any.whl", hash = "sha256:a57d80ba696c005528f35a78e0a82f8b99834539e97fff9700eb90db57eed553"},
-    {file = "baize-0.10.0.tar.gz", hash = "sha256:388fa71e0deb74dc88d9cba603eeb54427cdbfd89152e75a0b586bfb495faf0c"},
+    {file = "baize-0.10.1-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:43fd55503b1b485ca227e1eb1119be53699dc4dadfd7a5bf21f74dd5d4be0817"},
+    {file = "baize-0.10.1-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:84af7f2eef24869e5d403f933b7ba82ca6f6568097d4ccf28195ed0cb8373069"},
+    {file = "baize-0.10.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:b16f61e57d779184f525ba6a59036835527a784f18a5a95c4ec0c29fa670581d"},
+    {file = "baize-0.10.1-cp38-cp38-manylinux_2_31_x86_64.whl", hash = "sha256:7cfa40959045ee18ce9b63c8b272ec2b8c9169d7be0b1ec08e6d8c8b2e04d6f9"},
+    {file = "baize-0.10.1-cp38-cp38-win_amd64.whl", hash = "sha256:75a44f16921c5698df513cd724e29245938e76f5c8029e9f15ce5871f3c7344a"},
+    {file = "baize-0.10.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:0f7861e3890fec3bc40e2bc2f722291d6a24d8569ce83468bf1bb6f8a15bb2d8"},
+    {file = "baize-0.10.1-cp39-cp39-manylinux_2_31_x86_64.whl", hash = "sha256:892d4addf1fd89376e63c8dc09ca83506321c10e6a5326177b8beae5a4bb985f"},
+    {file = "baize-0.10.1-cp39-cp39-win_amd64.whl", hash = "sha256:d68674ce2a2ccb4855ec040bdbcdb842b100ff7908d0e7f5d74e7045c97b4f37"},
+    {file = "baize-0.10.1-py3-none-any.whl", hash = "sha256:ecc77867ffc824b73355a510684cf7ae85bb7b2af3cd8aab76723f5a0b588cee"},
+    {file = "baize-0.10.1.tar.gz", hash = "sha256:ef53cb7d70648776280d1d5fa55e34d689b273f8169b1370c134c4cc3ae5b645"},
 ]
 black = [
     {file = "black-21.7b0-py3-none-any.whl", hash = "sha256:1c7aa6ada8ee864db745b22790a32f94b2795c253a75d6d9b5e439ff10d23116"},
@@ -876,8 +872,8 @@ mkdocs = [
     {file = "mkdocs-1.2.2.tar.gz", hash = "sha256:a334f5bd98ec960638511366eb8c5abc9c99b9083a0ed2401d8791b112d6b078"},
 ]
 mkdocs-material = [
-    {file = "mkdocs-material-7.2.0.tar.gz", hash = "sha256:9f43c5874e119b312a6f369ef363815c11f182b5cdeff4a3426615ebc4664ace"},
-    {file = "mkdocs_material-7.2.0-py2.py3-none-any.whl", hash = "sha256:8b3750857e168a9ca20be34890791817090b016248a39be45069fab5343f1dc0"},
+    {file = "mkdocs-material-7.2.1.tar.gz", hash = "sha256:3cd33ea5aac6ed693edea9fd93862513f996cfe522b72d759598b50286c4fe26"},
+    {file = "mkdocs_material-7.2.1-py2.py3-none-any.whl", hash = "sha256:16de6cd9f87da3bcd18d4585150ad5485723878450aa331b3e8859d002989083"},
 ]
 mkdocs-material-extensions = [
     {file = "mkdocs-material-extensions-1.0.1.tar.gz", hash = "sha256:6947fb7f5e4291e3c61405bad3539d81e0b3cd62ae0d66ced018128af509c68f"},
@@ -1047,26 +1043,18 @@ pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:bb4191dfc9306777bc594117aee052446b3fa88737cd13b7188d0e7aa8162185"},
     {file = "PyYAML-5.4.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:6c78645d400265a062508ae399b60b8c167bf003db364ecb26dcab2bda048253"},
     {file = "PyYAML-5.4.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:4e0583d24c881e14342eaf4ec5fbc97f934b999a6828693a99157fde912540cc"},
-    {file = "PyYAML-5.4.1-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:72a01f726a9c7851ca9bfad6fd09ca4e090a023c00945ea05ba1638c09dc3347"},
-    {file = "PyYAML-5.4.1-cp36-cp36m-manylinux2014_s390x.whl", hash = "sha256:895f61ef02e8fed38159bb70f7e100e00f471eae2bc838cd0f4ebb21e28f8541"},
     {file = "PyYAML-5.4.1-cp36-cp36m-win32.whl", hash = "sha256:3bd0e463264cf257d1ffd2e40223b197271046d09dadf73a0fe82b9c1fc385a5"},
     {file = "PyYAML-5.4.1-cp36-cp36m-win_amd64.whl", hash = "sha256:e4fac90784481d221a8e4b1162afa7c47ed953be40d31ab4629ae917510051df"},
     {file = "PyYAML-5.4.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:5accb17103e43963b80e6f837831f38d314a0495500067cb25afab2e8d7a4018"},
     {file = "PyYAML-5.4.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:e1d4970ea66be07ae37a3c2e48b5ec63f7ba6804bdddfdbd3cfd954d25a82e63"},
-    {file = "PyYAML-5.4.1-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:cb333c16912324fd5f769fff6bc5de372e9e7a202247b48870bc251ed40239aa"},
-    {file = "PyYAML-5.4.1-cp37-cp37m-manylinux2014_s390x.whl", hash = "sha256:fe69978f3f768926cfa37b867e3843918e012cf83f680806599ddce33c2c68b0"},
     {file = "PyYAML-5.4.1-cp37-cp37m-win32.whl", hash = "sha256:dd5de0646207f053eb0d6c74ae45ba98c3395a571a2891858e87df7c9b9bd51b"},
     {file = "PyYAML-5.4.1-cp37-cp37m-win_amd64.whl", hash = "sha256:08682f6b72c722394747bddaf0aa62277e02557c0fd1c42cb853016a38f8dedf"},
     {file = "PyYAML-5.4.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:d2d9808ea7b4af864f35ea216be506ecec180628aced0704e34aca0b040ffe46"},
     {file = "PyYAML-5.4.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:8c1be557ee92a20f184922c7b6424e8ab6691788e6d86137c5d93c1a6ec1b8fb"},
-    {file = "PyYAML-5.4.1-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:fd7f6999a8070df521b6384004ef42833b9bd62cfee11a09bda1079b4b704247"},
-    {file = "PyYAML-5.4.1-cp38-cp38-manylinux2014_s390x.whl", hash = "sha256:bfb51918d4ff3d77c1c856a9699f8492c612cde32fd3bcd344af9be34999bfdc"},
     {file = "PyYAML-5.4.1-cp38-cp38-win32.whl", hash = "sha256:fa5ae20527d8e831e8230cbffd9f8fe952815b2b7dae6ffec25318803a7528fc"},
     {file = "PyYAML-5.4.1-cp38-cp38-win_amd64.whl", hash = "sha256:0f5f5786c0e09baddcd8b4b45f20a7b5d61a7e7e99846e3c799b05c7c53fa696"},
     {file = "PyYAML-5.4.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:294db365efa064d00b8d1ef65d8ea2c3426ac366c0c4368d930bf1c5fb497f77"},
     {file = "PyYAML-5.4.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:74c1485f7707cf707a7aef42ef6322b8f97921bd89be2ab6317fd782c2d53183"},
-    {file = "PyYAML-5.4.1-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:d483ad4e639292c90170eb6f7783ad19490e7a8defb3e46f97dfe4bacae89122"},
-    {file = "PyYAML-5.4.1-cp39-cp39-manylinux2014_s390x.whl", hash = "sha256:fdc842473cd33f45ff6bce46aea678a54e3d21f1b61a7750ce3c498eedfe25d6"},
     {file = "PyYAML-5.4.1-cp39-cp39-win32.whl", hash = "sha256:49d4cdd9065b9b6e206d0595fee27a96b5dd22618e7520c33204a4a3239d5b10"},
     {file = "PyYAML-5.4.1-cp39-cp39-win_amd64.whl", hash = "sha256:c20cfa2d49991c8b4147af39859b167664f2ad4561704ee74c1de03318e898db"},
     {file = "PyYAML-5.4.1.tar.gz", hash = "sha256:607774cbba28732bfa802b54baa7484215f530991055bb562efbed5b2f20a45e"},
@@ -1131,8 +1119,8 @@ toml = [
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 tomli = [
-    {file = "tomli-1.0.4-py3-none-any.whl", hash = "sha256:0713b16ff91df8638a6a694e295c8159ab35ba93e3424a626dd5226d386057be"},
-    {file = "tomli-1.0.4.tar.gz", hash = "sha256:be670d0d8d7570fd0ea0113bd7bb1ba3ac6706b4de062cc4c952769355c9c268"},
+    {file = "tomli-1.1.0-py3-none-any.whl", hash = "sha256:f4a182048010e89cbec0ae4686b21f550a7f2903f665e34a6de58ec15424f919"},
+    {file = "tomli-1.1.0.tar.gz", hash = "sha256:33d7984738f8bb699c9b0a816eb646a8178a69eaa792d258486776a5d21b8ca5"},
 ]
 typed-ast = [
     {file = "typed_ast-1.4.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:2068531575a125b87a41802130fa7e29f26c09a2833fea68d9a40cf33902eba6"},

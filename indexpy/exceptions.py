@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from http import HTTPStatus
 from types import TracebackType
 from typing import (
@@ -17,6 +18,11 @@ from typing import (
     overload,
 )
 
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
+
 from baize.asgi import HTTPException, PlainTextResponse
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
@@ -26,11 +32,19 @@ from .responses import HttpResponse
 
 
 class RequestValidationError(Exception):
-    def __init__(self, validation_error: ValidationError) -> None:
+    def __init__(
+        self,
+        validation_error: ValidationError,
+        in_: Literal["path", "query", "header", "cookie", "body"],
+    ) -> None:
         self.validation_error = validation_error
+        self.in_ = in_
 
     def errors(self) -> List[Dict[str, Any]]:
-        return self.validation_error.errors()
+        errors = self.validation_error.errors()
+        for error in errors:
+            error["in"] = self.in_
+        return errors
 
     def json(self, *, indent: Union[None, int, str] = 2) -> str:
         return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
@@ -57,6 +71,16 @@ class RequestValidationError(Exception):
                         "title": "Message",
                         "description": "error message",
                         "type": "string",
+                    },
+                    "ctx": {
+                        "title": "Context",
+                        "description": "error context",
+                        "type": "string",
+                    },
+                    "in": {
+                        "title": "In",
+                        "type": "string",
+                        "enum": ["path", "query", "header", "cookie", "body"],
                     },
                 },
                 "required": ["loc", "type", "msg"],
