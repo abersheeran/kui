@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.0">
+      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.1">
     
     
       
@@ -20,7 +20,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe914879.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.1118c9be.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ba0d045b.min.css">
@@ -375,10 +375,23 @@
     标注请求参数
   </a>
   
+    <nav class="md-nav" aria-label="标注请求参数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     描述响应结果
   </a>
   
@@ -469,10 +482,23 @@
     标注请求参数
   </a>
   
+    <nav class="md-nav" aria-label="标注请求参数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     描述响应结果
   </a>
   
@@ -747,7 +773,22 @@
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
-<h2 id="_3">描述响应结果</h2>
+<h3 id="_3">在中间件中使用</h3>
+<p>在中间件中的使用方式并没有什么不同，直接在参数里描述即可。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Header</span><span class="p">(</span><span class="o">...</span><span class="p">)):</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="_4">描述响应结果</h2>
 <p>为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。<code>describe_response</code> 接受五个参数，其中 <code>status</code> 为必需项，<code>description</code>、<code>content</code>、<code>headers</code> 和 <code>links</code> 为可选项，对应<a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject"> OpenAPI Specification </a>里的同名字段。</p>
 <p>其中，<code>content</code> 既可以使用类型对象或 <code>pydantic.BaseModel</code> 的派生子类描述响应，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。</p>
 <div class="admonition notice">
@@ -810,51 +851,7 @@
 <p>此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。<strong>未来或许会增加 mock 功能。</strong></p>
 </div>
 <h2 id="openapi_1">描述额外的 OpenAPI 文档</h2>
-<p>作为一个 Web 项目，在中间件中读取请求信息并作限制是很常见的，例如读取 JWT 用作鉴权。在每个视图都增加 <code>header</code> 参数是不现实的，这时候 <code>describe_extra_docs</code> 就派上用场了。</p>
-<div class="admonition tip">
-<p><code>describe_extra_docs</code> 增加的内容，不仅限于 <code>parameters</code>，任何描述都会被合并进原本的文档里。具体的字段可参考 <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject">OpenAPI Specification</a>。</p>
-</div>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">judge_jwt</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="n">describe_extra_docs</span><span class="p">(</span>
-        <span class="n">endpoint</span><span class="p">,</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Authorization&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="s2">&quot;header&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;JWT Token&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                    <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
-                <span class="p">}</span>
-            <span class="p">]</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">judge</span><span class="p">():</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">judge</span>
-</code></pre></div>
-</td></tr></table>
+<p>可以使用 <code>describe_extra_docs</code> 对接口所对应的 OpenAPI 文档描述进行补充，使用 <code>describe_extra_docs</code> 增加的任何描述都会被合并进原本的文档里。具体的字段可参考 <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject">OpenAPI Specification</a>。</p>
                 
               
               
