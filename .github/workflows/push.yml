@@ -66,6 +66,7 @@ jobs:
 
       - name: Build
         run: |
+          git fetch --tags
           mkdocs-version build --minor --min-version=v0.16.0 --version-regex="v(?P<version>.*)"
           echo "index-py.aber.sh" > CNAME
 
