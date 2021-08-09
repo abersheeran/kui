@@ -3,7 +3,7 @@ from __future__ import annotations
 import operator
 import typing
 from dataclasses import dataclass
-from functools import reduce, update_wrapper
+from functools import WRAPPER_ASSIGNMENTS, reduce, update_wrapper
 
 from indexpy.parameters import auto_params
 
@@ -28,10 +28,14 @@ class BaseRoute:
     def __matmul__(
         self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
     ) -> _RouteSelf:
-        endpoint = self.endpoint
+        raw_endpoint = self.endpoint
         self.endpoint = auto_params(decorator(self.endpoint))
-        if not (hasattr(self.endpoint, "__wrapped__") or self.endpoint is endpoint):
-            self.endpoint = update_wrapper(self.endpoint, endpoint)
+        if self.endpoint is not raw_endpoint:
+            update_wrapper(
+                self.endpoint,
+                raw_endpoint,
+                assigned=(*WRAPPER_ASSIGNMENTS, "__method__", "__methods__"),
+            )
         return self
 
     def __post_init__(self) -> None:

@@ -7,7 +7,8 @@ from async_asgi_testclient import TestClient
 from pydantic import BaseModel
 
 from indexpy import HttpRoute, HttpView, Index, Path, Routes, required_method
-from indexpy.openapi import describe_extra_docs, describe_response
+from indexpy.field_functions import Header
+from indexpy.openapi import describe_response
 from indexpy.openapi.application import OpenAPI
 
 
@@ -18,7 +19,7 @@ async def test_openapi_page():
     app.router << Routes("/docs" // openapi.routes, namespace="docs")
     assert app.router.url_for("docs:json_docs") == "/docs/json"
 
-    @app.router.http("/hello")
+    @app.router.http.get("/hello")
     @describe_response(200, content=List[str])
     async def hello():
         """
@@ -29,7 +30,7 @@ async def test_openapi_page():
     class Username(BaseModel):
         name: str
 
-    @app.router.http("/path/{name}")
+    @app.router.http.get("/path/{name}")
     async def path(name: str = Path(...)):
         pass
 
@@ -67,26 +68,16 @@ async def test_openapi_page():
             """
 
     def just_middleware(endpoint):
-        describe_extra_docs(
-            endpoint,
-            {
-                "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "description": "JWT Token",
-                        "required": True,
-                        "schema": {"type": "string"},
-                    }
-                ]
-            },
-        )
-        return endpoint
+        async def wrapper(authorization: str = Header(..., description="JWT Token")):
+            return await endpoint()
+
+        return wrapper
 
     middleware_routes = "/middleware" // Routes(
-        HttpRoute("/path/{name}", path, "middleware-path"),
-        HttpRoute("/http-view", HTTPClass, "middleware-HTTPClass"),
+        HttpRoute("/path/{name}", path),
+        HttpRoute("/http-view", HTTPClass),
         http_middlewares=[just_middleware],
+        namespace="middleware",
     )
 
     app.router << middleware_routes
@@ -104,9 +95,176 @@ async def test_openapi_page():
     assert len(response.headers["hash"]) == 32
 
     openapi_docs_text = response.text
-    assert json.loads(openapi_docs_text) == json.loads(
-        '{"openapi":"3.0.3","info":{"title":"IndexPy API","version":"1.0.0"},"paths":{"/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}},"/middleware/http-view":{"get":{"summary":"...","description":"......","responses":{"200":{"description":"Request fulfilled, document follows","content":{"text/html":{"schema":{"type":"string"}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"post":{"summary":"...","description":"......","responses":{"201":{"description":"Document created, URL follows","content":{"application/json":{"schema":{"type":"object","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}}}}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]},"delete":{"summary":"...","description":"......","responses":{"204":{"description":"Request fulfilled, nothing follows"}},"parameters":[{"name":"Authorization","in":"header","description":"JWT Token","required":true,"schema":{"type":"string"}}]}}},"tags":[],"components":{"schemas":{}},"servers":[{"url":"http://localhost","description":"Current server"}]}'
-    )
+    assert json.loads(openapi_docs_text) == {
+        "openapi": "3.0.3",
+        "info": {"title": "IndexPy API", "version": "1.0.0"},
+        "paths": {
+            "/hello": {
+                "get": {
+                    "summary": "hello",
+                    "responses": {
+                        "200": {
+                            "description": "Request fulfilled, document follows",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            },
+            "/http-view": {
+                "get": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "200": {
+                            "description": "Request fulfilled, document follows",
+                            "content": {"text/html": {"schema": {"type": "string"}}},
+                        }
+                    },
+                },
+                "post": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "201": {
+                            "description": "Document created, URL follows",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {"title": "Name", "type": "string"}
+                                        },
+                                        "required": ["name"],
+                                    }
+                                }
+                            },
+                        }
+                    },
+                },
+                "delete": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "204": {"description": "Request fulfilled, nothing follows"}
+                    },
+                },
+            },
+            "/path/{name}": {
+                "get": {
+                    "parameters": [
+                        {
+                            "in": "path",
+                            "name": "name",
+                            "description": "",
+                            "required": True,
+                            "schema": {"title": "Name", "type": "string"},
+                            "deprecated": False,
+                        }
+                    ],
+                    "responses": {
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RequestValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Failed to verify request parameters",
+                        }
+                    },
+                }
+            },
+            "/middleware/http-view": {
+                "get": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "200": {
+                            "description": "Request fulfilled, document follows",
+                            "content": {"text/html": {"schema": {"type": "string"}}},
+                        }
+                    },
+                },
+                "post": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "201": {
+                            "description": "Document created, URL follows",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {"title": "Name", "type": "string"}
+                                        },
+                                        "required": ["name"],
+                                    }
+                                }
+                            },
+                        }
+                    },
+                },
+                "delete": {
+                    "summary": "...",
+                    "description": "......",
+                    "responses": {
+                        "204": {"description": "Request fulfilled, nothing follows"}
+                    },
+                },
+            },
+        },
+        "tags": [],
+        "components": {
+            "securitySchemes": {},
+            "schemas": {
+                "RequestValidationError": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "loc": {
+                                "title": "Location",
+                                "description": "error field",
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "type": {
+                                "title": "Type",
+                                "description": "error type",
+                                "type": "string",
+                            },
+                            "msg": {
+                                "title": "Message",
+                                "description": "error message",
+                                "type": "string",
+                            },
+                            "ctx": {
+                                "title": "Context",
+                                "description": "error context",
+                                "type": "string",
+                            },
+                            "in": {
+                                "title": "In",
+                                "type": "string",
+                                "enum": ["path", "query", "header", "cookie", "body"],
+                            },
+                        },
+                        "required": ["loc", "type", "msg"],
+                    },
+                }
+            },
+        },
+        "servers": [{"url": "http://localhost", "description": "Current server"}],
+    }, str(json.loads(openapi_docs_text))
 
 
 def test_openapi_single_function_summary_and_description():

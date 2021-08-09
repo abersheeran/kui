@@ -33,7 +33,7 @@ class OpenAPI:
     def __init__(
         self,
         info: spec.Info = {"title": "IndexPy API", "version": "1.0.0"},
-        components: spec.Components = {},
+        security_schemes: Dict[str, spec.SecurityScheme | spec.Reference] = {},
         *,
         tags: Dict[str, TagDetail] = {},
         template_name: Literal["redoc", "swagger", "rapidoc"] = "swagger",
@@ -54,7 +54,10 @@ class OpenAPI:
                 {"name": tag_name, "description": tag_info.get("description", "")}
                 for tag_name, tag_info in tags.items()
             ],
-            "components": components,
+            "components": {
+                "securitySchemes": security_schemes,
+                "schemas": {"RequestValidationError": RequestValidationError.schema()},
+            },
         }
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
@@ -156,7 +159,11 @@ class OpenAPI:
         if parameters or request_body:
             responses["422"] = {
                 "content": {
-                    "application/json": {"schema": RequestValidationError.schema()}
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RequestValidationError"
+                        }
+                    }
                 },
                 "description": "Failed to verify request parameters",
             }
@@ -199,7 +206,7 @@ class OpenAPI:
                 operation = typing.cast(spec.Operation, operation)
                 if "responses" not in operation:
                     operation["responses"] = {}
-        openapi["components"]["schemas"] = definitions
+        openapi["components"].setdefault("schemas", {}).update(definitions)
         return openapi
 
     @property
