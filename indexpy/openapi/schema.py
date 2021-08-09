@@ -9,8 +9,7 @@ from baize.datastructures import ContentType
 from pydantic import BaseModel
 from typing_extensions import Literal, get_args, get_type_hints
 
-from indexpy.requests import HttpRequest
-
+from .. import request
 from . import specification as spec
 from .types import UploadFile
 
@@ -53,9 +52,7 @@ def schema_request_body(
     definitions = schema.pop("definitions", {})
     content_types = [
         str(v)
-        for v in get_args(
-            get_type_hints(HttpRequest.data, include_extras=True)["return"]
-        )
+        for v in get_args(get_type_hints(request.data, include_extras=True)["return"])
         if isinstance(v, ContentType)
     ]
 

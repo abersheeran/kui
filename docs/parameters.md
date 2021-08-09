@@ -158,9 +158,39 @@ async def getlist(query: PageQuery = Query(exclusive=True)):
 
 通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。
 
----
+### 修改 Content-Type
 
-或许有时候你需要直接读取 `request` 的某些属性，以配合中间件使用。
+Index-py 会自动读取 `request.data` 的函数签名，并读取其中包含的 `ContentType` 对象作为 Content-Type 生成 OpenAPI 文档。以下为一个简单自定义样例——使用 `msgpack` 解析数据：
+
+```python
+import typing
+from http import HTTPStatus
+
+import msgpack
+from typing_extensions import Annotated
+
+from indexpy import Index
+from indexpy.applications import FactoryClass
+from indexpy.requests import HttpRequest
+
+
+class MsgPackRequest(HttpRequest):
+    async def data(self) -> Annotated[typing.Any, ContentType("application/x-msgpack")]:
+        if self.content_type == "application/x-msgpack":
+            return msgpack.unpackb(await self.body)
+
+        raise HTTPException(
+            HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+            headers={"Accept": "application/x-msgpack"},
+        )
+
+
+app = Index(factory_class=FactoryClass(http=MsgPackRequest))
+```
+
+### 读取 `request` 属性
+
+或许有时候你需要直接读取 `request` 的某些属性，以配合中间件使用。但直接使用 `request.attr` 又失去了 Type hint 的好处，那么可以选择使用如下方式。
 
 如下例所示，当 `code` 被调用时会自动读取 `request.user` 并作为函数参数传入函数中。
 
