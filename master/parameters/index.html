@@ -379,6 +379,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#content-type" class="md-nav__link">
+    修改 Content-Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    读取 request 属性
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     在中间件中使用
   </a>
@@ -484,6 +498,20 @@
   
     <nav class="md-nav" aria-label="标注请求参数">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-type" class="md-nav__link">
+    修改 Content-Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    读取 request 属性
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
@@ -745,8 +773,57 @@
 <li><code>Body</code>：<code>await request.data()</code></li>
 </ul>
 <p>通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。</p>
-<hr />
-<p>或许有时候你需要直接读取 <code>request</code> 的某些属性，以配合中间件使用。</p>
+<h3 id="content-type">修改 Content-Type</h3>
+<p>Index-py 会自动读取 <code>request.data</code> 的函数签名，并读取其中包含的 <code>ContentType</code> 对象作为 Content-Type 生成 OpenAPI 文档。以下为一个简单自定义样例——使用 <code>msgpack</code> 解析数据：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
+
+<span class="kn">import</span> <span class="nn">msgpack</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.applications</span> <span class="kn">import</span> <span class="n">FactoryClass</span>
+<span class="kn">from</span> <span class="nn">indexpy.requests</span> <span class="kn">import</span> <span class="n">HttpRequest</span>
+
+
+<span class="k">class</span> <span class="nc">MsgPackRequest</span><span class="p">(</span><span class="n">HttpRequest</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="n">ContentType</span><span class="p">(</span><span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">)]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">unpackb</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">UNSUPPORTED_MEDIA_TYPE</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">factory_class</span><span class="o">=</span><span class="n">FactoryClass</span><span class="p">(</span><span class="n">http</span><span class="o">=</span><span class="n">MsgPackRequest</span><span class="p">))</span>
+</code></pre></div>
+</td></tr></table>
+<h3 id="request">读取 <code>request</code> 属性</h3>
+<p>或许有时候你需要直接读取 <code>request</code> 的某些属性，以配合中间件使用。但直接使用 <code>request.attr</code> 又失去了 Type hint 的好处，那么可以选择使用如下方式。</p>
 <p>如下例所示，当 <code>code</code> 被调用时会自动读取 <code>request.user</code> 并作为函数参数传入函数中。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
