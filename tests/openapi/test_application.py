@@ -224,7 +224,6 @@ async def test_openapi_page():
         },
         "tags": [],
         "components": {
-            "securitySchemes": {},
             "schemas": {
                 "RequestValidationError": {
                     "type": "array",

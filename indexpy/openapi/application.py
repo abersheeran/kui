@@ -55,10 +55,11 @@ class OpenAPI:
                 for tag_name, tag_info in tags.items()
             ],
             "components": {
-                "securitySchemes": security_schemes,
                 "schemas": {"RequestValidationError": RequestValidationError.schema()},
             },
         }
+        if security_schemes:
+            self.openapi["components"]["securitySchemes"] = security_schemes
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
             for path in tag_info["paths"]:
