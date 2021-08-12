@@ -312,8 +312,9 @@ class DebugMiddleware:
         if request.accepts("text/html"):
             content = self.generate_html(exc)
             return HTMLResponse(content, status_code=500)
-        content = self.generate_plain_text(exc)
-        return PlainTextResponse(content, status_code=500)
+        else:
+            content = self.generate_plain_text(exc)
+            return PlainTextResponse(content, status_code=500)
 
     def error_response(self, request: HttpRequest, exc: Exception) -> HttpResponse:
         return PlainTextResponse("Internal Server Error", status_code=500)
