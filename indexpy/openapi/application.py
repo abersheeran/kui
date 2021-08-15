@@ -140,7 +140,7 @@ class OpenAPI:
             operator.add,
             map(
                 lambda key: schema_parameter(
-                    create_model(getattr(func, "__parameters__", {}).get(key, [])),
+                    create_model(getattr(func, "__docs_parameters__", {}).get(key, [])),
                     typing.cast(Literal["path", "query", "header", "cookie"], key),
                 ),
                 ["path", "query", "header", "cookie"],
@@ -150,7 +150,9 @@ class OpenAPI:
 
         # generate request body schema
         request_body = update_definitions(
-            *schema_request_body(create_model(getattr(func, "__request_body__", [])))
+            *schema_request_body(
+                create_model(getattr(func, "__docs_request_body__", []))
+            )
         )
         result["requestBody"] = request_body
 

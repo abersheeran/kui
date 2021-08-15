@@ -208,17 +208,19 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
     handler = callback_with_auto_bound_params
 
     if request_body is not None:
-        __request_body__: List[BaseModel] = getattr(handler, "__request_body__", [])
+        __request_body__: List[BaseModel] = getattr(
+            handler, "__docs_request_body__", []
+        )
         __request_body__.append(request_body)
-        setattr(handler, "__request_body__", __request_body__)
+        setattr(handler, "__docs_request_body__", __request_body__)
 
     if parameters is not None:
         __parameters__: Dict[str, List[BaseModel]] = getattr(
-            handler, "__parameters__", {}
+            handler, "__docs_parameters__", {}
         )
         for key, value in parameters.items():
             __parameters__.setdefault(key, []).append(value)
-        setattr(handler, "__parameters__", __parameters__)
+        setattr(handler, "__docs_parameters__", __parameters__)
 
     __signature__ = inspect.Signature(
         parameters=[
@@ -234,7 +236,8 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
 
 
 has_wrapped_by_auto_params = lambda function: (
-    hasattr(function, "__parameters__") or hasattr(function, "__request_body__")
+    hasattr(function, "__docs_parameters__")
+    or hasattr(function, "__docs_request_body__")
 )
 
 
