@@ -41,19 +41,20 @@ def create_model_config(title: str = None, description: str = None) -> Type[Base
     return ExclusiveModelConfig
 
 
+sorted_groupby = lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
+
+
 def _merge_multi_value(
     items: Sequence[Tuple[str, Any]]
-) -> Dict[str, Union[str, List[str]]]:
+) -> Dict[str, Union[Any, List[Any]]]:
     """
     If there are values with the same key value, they are merged into a List.
     """
     return {
         k: v_list if len(v_list) > 1 else v_list[0]
         for k, v_list in (
-            (k, list(v for _, v in kv_iter))
-            for k, kv_iter in (
-                lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
-            )(items, lambda kv: kv[0])
+            (k, [v for _, v in kv_iter])
+            for k, kv_iter in sorted_groupby(items, lambda kv: kv[0])
         )
     }
 
@@ -127,11 +128,11 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         if isinstance(param.default, RequestInfo)
     }
 
+    if not (parameters or request_body or request_attrs):
+        return callback
+
     @functools.wraps(callback)
     async def callback_with_auto_bound_params(*args, **kwargs):
-        if not (parameters or request_body or request_attrs):
-            return await callback(*args, **kwargs)
-
         data: List[Any] = []
         keyword_params: Dict[str, Any] = {}
 
