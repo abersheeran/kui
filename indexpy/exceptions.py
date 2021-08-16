@@ -156,16 +156,14 @@ class ExceptionContextManager:
     async def http_exception(exc: HTTPException) -> HttpResponse:
         if exc.status_code in {204, 304}:
             return HttpResponse(status_code=exc.status_code, headers=exc.headers)
-
-        return PlainTextResponse(
-            content=(
+        else:
+            return request.app.response_convertor(
                 exc.content
-                if isinstance(exc.content, (bytes, str))
-                else HTTPStatus(exc.status_code).description
-            ),
-            status_code=exc.status_code,
-            headers=exc.headers,
-        )
+                if exc.content is not None
+                else HTTPStatus(exc.status_code).description,
+                exc.status_code,
+                exc.headers,
+            )
 
     @staticmethod
     async def request_validation_error(exc: RequestValidationError) -> HttpResponse:
