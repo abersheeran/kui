@@ -75,6 +75,6 @@ def convert_response(response: typing.Any) -> HttpResponse:
 
     """
     if isinstance(response, tuple):
-        return request.app.response_convertor(*response)
+        return request.app.response_converter(*response)
     else:
-        return request.app.response_convertor(response)
+        return request.app.response_converter(response)

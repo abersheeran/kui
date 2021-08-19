@@ -195,20 +195,8 @@ CENTER_LINE = """
 
 
 class DebugMiddleware:
-    """
-    Handles returning 500 responses when a server error occurs.
-
-    If 'debug' is set, then traceback responses will be returned,
-    otherwise the designated 'handler' will be called.
-
-    This middleware class should generally be used to wrap *everything*
-    else up, so that unhandled exceptions anywhere in the stack
-    always result in an appropriate 500 response.
-    """
-
-    def __init__(self, app: ASGIApp, debug: bool = False) -> None:
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
-        self.debug = debug
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -229,10 +217,7 @@ class DebugMiddleware:
         except Exception as exc:
             if not response_started:
                 request = scope["app"].factory_class.http(scope)
-                if self.debug:
-                    response = self.debug_response(request, exc)
-                else:
-                    response = self.error_response(request, exc)
+                response = self.debug_response(request, exc)
                 await response(scope, receive, send)
 
             raise exc
@@ -315,6 +300,3 @@ class DebugMiddleware:
         else:
             content = self.generate_plain_text(exc)
             return PlainTextResponse(content, status_code=500)
-
-    def error_response(self, request: HttpRequest, exc: Exception) -> HttpResponse:
-        return PlainTextResponse("Internal Server Error", status_code=500)

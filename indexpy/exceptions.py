@@ -157,7 +157,7 @@ class ExceptionContextManager:
         if exc.status_code in {204, 304}:
             return HttpResponse(status_code=exc.status_code, headers=exc.headers)
         else:
-            return request.app.response_convertor(
+            return request.app.response_converter(
                 exc.content
                 if exc.content is not None
                 else HTTPStatus(exc.status_code).description,

@@ -11,13 +11,11 @@ from pathlib import PurePath
 from types import AsyncGeneratorType
 from typing import (
     Any,
-    AsyncGenerator,
     Awaitable,
     Callable,
     Dict,
     Iterable,
     List,
-    Mapping,
     NoReturn,
     Optional,
     Type,
@@ -32,8 +30,7 @@ else:
 
 from baize.asgi import Receive, Scope, Send
 from baize.datastructures import URL
-from baize.typing import ASGIApp, ServerSentEvent
-from baize.utils import cached_property
+from baize.typing import ASGIApp
 
 from .debug import DebugMiddleware
 from .exceptions import ErrorView, ExceptionContextManager, HTTPException
@@ -49,9 +46,11 @@ from .responses import (
 )
 from .routing import BaseRoute, NoMatchFound, Router
 from .templates import BaseTemplates
-from .utils import F, State
+from .utils import F, ImmutableAttribute, State
 
 NoArgumentCallable = Union[Callable[[], Any], Callable[[], Awaitable[Any]]]
+
+T_NoArgumentCallable = TypeVar("T_NoArgumentCallable", bound=NoArgumentCallable)
 
 
 @dataclasses.dataclass
@@ -97,10 +96,10 @@ class FactoryClass:
     websocket: Type[WebSocket] = WebSocket
 
 
-T_NoArgumentCallable = TypeVar("T_NoArgumentCallable", bound=NoArgumentCallable)
-
-
 class Index:
+    debug: ImmutableAttribute[bool] = ImmutableAttribute()
+    state: ImmutableAttribute[State] = ImmutableAttribute()
+
     def __init__(
         self,
         *,
@@ -111,38 +110,32 @@ class Index:
         routes: Iterable[BaseRoute] = [],
         exception_handlers: Dict[int | Type[Exception], ErrorView] = {},
         factory_class: FactoryClass = FactoryClass(),
+        response_converters: Dict[type, Callable[..., HttpResponse]] = {},
     ) -> None:
+        self.debug = debug
+        self.state = State()
+        self.response_converter = create_response_converter(response_converters)
         self.should_exit = False
-        self.__dict__["debug"] = debug
         self.factory_class = factory_class
         self.templates = templates
         self.router = Router(routes)
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
         self.exception_contextmanager = ExceptionContextManager(exception_handlers)
-        self.asgi_middlewares: List[F] = []
-        # We expect to be able to catch all code errors, so as an ASGI middleware.
-        self.app_with_debug = DebugMiddleware(
-            app=self.build_app_with_middlewares(), debug=self.debug
-        )
+        self._asgi_middlewares: List[F] = []
+        self.app_with_middlewares = self.build_app_with_middlewares()
 
-    @property
-    def debug(self) -> bool:
-        return self.__dict__.get("debug", False)
-
-    @debug.setter
-    def debug(self, value: bool) -> None:
-        self.__dict__["debug"] = bool(value)
-        self.app_with_debug.debug = bool(value)
+        if self.debug:
+            self.add_middleware(DebugMiddleware)
 
     def build_app_with_middlewares(self) -> ASGIApp:
-        return reduce(lambda a, m: m(a), self.asgi_middlewares, self.app)
+        return reduce(lambda a, m: m(a), self._asgi_middlewares, self.app)
 
     def add_middleware(self, middleware_class: type, **options: Any) -> None:
         """
         Add ASGI middleware
         """
-        self.asgi_middlewares.append(F(middleware_class, **options))
-        self.app_with_debug.app = self.build_app_with_middlewares()
+        self._asgi_middlewares.append(F(middleware_class, **options))
+        self.app_with_middlewares = self.build_app_with_middlewares()
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorView
@@ -167,67 +160,6 @@ class Index:
     def on_shutdown(self, func: T_NoArgumentCallable) -> T_NoArgumentCallable:
         self.lifespan.on_shutdown.append(func)
         return func
-
-    @cached_property
-    def state(self) -> State:
-        return State()
-
-    @cached_property
-    def response_convertor(self):
-        @functools.singledispatch
-        def automatic(*args: Any) -> HttpResponse:
-            raise TypeError(
-                f"Cannot find automatic handler for this type: {type(args[0])}"
-            )
-
-        @automatic.register(HttpResponse)
-        def raw_response(response: HttpResponse, *args: Any) -> HttpResponse:
-            return response
-
-        @automatic.register(type(None))
-        def _none(ret: Type[None]) -> NoReturn:
-            raise TypeError(
-                "Get 'None'. Maybe you need to add a return statement to the function."
-            )
-
-        @automatic.register(tuple)
-        @automatic.register(list)
-        @automatic.register(dict)
-        def _json(
-            body: tuple | list | dict,
-            status: int = 200,
-            headers: Mapping[str, str] = None,
-        ) -> JSONResponse:
-            return JSONResponse(body, status, headers)
-
-        @automatic.register(str)
-        @automatic.register(bytes)
-        def _plain_text(
-            body: str | bytes,
-            status: int = 200,
-            headers: Mapping[str, str] = None,
-        ) -> PlainTextResponse:
-            return PlainTextResponse(body, status, headers)
-
-        @automatic.register(AsyncGeneratorType)
-        def _send_event(
-            generator: AsyncGenerator[ServerSentEvent, None],
-            status: int = 200,
-            headers: Mapping[str, str] = None,
-        ) -> SendEventResponse:
-            return SendEventResponse(generator, status, headers)
-
-        @automatic.register(PurePath)
-        def _file(filepath: PurePath, download_name: str = None) -> FileResponse:
-            return FileResponse(str(filepath), download_name=download_name)
-
-        @automatic.register(URL)
-        def _redirect(
-            url: URL, status: int = 307, headers: Mapping[str, str] = None
-        ) -> RedirectResponse:
-            return RedirectResponse(url, status_code=status, headers=headers)
-
-        return automatic
 
     async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope_type: Literal["lifespan", "http", "websocket"] = scope["type"]
@@ -265,4 +197,77 @@ class Index:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self
 
-        await self.app_with_debug(scope, receive, send)
+        await self.app_with_middlewares(scope, receive, send)
+
+
+def create_response_converter(
+    converters: Dict[type, Callable[..., HttpResponse]]
+) -> functools._SingleDispatchCallable[HttpResponse]:
+    """
+    Create a converter for convert response.
+    """
+
+    @functools.singledispatch
+    def response_converter(*args: Any) -> HttpResponse:
+        raise TypeError(
+            f"Cannot find response_converter handler for this type: {type(args[0])}"
+        )
+
+    def _none(ret: Type[None]) -> NoReturn:
+        raise TypeError(
+            "Get 'None'. Maybe you need to add a return statement to the function."
+        )
+
+    response_converter.register(type(None), _none)
+    response_converter.register(HttpResponse, lambda x: x)
+    response_converter.register(
+        dict,
+        lambda content, status=200, headers=None: JSONResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        list,
+        lambda content, status=200, headers=None: JSONResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        tuple,
+        lambda content, status=200, headers=None: JSONResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        bytes,
+        lambda content, status=200, headers=None: PlainTextResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        str,
+        lambda content, status=200, headers=None: PlainTextResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        AsyncGeneratorType,
+        lambda content, status=200, headers=None: SendEventResponse(
+            content, status, headers
+        ),
+    )
+    response_converter.register(
+        PurePath,
+        lambda filepath, download_name=None: FileResponse(
+            str(filepath), download_name=download_name
+        ),
+    )
+    response_converter.register(
+        URL,
+        lambda url, status=307, headers=None: RedirectResponse(url, status, headers),
+    )
+
+    for type_, converter in converters.items():
+        response_converter.register(type_, converter)
+
+    return response_converter

@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import importlib
-import os
 from inspect import isclass
-from types import ModuleType
-from typing import Any, Dict, Generic, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Generic, NoReturn, Tuple, TypeVar, Union, overload
 
 from .contextvars import bind_contextvar
-from .importer import import_from_string
+from .importer import import_from_string, import_module
 from .pipe import FF, F
 from .state import State
 
@@ -49,33 +46,35 @@ class Singleton(type):
         return cls.instance
 
 
-def import_module(name: str) -> Optional[ModuleType]:
-    """
-    try importlib.import_module, nothing to do when module not be found.
-    """
-    if os.path.exists(os.path.join(os.getcwd(), name + ".py")) or os.path.exists(
-        os.path.join(os.getcwd(), name, "__init__.py")
-    ):
-        return importlib.import_module(name)
-    return None  # nothing to do when module not be found
-
-
 class ImmutableAttribute(Generic[T]):
     def __set_name__(self, owner: object, name: str) -> None:
         self.public_name = name
         self.private_name = "_" + name
 
+    @overload
+    def __get__(self, instance: None, cls: type = None) -> NoReturn:
+        ...
+
+    @overload
     def __get__(self, instance: object, cls: type = None) -> T:
-        return getattr(instance, self.private_name)
+        ...
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            raise AttributeError(
+                f"{instance.__class__.__name__} has no attribute '{self.public_name}'"
+            ) from None
+        else:
+            return getattr(instance, self.private_name)
 
     def __set__(self, instance: object, value: T) -> None:
         if hasattr(instance, self.private_name):
             raise RuntimeError(
                 f"{instance.__class__.__name__}.{self.public_name} is immutable"
-            )
+            ) from None
         setattr(instance, self.private_name, value)
 
     def __delete__(self, instance: object) -> None:
         raise RuntimeError(
             f"{instance.__class__.__name__}.{self.public_name} is immutable"
-        )
+        ) from None

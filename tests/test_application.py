@@ -39,13 +39,11 @@ async def test_example_application():
             assert await socket.receive_json() == {"data": "(^_^)"}
 
 
-def test_custom_application_response_convertor():
+def test_custom_application_response_converter():
     from dataclasses import asdict, dataclass
     from typing import Mapping
 
     from indexpy import HttpResponse, Index, JSONResponse, PlainTextResponse
-
-    app = Index()
 
     @dataclass
     class Error:
@@ -53,21 +51,23 @@ def test_custom_application_response_convertor():
         title: str = ""
         message: str = ""
 
-    @app.response_convertor.register(Error)
-    def _error_json(
-        error: Error, status: int = 400, headers: Mapping[str, str] = None
-    ) -> HttpResponse:
-        return JSONResponse(asdict(error), status, headers)
+    app = Index(
+        response_converters={
+            Error: lambda error, status=400, headers=None: JSONResponse(
+                asdict(error), status, headers
+            ),
+        }
+    )
 
-    @app.response_convertor.register(tuple)
-    @app.response_convertor.register(list)
-    @app.response_convertor.register(dict)
+    @app.response_converter.register(tuple)
+    @app.response_converter.register(list)
+    @app.response_converter.register(dict)
     def _more_json(
         body, status: int = 200, headers: Mapping[str, str] = None
     ) -> HttpResponse:
         return PlainTextResponse(str(body), status, headers)
 
-    assert isinstance(app.response_convertor(Error()), JSONResponse)
-    assert isinstance(app.response_convertor(tuple()), PlainTextResponse)
-    assert isinstance(app.response_convertor(list()), PlainTextResponse)
-    assert isinstance(app.response_convertor(dict()), PlainTextResponse)
+    assert isinstance(app.response_converter(Error()), JSONResponse)
+    assert isinstance(app.response_converter(tuple()), PlainTextResponse)
+    assert isinstance(app.response_converter(list()), PlainTextResponse)
+    assert isinstance(app.response_converter(dict()), PlainTextResponse)

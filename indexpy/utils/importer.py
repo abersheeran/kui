@@ -1,5 +1,7 @@
 import importlib
-from typing import Any
+import os
+from types import ModuleType
+from typing import Any, Optional
 
 
 class ImportFromStringError(Exception):
@@ -33,3 +35,14 @@ def import_from_string(import_str: str) -> Any:
         )
 
     return instance
+
+
+def import_module(name: str) -> Optional[ModuleType]:
+    """
+    try importlib.import_module, nothing to do when module not be found.
+    """
+    if os.path.exists(os.path.join(os.getcwd(), name + ".py")) or os.path.exists(
+        os.path.join(os.getcwd(), name, "__init__.py")
+    ):
+        return importlib.import_module(name)
+    return None  # nothing to do when module not be found
