@@ -228,48 +228,11 @@ def required_auth(endpoint):
 
 ## 描述响应结果
 
-为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
-
-其中，`content` 既可以使用类型对象或 `pydantic.BaseModel` 的派生子类描述响应，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
-
-!!! notice ""
-    如果 `description` 的值为默认的 `""`，则会使用 `http` 标准库中的 `HTTPStatus(status).description` 作为描述。
+为了生成响应结果的 OpenAPI 文档，你应当使用 [`Annotated`](https://docs.python.org/zh-cn/3/library/typing.html#typing.Annotated) 对视图的返回值进行描述。
 
 ```python
-from http import HTTPStatus
 
-from indexpy.openapi import describe_response
-
-
-@describe_response(HTTPStatus.NO_CONTENT)
-def handler():
-    """
-    .................
-    """
 ```
-
-除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。字典以 `status` 为键，以 OpenAPI Response Object 的四个属性作为可选的值（其中 `description` 为必选）。
-
-```python
-from indexpy.openapi import describe_responses
-
-RESPONSES = {
-    404: {"description": "Item not found"},
-    403: {"description": "Not enough privileges"},
-    302: {"description": "The item was moved"},
-}
-
-
-@describe_responses(RESPONSES)
-@describe_response(204, "No Content")
-def handler():
-    """
-    .................
-    """
-```
-
-!!! notice ""
-    此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
 
 ## 描述额外的 OpenAPI 文档
 
