@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import inspect
 import operator
 import typing
 from dataclasses import dataclass
-from functools import WRAPPER_ASSIGNMENTS, reduce, update_wrapper
-
-from typing_extensions import Annotated
+from functools import reduce, update_wrapper
 
 from indexpy.parameters import auto_params
 
@@ -34,29 +31,7 @@ class BaseRoute:
         raw_endpoint = self.endpoint
         self.endpoint = auto_params(decorator(self.endpoint))
         if self.endpoint is not raw_endpoint:
-            raw_endpoint_signature = inspect.signature(raw_endpoint)
-            new_endpoint_signature = inspect.signature(self.endpoint)
-            update_wrapper(
-                self.endpoint,
-                raw_endpoint,
-                assigned=(*WRAPPER_ASSIGNMENTS, "__method__", "__methods__"),
-            )
-            if (
-                raw_endpoint_signature.return_annotation != raw_endpoint_signature.empty
-                and new_endpoint_signature.return_annotation
-                != new_endpoint_signature.empty
-            ):
-                setattr(
-                    self.endpoint,
-                    "__signature__",
-                    inspect.signature(self.endpoint).replace(
-                        return_annotation=Annotated[
-                            raw_endpoint_signature.return_annotation,
-                            new_endpoint_signature.return_annotation,
-                        ]
-                    ),
-                )
-            print(self.endpoint.__signature__)
+            update_wrapper(self.endpoint, raw_endpoint)
         return self
 
     def __post_init__(self) -> None:
