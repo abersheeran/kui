@@ -33,7 +33,10 @@ def allow_cors(
 
     config_dict: Dict[str, str] = {
         "Access-Control-Allow-Methods": ", ".join(allow_methods),
-        "Access-Control-Allow-Headers": ", ".join(allow_headers),
+        "Access-Control-Allow-Headers": ", ".join(
+            {"Accept", "Accept-Language", "Content-Language", "Content-Type"}
+            | set(allow_headers)
+        ),
         "Access-Control-Expose-Headers": ", ".join(expose_headers),
         "Access-Control-Allow-Credentials": "true" if allow_credentials else "false",
         "Access-Control-Max-Age": str(max_age),
