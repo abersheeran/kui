@@ -315,13 +315,9 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
     ) -> None:
         self.namespace = namespace
         self._list: typing.List[BaseRoute] = []
-        self._http_middlewares = list(http_middlewares) + [
-            lambda endpoint: (
-                setattr(endpoint, "__tags__", list(tags)) if tags else None  # type: ignore
-            )
-            or endpoint
-        ]
+        self._http_middlewares = list(http_middlewares)
         self._socket_middlewares = list(socket_middlewares)
+        self._tags = tags
         for route in iterable:
             self << route
 
@@ -343,6 +339,15 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         return len(self._list)
 
     def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
+        if isinstance(route, HttpRoute):
+            route = route.__class__(
+                route.path,
+                route.endpoint,
+                route.name,
+                route.summary,
+                route.description,
+                (route.tags or []) + (self._tags or []),
+            )
         self._list.append(route)
         return self
 

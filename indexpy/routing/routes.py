@@ -1,4 +1,5 @@
 from __future__ import annotations
+from enum import auto
 
 import operator
 import typing
@@ -28,10 +29,20 @@ class BaseRoute:
     def __matmul__(
         self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
     ) -> _RouteSelf:
-        raw_endpoint = self.endpoint
-        self.endpoint = auto_params(decorator(self.endpoint))
-        if self.endpoint is not raw_endpoint:
-            update_wrapper(self.endpoint, raw_endpoint)
+        endpoint = self.endpoint
+        if isinstance(endpoint, type) and hasattr(endpoint, "__methods__"):
+            for method in map(str.lower, endpoint.__methods__):
+                old_callback = getattr(endpoint, method)
+                new_callback = decorator(old_callback)
+                if new_callback is not old_callback:
+                    update_wrapper(new_callback, old_callback)
+                    new_callback = auto_params(new_callback)
+                setattr(endpoint, method, new_callback)
+        else:
+            self.endpoint = decorator(endpoint)
+            if self.endpoint is not endpoint:
+                update_wrapper(self.endpoint, endpoint)
+                self.endpoint = auto_params(self.endpoint)
         return self
 
     def __post_init__(self) -> None:

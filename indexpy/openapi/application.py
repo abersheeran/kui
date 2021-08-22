@@ -11,7 +11,7 @@ from hashlib import md5
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 
-from typing_extensions import Literal, TypedDict, get_args, get_type_hints
+from typing_extensions import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
     from indexpy.applications import Index
@@ -169,19 +169,7 @@ class OpenAPI:
                 },
                 "description": "Failed to verify request parameters",
             }
-        status: str
-        info: dict
-        for status, info in reduce(
-            lambda x, y: {**x, **y},
-            (
-                response
-                for response in get_args(
-                    get_type_hints(func, include_extras=True).get("return")
-                )
-                if isinstance(response, dict)
-            ),
-            {},
-        ).items():
+        for status, info in getattr(func, "__docs_responses__", {}).items():
             _ = responses[status] = copy.copy(info)
             if _.get("content") is not None:
                 _["content"] = update_definitions(*schema_response(_["content"]))

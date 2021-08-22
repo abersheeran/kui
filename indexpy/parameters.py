@@ -20,6 +20,7 @@ from typing import cast as typing_cast
 
 from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
+from typing_extensions import get_args, get_type_hints
 
 from indexpy.exceptions import RequestValidationError
 from indexpy.requests import request
@@ -127,6 +128,24 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         for name, param in sig.parameters.items()
         if isinstance(param.default, RequestInfo)
     }
+
+    __responses__ = getattr(callback, "__docs_responses__", {})
+    __responses__.update(
+        functools.reduce(
+            lambda x, y: {**x, **y},
+            (
+                response
+                for response in get_args(
+                    get_type_hints(callback, include_extras=True).get("return")
+                )
+                if isinstance(response, dict)
+            ),
+            {},
+        )
+    )
+    print(callback.__annotations__, __responses__)
+    if __responses__:
+        setattr(callback, "__docs_responses__", __responses__)
 
     if not (parameters or request_body or request_attrs):
         return callback
