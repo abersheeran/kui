@@ -5,7 +5,7 @@ import typing
 from dataclasses import dataclass
 from functools import reduce
 
-from ..parameters import auto_params
+from ..parameters import auto_params, update_wrapper
 
 T_Endpoint = typing.Callable[..., typing.Awaitable[typing.Any]]
 _RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
@@ -34,12 +34,16 @@ class BaseRoute:
                 old_callback = getattr(endpoint, method)
                 new_callback = decorator(old_callback)
                 if new_callback is not old_callback:
+                    update_wrapper(new_callback, old_callback)
                     new_callback = auto_params(new_callback)
                 setattr(endpoint, method, new_callback)
         else:
-            self.endpoint = decorator(endpoint)
-            if self.endpoint is not endpoint:
-                self.endpoint = auto_params(self.endpoint)
+            old_callback = endpoint
+            new_callback = decorator(old_callback)
+            if new_callback is not old_callback:
+                update_wrapper(new_callback, old_callback)
+                new_callback = auto_params(new_callback)
+            self.endpoint = new_callback
         return self
 
     def __post_init__(self) -> None:

@@ -207,6 +207,10 @@ async def test_openapi_page():
                             },
                             "description": "Failed to verify request parameters",
                         },
+                        "200": {
+                            "description": "Request fulfilled, document follows",
+                            "content": {"text/html": {"schema": {"type": "string"}}},
+                        },
                         "401": {
                             "description": "No permission -- see authorization schemes"
                         },
@@ -233,6 +237,20 @@ async def test_openapi_page():
                                 }
                             },
                             "description": "Failed to verify request parameters",
+                        },
+                        "201": {
+                            "description": "Document created, URL follows",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {"title": "Name", "type": "string"}
+                                        },
+                                        "required": ["name"],
+                                    }
+                                }
+                            },
                         },
                         "401": {
                             "description": "No permission -- see authorization schemes"
@@ -261,6 +279,7 @@ async def test_openapi_page():
                             },
                             "description": "Failed to verify request parameters",
                         },
+                        "204": {"description": "Request fulfilled, nothing follows"},
                         "401": {
                             "description": "No permission -- see authorization schemes"
                         },
