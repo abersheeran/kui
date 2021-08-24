@@ -165,9 +165,12 @@ def redirect_response__class_getitem__(parameters):
     """
     Use RedirectResponse[status] to describe response
     """
-    status_code = parameters
+    if isinstance(parameters, tuple):
+        status_code, headers = parameters
+    else:
+        status_code, headers = parameters, {}
     assert isinstance(status_code, int)
-    return {
+    docs = {
         str(status_code): {
             "description": HTTPStatus(status_code).description,
             "headers": {
@@ -175,6 +178,9 @@ def redirect_response__class_getitem__(parameters):
             },
         }
     }
+    if headers:
+        docs[str(status_code)]["headers"].update(headers)
+    return docs
 
 
 RedirectResponse.__class_getitem__ = redirect_response__class_getitem__  # type: ignore

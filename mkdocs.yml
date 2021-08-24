@@ -35,7 +35,7 @@ nav:
   - Http: "http.md"
   - WebSocket: "websocket.md"
   - Lifespan: "event.md"
-  - OpenAPI: "parameters.md"
+  - 接口文档: "parameters.md"
   - 命令: "command.md"
 
 markdown_extensions:
@@ -58,6 +58,7 @@ plugins:
           介绍: Introduction
           路由: Routing
           命令: Commands
+          接口文档: API Docs
 
 extra:
   analytics:
