@@ -22,11 +22,10 @@ from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from typing_extensions import get_args, get_type_hints
 
-from indexpy.exceptions import RequestValidationError
-from indexpy.requests import request
-from indexpy.utils import safe_issubclass
-
+from .exceptions import RequestValidationError
 from .fields import FieldInfo, RequestInfo, Undefined
+from .requests import request
+from .utils import safe_issubclass
 
 CallableObject = TypeVar("CallableObject", bound=Callable[..., Awaitable[Any]])
 
@@ -128,24 +127,6 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         for name, param in sig.parameters.items()
         if isinstance(param.default, RequestInfo)
     }
-
-    __responses__ = getattr(callback, "__docs_responses__", {})
-    __responses__.update(
-        functools.reduce(
-            lambda x, y: {**x, **y},
-            (
-                response
-                for response in get_args(
-                    get_type_hints(callback, include_extras=True).get("return")
-                )
-                if isinstance(response, dict)
-            ),
-            {},
-        )
-    )
-    print(callback.__annotations__, __responses__)
-    if __responses__:
-        setattr(callback, "__docs_responses__", __responses__)
 
     if not (parameters or request_body or request_attrs):
         return callback
@@ -251,24 +232,66 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
     )
     setattr(callback_with_auto_bound_params, "__signature__", __signature__)
 
+    del callback_with_auto_bound_params.__wrapped__  # type: ignore
+
     return callback_with_auto_bound_params  # type: ignore
 
 
-has_wrapped_by_auto_params = lambda function: (
-    hasattr(function, "__docs_parameters__")
-    or hasattr(function, "__docs_request_body__")
-)
+def create_new_class(cls):
+    """
+    Create a fake class for auto-bound parameters.
+    """
+
+    @functools.wraps(cls, updated=())
+    class NewClass(cls):
+        pass
+
+    return NewClass
 
 
 def auto_params(handler: CallableObject) -> CallableObject:
     if inspect.isclass(handler) and hasattr(handler, "__methods__"):
+        new_class = create_new_class(handler)
         for method in map(lambda x: x.lower(), handler.__methods__):  # type: ignore
-            function = getattr(handler, method)
-            if has_wrapped_by_auto_params(function):
-                continue
-            setattr(handler, method, create_new_callback(function))
-        return handler
+            old_callback = getattr(handler, method)
+            new_callback = create_new_callback(old_callback)
+            setattr(new_class, method, new_callback)  # note: set to new class
+            __docs_responses__ = getattr(old_callback, "__docs_responses__", {})
+            __docs_responses__.update(
+                functools.reduce(
+                    lambda x, y: {**x, **y},
+                    (
+                        response
+                        for response in get_args(
+                            get_type_hints(new_callback, include_extras=True).get(
+                                "return"
+                            )
+                        )
+                        if isinstance(response, dict)
+                    ),
+                    {},
+                )
+            )
+            setattr(new_callback, "__docs_responses__", __docs_responses__)
+        return new_class
     elif inspect.iscoroutinefunction(handler):
-        return create_new_callback(handler)
+        old_callback = handler
+        new_callback = create_new_callback(handler)
+        __docs_responses__ = getattr(old_callback, "__docs_responses__", {})
+        __docs_responses__.update(
+            functools.reduce(
+                lambda x, y: {**x, **y},
+                (
+                    response
+                    for response in get_args(
+                        get_type_hints(new_callback, include_extras=True).get("return")
+                    )
+                    if isinstance(response, dict)
+                ),
+                {},
+            )
+        )
+        setattr(new_callback, "__docs_responses__", __docs_responses__)
+        return new_callback
     else:
         return handler

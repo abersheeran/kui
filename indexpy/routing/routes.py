@@ -1,12 +1,11 @@
 from __future__ import annotations
-from enum import auto
 
 import operator
 import typing
 from dataclasses import dataclass
-from functools import reduce, update_wrapper
+from functools import reduce
 
-from indexpy.parameters import auto_params
+from ..parameters import auto_params
 
 T_Endpoint = typing.Callable[..., typing.Awaitable[typing.Any]]
 _RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
@@ -30,18 +29,38 @@ class BaseRoute:
         self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
     ) -> _RouteSelf:
         endpoint = self.endpoint
-        if isinstance(endpoint, type) and hasattr(endpoint, "__methods__"):
-            for method in map(str.lower, endpoint.__methods__):
+        if hasattr(endpoint, "__methods__"):
+            for method in map(str.lower, endpoint.__methods__):  # type: ignore
                 old_callback = getattr(endpoint, method)
                 new_callback = decorator(old_callback)
+                import inspect
+                print(
+                    "\n",
+                    self.path,
+                    decorator,
+                    old_callback,
+                    inspect.signature(old_callback),
+                    new_callback,
+                    inspect.signature(new_callback),
+                    new_callback is not old_callback,
+                )
                 if new_callback is not old_callback:
-                    update_wrapper(new_callback, old_callback)
                     new_callback = auto_params(new_callback)
                 setattr(endpoint, method, new_callback)
         else:
             self.endpoint = decorator(endpoint)
+            import inspect
+            print(
+                "\n",
+                self.path,
+                decorator,
+                endpoint,
+                inspect.signature(endpoint),
+                self.endpoint,
+                inspect.signature(self.endpoint),
+                self.endpoint is not endpoint,
+            )
             if self.endpoint is not endpoint:
-                update_wrapper(self.endpoint, endpoint)
                 self.endpoint = auto_params(self.endpoint)
         return self
 

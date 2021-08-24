@@ -1,7 +1,8 @@
 import typing
+from functools import wraps
 
-from indexpy.routing import BaseRoute, HttpRoute, Routes
-from indexpy.views import HttpView
+from ...routing import BaseRoute, HttpRoute, Routes
+from ...views import HttpView
 
 _RoutesSelf = typing.TypeVar("_RoutesSelf", bound="MultimethodRoutes")
 
@@ -58,7 +59,9 @@ class MultimethodRoutes(Routes):
                             method.lower(): getattr(r.endpoint, method.lower())
                             for method in r.endpoint.__methods__  # type: ignore
                         },
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): wraps(route.endpoint)(  # type: ignore
+                            staticmethod(route.endpoint)
+                        ),
                     },
                 )
             else:
@@ -66,12 +69,14 @@ class MultimethodRoutes(Routes):
                     "_Endpoint",
                     (self.base_class,),
                     {
-                        r.endpoint.__method__.lower(): staticmethod(r.endpoint),  # type: ignore
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
+                        r.endpoint.__method__.lower(): wraps(r.endpoint)(  # type: ignore
+                            staticmethod(r.endpoint)
+                        ),
+                        route.endpoint.__method__.lower(): wraps(route.endpoint)(  # type: ignore
+                            staticmethod(route.endpoint)
+                        ),
                     },
                 )
             # replacing route inplace
-            self._list[self._list.index(r)] = HttpRoute(
-                route.path, endpoint=endpoint, name=route.name
-            )
+            r.endpoint = endpoint
         return self

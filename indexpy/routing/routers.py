@@ -14,9 +14,8 @@ else:
 
 from baize.routing import compile_path
 
-from indexpy.utils import FF, F
-from indexpy.views import required_method
-
+from ..utils import FF, F
+from ..views import required_method
 from .routes import BaseRoute, HttpRoute, SocketRoute
 from .tree import RadixTree, RouteType
 
@@ -316,8 +315,17 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         self.namespace = namespace
         self._list: typing.List[BaseRoute] = []
         self._http_middlewares = list(http_middlewares)
+        self._http_middlewares.append(
+            lambda endpoint: (
+                setattr(  # type: ignore
+                    endpoint,
+                    "__tags__",
+                    list(getattr(endpoint, "__tags__", [])) + list(tags or []),
+                )
+                or endpoint
+            )
+        )
         self._socket_middlewares = list(socket_middlewares)
-        self._tags = tags
         for route in iterable:
             self << route
 
@@ -339,15 +347,6 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         return len(self._list)
 
     def append(self: _RoutesSelf, route: BaseRoute) -> _RoutesSelf:
-        if isinstance(route, HttpRoute):
-            route = route.__class__(
-                route.path,
-                route.endpoint,
-                route.name,
-                route.summary,
-                route.description,
-                (route.tags or []) + (self._tags or []),
-            )
         self._list.append(route)
         return self
 

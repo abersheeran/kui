@@ -2,8 +2,8 @@ import functools
 import re
 from typing import Any, Awaitable, Callable, Dict, Iterable, Pattern, TypeVar
 
-from indexpy import request
-from indexpy.responses import convert_response
+from .. import request
+from ..responses import convert_response
 
 T = TypeVar("T")
 

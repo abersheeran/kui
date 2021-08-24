@@ -12,9 +12,8 @@ from pydantic import BaseModel, create_model
 from pydantic.json import pydantic_encoder
 from pydantic.typing import display_as_type
 
-from indexpy.utils import safe_issubclass
-
 from .requests import request
+from .utils import safe_issubclass
 
 __all__ = [
     "convert_response",

@@ -14,14 +14,13 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 from typing_extensions import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
-    from indexpy.applications import Index
-    from indexpy.requests import HttpRequest
+    from ..applications import Index
+    from ..requests import HttpRequest
 
-from indexpy.exceptions import RequestValidationError
-from indexpy.requests import request
-from indexpy.responses import HTMLResponse, JSONResponse
-from indexpy.routing import HttpRoute, Routes
-
+from ..exceptions import RequestValidationError
+from ..requests import request
+from ..responses import HTMLResponse, JSONResponse
+from ..routing import HttpRoute, Routes
 from . import specification as spec
 from .extra_docs import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response

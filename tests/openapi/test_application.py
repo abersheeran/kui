@@ -186,40 +186,84 @@ async def test_openapi_page():
             },
             "/middleware/http-view": {
                 "get": {
-                    "summary": "...",
-                    "description": "......",
-                    "responses": {
-                        "200": {
-                            "description": "Request fulfilled, document follows",
-                            "content": {"text/html": {"schema": {"type": "string"}}},
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
                         }
-                    },
-                },
-                "post": {
-                    "summary": "...",
-                    "description": "......",
+                    ],
                     "responses": {
-                        "201": {
-                            "description": "Document created, URL follows",
+                        "422": {
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {"title": "Name", "type": "string"}
-                                        },
-                                        "required": ["name"],
+                                        "$ref": "#/components/schemas/RequestValidationError"
                                     }
                                 }
                             },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
+                    },
+                },
+                "post": {
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
                         }
+                    ],
+                    "responses": {
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RequestValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
                     },
                 },
                 "delete": {
-                    "summary": "...",
-                    "description": "......",
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
+                        }
+                    ],
                     "responses": {
-                        "204": {"description": "Request fulfilled, nothing follows"}
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RequestValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
                     },
                 },
             },
@@ -262,7 +306,7 @@ async def test_openapi_page():
                         "required": ["loc", "type", "msg"],
                     },
                 }
-            },
+            }
         },
         "servers": [{"url": "http://localhost", "description": "Current server"}],
     }, str(json.loads(openapi_docs_text))
