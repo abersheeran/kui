@@ -228,49 +228,97 @@ def required_auth(endpoint):
 
 ## 描述响应结果
 
-为了描述不同状态码的响应结果，Index-py 使用装饰器描述，而不是类型注解。`describe_response` 接受五个参数，其中 `status` 为必需项，`description`、`content`、`headers` 和 `links` 为可选项，对应[ OpenAPI Specification ](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responseObject)里的同名字段。
-
-其中，`content` 既可以使用类型对象或 `pydantic.BaseModel` 的派生子类描述响应，亦可以直接传递符合 OpenAPI 文档的 Dict（当你描述返回一个非 application/json 类型的响应时这很有用）。
-
-!!! notice ""
-    如果 `description` 的值为默认的 `""`，则会使用 `http` 标准库中的 `HTTPStatus(status).description` 作为描述。
+为了生成响应结果的 OpenAPI 文档，你应当使用 [`Annotated`](https://docs.python.org/zh-cn/3/library/typing.html#typing.Annotated) 对视图的返回值进行描述。
 
 ```python
-from http import HTTPStatus
+from typing_extensions import Annotated
+from indexpy import Index, JSONResponse
 
-from indexpy.openapi import describe_response
+app = Index()
 
 
-@describe_response(HTTPStatus.NO_CONTENT)
-def handler():
+@app.router.http.get("/hello")
+async def hello() -> Annotated[Any, JSONResponse[200, {}, List[str]]]:
     """
-    .................
+    hello
     """
+    return ["hello", "world"]
 ```
 
-除了 `describe_response` 描述单个响应状态码以外，你还可以使用 `describe_responses` 对状态码批量的描述。字典以 `status` 为键，以 OpenAPI Response Object 的四个属性作为可选的值（其中 `description` 为必选）。
+你还可以描述多个响应结果，如下所示：
 
 ```python
-from indexpy.openapi import describe_responses
+from typing_extensions import Annotated
+from indexpy import Index, JSONResponse
 
-RESPONSES = {
-    404: {"description": "Item not found"},
-    403: {"description": "Not enough privileges"},
-    302: {"description": "The item was moved"},
-}
+app = Index()
 
 
-@describe_responses(RESPONSES)
-@describe_response(204, "No Content")
-def handler():
+class ErrorMessage(BaseModel):
+    code: int
+    message: str
+
+
+@app.router.http.get("/hello")
+async def hello() -> Annotated[
+    Any,
+    JSONResponse[200, {}, List[str]],
+    JSONResponse[400, {}, ErrorMessage]
+]:
     """
-    .................
+    hello
     """
+    ...
 ```
 
-!!! notice ""
-    此功能到目前为止，除生成OpenAPI文档的作用外，无其他作用。**未来或许会增加 mock 功能。**
+使用不同的 Response 子类可以生成不同的响应结果文档。
+
+!!! tip "缺省"
+    只有第一个参数是必须的，其他参数都可不填。
+
+所有响应里的 `headers` 参数应当是一个标准的 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 中所需要的 Headers 字典。例如：`{"Location": {"schema": {"type": "string"}}}`。
+
+- json: `JSONResponse[status_code, headers, content]`
+    - `content`: 可以是标准 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 中所需要的 Content 字典；也可以是 `TypedDict`、`str` 之类的类型，还可以是 `pydantic.BaseModel` 的子类。
+
+- html: `HTMLResponse[status_code, headers]`
+- text: `TextResponse[status_code, headers]`
+- redirect: `RedirectResponse[status_code, headers]`
+- file: `FileResponse[content_type, headers]`
+    - `content_type`: 指定返回的文件的 Content-Type。
+
+除此之外，你还可以直接使用 `HttpResponse[status_code, headers, content]` 直接描述原始的 OpenAPI 文档，其中 `headers` 与 `content` 均需要为标准的 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 中所指定的格式。
+
+
+### 在中间件中使用
+
+在中间件中的使用方式并没有什么不同。
+
+```python
+def required_auth(endpoint):
+    async def wrapper(authorization: str = Header(...)) -> Annotated[Any, HttpResponse[401]]:
+        ...
+        return await endpoint()
+
+    return wrapper
+```
 
 ## 描述额外的 OpenAPI 文档
 
-可以使用 `describe_extra_docs` 对接口所对应的 OpenAPI 文档描述进行补充，使用 `describe_extra_docs` 增加的任何描述都会被合并进原本的文档里。具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
+可以使用 `describe_extra_docs` 对接口所对应的 OpenAPI 文档描述进行补充，使用 `describe_extra_docs` 增加的任何描述都会被合并进原本的文档里。
+
+!!! tip ""
+    具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
+
+例如你可以使用它来描述 Indexpy 并不自带的 `security`：
+
+```python
+def required_auth(endpoint):
+    describe_extra_docs(endpoint, {"security": [{"BearerAuth": []}]})
+
+    async def wrapper(authorization: str = Header(...)) -> Annotated[Any, HttpResponse[401]]:
+        ...
+        return await endpoint()
+
+    return wrapper
+```

@@ -14,16 +14,15 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, TypeVar
 from typing_extensions import Literal, TypedDict
 
 if typing.TYPE_CHECKING:
-    from indexpy.applications import Index
-    from indexpy.requests import HttpRequest
+    from ..applications import Index
+    from ..requests import HttpRequest
 
-from indexpy.exceptions import RequestValidationError
-from indexpy.requests import request
-from indexpy.responses import HTMLResponse, JSONResponse
-from indexpy.routing import HttpRoute, Routes
-
+from ..exceptions import RequestValidationError
+from ..requests import request
+from ..responses import HTMLResponse, JSONResponse
+from ..routing import HttpRoute, Routes
 from . import specification as spec
-from .functions import merge_openapi_info
+from .extra_docs import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response
 
 TagDetail = TypedDict("TagDetail", {"description": str, "paths": Sequence[str]})
@@ -113,7 +112,7 @@ class OpenAPI:
 
         return typing.cast(spec.PathItem, result), _definitions
 
-    def _generate_method(self, func: object, path: str) -> Tuple[spec.Operation, dict]:
+    def _generate_method(self, func: Any, path: str) -> Tuple[spec.Operation, dict]:
         result: Dict[str, Any] = {}
         _definitions: dict = {}
         update_definitions = lambda path_item, x: _definitions.update(x) or path_item
@@ -157,7 +156,6 @@ class OpenAPI:
         result["requestBody"] = request_body
 
         # generate responses schema
-        __responses__ = getattr(func, "__responses__", {})
         responses: spec.Responses = {}
         if parameters or request_body:
             responses["422"] = {
@@ -170,9 +168,8 @@ class OpenAPI:
                 },
                 "description": "Failed to verify request parameters",
             }
-
-        for status, info in __responses__.items():
-            _ = responses[str(int(status))] = copy.copy(info)
+        for status, info in getattr(func, "__docs_responses__", {}).items():
+            _ = responses[status] = copy.copy(info)
             if _.get("content") is not None:
                 _["content"] = update_definitions(*schema_response(_["content"]))
 

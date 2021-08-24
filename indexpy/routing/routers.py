@@ -14,9 +14,8 @@ else:
 
 from baize.routing import compile_path
 
-from indexpy.utils import FF, F
-from indexpy.views import required_method
-
+from ..utils import FF, F
+from ..views import required_method
 from .routes import BaseRoute, HttpRoute, SocketRoute
 from .tree import RadixTree, RouteType
 
@@ -315,12 +314,17 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
     ) -> None:
         self.namespace = namespace
         self._list: typing.List[BaseRoute] = []
-        self._http_middlewares = list(http_middlewares) + [
+        self._http_middlewares = list(http_middlewares)
+        self._http_middlewares.append(
             lambda endpoint: (
-                setattr(endpoint, "__tags__", list(tags)) if tags else None  # type: ignore
+                setattr(  # type: ignore
+                    endpoint,
+                    "__tags__",
+                    list(getattr(endpoint, "__tags__", [])) + list(tags or []),
+                )
+                or endpoint
             )
-            or endpoint
-        ]
+        )
         self._socket_middlewares = list(socket_middlewares)
         for route in iterable:
             self << route

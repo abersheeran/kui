@@ -1,14 +1,23 @@
 import json
-from http import HTTPStatus
-from typing import List
+from typing import Any, List
 
 import pytest
 from async_asgi_testclient import TestClient
+from baize.asgi import HTMLResponse
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
-from indexpy import HttpRoute, HttpView, Index, Path, Routes, required_method
-from indexpy.field_functions import Header
-from indexpy.openapi import describe_response
+from indexpy import (
+    Header,
+    HttpResponse,
+    HttpRoute,
+    HttpView,
+    Index,
+    JSONResponse,
+    Path,
+    Routes,
+    required_method,
+)
 from indexpy.openapi.application import OpenAPI
 
 
@@ -20,8 +29,7 @@ async def test_openapi_page():
     assert app.router.url_for("docs:json_docs") == "/docs/json"
 
     @app.router.http.get("/hello")
-    @describe_response(200, content=List[str])
-    async def hello():
+    async def hello() -> Annotated[Any, JSONResponse[200, {}, List[str]]]:
         """
         hello
         """
@@ -36,31 +44,23 @@ async def test_openapi_page():
 
     @app.router.http("/http-view")
     class HTTPClass(HttpView):
-        @describe_response(
-            HTTPStatus.OK,
-            content={
-                "text/html": {
-                    "schema": {"type": "string"},
-                }
-            },
-        )
-        async def get(self):
+        async def get(self) -> Annotated[Any, HTMLResponse[200]]:
             """
             ...
 
             ......
             """
 
-        @describe_response(HTTPStatus.CREATED, content=Username)
-        async def post(self):
+        async def post(
+            self,
+        ) -> Annotated[Any, JSONResponse[201, {}, Username]]:
             """
             ...
 
             ......
             """
 
-        @describe_response(HTTPStatus.NO_CONTENT)
-        async def delete(self):
+        async def delete(self) -> Annotated[Any, HttpResponse[204]]:
             """
             ...
 
@@ -68,7 +68,9 @@ async def test_openapi_page():
             """
 
     def just_middleware(endpoint):
-        async def wrapper(authorization: str = Header(..., description="JWT Token")):
+        async def wrapper(
+            authorization: str = Header(..., description="JWT Token")
+        ) -> Annotated[Any, HttpResponse[401]]:
             return await endpoint()
 
         return wrapper
@@ -184,40 +186,84 @@ async def test_openapi_page():
             },
             "/middleware/http-view": {
                 "get": {
-                    "summary": "...",
-                    "description": "......",
-                    "responses": {
-                        "200": {
-                            "description": "Request fulfilled, document follows",
-                            "content": {"text/html": {"schema": {"type": "string"}}},
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
                         }
-                    },
-                },
-                "post": {
-                    "summary": "...",
-                    "description": "......",
+                    ],
                     "responses": {
-                        "201": {
-                            "description": "Document created, URL follows",
+                        "422": {
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {"title": "Name", "type": "string"}
-                                        },
-                                        "required": ["name"],
+                                        "$ref": "#/components/schemas/RequestValidationError"
                                     }
                                 }
                             },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
+                    },
+                },
+                "post": {
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
                         }
+                    ],
+                    "responses": {
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RequestValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
                     },
                 },
                 "delete": {
-                    "summary": "...",
-                    "description": "......",
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
+                        }
+                    ],
                     "responses": {
-                        "204": {"description": "Request fulfilled, nothing follows"}
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/RequestValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Failed to verify request parameters",
+                        },
+                        "401": {
+                            "description": "No permission -- see authorization schemes"
+                        },
                     },
                 },
             },
@@ -260,7 +306,7 @@ async def test_openapi_page():
                         "required": ["loc", "type", "msg"],
                     },
                 }
-            },
+            }
         },
         "servers": [{"url": "http://localhost", "description": "Current server"}],
     }, str(json.loads(openapi_docs_text))

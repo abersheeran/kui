@@ -3,8 +3,8 @@ import typing
 from functools import reduce, update_wrapper
 from pathlib import Path
 
-from indexpy.routing.routes import BaseRoute, HttpRoute, SocketRoute
-from indexpy.utils import F
+from ...routing.routes import BaseRoute, HttpRoute, SocketRoute
+from ...utils import F
 
 
 class FileRoutes(typing.Iterable[BaseRoute]):

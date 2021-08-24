@@ -4,6 +4,17 @@ import pytest
 from async_asgi_testclient import TestClient
 
 
+def test_application():
+    from indexpy import Index
+
+    app = Index()
+    with pytest.raises(RuntimeError):
+        app.debug = True
+
+    with pytest.raises(RuntimeError):
+        del app.debug
+
+
 @pytest.mark.asyncio
 async def test_example_application():
     from example import app

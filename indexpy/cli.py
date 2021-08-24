@@ -137,7 +137,7 @@ try:
 except ImportError:
     pass
 else:
-    from indexpy.applications import Index
+    from .applications import Index
 
     # See https://stackoverflow.com/questions/58133694/graceful-shutdown-of-uvicorn-starlette-app-with-websockets
     origin_handle_exit = uvicorn.Server.handle_exit

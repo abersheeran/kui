@@ -3,9 +3,9 @@ from __future__ import annotations
 import operator
 import typing
 from dataclasses import dataclass
-from functools import WRAPPER_ASSIGNMENTS, reduce, update_wrapper
+from functools import reduce
 
-from indexpy.parameters import auto_params
+from ..parameters import auto_params
 
 T_Endpoint = typing.Callable[..., typing.Awaitable[typing.Any]]
 _RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
@@ -28,14 +28,18 @@ class BaseRoute:
     def __matmul__(
         self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
     ) -> _RouteSelf:
-        raw_endpoint = self.endpoint
-        self.endpoint = auto_params(decorator(self.endpoint))
-        if self.endpoint is not raw_endpoint:
-            update_wrapper(
-                self.endpoint,
-                raw_endpoint,
-                assigned=(*WRAPPER_ASSIGNMENTS, "__method__", "__methods__"),
-            )
+        endpoint = self.endpoint
+        if hasattr(endpoint, "__methods__"):
+            for method in map(str.lower, endpoint.__methods__):  # type: ignore
+                old_callback = getattr(endpoint, method)
+                new_callback = decorator(old_callback)
+                if new_callback is not old_callback:
+                    new_callback = auto_params(new_callback)
+                setattr(endpoint, method, new_callback)
+        else:
+            self.endpoint = decorator(endpoint)
+            if self.endpoint is not endpoint:
+                self.endpoint = auto_params(self.endpoint)
         return self
 
     def __post_init__(self) -> None:

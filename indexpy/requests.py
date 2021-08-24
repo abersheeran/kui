@@ -16,7 +16,7 @@ from baize.utils import cached_property
 from typing_extensions import Annotated
 
 if typing.TYPE_CHECKING:
-    from indexpy.applications import Index
+    from .applications import Index
 
 from .utils import State, bind_contextvar
 
