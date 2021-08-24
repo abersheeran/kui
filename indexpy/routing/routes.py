@@ -33,33 +33,11 @@ class BaseRoute:
             for method in map(str.lower, endpoint.__methods__):  # type: ignore
                 old_callback = getattr(endpoint, method)
                 new_callback = decorator(old_callback)
-                import inspect
-                print(
-                    "\n",
-                    self.path,
-                    decorator,
-                    old_callback,
-                    inspect.signature(old_callback),
-                    new_callback,
-                    inspect.signature(new_callback),
-                    new_callback is not old_callback,
-                )
                 if new_callback is not old_callback:
                     new_callback = auto_params(new_callback)
                 setattr(endpoint, method, new_callback)
         else:
             self.endpoint = decorator(endpoint)
-            import inspect
-            print(
-                "\n",
-                self.path,
-                decorator,
-                endpoint,
-                inspect.signature(endpoint),
-                self.endpoint,
-                inspect.signature(self.endpoint),
-                self.endpoint is not endpoint,
-            )
             if self.endpoint is not endpoint:
                 self.endpoint = auto_params(self.endpoint)
         return self
