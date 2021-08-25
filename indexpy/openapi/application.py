@@ -186,7 +186,7 @@ class OpenAPI:
             typing.cast(
                 spec.Operation,
                 merge_openapi_info(
-                    clear_empty(result), getattr(func, "__extra_docs__", {})
+                    clear_empty(result), getattr(func, "__docs_extra__", {})
                 ),
             ),
             _definitions,

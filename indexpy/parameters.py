@@ -257,49 +257,15 @@ def auto_params(handler: CallableObject) -> CallableObject:
             new_callback = create_new_callback(old_callback)
             setattr(new_class, method, new_callback)  # note: set to new class
             setattr(
-                new_callback,
-                "__docs_responses__",
-                {
-                    **getattr(old_callback, "__docs_responses__", {}),
-                    **functools.reduce(
-                        lambda x, y: {**x, **y},
-                        (
-                            response
-                            for response in get_args(
-                                get_type_hints(new_callback, include_extras=True).get(
-                                    "return"
-                                )
-                            )
-                            if isinstance(response, dict)
-                        ),
-                        {},
-                    ),
-                },
+                new_callback, "__docs_responses__", parse_docs_responses(old_callback)
             )
         return new_class
-    elif inspect.iscoroutinefunction(handler):
+    elif inspect.iscoroutinefunction(handler) or (
+        callable(handler) and inspect.iscoroutinefunction(handler.__call__)  # type: ignore
+    ):
         old_callback = handler
         new_callback = create_new_callback(handler)
-        setattr(
-            new_callback,
-            "__docs_responses__",
-            {
-                **getattr(old_callback, "__docs_responses__", {}),
-                **functools.reduce(
-                    lambda x, y: {**x, **y},
-                    (
-                        response
-                        for response in get_args(
-                            get_type_hints(new_callback, include_extras=True).get(
-                                "return"
-                            )
-                        )
-                        if isinstance(response, dict)
-                    ),
-                    {},
-                ),
-            },
-        )
+        setattr(new_callback, "__docs_responses__", parse_docs_responses(old_callback))
         return new_callback
     else:
         return handler
@@ -316,3 +282,24 @@ def update_wrapper(
             setattr(new_handler, attr, getattr(old_handler, attr))
 
     return new_handler
+
+
+def parse_docs_responses(callback):
+    return {
+        **getattr(callback, "__docs_responses__", {}),
+        **functools.reduce(
+            lambda x, y: {**x, **y},
+            (
+                response
+                for response in get_args(
+                    (
+                        get_type_hints(callback.__call__, include_extras=True)
+                        if (callable(callback) and not inspect.isfunction(callback))
+                        else get_type_hints(callback, include_extras=True)
+                    ).get("return")
+                )
+                if isinstance(response, dict)
+            ),
+            {},
+        ),
+    }

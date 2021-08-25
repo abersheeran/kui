@@ -32,12 +32,12 @@ def describe_extra_docs(handler: T, info: typing.Dict[str, typing.Any]) -> T:
         for method in getattr(handler, "__methods__"):
             handler_method = getattr(handler, method.lower())
             __extra_docs__ = merge_openapi_info(
-                getattr(handler_method, "__extra_docs__", {}), info
+                getattr(handler_method, "__docs_extra__", {}), info
             )
-            setattr(handler_method, "__extra_docs__", __extra_docs__)
+            setattr(handler_method, "__docs_extra__", __extra_docs__)
     else:
         __extra_docs__ = merge_openapi_info(
-            getattr(handler, "__extra_docs__", {}), info
+            getattr(handler, "__docs_extra__", {}), info
         )
-        setattr(handler, "__extra_docs__", __extra_docs__)
+        setattr(handler, "__docs_extra__", __extra_docs__)
     return handler
