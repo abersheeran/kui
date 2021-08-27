@@ -128,7 +128,7 @@ class Index:
             self.add_middleware(DebugMiddleware)
 
     def build_app_with_middlewares(self) -> ASGIApp:
-        return reduce(lambda a, m: m(a), self._asgi_middlewares, self.app)
+        return reduce(lambda a, m: m(a), reversed(self._asgi_middlewares), self.app)
 
     def add_middleware(self, middleware_class: type, **options: Any) -> None:
         """
