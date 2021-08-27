@@ -192,9 +192,7 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
                         value = info.default_factory()
                     else:
                         raise
-                keyword_params[name] = (
-                    (await value) if inspect.isawaitable(value) else value
-                )
+                keyword_params[name] = value
 
         for _data in data:
             if _data.__class__.__name__ == "temporary_model":
