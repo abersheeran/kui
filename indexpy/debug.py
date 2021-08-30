@@ -244,7 +244,7 @@ class DebugMiddleware:
         locals_var = LOCAL_VARS.format(
             vars=(
                 (
-                    VAR.format(name=name, value=value | F(format) | F(html.escape))
+                    VAR.format(name=name, value=html.escape(format(value)))
                     for name, value in _locals_vars.items()
                 )
                 | F("".join)
