@@ -38,7 +38,7 @@
 
 一个易用的高性能异步 web 框架。
 
-<a href="https://index-py.abersheeran.com">Index.py 文档</a>
+<a href="https://index-py.aber.sh/stable/">Index.py 文档</a>
 
 </div>
 
