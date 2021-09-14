@@ -38,7 +38,7 @@ English
 
 An easy-to-use high-performance asynchronous web framework.
 
-<a href="https://index-py.abersheeran.com">Index.py Documentation</a>
+<a href="https://index-py.aber.sh/stable/en/">Index.py Documentation</a>
 
 </div>
 
