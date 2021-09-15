@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest an idea for a feature that you would like to see in uvicorn
+description: Suggest an idea for a feature
 body:
   - type: checkboxes
     id: checks
