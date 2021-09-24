@@ -11,6 +11,7 @@ from typing import List, Union
 import click
 
 from .__version__ import __version__
+from .routing.commands import display_urls
 from .utils import F, import_from_string, import_module
 
 
@@ -321,5 +322,8 @@ else:
         os.kill(oldpid, signal.SIGINT if force_stop else signal.SIGTERM)
 
     index_cli.add_command(gunicorn_cli, "gunicorn")
+
+
+index_cli.add_command(display_urls, "display-urls")
 
 import_module("commands")

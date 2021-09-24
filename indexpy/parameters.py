@@ -107,7 +107,7 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         if safe_issubclass(params, BaseModel):
             model = params
         else:
-            model = create_model("temporary_model", **params)
+            model = create_model("temporary_model", **params)  # type: ignore
         raw_parameters[key] = model
 
     if "body" in raw_parameters:
@@ -257,6 +257,7 @@ def auto_params(handler: CallableObject) -> CallableObject:
             setattr(
                 new_callback, "__docs_responses__", parse_docs_responses(old_callback)
             )
+        setattr(new_class, "__raw_handler__", handler)
         return new_class
     elif inspect.iscoroutinefunction(handler) or (
         callable(handler) and inspect.iscoroutinefunction(handler.__call__)  # type: ignore
@@ -264,6 +265,7 @@ def auto_params(handler: CallableObject) -> CallableObject:
         old_callback = handler
         new_callback = create_new_callback(handler)
         setattr(new_callback, "__docs_responses__", parse_docs_responses(old_callback))
+        setattr(new_callback, "__raw_handler__", handler)
         return new_callback
     else:
         return handler

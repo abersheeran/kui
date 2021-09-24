@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from inspect import isclass
-from typing import Any, Dict, Generic, NoReturn, Tuple, TypeVar, Union, overload
+from typing import Any, Dict, Generic, NoReturn, Tuple, TypeVar, overload
 
 from .contextvars import bind_contextvar
 from .importer import import_from_string, import_module
+from .inspect import get_raw_handler, safe_issubclass
 from .pipe import FF, F
 from .state import State
 
@@ -14,18 +14,12 @@ __all__ = [
     "F",
     "State",
     "safe_issubclass",
+    "get_raw_handler",
     "Singleton",
     "import_module",
     "import_from_string",
     "ImmutableAttribute",
 ]
-
-
-def safe_issubclass(
-    __cls: Any, __class_or_tuple: Union[type, Tuple[Union[type, Tuple[Any, ...]], ...]]
-) -> bool:
-    return isclass(__cls) and issubclass(__cls, __class_or_tuple)
-
 
 T = TypeVar("T")
 
