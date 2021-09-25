@@ -2,7 +2,6 @@ import asyncio
 from pathlib import Path as FilePath
 
 from indexpy import (
-    Body,
     HTTPException,
     HttpRoute,
     Index,

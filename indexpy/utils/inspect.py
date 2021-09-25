@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, TypeVar
 
 from typing_extensions import TypeGuard
@@ -18,8 +19,7 @@ def get_raw_handler(handler: Any) -> Any:
 
         if hasattr(handler, "__wrapped__"):
             new_handler = handler.__wrapped__
-
-        if hasattr(handler, "__raw_handler__"):
+        elif hasattr(handler, "__raw_handler__"):
             new_handler = handler.__raw_handler__
 
         if new_handler is handler:
@@ -28,3 +28,15 @@ def get_raw_handler(handler: Any) -> Any:
         handler = new_handler
 
     return handler
+
+
+def get_object_filepath(object: Any) -> str:
+    """
+    Get object's filepath.
+    """
+    path = Path(object.__code__.co_filename).absolute()
+    try:
+        filepath = "./" + path.relative_to(Path.cwd()).as_posix()
+    except ValueError:
+        filepath = path.as_posix()
+    return filepath

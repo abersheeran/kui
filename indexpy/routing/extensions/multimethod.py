@@ -57,7 +57,7 @@ class MultimethodRoutes(Routes):
             if hasattr(r.endpoint, "__methods__"):
                 endpoint = type(
                     r.endpoint.__name__,
-                    (self.base_class,),
+                    (self.base_class, _MultiMethodView),
                     {
                         **{
                             method.lower(): getattr(r.endpoint, method.lower())
@@ -68,8 +68,8 @@ class MultimethodRoutes(Routes):
                 )
             else:
                 endpoint = type(
-                    "_Endpoint",
-                    (self.base_class,),
+                    "_MultimethodEndpoint",
+                    (self.base_class, _MultiMethodView),
                     {
                         r.endpoint.__method__.lower(): exclude_self(r.endpoint),  # type: ignore
                         route.endpoint.__method__.lower(): exclude_self(route.endpoint),  # type: ignore
@@ -78,3 +78,13 @@ class MultimethodRoutes(Routes):
             # replacing route inplace
             r.endpoint = endpoint
         return self
+
+
+class _MultiMethodView:
+    """
+    Just as a mark
+    """
+
+
+def is_multimethod_view(cls: type) -> bool:
+    return isinstance(cls, type) and issubclass(cls, _MultiMethodView)

@@ -1,11 +1,12 @@
 import os
 import sys
 import typing
-from pathlib import Path
 
 import click
 
-from ..utils import get_raw_handler, import_from_string
+from ..utils import import_from_string
+from ..utils.inspect import get_object_filepath, get_raw_handler
+from .extensions.multimethod import is_multimethod_view
 
 if typing.TYPE_CHECKING:
     from indexpy import Index
@@ -23,12 +24,18 @@ def display_urls(application):
 
         handler = get_raw_handler(handler)
 
-        try:
-            filepath = (
-                "./"
-                + Path(handler.__code__.co_filename).relative_to(Path.cwd()).as_posix()
+        if is_multimethod_view(handler):
+            click.secho("Is multi-method Endpoint")
+            for method in handler.__methods__:
+                func = get_raw_handler(getattr(handler, method.lower()))
+                filepath = get_object_filepath(func)
+                whitespaces = " " * (len(path) + len("* ") + len(" => "))
+                click.secho(whitespaces + "| " + method + " => ", nl=False)
+                click.secho(
+                    filepath + ":" + str(func.__code__.co_firstlineno), fg="blue"
+                )
+        else:
+            filepath = get_object_filepath(handler)
+            click.secho(
+                filepath + ":" + str(handler.__code__.co_firstlineno), fg="blue"
             )
-        except ValueError:
-            filepath = handler.__code__.co_filename
-
-        click.secho(filepath + ":" + str(handler.__code__.co_firstlineno), fg="blue")
