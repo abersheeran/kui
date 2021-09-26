@@ -17,6 +17,8 @@ class BaseTemplates(metaclass=ABCMeta):
         context: Mapping[str, Any],
         status_code: int = 200,
         headers: Mapping[str, str] = None,
+        media_type: str = None,
+        charset: str = None,
     ) -> HttpResponse:
         """
         The subclass must override this method and return
@@ -40,10 +42,12 @@ else:
             context: Mapping[str, Any],
             status_code: int = 200,
             headers: Mapping[str, str] = None,
+            media_type: str = None,
+            charset: str = None,
         ):
             self.env = env
             self.template = self.env.get_template(name)
-            super().__init__(context, status_code, headers)
+            super().__init__(context, status_code, headers, media_type, charset)
 
         async def render(self, context: Mapping[str, Any]) -> bytes:
             if self.env.enable_async:  # type: ignore
@@ -92,7 +96,15 @@ else:
             context: Mapping[str, Any],
             status_code: int = 200,
             headers: Mapping[str, str] = None,
+            media_type: str = None,
+            charset: str = None,
         ) -> _Jinja2TemplateResponse:
             return _Jinja2TemplateResponse(
-                self.env, name, context, status_code=status_code, headers=headers
+                self.env,
+                name,
+                context,
+                status_code=status_code,
+                headers=headers,
+                media_type=media_type,
+                charset=charset,
             )

@@ -52,6 +52,8 @@ def TemplateResponse(
     context: typing.Mapping[str, typing.Any],
     status_code: int = 200,
     headers: typing.Mapping[str, str] = None,
+    media_type: str = None,
+    charset: str = None,
 ) -> HttpResponse:
     templates = request.app.templates
     if templates is None:
@@ -59,7 +61,9 @@ def TemplateResponse(
             "You must assign a value to `app.templates` to use TemplateResponse"
         )
 
-    return templates.TemplateResponse(name, context, status_code, headers)
+    return templates.TemplateResponse(
+        name, context, status_code, headers, media_type, charset
+    )
 
 
 def convert_response(response: typing.Any) -> HttpResponse:
