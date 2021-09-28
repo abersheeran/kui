@@ -1,15 +1,17 @@
 import asyncio
 from pathlib import Path as FilePath
 
+from typing_extensions import Annotated
+
 from indexpy import (
     HTTPException,
     HttpRoute,
     Index,
-    Path,
     SocketRoute,
     required_method,
     websocket,
 )
+from indexpy.field_functions import Path
 from indexpy.openapi import OpenAPI
 
 
@@ -39,7 +41,7 @@ async def message():
     return message_gen()
 
 
-async def sources(filepath: str = Path()):
+async def sources(filepath: Annotated[str, Path()]):
     """
     Return source files
     """

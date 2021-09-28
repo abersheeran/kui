@@ -93,7 +93,7 @@ class Cat(HttpView):
 
 ### Method
 
-通过 `request.method` 可以获取到请求方法，例如 `get`/`post` 等。
+通过 `request.method` 可以获取到请求方法，例如 `GET`/`POST` 等。
 
 ### URL
 

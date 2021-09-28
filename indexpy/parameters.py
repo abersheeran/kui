@@ -20,7 +20,7 @@ from typing import cast as typing_cast
 
 from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
-from typing_extensions import get_args, get_type_hints
+from typing_extensions import Annotated, get_args, get_origin, get_type_hints
 
 from .exceptions import RequestValidationError
 from .fields import FieldInfo, RequestInfo, Undefined
@@ -68,7 +68,13 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
     exclusive_models: Dict[BaseModel, str] = {}
 
     for name, param in sig.parameters.items():
-        if not isinstance(param.default, FieldInfo):
+        if not (
+            isinstance(param.default, FieldInfo)
+            or (
+                get_origin(param.annotation) is Annotated
+                and isinstance(get_args(param.annotation)[1], FieldInfo)
+            )
+        ):
             continue
 
         if param.POSITIONAL_ONLY:
@@ -76,29 +82,32 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
                 f"Parameter {name} cannot be defined as positional only parameters."
             )
 
-        default = param.default
-        annotation = param.annotation
+        if isinstance(param.default, FieldInfo):
+            type_ = param.annotation
+            info = param.default
+        else:
+            type_, info = get_args(param.annotation)
 
-        if getattr(default, "exclusive", False):
-            if safe_issubclass(annotation, BaseModel):
-                model = annotation
+        if getattr(info, "exclusive", False):
+            if safe_issubclass(type_, BaseModel):
+                model = type_
             else:
                 model = create_model(
                     "temporary_exclusive_model",
-                    __config__=create_model_config(default.title, default.description),
-                    __root__=(annotation, ...),
+                    __config__=create_model_config(info.title, info.description),
+                    __root__=(type_, ...),
                 )
-            raw_parameters[default._in] = model
+            raw_parameters[info._in] = model
             exclusive_models[model] = name
         else:
-            if safe_issubclass(raw_parameters[default._in], BaseModel):
+            if safe_issubclass(raw_parameters[info._in], BaseModel):
                 raise RuntimeError(
-                    f"{default._in.capitalize()}(exclusive=True) "
-                    f"and {default._in.capitalize()} cannot be used at the same time"
+                    f"{info._in.capitalize()}(exclusive=True) "
+                    f"and {info._in.capitalize()} cannot be used at the same time"
                 )
-            if annotation == param.empty:
-                annotation = Any
-            raw_parameters[default._in][name] = (annotation, default)
+            if type_ == param.empty:
+                type_ = Any
+            raw_parameters[info._in][name] = (type_, info)
 
     for key, params in filter(
         lambda kv: kv[1],
@@ -123,9 +132,17 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         parameters = None
 
     request_attrs: Dict[str, RequestInfo] = {
-        name: param.default
-        for name, param in sig.parameters.items()
-        if isinstance(param.default, RequestInfo)
+        **{
+            name: param.default
+            for name, param in sig.parameters.items()
+            if isinstance(param.default, RequestInfo)
+        },
+        **{
+            name: get_args(param.annotation)[1]
+            for name, param in sig.parameters.items()
+            if get_origin(param.annotation) is Annotated
+            and isinstance(get_args(param.annotation)[1], RequestInfo)
+        },
     }
 
     if not (parameters or request_body or request_attrs):
