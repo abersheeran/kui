@@ -1,0 +1,1200 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="一个基于 ASGI 协议的异步 Web 框架.">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.1">
+    
+    
+      
+        <title>API Docs - Index.py</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1118c9be.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ba0d045b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=:300,400,400i,700%7CFira+Code&display=fallback">
+        <style>:root{--md-text-font-family:"";--md-code-font-family:"Fira Code"}</style>
+      
+    
+    
+    
+    
+      
+
+  
+
+
+  
+
+  
+
+
+  <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-48LLZS5518"),document.addEventListener("DOMContentLoaded",function(){"undefined"!=typeof location$&&location$.subscribe(function(t){gtag("config","G-48LLZS5518",{page_path:t.pathname})})})</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-48LLZS5518"></script>
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="" data-md-color-accent="teal">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#openapi" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Index.py" class="md-header__button md-logo" aria-label="Index.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Index.py
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Docs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../" hreflang="zh" class="md-select__link">
+                    中文
+                  </a>
+                </li>
+                
+                <li class="md-select__item">
+                  <a href="../" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+                
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/abersheeran/index.py/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Index.py
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Index.py" class="md-nav__button md-logo" aria-label="Index.py" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Index.py
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/abersheeran/index.py/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Index.py
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../route/" class="md-nav__link">
+        Routing
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http/" class="md-nav__link">
+        Http
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../websocket/" class="md-nav__link">
+        WebSocket
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../event/" class="md-nav__link">
+        Lifespan
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          API Docs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        API Docs
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#openapi" class="md-nav__link">
+    显示 OpenAPI 文档
+  </a>
+  
+    <nav class="md-nav" aria-label="显示 OpenAPI 文档">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-tags" class="md-nav__link">
+    API Tags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    接口描述
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    标注请求参数
+  </a>
+  
+    <nav class="md-nav" aria-label="标注请求参数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-type" class="md-nav__link">
+    修改 Content-Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    读取 request 属性
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    描述响应结果
+  </a>
+  
+    <nav class="md-nav" aria-label="描述响应结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi_1" class="md-nav__link">
+    描述额外的 OpenAPI 文档
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command/" class="md-nav__link">
+        Commands
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#openapi" class="md-nav__link">
+    显示 OpenAPI 文档
+  </a>
+  
+    <nav class="md-nav" aria-label="显示 OpenAPI 文档">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-tags" class="md-nav__link">
+    API Tags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    接口描述
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    标注请求参数
+  </a>
+  
+    <nav class="md-nav" aria-label="标注请求参数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-type" class="md-nav__link">
+    修改 Content-Type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    读取 request 属性
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    描述响应结果
+  </a>
+  
+    <nav class="md-nav" aria-label="描述响应结果">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    在中间件中使用
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi_1" class="md-nav__link">
+    描述额外的 OpenAPI 文档
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/abersheeran/index.py/tree/master/docs/parameters.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  <h1>API Docs</h1>
+                
+                <p>Index-py 使用 <a href="https://pydantic-docs.helpmanual.io/">pydantic</a> 用于更轻松的解析 HTTP 请求信息，并为之绑定了一套生成 OpenAPI 文档的程序。</p>
+<h2 id="openapi">显示 OpenAPI 文档</h2>
+<p>将 <code>indexpy.openapi.application.OpenAPI</code> 挂载进 Index-py 中。启动 index，访问你服务上 <code>/docs/</code> 即可看到生成的文档。</p>
+<div class="admonition tip">
+<p>如果你不需要生成文档，仅仅只需要自动校验参数功能，这一步可以跳过。</p>
+</div>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.openapi</span> <span class="kn">import</span> <span class="n">OpenAPI</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">router</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="s2">&quot;/docs&quot;</span> <span class="o">//</span> <span class="n">OpenAPI</span><span class="p">()</span><span class="o">.</span><span class="n">routes</span><span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
+<p>默认的文档模板使用 <a href="https://swagger.io/tools/swagger-ui/">swagger</a>，如果你更喜欢 <a href="https://github.com/Redocly/redoc">redoc</a> 或 <a href="https://mrin9.github.io/RapiDoc/">rapidoc</a> 的样式，可以通过更改 <code>template_name</code> 来达到目的，例如：<code>OpenAPI(..., template_name="redoc")</code>。</p>
+<p>不仅如此，你还可以通过使用 <code>template</code> 参数来控制显示自己的喜欢的任何模板，只需要把模板的完整内容作为字符串传给 <code>template</code> 参数即可。</p>
+<h3 id="api-tags">API Tags</h3>
+<p>OpenAPI 的 Tags 是一个有用的功能，在 Index-py 里，你可以通过如下方式来指定 URL 的分类标签。</p>
+<p><code>tags</code> 参数必须是一个 <code>dict</code> 类型，键为标签名。值需要包含 <code>description</code>，用于描述此标签；<code>paths</code> 是 URL 列表，如果 URL 包含路径参数，直接使用不带 <code>:type</code> 的字符串即可。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">OpenAPI</span><span class="p">(</span>
+    <span class="o">......</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;something&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;test over two tags in one path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;/about/</span><span class="si">{username}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/file&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;about&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;about page&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;/about/&quot;</span><span class="p">,</span> <span class="s2">&quot;/about/</span><span class="si">{username}</span><span class="s2">&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
+<p>你也可以在使用<a href="../route/">装饰器注册</a>时，给装饰器传入 <code>tags</code> 参数，如下。虽然这种方式没办法为 <code>tag</code> 增加 <code>description</code>，但它可以与上述用法同时使用——换句话来说，你可以在 <code>OpenAPI</code> 的 <code>tags</code> 里定义 <code>tag</code> 的信息，再在装饰器里传入对应的 <code>tag</code> 名称。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Routes</span>
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">()</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tag0&quot;</span><span class="p">,</span> <span class="s2">&quot;tag1&quot;</span><span class="p">])</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">handler</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;/&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="_1">接口描述</h2>
+<p>对于所有可处理 HTTP 请求的方法，它们的 <code>__doc__</code> 都会用于生成 OpenAPI 文档。第一行将被当作概要描述，所以尽量简明扼要，不要太长。空一行之后，后续的文字都会被当作详细介绍，被安置在 OpenAPI 文档中。</p>
+<p>例如：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">HTTPView</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">handler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    api summary</span>
+
+<span class="sd">    api description..........................</span>
+<span class="sd">    .........................................</span>
+<span class="sd">    .........................................</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">ClassHandler</span><span class="p">(</span><span class="n">HTTPView</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        api summary</span>
+
+<span class="sd">        api description..........................</span>
+<span class="sd">        .........................................</span>
+<span class="sd">        .........................................</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<p>你也可以在使用<a href="../route/">装饰器注册</a>时，给装饰器传入参数，如下。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Routes</span>
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">()</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;api summary&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;api description.............&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">handler</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;/&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<p>如果你的 description 很长，也可以只给装饰器传入 <code>summary</code> 参数，<code>description</code> 将自动使用整个 <code>__doc__</code>。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Routes</span>
+
+<span class="n">routes</span> <span class="o">=</span> <span class="n">Routes</span><span class="p">()</span>
+
+
+<span class="nd">@routes</span><span class="o">.</span><span class="n">http</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;api summary&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">handler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    api description..........................</span>
+<span class="sd">    .........................................</span>
+<span class="sd">    .........................................</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;/&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="_2">标注请求参数</h2>
+<p>先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 <code>int</code> 类型，在给予它们 <code>Query(...)</code> 作为值，<code>Query</code> 代表它们将会从 <code>request.query_params</code> 中读取值，<code>...</code> 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：<code>?page_num=1&amp;page_size=10</code>。如果你使用 <code>Query(10)</code> 则意味着这个值可以不由前端传递，其默认值为 <code>10</code>。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span>
+    <span class="n">page_num</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Query</span><span class="p">()],</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Query</span><span class="p">()],</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<p>也可以通过使用继承自 <code>pydantic.BaseModel</code> 的类作为类型注解来描述同一类型的全部参数，通过类的继承可以做到复用参数。下例与上例是等价的。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
+
+
+<span class="k">class</span> <span class="nc">PageQuery</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">page_num</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">PageQuery</span><span class="p">,</span> <span class="n">Query</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)]):</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<p>同样的，你还可以使用其他对象来获取对应部分的参数，以下是对照：</p>
+<ul>
+<li><code>Path</code>：<code>request.path_params</code></li>
+<li><code>Query</code>：<code>request.query_params</code></li>
+<li><code>Header</code>：<code>request.headers</code></li>
+<li><code>Cookie</code>：<code>request.cookies</code></li>
+<li><code>Body</code>：<code>await request.data()</code></li>
+</ul>
+<p>通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。</p>
+<h3 id="content-type">修改 Content-Type</h3>
+<p>Index-py 会自动读取 <code>request.data</code> 的函数签名，并读取其中包含的 <code>ContentType</code> 对象作为 Content-Type 生成 OpenAPI 文档。以下为一个简单自定义样例——使用 <code>msgpack</code> 解析数据：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
+
+<span class="kn">import</span> <span class="nn">msgpack</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">indexpy.applications</span> <span class="kn">import</span> <span class="n">FactoryClass</span>
+<span class="kn">from</span> <span class="nn">indexpy.requests</span> <span class="kn">import</span> <span class="n">HttpRequest</span>
+
+
+<span class="k">class</span> <span class="nc">MsgPackRequest</span><span class="p">(</span><span class="n">HttpRequest</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="n">ContentType</span><span class="p">(</span><span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">)]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">unpackb</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">UNSUPPORTED_MEDIA_TYPE</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/x-msgpack&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">factory_class</span><span class="o">=</span><span class="n">FactoryClass</span><span class="p">(</span><span class="n">http</span><span class="o">=</span><span class="n">MsgPackRequest</span><span class="p">))</span>
+</code></pre></div>
+</td></tr></table>
+<h3 id="request">读取 <code>request</code> 属性</h3>
+<p>或许有时候你需要直接读取 <code>request</code> 的某些属性，以配合中间件使用。但直接使用 <code>request.attr</code> 又失去了 Type hint 的好处，那么可以选择使用如下方式。</p>
+<p>如下例所示，当 <code>code</code> 被调用时会自动读取 <code>request.user</code> 并作为函数参数传入函数中。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
+<span class="kn">from</span> <span class="nn">yourmodule</span> <span class="kn">import</span> <span class="n">User</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">User</span><span class="p">,</span> <span class="n">Request</span><span class="p">()]):</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<p>当需要读取的属性名称不能作为参数名称时，也可以为 <code>Request</code> 传入一个字符串作为属性名进行读取。如下例所示，<code>request.user.name</code> 将会作为函数参数 <code>username</code> 传入函数中。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Request</span><span class="p">(</span><span class="n">alias</span><span class="o">=</span><span class="s2">&quot;user.name&quot;</span><span class="p">)]):</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<h3 id="_3">在中间件中使用</h3>
+<p>在中间件中的使用方式并没有什么不同，直接在参数里描述即可。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()]):</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="_4">描述响应结果</h2>
+<p>为了生成响应结果的 OpenAPI 文档，你应当使用 <a href="https://docs.python.org/zh-cn/3/library/typing.html#typing.Annotated"><code>Annotated</code></a> 对视图的返回值进行描述。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">JSONResponse</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">JSONResponse</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">{},</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    hello</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">]</span>
+</code></pre></div>
+</td></tr></table>
+<p>你还可以描述多个响应结果，如下所示：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Index</span><span class="p">,</span> <span class="n">JSONResponse</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">ErrorMessage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">code</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/hello&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">JSONResponse</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">{},</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">JSONResponse</span><span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="p">{},</span> <span class="n">ErrorMessage</span><span class="p">]</span>
+<span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    hello</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
+<p>使用不同的 Response 子类可以生成不同的响应结果文档。</p>
+<div class="admonition tip">
+<p class="admonition-title">缺省</p>
+<p>只有第一个参数是必须的，其他参数都可不填。</p>
+</div>
+<p>所有响应里的 <code>headers</code> 参数应当是一个标准的 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 中所需要的 Headers 字典。例如：<code>{"Location": {"schema": {"type": "string"}}}</code>。</p>
+<ul>
+<li>
+<p>json: <code>JSONResponse[status_code, headers, content]</code></p>
+<ul>
+<li><code>content</code>: 可以是标准 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 中所需要的 Content 字典；也可以是 <code>TypedDict</code>、<code>str</code> 之类的类型，还可以是 <code>pydantic.BaseModel</code> 的子类。</li>
+</ul>
+</li>
+<li>
+<p>html: <code>HTMLResponse[status_code, headers]</code></p>
+</li>
+<li>text: <code>TextResponse[status_code, headers]</code></li>
+<li>redirect: <code>RedirectResponse[status_code, headers]</code></li>
+<li>file: <code>FileResponse[content_type, headers]</code><ul>
+<li><code>content_type</code>: 指定返回的文件的 Content-Type。</li>
+</ul>
+</li>
+</ul>
+<p>除此之外，你还可以直接使用 <code>HttpResponse[status_code, headers, content]</code> 直接描述原始的 OpenAPI 文档，其中 <code>headers</code> 与 <code>content</code> 均需要为标准的 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 中所指定的格式。</p>
+<h3 id="_5">在中间件中使用</h3>
+<p>在中间件中的使用方式并没有什么不同。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()])</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div>
+</td></tr></table>
+<h2 id="openapi_1">描述额外的 OpenAPI 文档</h2>
+<p>可以使用 <code>describe_extra_docs</code> 对接口所对应的 OpenAPI 文档描述进行补充，使用 <code>describe_extra_docs</code> 增加的任何描述都会被合并进原本的文档里。</p>
+<div class="admonition tip">
+<p>具体的字段可参考 <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject">OpenAPI Specification</a>。</p>
+</div>
+<p>例如你可以使用它来描述 Indexpy 并不自带的 <code>security</code>：</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="n">describe_extra_docs</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;BearerAuth&quot;</span><span class="p">:</span> <span class="p">[]}]})</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()])</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div>
+</td></tr></table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../event/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lifespan" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Lifespan
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../command/" class="md-footer__link md-footer__link--next" aria-label="Next: Commands" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Commands
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; <a href="https://abersheeran.com">AberSh</a>
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.53c85856.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.716f8af4.min.js"></script>
+      
+    
+  <div id="version-select">
+    <div class="version-select">
+        Version: 0.20
+    </div>
+    
+        <div class="version-select">
+            <a href="/master/en/parameters/">master</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/stable/en/parameters/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.20/en/parameters/">0.20</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.19/en/parameters/">0.19</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.18/en/parameters/">0.18</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.17/en/parameters/">0.17</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.16/en/parameters/">0.16</a>
+        </div>
+    
+        <style>
+            #version-select {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+                max-width: 80vw;
+                max-height: 50vh;
+                font-size: 16px;
+                display: flex;
+                flex-direction: row-reverse;
+                flex-wrap: wrap-reverse;
+            }
+
+            .version-select {
+                display: none;
+                padding: 0.5em;
+                color: var(--md-primary-bg-color);
+                background-color: var(--md-primary-fg-color);
+                border: var(--md-primary-bg-color);
+                border-radius: 5px;
+                margin: 10px;
+                white-space: nowrap;
+            }
+
+            #version-select div:first-of-type {
+                display: block;
+            }
+
+            #version-select:hover .version-select {
+                display: block;
+            }
+        </style>
+        </div>
+</body>
+</html>

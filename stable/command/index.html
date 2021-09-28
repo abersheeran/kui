@@ -374,8 +374,22 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#index-cli-display-urls" class="md-nav__link">
+    index-cli display-urls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#index-cli-uvicorn" class="md-nav__link">
     index-cli uvicorn
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-hypercorn" class="md-nav__link">
+    index-cli hypercorn
   </a>
   
 </li>
@@ -514,8 +528,22 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#index-cli-display-urls" class="md-nav__link">
+    index-cli display-urls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#index-cli-uvicorn" class="md-nav__link">
     index-cli uvicorn
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-cli-hypercorn" class="md-nav__link">
+    index-cli hypercorn
   </a>
   
 </li>
@@ -628,9 +656,11 @@
                 
                 <h2 id="_1">内置命令</h2>
 <p>Index-py 内置了一些命令方便使用。</p>
-<h3 id="index-cli">index-cli</h3>
+<h3 id="index-cli"><code>index-cli</code></h3>
 <p><code>index-cli</code> 是 <code>index</code> 内置的根命令，所有其余命令均为 <code>index-cli</code> 的子命令。</p>
-<h3 id="index-cli-uvicorn">index-cli uvicorn</h3>
+<h3 id="index-cli-display-urls"><code>index-cli display-urls</code></h3>
+<p>使用 <code>index-cli display-urls main:app</code> 命令，可以显示 <code>main:app</code> 的所有 URL 以及对应的视图函数的位置。</p>
+<h3 id="index-cli-uvicorn"><code>index-cli uvicorn</code></h3>
 <div class="admonition notice">
 <p class="admonition-title">Notice</p>
 <p>此命令需要安装 <a href="https://www.uvicorn.org/">uvicorn</a>。</p>
@@ -645,14 +675,16 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli uvicorn --help
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli uvicorn --help
 Usage: index-cli uvicorn <span class="o">[</span>OPTIONS<span class="o">]</span> APPLICATION
 
   use uvicorn to run Index.py application
 
 Options:
-  --bind TEXT                     <span class="o">[</span>default: <span class="m">127</span>.0.0.1:4190<span class="o">]</span>
-  --autoreload / --no-autoreload  <span class="o">[</span>default: True<span class="o">]</span>
+  --bind TEXT                     A string of the form: HOST:PORT, unix:PATH,
+                                  fd://FD.  <span class="o">[</span>default: <span class="m">127</span>.0.0.1:4190<span class="o">]</span>
+  --autoreload / --no-autoreload  <span class="o">[</span>default: autoreload<span class="o">]</span>
   --log-level <span class="o">[</span>critical<span class="p">|</span>error<span class="p">|</span>warning<span class="p">|</span>info<span class="p">|</span>debug<span class="o">]</span>
                                   <span class="o">[</span>default: info<span class="o">]</span>
   --help                          Show this message and exit.
@@ -671,7 +703,56 @@ Options:
 <p><code>--log-level</code>：指定输出日志的最低等级。</p>
 </li>
 </ul>
-<h3 id="index-cli-gunicorn">index-cli gunicorn</h3>
+<h3 id="index-cli-hypercorn"><code>index-cli hypercorn</code></h3>
+<div class="admonition notice">
+<p class="admonition-title">Notice</p>
+<p>此命令需要安装 <a href="https://pgjones.gitlab.io/hypercorn/">hypercorn</a>。</p>
+</div>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>❯ index-cli hypercorn --help
+Usage: index-cli hypercorn <span class="o">[</span>OPTIONS<span class="o">]</span> APPLICATION
+
+  use hypercorn to run Index.py application
+
+Options:
+  --bind TEXT                     A string of the form: HOST:PORT, unix:PATH,
+                                  fd://FD.  <span class="o">[</span>default: <span class="m">127</span>.0.0.1:4190<span class="o">]</span>
+  --log-level <span class="o">[</span>critical<span class="p">|</span>error<span class="p">|</span>warning<span class="p">|</span>info<span class="p">|</span>debug<span class="o">]</span>
+                                  <span class="o">[</span>default: info<span class="o">]</span>
+  -k, --worker-class <span class="o">[</span>asyncio<span class="p">|</span>uvloop<span class="p">|</span>trio<span class="o">]</span>
+                                  <span class="o">[</span>default: asyncio<span class="o">]</span>
+  -c, --configuration FILE
+  --help                          Show this message and exit.
+</code></pre></div>
+</td></tr></table>
+<p>此命令可以便捷的使用 Hypercorn 启动 Index-py 项目。例如：<code>index-cli hypercorn main:app</code>。</p>
+<ul>
+<li>
+<p><code>--bind</code>：指定绑定的地址，例如："0.0.0.0:80"、"unix:./hypercorn.sock"</p>
+</li>
+<li>
+<p><code>--log-level</code>：指定输出日志的最低等级。</p>
+</li>
+<li>
+<p><code>--worker-class</code>：指定使用的异步事件循环。</p>
+</li>
+<li>
+<p><code>--configuration</code>：如果你需要修改更多配置，可使用此选项。参考 <a href="https://pgjones.gitlab.io/hypercorn/how_to_guides/configuring.html">Hypercorn 文档</a>。</p>
+</li>
+</ul>
+<h3 id="index-cli-gunicorn"><code>index-cli gunicorn</code></h3>
 <h4 id="index-cli-gunicorn-start"><code>index-cli gunicorn start</code></h4>
 <div class="admonition notice">
 <p class="admonition-title">Notice</p>
@@ -850,6 +931,10 @@ Commands:
     
         <div class="version-select">
             <a href="/stable/command/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.20/command/">0.20</a>
         </div>
     
         <div class="version-select">

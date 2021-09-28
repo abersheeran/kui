@@ -600,7 +600,7 @@
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Index</span><span class="p">()</span>
 
-<span class="n">app</span><span class="o">.</span><span class="n">router</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="s2">&quot;/docs&quot;</span> <span class="o">//</span> <span class="n">OpenAPI</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">routes</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">router</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="s2">&quot;/docs&quot;</span> <span class="o">//</span> <span class="n">OpenAPI</span><span class="p">()</span><span class="o">.</span><span class="n">routes</span><span class="p">)</span>
 </code></pre></div>
 </td></tr></table>
 <p>默认的文档模板使用 <a href="https://swagger.io/tools/swagger-ui/">swagger</a>，如果你更喜欢 <a href="https://github.com/Redocly/redoc">redoc</a> 或 <a href="https://mrin9.github.io/RapiDoc/">rapidoc</a> 的样式，可以通过更改 <code>template_name</code> 来达到目的，例如：<code>OpenAPI(..., template_name="redoc")</code>。</p>
@@ -756,12 +756,14 @@
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span>
-    <span class="n">page_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
-    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">page_num</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Query</span><span class="p">()],</span>
+    <span class="n">page_size</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Query</span><span class="p">()],</span>
 <span class="p">):</span>
     <span class="o">...</span>
 </code></pre></div>
@@ -777,7 +779,9 @@
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Query</span>
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
 
@@ -786,7 +790,7 @@
     <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">PageQuery</span> <span class="o">=</span> <span class="n">Query</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">PageQuery</span><span class="p">,</span> <span class="n">Query</span><span class="p">(</span><span class="n">exclusive</span><span class="o">=</span><span class="kc">True</span><span class="p">)]):</span>
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
@@ -856,11 +860,13 @@
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
 <span class="kn">from</span> <span class="nn">yourmodule</span> <span class="kn">import</span> <span class="n">User</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">Request</span><span class="p">()):</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">User</span><span class="p">,</span> <span class="n">Request</span><span class="p">()]):</span>
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
@@ -869,10 +875,12 @@
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span> <span class="nn">indexpy</span> <span class="kn">import</span> <span class="n">Request</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">alias</span><span class="o">=</span><span class="s2">&quot;user.name&quot;</span><span class="p">)):</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Request</span><span class="p">(</span><span class="n">alias</span><span class="o">=</span><span class="s2">&quot;user.name&quot;</span><span class="p">)]):</span>
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
@@ -883,8 +891,14 @@
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Header</span><span class="p">(</span><span class="o">...</span><span class="p">)):</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()]):</span>
         <span class="o">...</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
 
@@ -993,8 +1007,14 @@
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Header</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()])</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
         <span class="o">...</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
 
@@ -1007,17 +1027,23 @@
 <p>具体的字段可参考 <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject">OpenAPI Specification</a>。</p>
 </div>
 <p>例如你可以使用它来描述 Indexpy 并不自带的 <code>security</code>：</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">def</span> <span class="nf">required_auth</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
     <span class="n">describe_extra_docs</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;security&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;BearerAuth&quot;</span><span class="p">:</span> <span class="p">[]}]})</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Header</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Header</span><span class="p">()])</span> <span class="o">-&gt;</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">[</span><span class="mi">401</span><span class="p">]]:</span>
         <span class="o">...</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">endpoint</span><span class="p">()</span>
 
@@ -1115,6 +1141,10 @@
     
         <div class="version-select">
             <a href="/stable/zh/parameters/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.20/zh/parameters/">0.20</a>
         </div>
     
         <div class="version-select">

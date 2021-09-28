@@ -1019,15 +1019,15 @@
 </code></pre></div>
 </td></tr></table>
 <h3 id="_8">路径参数</h3>
-<p>使用 <code>{name:type}</code> 可以标注路径参数，目前支持的类型有 <code>str</code>、<code>int</code>、<code>decimal</code>、<code>date</code>、<code>uuid</code> 和 <code>path</code>。</p>
+<p>使用 <code>{name:type}</code> 可以标注路径参数，目前支持的类型有 <code>str</code>、<code>int</code>、<code>decimal</code>、<code>date</code>、<code>uuid</code> 和 <code>any</code>。</p>
 <div class="admonition tip">
 <p>如果路径参数的类型为 <code>str</code>，可以忽略掉 <code>:str</code>，直接使用 <code>{name}</code>。</p>
 </div>
 <div class="admonition notice">
-<p><code>str</code> 不能匹配到 <code>/</code>，如果需要匹配 <code>/</code> 请使用 <code>path</code>。</p>
+<p><code>str</code> 不能匹配到 <code>/</code>，如果需要匹配 <code>/</code> 请使用 <code>any</code>。</p>
 </div>
 <div class="admonition notice">
-<p><code>path</code> 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。</p>
+<p><code>any</code> 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。</p>
 </div>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -1418,6 +1418,10 @@
     
         <div class="version-select">
             <a href="/stable/zh/route/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.20/zh/route/">0.20</a>
         </div>
     
         <div class="version-select">

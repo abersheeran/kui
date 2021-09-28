@@ -1134,7 +1134,7 @@
 <p>使用 <code>from indexpy import request</code> 语句获取全局变量 <code>request</code>，它是一个代理对象，可以读写删当前请求对应的 <code>Request</code> 对象的各个属性。一般来说这足以应付大部分需求，但如果你真的需要访问原始 <code>Request</code> 对象，可以使用 <code>indexpy.requests.request_var.get()</code>。</p>
 <p>以下是 <code>indexpy.requests.Request</code> 对象的常用属性与方法。</p>
 <h3 id="method">Method</h3>
-<p>通过 <code>request.method</code> 可以获取到请求方法，例如 <code>get</code>/<code>post</code> 等。</p>
+<p>通过 <code>request.method</code> 可以获取到请求方法，例如 <code>GET</code>/<code>POST</code> 等。</p>
 <h3 id="url">URL</h3>
 <p>通过 <code>request.url</code> 可以获取到请求路径。该属性是一个类似于字符串的对象，它公开了可以从URL中解析出的所有组件。</p>
 <p>例如：<code>request.url.path</code>, <code>request.url.port</code>, <code>request.url.scheme</code></p>
@@ -1768,6 +1768,10 @@
     
         <div class="version-select">
             <a href="/stable/http/">stable</a>
+        </div>
+    
+        <div class="version-select">
+            <a href="/0.20/http/">0.20</a>
         </div>
     
         <div class="version-select">
