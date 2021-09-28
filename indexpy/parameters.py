@@ -241,7 +241,15 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         parameters=[
             param
             for param in sig.parameters.values()
-            if not isinstance(param.default, (FieldInfo, RequestInfo))
+            if not (
+                isinstance(param.default, (FieldInfo, RequestInfo))
+                or (
+                    get_origin(param.annotation) is Annotated
+                    and isinstance(
+                        get_args(param.annotation)[1], (FieldInfo, RequestInfo)
+                    )
+                )
+            )
         ],
         return_annotation=sig.return_annotation,
     )

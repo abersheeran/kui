@@ -1,3 +1,5 @@
+import inspect
+
 import pytest
 from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
@@ -26,6 +28,8 @@ async def test_path():
         resp = await client.get("/1")
         assert resp.status_code == 422
 
+    assert not inspect.signature(app.router.search("http", "/aber")[1]).parameters
+
 
 @pytest.mark.asyncio
 async def test_query():
@@ -41,6 +45,8 @@ async def test_query():
 
         resp = await client.get("/", query_string={})
         assert resp.status_code == 422
+
+    assert not inspect.signature(app.router.search("http", "/")[1]).parameters
 
 
 @pytest.mark.asyncio
@@ -58,6 +64,8 @@ async def test_header():
         resp = await client.get("/", headers={"name0": "aber"})
         assert resp.status_code == 422
 
+    assert not inspect.signature(app.router.search("http", "/")[1]).parameters
+
 
 @pytest.mark.asyncio
 async def test_cookie():
@@ -74,6 +82,8 @@ async def test_cookie():
         resp = await client.get("/", cookies={"name0": "aber"})
         assert resp.status_code == 422
 
+    assert not inspect.signature(app.router.search("http", "/")[1]).parameters
+
 
 @pytest.mark.asyncio
 async def test_body():
@@ -89,6 +99,8 @@ async def test_body():
 
         resp = await client.post("/", form={"name0": "aber"})
         assert resp.status_code == 422
+
+    assert not inspect.signature(app.router.search("http", "/")[1]).parameters
 
 
 @pytest.mark.asyncio
@@ -126,6 +138,8 @@ async def test_request():
         resp = await client.get("/no-attr-with-default-factory")
         assert resp.text == "True"
 
+    assert not inspect.signature(app0.router.search("http", "/")[1]).parameters
+
 
 @pytest.mark.asyncio
 async def test_middleware():
@@ -147,3 +161,5 @@ async def test_middleware():
 
         resp = await client.get("/?query=123", cookies={"name": "aber"})
         assert resp.text == "aber"
+
+    assert not inspect.signature(app.router.search("http", "/")[1]).parameters
