@@ -188,16 +188,16 @@ app = Index(routes=[
 
 ### 路径参数
 
-使用 `{name:type}` 可以标注路径参数，目前支持的类型有 `str`、`int`、`decimal`、`date`、`uuid` 和 `path`。
+使用 `{name:type}` 可以标注路径参数，目前支持的类型有 `str`、`int`、`decimal`、`date`、`uuid` 和 `any`。
 
 !!! tip ""
     如果路径参数的类型为 `str`，可以忽略掉 `:str`，直接使用 `{name}`。
 
 !!! notice ""
-    `str` 不能匹配到 `/`，如果需要匹配 `/` 请使用 `path`。
+    `str` 不能匹配到 `/`，如果需要匹配 `/` 请使用 `any`。
 
 !!! notice ""
-    `path` 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。
+    `any` 是极为特殊的参数类型，它只能出现在路径的最后，并且能匹配到所有的字符。
 
 ```python
 from indexpy import Index, request

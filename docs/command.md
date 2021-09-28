@@ -6,6 +6,10 @@ Index-py 内置了一些命令方便使用。
 
 `index-cli` 是 `index` 内置的根命令，所有其余命令均为 `index-cli` 的子命令。
 
+### index-cli display-urls
+
+使用 `index-cli display-urls main:app` 命令，可以显示 `main:app` 的所有 URL 以及对应的视图函数的位置。
+
 ### index-cli uvicorn
 
 !!! notice
