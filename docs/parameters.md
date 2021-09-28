@@ -13,7 +13,7 @@ from indexpy.openapi import OpenAPI
 
 app = Index()
 
-app.router << ("/docs" // OpenAPI("Title", "description", "1.0").routes)
+app.router << ("/docs" // OpenAPI().routes)
 ```
 
 默认的文档模板使用 [swagger](https://swagger.io/tools/swagger-ui/)，如果你更喜欢 [redoc](https://github.com/Redocly/redoc) 或 [rapidoc](https://mrin9.github.io/RapiDoc/) 的样式，可以通过更改 `template_name` 来达到目的，例如：`OpenAPI(..., template_name="redoc")`。
