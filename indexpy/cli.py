@@ -279,7 +279,7 @@ else:
         )
         args = command.split(" ")
         if daemon:
-            args.extend("-D --log-file run.log".split(" "))
+            args.extend("-D --log-file gunicorn.log".split(" "))
         if autoreload:
             args.append("--reload")
         if configuration:
