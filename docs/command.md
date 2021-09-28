@@ -2,15 +2,15 @@
 
 Index-py 内置了一些命令方便使用。
 
-### index-cli
+### `index-cli`
 
 `index-cli` 是 `index` 内置的根命令，所有其余命令均为 `index-cli` 的子命令。
 
-### index-cli display-urls
+### `index-cli display-urls`
 
 使用 `index-cli display-urls main:app` 命令，可以显示 `main:app` 的所有 URL 以及对应的视图函数的位置。
 
-### index-cli uvicorn
+### `index-cli uvicorn`
 
 !!! notice
     此命令需要安装 [uvicorn](https://www.uvicorn.org/)。
@@ -22,8 +22,9 @@ Usage: index-cli uvicorn [OPTIONS] APPLICATION
   use uvicorn to run Index.py application
 
 Options:
-  --bind TEXT                     [default: 127.0.0.1:4190]
-  --autoreload / --no-autoreload  [default: True]
+  --bind TEXT                     A string of the form: HOST:PORT, unix:PATH,
+                                  fd://FD.  [default: 127.0.0.1:4190]
+  --autoreload / --no-autoreload  [default: autoreload]
   --log-level [critical|error|warning|info|debug]
                                   [default: info]
   --help                          Show this message and exit.
@@ -39,7 +40,39 @@ Options:
 
 - `--log-level`：指定输出日志的最低等级。
 
-### index-cli gunicorn
+### `index-cli hypercorn`
+
+!!! notice
+    此命令需要安装 [hypercorn](https://pgjones.gitlab.io/hypercorn/)。
+
+```bash
+❯ index-cli hypercorn --help
+Usage: index-cli hypercorn [OPTIONS] APPLICATION
+
+  use hypercorn to run Index.py application
+
+Options:
+  --bind TEXT                     A string of the form: HOST:PORT, unix:PATH,
+                                  fd://FD.  [default: 127.0.0.1:4190]
+  --log-level [critical|error|warning|info|debug]
+                                  [default: info]
+  -k, --worker-class [asyncio|uvloop|trio]
+                                  [default: asyncio]
+  -c, --configuration FILE
+  --help                          Show this message and exit.
+```
+
+此命令可以便捷的使用 Hypercorn 启动 Index-py 项目。例如：`index-cli hypercorn main:app`。
+
+- `--bind`：指定绑定的地址，例如："0.0.0.0:80"、"unix:./hypercorn.sock"
+
+- `--log-level`：指定输出日志的最低等级。
+
+- `--worker-class`：指定使用的异步事件循环。
+
+- `--configuration`：如果你需要修改更多配置，可使用此选项。参考 [Hypercorn 文档](https://pgjones.gitlab.io/hypercorn/how_to_guides/configuring.html)。
+
+### `index-cli gunicorn`
 
 #### `index-cli gunicorn start`
 
