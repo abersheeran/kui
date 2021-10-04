@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from baize.formparsers import UploadFile as _UploadFile
+from baize.datastructures import UploadFile as _UploadFile
 
 
 class UploadFile(_UploadFile):
