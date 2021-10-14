@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -76,3 +76,11 @@ class RequestInfo:
     default: Any
     default_factory: Optional[NoArgAnyCallable]
     alias: Optional[str]
+
+
+@dataclass
+class DependInfo:
+    __slots__ = ("call", "to_async")
+
+    call: Callable
+    to_async: bool

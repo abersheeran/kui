@@ -6,6 +6,7 @@ from typing_extensions import Annotated
 
 from indexpy import Body, Cookie, Header, Path, Query, Request
 from indexpy.applications import Index
+from indexpy.field_functions import Depends
 
 
 @pytest.mark.asyncio
@@ -139,6 +140,84 @@ async def test_request():
         assert resp.text == "True"
 
     assert not inspect.signature(app0.router.search("http", "/")[1]).parameters
+
+
+@pytest.mark.asyncio
+async def test_depend():
+    app = Index()
+
+    def get_name(name: Annotated[str, Body(...)]):
+        return name
+
+    @app.router.http.get("/")
+    async def homepage(name: Annotated[str, Depends(get_name)]):
+        return name
+
+    @app.router.http.get("/to_async")
+    async def homepage_to_async(name: Annotated[str, Depends(get_name, to_async=True)]):
+        return name
+
+    in_gen = False
+
+    def gen(name: Annotated[str, Query(...)]):
+        nonlocal in_gen
+        in_gen = True
+        try:
+            yield name
+        finally:
+            in_gen = False
+
+    @app.router.http.get("/gen")
+    async def depend_gen(name: Annotated[str, Depends(gen)]):
+        assert in_gen
+        return name
+
+    @app.router.http.get("/gen/to_async")
+    async def depend_gen_to_async(name: Annotated[str, Depends(gen, to_async=True)]):
+        assert in_gen
+        return name
+
+    async def async_get_name(name: Annotated[str, Body(...)]):
+        return name
+
+    @app.router.http.get("/async/")
+    async def depend_async(name: Annotated[str, Depends(async_get_name)]):
+        return name
+
+    async def async_gen(name: Annotated[str, Query(...)]):
+        nonlocal in_gen
+        in_gen = True
+        try:
+            yield name
+        finally:
+            in_gen = False
+
+    @app.router.http.get("/async/gen")
+    async def depend_async_gen(name: Annotated[str, Depends(async_gen)]):
+        assert in_gen
+        return name
+
+    async with TestClient(app) as client:
+        resp = await client.get("/", json={"name": "aber"})
+        assert resp.text == "aber"
+
+        resp = await client.get("/to_async", json={"name": "aber"})
+        assert resp.text == "aber"
+
+        resp = await client.get("/gen", query_string={"name": "123"})
+        assert resp.text == "123"
+        assert not in_gen
+
+        resp = await client.get("/gen/to_async", query_string={"name": "123"})
+        assert resp.text == "123"
+        assert not in_gen
+
+        resp = await client.get("/async/", json={"name": "123"})
+        assert resp.text == "123"
+
+        resp = await client.get("/async/gen", query_string={"name": "123"})
+        assert resp.text == "123"
+        assert not in_gen
 
 
 @pytest.mark.asyncio
