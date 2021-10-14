@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
+from contextlib import _GeneratorContextManager, asynccontextmanager, contextmanager
 from itertools import groupby
 from typing import (
     Any,
@@ -22,12 +23,18 @@ from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from typing_extensions import Annotated, get_args, get_origin, get_type_hints
 
+from .concurrency import always_async
 from .exceptions import RequestValidationError
-from .fields import FieldInfo, RequestInfo, Undefined
+from .fields import DependInfo, FieldInfo, RequestInfo, Undefined
 from .requests import request
-from .utils import safe_issubclass
+from .utils import (
+    is_async_gen_callable,
+    is_coroutine_callable,
+    is_gen_callable,
+    safe_issubclass,
+)
 
-CallableObject = TypeVar("CallableObject", bound=Callable[..., Awaitable[Any]])
+CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
 def create_model_config(title: str = None, description: str = None) -> Type[BaseConfig]:
@@ -145,13 +152,61 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         },
     }
 
-    if not (parameters or request_body or request_attrs):
+    depend_attrs: Dict[str, DependInfo] = {
+        **{
+            name: param.default
+            for name, param in sig.parameters.items()
+            if isinstance(param.default, DependInfo)
+        },
+        **{
+            name: get_args(param.annotation)[1]
+            for name, param in sig.parameters.items()
+            if get_origin(param.annotation) is Annotated
+            and isinstance(get_args(param.annotation)[1], DependInfo)
+        },
+    }
+
+    if not (parameters or request_body or request_attrs or depend_attrs):
         return callback
+
+    depend_functions = {
+        name: create_new_callback(
+            typing_cast(
+                CallableObject, always_async(info.call) if info.to_async else info.call
+            )
+        )
+        for name, info in depend_attrs.items()
+    }
 
     @functools.wraps(callback)
     async def callback_with_auto_bound_params(*args, **kwargs):
         data: List[Any] = []
         keyword_params: Dict[str, Any] = {}
+
+        # try to call depend functions
+        need_closes = []
+        for name, function in depend_functions.items():
+            info = depend_attrs[name]
+            if is_async_gen_callable(info.call):
+                asyncgenerator = asynccontextmanager(function)()
+                asyncgenerator.gen = await asyncgenerator.gen
+                keyword_params[name] = await asyncgenerator.__aenter__()
+                need_closes.append(asyncgenerator)
+            elif is_coroutine_callable(info.call):
+                keyword_params[name] = await function(*args, **kwargs)
+            elif is_gen_callable(info.call):
+                if info.to_async:
+                    asyncgenerator = asynccontextmanager(function)()
+                    asyncgenerator.gen = await asyncgenerator.gen
+                    keyword_params[name] = await asyncgenerator.__aenter__()
+                    need_closes.append(asyncgenerator)
+                else:
+                    generator = contextmanager(function)()
+                    generator.gen = await generator.gen
+                    keyword_params[name] = generator.__enter__()
+                    need_closes.append(generator)
+            else:
+                keyword_params[name] = await function(*args, **kwargs)
 
         # try to get parameters model and parse
         if parameters:
@@ -218,7 +273,18 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
                 keyword_params[exclusive_models[_data.__class__]] = _data.__root__
             else:
                 keyword_params[exclusive_models[_data.__class__]] = _data
-        return await callback(*args, **{**keyword_params, **kwargs})  # type: ignore
+
+        try:
+            result = callback(*args, **{**keyword_params, **kwargs})  # type: ignore
+            if inspect.isawaitable(result):
+                result = await result
+            return result
+        finally:
+            for need_close in need_closes:
+                if isinstance(need_close, _GeneratorContextManager):
+                    need_close.__exit__(None, None, None)
+                else:
+                    await need_close.__aexit__(None, None, None)
 
     handler = callback_with_auto_bound_params
 
@@ -233,8 +299,18 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         __parameters__: Dict[str, List[BaseModel]] = getattr(
             handler, "__docs_parameters__", {}
         )
-        for key, value in parameters.items():
-            __parameters__.setdefault(key, []).append(value)
+        for key, parameter_model in parameters.items():
+            __parameters__.setdefault(key, []).append(parameter_model)
+        setattr(handler, "__docs_parameters__", __parameters__)
+
+    for func in depend_functions.values():
+        __request_body__ = getattr(handler, "__docs_request_body__", [])
+        __request_body__.extend(getattr(func, "__docs_request_body__", []))
+        setattr(handler, "__docs_request_body__", __request_body__)
+
+        __parameters__ = getattr(handler, "__docs_parameters__", {})
+        for key, value in getattr(func, "__docs_parameters__", {}).items():
+            __parameters__.setdefault(key, []).extend(value)
         setattr(handler, "__docs_parameters__", __parameters__)
 
     __signature__ = inspect.Signature(
@@ -242,7 +318,7 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
             param
             for param in sig.parameters.values()
             if not (
-                isinstance(param.default, (FieldInfo, RequestInfo))
+                isinstance(param.default, (FieldInfo, RequestInfo, DependInfo))
                 or (
                     get_origin(param.annotation) is Annotated
                     and isinstance(

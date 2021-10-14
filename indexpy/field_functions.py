@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Callable, Optional, TypeVar
 
 from pydantic.fields import NoArgAnyCallable, Undefined
 
-from .fields import BodyInfo, CookieInfo, HeaderInfo, PathInfo, QueryInfo, RequestInfo
+from .fields import (
+    BodyInfo,
+    CookieInfo,
+    DependInfo,
+    HeaderInfo,
+    PathInfo,
+    QueryInfo,
+    RequestInfo,
+)
+from .utils import is_coroutine_callable
 
 __all__ = ["Path", "Query", "Header", "Cookie", "Body", "Request"]
+
+T = TypeVar("T")
 
 
 def Path(
@@ -207,3 +218,15 @@ def Request(
     if default is not Undefined and default_factory is not None:
         raise ValueError("cannot specify both default and default_factory")
     return RequestInfo(default, default_factory=default_factory, alias=alias)
+
+
+def Depends(call: Callable, *, to_async: bool = False) -> Any:
+    """
+    Used to provide extra information about a field.
+
+    :param call: callable that will be called when a dependency is needed for this field
+    :param to_async: whether to convert the callable to async by threadpool
+    """
+    if is_coroutine_callable(call) and to_async:
+        raise TypeError("`to_async` can only work with non-coroutine functions")
+    return DependInfo(call, to_async=to_async)
