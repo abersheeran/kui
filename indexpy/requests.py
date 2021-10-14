@@ -50,7 +50,7 @@ class HttpRequest(BaiZeRequest, HTTPConnection):
         content_type = self.content_type
         if content_type == "application/json":
             return await self.json
-        elif str(content_type) in (
+        elif content_type in (
             "multipart/form-data",
             "application/x-www-form-urlencoded",
         ):
