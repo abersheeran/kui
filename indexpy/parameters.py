@@ -189,24 +189,30 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
             info = depend_attrs[name]
             if is_async_gen_callable(info.call):
                 asyncgenerator = asynccontextmanager(function)()
-                asyncgenerator.gen = await asyncgenerator.gen
+                if inspect.isawaitable(asyncgenerator.gen):
+                    asyncgenerator.gen = await asyncgenerator.gen
                 keyword_params[name] = await asyncgenerator.__aenter__()
                 need_closes.append(asyncgenerator)
             elif is_coroutine_callable(info.call):
-                keyword_params[name] = await function(*args, **kwargs)
+                keyword_params[name] = await function()
             elif is_gen_callable(info.call):
                 if info.to_async:
                     asyncgenerator = asynccontextmanager(function)()
-                    asyncgenerator.gen = await asyncgenerator.gen
+                    if inspect.isawaitable(asyncgenerator.gen):
+                        asyncgenerator.gen = await asyncgenerator.gen
                     keyword_params[name] = await asyncgenerator.__aenter__()
                     need_closes.append(asyncgenerator)
                 else:
                     generator = contextmanager(function)()
-                    generator.gen = await generator.gen
+                    if inspect.isawaitable(generator.gen):
+                        generator.gen = await generator.gen
                     keyword_params[name] = generator.__enter__()
                     need_closes.append(generator)
             else:
-                keyword_params[name] = await function(*args, **kwargs)
+                result = function()
+                if inspect.isawaitable(result):
+                    result = await result
+                keyword_params[name] = result
 
         # try to get parameters model and parse
         if parameters:

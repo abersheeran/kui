@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .applications import Index
 from .exceptions import HTTPException
-from .field_functions import Body, Cookie, Header, Path, Query, Request
+from .field_functions import Body, Cookie, Depends, Header, Path, Query, Request
 from .requests import request, websocket
 from .responses import (
     FileResponse,
@@ -29,6 +29,7 @@ __all__ = [
     "Path",
     "Query",
     "Request",
+    "Depends",
     "HttpResponse",
     "FileResponse",
     "HTMLResponse",

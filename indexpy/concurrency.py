@@ -13,9 +13,10 @@ T = TypeVar("T")
 
 
 async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    loop = asyncio.get_running_loop()
     child = functools.partial(func, *args, **kwargs)
     context = contextvars.copy_context()
-    return await asyncio.get_running_loop().run_in_executor(None, context.run, child)
+    return await loop.run_in_executor(None, context.run, child)
 
 
 class _StopIteration(Exception):
@@ -30,10 +31,9 @@ def _next(iterator: Iterator[T]) -> T:
 
 
 async def iterate_in_threadpool(iterator: Iterator[T]) -> AsyncGenerator[T, None]:
-    loop = asyncio.get_running_loop()
     while True:
         try:
-            yield await loop.run_in_executor(None, _next, iterator)
+            yield await run_in_threadpool(_next, iterator)
         except _StopIteration:
             break
 
