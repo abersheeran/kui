@@ -42,7 +42,7 @@ isort = "*"
 
 # for tests
 async-asgi-testclient = "^1.4.6"
-pytest = "^5.4.2"
+pytest = "^6.2.5"
 pytest-asyncio = "^0.12"
 pytest-cov = "^2.8.1"
 
