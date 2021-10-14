@@ -7,14 +7,20 @@ on:
     tags:
       - "*"
     paths:
+      - ".github/workflows/ci.yml"
       - "**.py"
       - "!indexpy/__version__.py"
+      - poetry.lock
+      - pyproject.toml
   pull_request:
     branches:
       - master
     paths:
+      - ".github/workflows/ci.yml"
       - "**.py"
       - "!indexpy/__version__.py"
+      - poetry.lock
+      - pyproject.toml
 
 jobs:
   tests:
