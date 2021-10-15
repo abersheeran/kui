@@ -14,6 +14,7 @@ from .responses import (
     SendEventResponse,
     ServerSentEvent,
     StreamResponse,
+    TemplateResponse,
 )
 from .routing import HttpRoute, Routes, SocketRoute
 from .views import HttpView, SocketView, required_method
