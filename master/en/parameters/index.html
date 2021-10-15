@@ -384,6 +384,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    依赖可调用对象
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#content-type" class="md-nav__link">
     修改 Content-Type
   </a>
@@ -398,7 +405,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     在中间件中使用
   </a>
   
@@ -410,7 +417,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     描述响应结果
   </a>
   
@@ -418,7 +425,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     在中间件中使用
   </a>
   
@@ -518,6 +525,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    依赖可调用对象
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#content-type" class="md-nav__link">
     修改 Content-Type
   </a>
@@ -532,7 +546,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     在中间件中使用
   </a>
   
@@ -544,7 +558,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     描述响应结果
   </a>
   
@@ -552,7 +566,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     在中间件中使用
   </a>
   
@@ -808,6 +822,46 @@
 <li><code>Body</code>：<code>await request.data()</code></li>
 </ul>
 <p>通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。</p>
+<h3 id="_3">依赖可调用对象</h3>
+<p>使用 <code>Depends(func)</code> 可以标注所依赖的可调用对象，在视图被调用前会调用并将返回值注入到视图的参数中。</p>
+<div class="admonition tip">
+<p>你同样可以在这里进行参数标注，将会递归调用所有依赖的可调用对象以及需要注入的参数。</p>
+</div>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Query</span><span class="p">(</span><span class="o">...</span><span class="p">)]):</span>
+    <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_name</span><span class="p">)]):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;hello </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+</td></tr></table>
+<p>比较特殊的是，如果你使用 <code>Depends(......)</code> 标注的可调用对象是一个生成器函数，那么它将会被 <a href="https://docs.python.org/3/library/contextlib.html"><code>contextlib</code></a> 改造，<code>yield</code> 值被注入视图中，清理部分在视图函数退出后执行（无论视图函数是正常返回或是抛出异常，均会执行清理过程）。在获取某些需要清理的资源时，这特别有效。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">get_db_connection</span><span class="p">():</span>
+    <span class="n">connection</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># get connection</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">connection</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_user</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Connection</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_db_connection</span><span class="p">)]):</span>
+    <span class="o">...</span>
+</code></pre></div>
+</td></tr></table>
 <h3 id="content-type">修改 Content-Type</h3>
 <p>Index-py 会自动读取 <code>request.data</code> 的函数签名，并读取其中包含的 <code>ContentType</code> 对象作为 Content-Type 生成 OpenAPI 文档。以下为一个简单自定义样例——使用 <code>msgpack</code> 解析数据：</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -889,7 +943,7 @@
     <span class="o">...</span>
 </code></pre></div>
 </td></tr></table>
-<h3 id="_3">在中间件中使用</h3>
+<h3 id="_4">在中间件中使用</h3>
 <p>在中间件中的使用方式并没有什么不同，直接在参数里描述即可。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -910,7 +964,7 @@
     <span class="k">return</span> <span class="n">wrapper</span>
 </code></pre></div>
 </td></tr></table>
-<h2 id="_4">描述响应结果</h2>
+<h2 id="_5">描述响应结果</h2>
 <p>为了生成响应结果的 OpenAPI 文档，你应当使用 <a href="https://docs.python.org/zh-cn/3/library/typing.html#typing.Annotated"><code>Annotated</code></a> 对视图的返回值进行描述。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -1005,7 +1059,7 @@
 </li>
 </ul>
 <p>除此之外，你还可以直接使用标准 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 字典（<code>dict</code>）来描述响应结果，这同样会被解析、插入到最终生成的 API 文档里。</p>
-<h3 id="_5">在中间件中使用</h3>
+<h3 id="_6">在中间件中使用</h3>
 <p>在中间件中的使用方式并没有什么不同。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
