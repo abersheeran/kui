@@ -160,6 +160,38 @@ async def getlist(query: Annotated[PageQuery, Query(exclusive=True)]):
 
 通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。
 
+### 依赖可调用对象
+
+使用 `Depends(func)` 可以标注所依赖的可调用对象，在视图被调用前会调用并将返回值注入到视图的参数中。
+
+!!! tip ""
+
+    你同样可以在这里进行参数标注，将会递归调用所有依赖的可调用对象以及需要注入的参数。
+
+```python
+def get_name(name: Annotated[str, Query(...)]):
+    return name.lower()
+
+
+async def hello(name: Annotated[str, Depends(get_name)]):
+    return f"hello {name}"
+```
+
+比较特殊的是，如果你使用 `Depends(......)` 标注的可调用对象是一个生成器函数，那么它将会被 [`contextlib`](https://docs.python.org/3/library/contextlib.html) 改造，`yield` 值被注入视图中，清理部分在视图函数退出后执行（无论视图函数是正常返回或是抛出异常，均会执行清理过程）。在获取某些需要清理的资源时，这特别有效。
+
+```python
+async def get_db_connection():
+    connection = ...  # get connection
+    try:
+        yield connection
+    finally:
+        connection.close()
+
+
+async def get_user(db: Annotated[Connection, Depends(get_db_connection)]):
+    ...
+```
+
 ### 修改 Content-Type
 
 Index-py 会自动读取 `request.data` 的函数签名，并读取其中包含的 `ContentType` 对象作为 Content-Type 生成 OpenAPI 文档。以下为一个简单自定义样例——使用 `msgpack` 解析数据：
