@@ -88,37 +88,6 @@ def convert_response(response: typing.Any) -> HttpResponse:
         return request.app.response_converter(response)
 
 
-def http_response__class_getitem__(parameters):
-    """
-    Use HttpResponse[status, headers, content] to describe response
-    """
-    if isinstance(parameters, tuple):
-        assert len(parameters) in (2, 3)
-        if len(parameters) == 2:
-            (status_code, headers), content = parameters, {}
-        else:
-            status_code, headers, content = parameters
-    else:
-        status_code, headers, content = parameters, {}, {}
-    assert isinstance(status_code, int) or status_code == "default"
-
-    docs = {
-        str(status_code): {
-            "description": HTTPStatus(status_code).description,
-        }
-    }
-    if headers:
-        docs[str(status_code)]["headers"] = headers
-
-    if content:
-        docs[str(status_code)]["content"] = content
-
-    return docs
-
-
-HttpResponse.__class_getitem__ = http_response__class_getitem__  # type: ignore
-
-
 def html_response__class_getitem__(parameters):
     """
     Use HTMLResponse[status, headers] to describe response

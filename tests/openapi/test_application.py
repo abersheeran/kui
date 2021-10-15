@@ -1,4 +1,5 @@
 import json
+from http import HTTPStatus
 from typing import Any, List
 
 import pytest
@@ -9,7 +10,6 @@ from typing_extensions import Annotated
 
 from indexpy import (
     Header,
-    HttpResponse,
     HttpRoute,
     HttpView,
     Index,
@@ -60,7 +60,9 @@ async def test_openapi_page():
             ......
             """
 
-        async def delete(self) -> Annotated[Any, HttpResponse[204]]:
+        async def delete(
+            self,
+        ) -> Annotated[Any, {"204": {"description": HTTPStatus(204).description}}]:
             """
             ...
 
@@ -70,7 +72,7 @@ async def test_openapi_page():
     def just_middleware(endpoint):
         async def wrapper(
             authorization: str = Header(..., description="JWT Token")
-        ) -> Annotated[Any, HttpResponse[401]]:
+        ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
             return await endpoint()
 
         return wrapper

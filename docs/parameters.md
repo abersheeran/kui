@@ -294,8 +294,7 @@ async def hello() -> Annotated[
 - file: `FileResponse[content_type, headers]`
     - `content_type`: 指定返回的文件的 Content-Type。
 
-除此之外，你还可以直接使用 `HttpResponse[status_code, headers, content]` 直接描述原始的 OpenAPI 文档，其中 `headers` 与 `content` 均需要为标准的 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 中所指定的格式。
-
+除此之外，你还可以直接使用标准 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 字典（`dict`）来描述响应结果，这同样会被解析、插入到最终生成的 API 文档里。
 
 ### 在中间件中使用
 
