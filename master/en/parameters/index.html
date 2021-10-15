@@ -1004,7 +1004,7 @@
 </ul>
 </li>
 </ul>
-<p>除此之外，你还可以直接使用 <code>HttpResponse[status_code, headers, content]</code> 直接描述原始的 OpenAPI 文档，其中 <code>headers</code> 与 <code>content</code> 均需要为标准的 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 中所指定的格式。</p>
+<p>除此之外，你还可以直接使用标准 <a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject">OpenAPI Response</a> 字典（<code>dict</code>）来描述响应结果，这同样会被解析、插入到最终生成的 API 文档里。</p>
 <h3 id="_5">在中间件中使用</h3>
 <p>在中间件中的使用方式并没有什么不同。</p>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
