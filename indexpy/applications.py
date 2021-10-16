@@ -179,6 +179,7 @@ class Index:
                 else:
                     return await response(scope, receive, send)
         finally:
+            await request.close()
             request_var.reset(token)
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
