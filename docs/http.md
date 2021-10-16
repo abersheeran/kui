@@ -416,7 +416,7 @@ async def message():
 - `dict | tuple | list`：自动转换为 `JSONResponse`
 - `str | bytes`：自动转换为 `PlainTextResponse`
 - `typing.AsyncGeneratorType`：自动转换为 `SendEventResponse`
-- `pathlib.PurePath`：自动转换为 `FileResponse`
+- `pathlib.Path`：自动转换为 `FileResponse`
 - `baize.datastructures.URL`：自动转换为 `RedirectResponse`
 
 ```python

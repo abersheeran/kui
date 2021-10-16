@@ -221,52 +221,19 @@ def create_response_converter(
 
     response_converter.register(type(None), _none)
     response_converter.register(HttpResponse, lambda x: x)
-    response_converter.register(
-        dict,
-        lambda content, status=200, headers=None: JSONResponse(
-            content, status, headers
-        ),
-    )
-    response_converter.register(
-        list,
-        lambda content, status=200, headers=None: JSONResponse(
-            content, status, headers
-        ),
-    )
-    response_converter.register(
-        tuple,
-        lambda content, status=200, headers=None: JSONResponse(
-            content, status, headers
-        ),
-    )
-    response_converter.register(
-        bytes,
-        lambda content, status=200, headers=None: PlainTextResponse(
-            content, status, headers
-        ),
-    )
-    response_converter.register(
-        str,
-        lambda content, status=200, headers=None: PlainTextResponse(
-            content, status, headers
-        ),
-    )
-    response_converter.register(
-        AsyncGeneratorType,
-        lambda content, status=200, headers=None: SendEventResponse(
-            content, status, headers
-        ),
-    )
+    response_converter.register(dict, JSONResponse)
+    response_converter.register(list, JSONResponse)
+    response_converter.register(tuple, JSONResponse)
+    response_converter.register(bytes, PlainTextResponse)
+    response_converter.register(str, PlainTextResponse)
+    response_converter.register(AsyncGeneratorType, SendEventResponse)
     response_converter.register(
         PurePath,
         lambda filepath, download_name=None: FileResponse(
             str(filepath), download_name=download_name
         ),
     )
-    response_converter.register(
-        URL,
-        lambda url, status=307, headers=None: RedirectResponse(url, status, headers),
-    )
+    response_converter.register(URL, RedirectResponse)
 
     for type_, converter in converters.items():
         response_converter.register(type_, converter)
