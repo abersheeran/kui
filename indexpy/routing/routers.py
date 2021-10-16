@@ -2,17 +2,12 @@ from __future__ import annotations
 
 import abc
 import operator
-import sys
 import typing
 from copy import deepcopy
 from functools import reduce
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 from baize.routing import compile_path
+from typing_extensions import Literal
 
 from ..utils import FF, F
 from ..views import required_method

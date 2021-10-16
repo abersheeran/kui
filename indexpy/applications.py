@@ -4,7 +4,6 @@ import copy
 import dataclasses
 import functools
 import inspect
-import sys
 import traceback
 from functools import reduce
 from pathlib import PurePath
@@ -23,14 +22,10 @@ from typing import (
     Union,
 )
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 from baize.asgi import Receive, Scope, Send
 from baize.datastructures import URL
 from baize.typing import ASGIApp
+from typing_extensions import Literal
 
 from .debug import DebugMiddleware
 from .exceptions import ErrorView, ExceptionContextManager, HTTPException

@@ -2,17 +2,12 @@ from __future__ import annotations
 
 import functools
 import json
-import sys
 from inspect import isfunction
 from typing import TYPE_CHECKING, Any, Callable, Generator, List, TypeVar
 from typing import cast as typing_cast
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 from baize.asgi import Message
+from typing_extensions import Literal
 
 from .requests import request, websocket
 from .responses import HttpResponse

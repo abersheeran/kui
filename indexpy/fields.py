@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 from pydantic.fields import FieldInfo as _FieldInfo
 from pydantic.fields import NoArgAnyCallable, Undefined
+from typing_extensions import Literal
 
 
 class FieldInfo(_FieldInfo):

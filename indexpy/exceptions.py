@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from http import HTTPStatus
 from types import TracebackType
 from typing import (
@@ -18,14 +17,10 @@ from typing import (
     overload,
 )
 
-if sys.version_info[:2] < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
 from baize.asgi import HTTPException, PlainTextResponse
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
+from typing_extensions import Literal
 
 from .requests import request
 from .responses import HttpResponse

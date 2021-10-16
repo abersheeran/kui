@@ -15,7 +15,7 @@ from .fields import (
 )
 from .utils import is_coroutine_callable
 
-__all__ = ["Path", "Query", "Header", "Cookie", "Body", "Request"]
+__all__ = ["Path", "Query", "Header", "Cookie", "Body", "Request", "Depends"]
 
 T = TypeVar("T")
 
