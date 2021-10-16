@@ -13,6 +13,9 @@ T = TypeVar("T")
 
 
 async def run_in_threadpool(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    """
+    Run function in threadpool.
+    """
     loop = asyncio.get_running_loop()
     child = functools.partial(func, *args, **kwargs)
     context = contextvars.copy_context()
@@ -31,9 +34,15 @@ def _next(iterator: Iterator[T]) -> T:
 
 
 async def iterate_in_threadpool(iterator: Iterator[T]) -> AsyncGenerator[T, None]:
+    """
+    Convert iterator to async generator.
+    """
+    loop = asyncio.get_running_loop()
+    context = contextvars.copy_context()
     while True:
         try:
-            yield await run_in_threadpool(_next, iterator)
+            child = functools.partial(_next, iterator)
+            yield await loop.run_in_executor(None, context.run, child)
         except _StopIteration:
             break
 
