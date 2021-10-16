@@ -45,7 +45,7 @@ pytz = ">=2015.7"
 
 [[package]]
 name = "baize"
-version = "0.11.1"
+version = "0.12.0"
 description = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 category = "main"
 optional = false
@@ -613,7 +613,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-click"
-version = "7.1.6"
+version = "7.1.7"
 description = "Typing stubs for click"
 category = "dev"
 optional = false
@@ -670,7 +670,7 @@ docs = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "8e23efde683358aae32d8f9f52c49fe05aa63fc8b657900267f08545cc29ac8e"
+content-hash = "d9e535e4850aa8f5bd7354d033ae04f8c9b65b708a27274874afaeee1c119757"
 
 [metadata.files]
 async-asgi-testclient = [
@@ -689,21 +689,21 @@ babel = [
     {file = "Babel-2.9.1.tar.gz", hash = "sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0"},
 ]
 baize = [
-    {file = "baize-0.11.1-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:f1149898b642ec05c118cfa5b43eac3f4acc64dbd2f6f2e35288a115ddfe75a8"},
-    {file = "baize-0.11.1-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:41d07f1cffa7d0bbcf00fa7bf0dfdb7cf21d738c9c911cbd6c17131c4fc649e0"},
-    {file = "baize-0.11.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:6526fe9f816a824c49c7be79b7b73084013c7132fb70dbefa9c342495c950e52"},
-    {file = "baize-0.11.1-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:413b8b65f9b3c848c8c2a770f3f28dbf6338cbe1ea91ce581f6379ea9faa69c6"},
-    {file = "baize-0.11.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:c5a07d9497ab452ca0e6f94ca68f9d075e7dd8eba1ce4afd882649469144b364"},
-    {file = "baize-0.11.1-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:6b507fcb008bd27fc01867ae9332c95e02dfe258eb6cdacd48061384b2776d7f"},
-    {file = "baize-0.11.1-cp37-cp37m-win_amd64.whl", hash = "sha256:bb63d21b7315ebf8e4571d6b83fc252905e9a441b1c9c065e34001cb67332423"},
-    {file = "baize-0.11.1-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:e5d2e38fb6a640423774e0e275b7a84c49ce60205c6bd61d0c18a3e4684496c4"},
-    {file = "baize-0.11.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:f183197ea5e20a0d39b216117e9e85cf76aba2b0b1bd4824d40a8cef4885367b"},
-    {file = "baize-0.11.1-cp38-cp38-win_amd64.whl", hash = "sha256:1352bebd908b265bfecd14266c5d98bb984e9730bf0db4410a302b544d8e7916"},
-    {file = "baize-0.11.1-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:d687516d95ffb36ad656112cb4dc5d859756ded01a1b59596b146a7b9523fe94"},
-    {file = "baize-0.11.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:6bfd16a502d2d71157fd9c6aa8baa11bf6e19dcbf23640375169c5a1aebc6327"},
-    {file = "baize-0.11.1-cp39-cp39-win_amd64.whl", hash = "sha256:f2e6320782489cab0c7bdfacf44764f0f0825347a9c883dd7cad10b26fcd1db3"},
-    {file = "baize-0.11.1-py3-none-any.whl", hash = "sha256:08618e627018f1a591027a61df57acfc701c8f53026e157972d16a3e3b004493"},
-    {file = "baize-0.11.1.tar.gz", hash = "sha256:06d2e2d26cff1d6d59bcf87b9deb3aad80b7fea4c315bf081ab9d29628772399"},
+    {file = "baize-0.12.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:a98631946c9c6c75357e27b9257e1ff071f13856cf862a13830f92056d1f1a6c"},
+    {file = "baize-0.12.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:d53e2e554aae48a5f39c70aad19ceaaafcf20ff041a34f3343499a5289e47e9c"},
+    {file = "baize-0.12.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:0af63570cfd2b2322b7dbd5225eb3f4397b2f879023497ad79766581c8be7037"},
+    {file = "baize-0.12.0-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:13b46229869398fa801d08159098106ee6bc35bf0c5a4f83bec4a6a5c8ea8c90"},
+    {file = "baize-0.12.0-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:06da79d79f77eae0ebeef7b0e7b0a960beab67d081b2d21300d99334f62c63f2"},
+    {file = "baize-0.12.0-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:4b10e07eab70f383ffca55620977d891ec0a336685bb172b1a5c9da8304bebb6"},
+    {file = "baize-0.12.0-cp37-cp37m-win_amd64.whl", hash = "sha256:802c04e359f3f8501cd64ae4de255dc1e8ab70986d6373231f6afbbd2c74acda"},
+    {file = "baize-0.12.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:0372ed2628e660e4e19e22cc18ecceafb1498c50122c1e32dfe2549ff66552a2"},
+    {file = "baize-0.12.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:a9c3e36212c7343a5c7477b942dead3fba53af611c56288e02dbec03026e3deb"},
+    {file = "baize-0.12.0-cp38-cp38-win_amd64.whl", hash = "sha256:c3d87a3887e56ddd4868d956cfba59949696a4e7d40bfecb36be4a752cae5ad8"},
+    {file = "baize-0.12.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:94e375a4f9911f44ed398d7eb8a69bc925b347e69d203e8910c3a58a395ba924"},
+    {file = "baize-0.12.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:417f93862f5f2dc223851c478d98722b0c98ccdb41e50be3b1ef298a51d795dd"},
+    {file = "baize-0.12.0-cp39-cp39-win_amd64.whl", hash = "sha256:a0cbb3ac566d6f2fb96d2f770587e6056cfb2895e52d34aea31d8324e7416cd2"},
+    {file = "baize-0.12.0-py3-none-any.whl", hash = "sha256:2bd0868e82d7415ccdc7a4d3db31665d6167f87339d842cf23fc98b9d30364c7"},
+    {file = "baize-0.12.0.tar.gz", hash = "sha256:0871b6d63b3d714ff995962ab9f70c2b4fb041e8303e2ddac3cfdb4ef4169883"},
 ]
 black = [
     {file = "black-21.9b0-py3-none-any.whl", hash = "sha256:380f1b5da05e5a1429225676655dddb96f5ae8c75bdf91e53d798871b902a115"},
@@ -1194,8 +1194,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
 types-click = [
-    {file = "types-click-7.1.6.tar.gz", hash = "sha256:9e064ab410ce2bacaba178bfb3d51c6ef4c8bf1859c6e15c2acaf29dac111e1d"},
-    {file = "types_click-7.1.6-py3-none-any.whl", hash = "sha256:090c78aeec2b6209c65a1a7deadd54ad34de70d9590bc5c435175f2fc2249e0c"},
+    {file = "types-click-7.1.7.tar.gz", hash = "sha256:fff7ea52619581401a90cb9247e1a7e95c29084cfdbc26b7a49ed94c40fcd3d8"},
+    {file = "types_click-7.1.7-py3-none-any.whl", hash = "sha256:64dd3dc1fe5ed7e105b7a0479a6aebdd3c132c474c54f42a744af1bfba1989fd"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.2-py2-none-any.whl", hash = "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7"},
