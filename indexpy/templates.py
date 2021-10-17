@@ -50,7 +50,7 @@ else:
             super().__init__(context, status_code, headers, media_type, charset)
 
         async def render(self, context: Mapping[str, Any]) -> bytes:
-            if self.env.enable_async:  # type: ignore
+            if self.env.is_async:
                 text = await self.template.render_async(context)
             else:
                 text = self.template.render(context)
