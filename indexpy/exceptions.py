@@ -95,7 +95,7 @@ class ExceptionContextManager:
         self._status_handlers: Dict[int, ErrorView] = {}
         self._exception_handlers: Dict[Type[BaseException], ErrorView] = {
             HTTPException: self.http_exception,
-            RequestValidationError: self.request_validation_error,
+            RequestValidationError: self.validation_error,
         }
         for key, value in handlers.items():
             self.add_exception_handler(key, value)
@@ -157,8 +157,10 @@ class ExceptionContextManager:
                 exc.headers,
             )
 
-    @staticmethod
-    async def request_validation_error(exc: RequestValidationError) -> HttpResponse:
-        return PlainTextResponse(
-            exc.json(), status_code=422, media_type="application/json"
-        )
+    async def validation_error(self, exc: RequestValidationError) -> HttpResponse:
+        if exc.in_ == "path":
+            return await self.http_exception(HTTPException(status_code=404))
+        else:
+            return PlainTextResponse(
+                exc.json(), status_code=422, media_type="application/json"
+            )

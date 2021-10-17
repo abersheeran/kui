@@ -24,10 +24,10 @@ async def test_path():
         assert resp.text == "aber"
 
         resp = await client.get("/")
-        assert resp.status_code == 422
+        assert resp.status_code == 404
 
         resp = await client.get("/1")
-        assert resp.status_code == 422
+        assert resp.status_code == 404
 
     assert not inspect.signature(app.router.search("http", "/aber")[1]).parameters
 

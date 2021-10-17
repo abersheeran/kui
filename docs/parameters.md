@@ -119,7 +119,11 @@ async def handler():
 
 ## 标注请求参数
 
-先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为值，`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：`?page_num=1&page_size=10`。如果你使用 `Query(10)` 则意味着这个值可以不由前端传递，其默认值为 `10`。
+先看一个最简单的例子，两个分页参数，首先通过 Type hint 标注它们都需要 `int` 类型，在给予它们 `Query(...)` 作为额外的类型描述。
+
+`Query` 代表它们将会从 `request.query_params` 中读取值，`...` 作为第一个参数，意味着它没有默认值，也就是客户端请求该接口时必须传递值。譬如：`?page_num=1&page_size=10`。
+
+如果你使用 `Query(10)` 则意味着这个值可以不由前端传递，其默认值为 `10`。
 
 ```python
 from typing_extensions import Annotated
@@ -127,13 +131,13 @@ from indexpy import Query
 
 
 async def getlist(
-    page_num: Annotated[int, Query()],
-    page_size: Annotated[int, Query()],
+    page_num: Annotated[int, Query(...)],
+    page_size: Annotated[int, Query(...)],
 ):
     ...
 ```
 
-也可以通过使用继承自 `pydantic.BaseModel` 的类作为类型注解来描述同一类型的全部参数，通过类的继承可以做到复用参数。下例与上例是等价的。
+也可以通过使用继承自 `pydantic.BaseModel` 的类作为类型注解来描述同一类型的全部参数，下例与上例是等价的。
 
 ```python
 from typing_extensions import Annotated
@@ -159,6 +163,10 @@ async def getlist(query: Annotated[PageQuery, Query(exclusive=True)]):
 - `Body`：`await request.data()`
 
 通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。
+
+!!! tip ""
+
+    路径参数（`Path`）的校验错误是比较特别的，它会尝试调用用户自己注册的 404 异常处理方法或者默认的 404 异常处理方法返回 404 状态，就像没有找到路由一样，而不是像其他参数校验错误一样返回 422 状态。
 
 ### 依赖可调用对象
 
