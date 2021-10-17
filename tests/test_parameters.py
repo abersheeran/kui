@@ -4,9 +4,8 @@ import pytest
 from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
 
-from indexpy import Body, Cookie, Header, Path, Query, Request
+from indexpy import Body, Cookie, Depends, Header, Path, Query, Request
 from indexpy.applications import Index
-from indexpy.field_functions import Depends
 
 
 @pytest.mark.asyncio

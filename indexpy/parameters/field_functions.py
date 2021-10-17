@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional, TypeVar
 
 from pydantic.fields import NoArgAnyCallable, Undefined
 
+from ..utils import is_coroutine_callable
 from .fields import (
     BodyInfo,
     CookieInfo,
@@ -13,7 +14,6 @@ from .fields import (
     QueryInfo,
     RequestInfo,
 )
-from .utils import is_coroutine_callable
 
 __all__ = ["Path", "Query", "Header", "Cookie", "Body", "Request", "Depends"]
 

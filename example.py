@@ -11,7 +11,7 @@ from indexpy import (
     required_method,
     websocket,
 )
-from indexpy.field_functions import Path
+from indexpy.parameters.field_functions import Path
 from indexpy.openapi import OpenAPI
 
 

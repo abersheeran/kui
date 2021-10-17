@@ -23,16 +23,16 @@ from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from typing_extensions import Annotated, get_args, get_origin, get_type_hints
 
-from .concurrency import always_async
-from .exceptions import RequestValidationError
-from .fields import DependInfo, FieldInfo, RequestInfo, Undefined
-from .requests import request
-from .utils import (
+from ..concurrency import always_async
+from ..exceptions import RequestValidationError
+from ..requests import request
+from ..utils import (
     is_async_gen_callable,
     is_coroutine_callable,
     is_gen_callable,
     safe_issubclass,
 )
+from .fields import DependInfo, FieldInfo, RequestInfo, Undefined
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
