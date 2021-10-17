@@ -1,17 +1,6 @@
 import pytest
 
-from indexpy.utils import Singleton, State, import_module
-
-
-def test_singleton():
-    class S(metaclass=Singleton):
-        pass
-
-    assert S() is S()
-
-
-def test_import_module():
-    assert import_module("sys") is None
+from indexpy.utils import State
 
 
 @pytest.mark.asyncio

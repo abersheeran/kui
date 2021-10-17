@@ -12,9 +12,9 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Dict,
     Iterable,
     List,
+    Mapping,
     NoReturn,
     Optional,
     Type,
@@ -103,9 +103,9 @@ class Index:
         on_startup: List[NoArgumentCallable] = [],
         on_shutdown: List[NoArgumentCallable] = [],
         routes: Iterable[BaseRoute] = [],
-        exception_handlers: Dict[int | Type[Exception], ErrorView] = {},
+        exception_handlers: Mapping[int | Type[BaseException], ErrorView] = {},
         factory_class: FactoryClass = FactoryClass(),
-        response_converters: Dict[type, Callable[..., HttpResponse]] = {},
+        response_converters: Mapping[type, Callable[..., HttpResponse]] = {},
     ) -> None:
         self.debug = debug
         self.state = State()
@@ -197,7 +197,7 @@ class Index:
 
 
 def create_response_converter(
-    converters: Dict[type, Callable[..., HttpResponse]]
+    converters: Mapping[type, Callable[..., HttpResponse]]
 ) -> functools._SingleDispatchCallable[HttpResponse]:
     """
     Create a converter for convert response.

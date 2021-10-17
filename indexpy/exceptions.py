@@ -7,9 +7,9 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Coroutine,
     Dict,
     List,
+    Mapping,
     Optional,
     Type,
     TypeVar,
@@ -83,37 +83,34 @@ class RequestValidationError(Exception):
         }
 
 
-Error = TypeVar("Error", bound=Exception)
+Error = TypeVar("Error", bound=BaseException)
 ErrorView = Callable[[Error], Awaitable[HttpResponse]]
-View = Callable[[], Coroutine[None, None, HttpResponse]]
 
 
 class ExceptionContextManager:
     def __init__(
         self,
-        handlers: Dict[Union[int, Type[Exception]], ErrorView] = None,
+        handlers: Mapping[Union[int, Type[BaseException]], ErrorView] = {},
     ) -> None:
         self._status_handlers: Dict[int, ErrorView] = {}
-        self._exception_handlers: Dict[Type[Exception], ErrorView] = {
+        self._exception_handlers: Dict[Type[BaseException], ErrorView] = {
             HTTPException: self.http_exception,
             RequestValidationError: self.request_validation_error,
         }
-        if handlers is not None:
-            for key, value in handlers.items():
-                self.add_exception_handler(key, value)
+        for key, value in handlers.items():
+            self.add_exception_handler(key, value)
 
     def add_exception_handler(
         self,
-        exc_class_or_status_code: Union[int, Type[Exception]],
+        exc_class_or_status_code: Union[int, Type[BaseException]],
         handler: Callable,
     ) -> None:
         if isinstance(exc_class_or_status_code, int):
             self._status_handlers[exc_class_or_status_code] = handler
         else:
-            assert issubclass(exc_class_or_status_code, Exception)
             self._exception_handlers[exc_class_or_status_code] = handler
 
-    def _lookup_exception_handler(self, exc: Exception) -> Optional[Callable]:
+    def _lookup_exception_handler(self, exc: BaseException) -> Optional[Callable]:
         for cls in type(exc).__mro__:
             if cls in self._exception_handlers:
                 return self._exception_handlers[cls]
@@ -124,13 +121,13 @@ class ExceptionContextManager:
 
     @overload
     async def __aexit__(self, exc_type: None, exc: None, tb: None) -> None:
-        pass
+        ...
 
     @overload
     async def __aexit__(
         self, exc_type: Type[BaseException], exc: BaseException, tb: TracebackType
     ) -> bool:
-        pass
+        ...
 
     async def __aexit__(self, exc_type, exc, tb):
         if exc_type is None:
