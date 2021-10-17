@@ -25,7 +25,13 @@ from . import specification as spec
 from .extra_docs import merge_openapi_info
 from .schema import schema_parameter, schema_request_body, schema_response
 
-TagDetail = TypedDict("TagDetail", {"description": str, "paths": Sequence[str]})
+
+class TagDetailOptional(TypedDict, total=False):
+    paths: Sequence[str]
+
+
+class TagDetail(TagDetailOptional):
+    description: str
 
 
 class OpenAPI:
