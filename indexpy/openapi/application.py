@@ -67,7 +67,7 @@ class OpenAPI:
             self.openapi["components"]["securitySchemes"] = security_schemes
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
-            for path in tag_info["paths"]:
+            for path in tag_info.get("paths", []):
                 self.path2tag.setdefault(path, []).append(tag_name)
         self.definitions: dict = {}
 
