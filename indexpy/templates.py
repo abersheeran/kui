@@ -24,6 +24,7 @@ class BaseTemplates(metaclass=ABCMeta):
         The subclass must override this method and return
         an instance of a Response object.
         """
+        raise NotImplementedError
 
 
 try:

@@ -4,12 +4,12 @@ from typing import Any, List
 
 import pytest
 from async_asgi_testclient import TestClient
-from baize.asgi import HTMLResponse
 from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from indexpy import (
     Header,
+    HTMLResponse,
     HttpRoute,
     HttpView,
     Index,
