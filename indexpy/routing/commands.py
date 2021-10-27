@@ -1,3 +1,4 @@
+import inspect
 import os
 import sys
 import typing
@@ -37,5 +38,5 @@ def display_urls(application):
         else:
             filepath = get_object_filepath(handler)
             click.secho(
-                filepath + ":" + str(handler.__code__.co_firstlineno), fg="blue"
+                filepath + ":" + str(inspect.getsourcelines(handler)[1]), fg="blue"
             )

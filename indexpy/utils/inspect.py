@@ -58,7 +58,7 @@ def get_object_filepath(object: Any) -> str:
     """
     Get object's filepath.
     """
-    path = Path(object.__code__.co_filename).absolute()
+    path = Path(inspect.getfile(object)).absolute()
     try:
         filepath = "./" + path.relative_to(Path.cwd()).as_posix()
     except ValueError:
