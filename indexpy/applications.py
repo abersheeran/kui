@@ -119,11 +119,16 @@ class Index:
         self._asgi_middlewares: List[F] = []
         self.app_with_middlewares = self.build_app_with_middlewares()
 
-        if self.debug:
-            self.add_middleware(DebugMiddleware)
-
     def build_app_with_middlewares(self) -> ASGIApp:
-        return reduce(lambda a, m: m(a), reversed(self._asgi_middlewares), self.app)
+        internal_middlewares: List[F] = []
+        if self.debug:
+            internal_middlewares.append(F(DebugMiddleware))
+
+        return reduce(
+            lambda a, m: m(a),
+            reversed([*self._asgi_middlewares, *internal_middlewares]),
+            self.app,
+        )
 
     def add_middleware(self, middleware_class: type, **options: Any) -> None:
         """
