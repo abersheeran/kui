@@ -377,6 +377,12 @@ routes = Routes(
 )
 ```
 
+这种运算会创建全新的路由序列，对原本的路由序列不会造成影响，故而你可以重复对同一个 `Routes` 对象调用 `//` 方法。
+
+```python
+routes = ("/admin" // auth_routes) + ("/account" // auth_routes)
+```
+
 !!! Warning "注意事项"
 
     在使用 `routes = "prefix" // Routes(......)` 之后再调用 `@routes.http` 等方法注册路由时，并不会给后续的路由自动加上 `"prefix"` 前缀。你应当在一个路由分组内所有路由注册完成之后，再进行 `"prefix" // routes` 运算。
