@@ -61,8 +61,8 @@ class OpenAPI:
             ],
             components={
                 "schemas": {
-                    "RequestValidationError": spec.Schema(
-                        **RequestValidationError.schema()
+                    "RequestValidationError": typing.cast(
+                        spec.Schema, RequestValidationError.schema()
                     )
                 },
             },

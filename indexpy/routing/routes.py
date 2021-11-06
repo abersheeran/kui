@@ -7,26 +7,27 @@ from functools import reduce
 
 from ..parameters import auto_params, update_wrapper
 
-T_Endpoint = typing.Callable[..., typing.Awaitable[typing.Any]]
+_EndpointType = typing.Callable[..., typing.Any]
 _RouteSelf = typing.TypeVar("_RouteSelf", bound="BaseRoute")
 
 
 @dataclass
 class BaseRoute:
     path: str
-    endpoint: typing.Callable[..., typing.Awaitable[typing.Any]]
+    endpoint: _EndpointType
     name: typing.Optional[str] = ""
 
     def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         raise NotImplementedError()
 
     def _extend_middlewares(
-        self, middlewares: typing.Iterable[typing.Callable[[T_Endpoint], T_Endpoint]]
+        self,
+        middlewares: typing.Iterable[typing.Callable[[_EndpointType], _EndpointType]],
     ) -> None:
         reduce(operator.matmul, middlewares, self)
 
     def __matmul__(
-        self: _RouteSelf, decorator: typing.Callable[[T_Endpoint], T_Endpoint]
+        self: _RouteSelf, decorator: typing.Callable[[_EndpointType], _EndpointType]
     ) -> _RouteSelf:
         endpoint = self.endpoint
         if hasattr(endpoint, "__methods__"):
