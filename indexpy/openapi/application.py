@@ -51,20 +51,24 @@ class OpenAPI:
 
         self.html_template = template
 
-        self.openapi: spec.OpenAPI = {
-            "openapi": "3.0.3",
-            "info": info,
-            "paths": {},
-            "tags": [
+        self.openapi = spec.OpenAPI(
+            openapi="3.0.3",
+            info=info,
+            paths={},
+            tags=[
                 {"name": tag_name, "description": tag_info.get("description", "")}
                 for tag_name, tag_info in tags.items()
             ],
-            "components": {
-                "schemas": {"RequestValidationError": RequestValidationError.schema()},
+            components={
+                "schemas": {
+                    "RequestValidationError": spec.Schema(
+                        **RequestValidationError.schema()
+                    )
+                },
             },
-        }
+        )
         if security_schemes:
-            self.openapi["components"]["securitySchemes"] = security_schemes
+            self.openapi.get("components", {})["securitySchemes"] = security_schemes
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
             for path in tag_info.get("paths", []):
@@ -204,7 +208,22 @@ class OpenAPI:
             {
                 "url": f"{request.url.scheme}://{request.url.netloc}",
                 "description": "Current server",
-            }
+            },
+            spec.Server(
+                url="{scheme}://{address}/",
+                description="Custom API Server Host",
+                variables={
+                    "scheme": {
+                        "default": request.url.scheme,
+                        "enum": ["http", "https"],
+                        "description": "http or https",
+                    },
+                    "address": {
+                        "default": request.url.netloc,
+                        "description": "api server's host[:port]",
+                    },
+                },
+            ),
         ]
         openapi["paths"], definitions = copy.deepcopy(self._generate_paths(request.app))
         for path_item in openapi["paths"].values():
@@ -212,7 +231,7 @@ class OpenAPI:
                 operation = typing.cast(spec.Operation, operation)
                 if "responses" not in operation:
                     operation["responses"] = {}
-        openapi["components"].setdefault("schemas", {}).update(definitions)
+        openapi.get("components", {}).setdefault("schemas", {}).update(definitions)
         return openapi
 
     @property

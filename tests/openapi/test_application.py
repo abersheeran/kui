@@ -329,7 +329,24 @@ async def test_openapi_page():
                 }
             }
         },
-        "servers": [{"url": "http://localhost", "description": "Current server"}],
+        "servers": [
+            {"url": "http://localhost", "description": "Current server"},
+            dict(
+                url="{scheme}://{address}/",
+                description="Custom API Server Host",
+                variables={
+                    "scheme": {
+                        "default": "http",
+                        "enum": ["http", "https"],
+                        "description": "http or https",
+                    },
+                    "address": {
+                        "default": "localhost",
+                        "description": "api server's host[:port]",
+                    },
+                },
+            ),
+        ],
     }, str(json.loads(openapi_docs_text))
 
 
