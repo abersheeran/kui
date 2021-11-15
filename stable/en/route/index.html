@@ -1260,6 +1260,10 @@
 <span class="p">)</span>
 </code></pre></div>
 </td></tr></table>
+<p>这种运算会创建全新的路由序列，对原本的路由序列不会造成影响，故而你可以重复对同一个 <code>Routes</code> 对象调用 <code>//</code> 方法。</p>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="n">routes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;/admin&quot;</span> <span class="o">//</span> <span class="n">auth_routes</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;/account&quot;</span> <span class="o">//</span> <span class="n">auth_routes</span><span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
 <div class="admonition warning">
 <p class="admonition-title">注意事项</p>
 <p>在使用 <code>routes = "prefix" // Routes(......)</code> 之后再调用 <code>@routes.http</code> 等方法注册路由时，并不会给后续的路由自动加上 <code>"prefix"</code> 前缀。你应当在一个路由分组内所有路由注册完成之后，再进行 <code>"prefix" // routes</code> 运算。</p>
