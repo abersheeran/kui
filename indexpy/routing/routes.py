@@ -65,13 +65,13 @@ class HttpRoute(BaseRoute):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.summary:
-            setattr(self.endpoint, "__summary__", self.summary)
+            setattr(self.endpoint, "__docs_summary__", self.summary)
 
         if self.description:
-            setattr(self.endpoint, "__description__", self.description)
+            setattr(self.endpoint, "__docs_description__", self.description)
 
         if self.tags:
-            setattr(self.endpoint, "__tags__", list(self.tags))
+            setattr(self.endpoint, "__docs_tags__", list(self.tags))
 
     def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))

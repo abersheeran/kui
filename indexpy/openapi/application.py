@@ -128,10 +128,10 @@ class OpenAPI:
         update_definitions = lambda path_item, x: _definitions.update(x) or path_item
 
         # This is mypy check error, if you use pyright/pylance, this is all fine.
-        if hasattr(func, "__summary__") and isinstance(func.__summary__, str):  # type: ignore
-            result["summary"] = func.__summary__  # type: ignore
-        if hasattr(func, "__description__") and isinstance(func.__description__, str):  # type: ignore
-            result["description"] = func.__description__  # type: ignore
+        if hasattr(func, "__docs_summary__") and isinstance(func.__docs_summary__, str):  # type: ignore
+            result["summary"] = func.__docs_summary__  # type: ignore
+        if hasattr(func, "__docs_description__") and isinstance(func.__docs_description__, str):  # type: ignore
+            result["description"] = func.__docs_description__  # type: ignore
 
         if isinstance(func.__doc__, str):
             clean_doc = inspect.cleandoc(func.__doc__)
@@ -189,7 +189,7 @@ class OpenAPI:
         if result and path in self.path2tag:
             result["tags"] = self.path2tag[path]
 
-        result["tags"] = getattr(func, "__tags__", []) + result.get("tags", [])
+        result["tags"] = getattr(func, "__docs_tags__", []) + result.get("tags", [])
 
         # merge user custom operation info
         return (

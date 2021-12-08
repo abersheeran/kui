@@ -314,8 +314,8 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
             lambda endpoint: (
                 setattr(  # type: ignore
                     endpoint,
-                    "__tags__",
-                    list(getattr(endpoint, "__tags__", [])) + list(tags or []),
+                    "__docs_tags__",
+                    list(getattr(endpoint, "__docs_tags__", [])) + list(tags or []),
                 )
                 or endpoint
             )
