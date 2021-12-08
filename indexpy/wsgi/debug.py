@@ -1,0 +1,302 @@
+from __future__ import annotations
+
+import html
+import inspect
+import os
+import traceback
+import typing
+
+from baize.typing import Environ, ExcInfo, StartResponse, WSGIApp
+
+if typing.TYPE_CHECKING:
+    from .requests import HttpRequest
+    from .responses import HttpResponse
+
+from .responses import HTMLResponse, PlainTextResponse
+from .utils import F
+
+STYLES = """
+:root {
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0 auto;
+    padding: 0 3em;
+    min-height: calc(100vh - 3em + 1px);
+}
+code, pre, .code {
+    font-family: "Biaodian Pro Sans CNS", Menlo, Consolas, Courier, "Zhuyin Heiti", "Han Heiti", monospace;
+}
+.traceback-container {
+    border: 3px solid #038BB8;
+}
+.traceback-title {
+    background-color: #038BB8;
+    color: lemonchiffon;
+    padding: 15px;
+    font-size: 20px;
+    margin: 0px;
+}
+.frame {
+    position: relative;
+}
+.frame .more {
+    display: block;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+}
+.frame .more + .detail {
+    display: none;
+    position: relative;
+    z-index: 2;
+}
+.frame .more:checked + .detail {
+    display: block;
+}
+.frame-line {
+    padding-left: 10px;
+}
+.center-line {
+    background-color: #038BB8;
+    color: #f9f6e1;
+    padding: 5px 0px 5px 5px;
+}
+.lineno {
+    margin-right: 5px;
+}
+.frame-title {
+    font-weight: unset;
+    padding: 15px 10px;
+    margin: 0px;
+    color: #191f21;
+    font-size: 17px;
+    border-top: 2px solid #038BB8;
+    background-color: lightgoldenrodyellow;
+}
+.source {
+    font-size: small;
+    background-color: lavender;
+    padding: 1em 0;
+}
+table {
+    width: 100%;
+    border-spacing: 0px;
+    padding: 0 10px;
+}
+table pre.value {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+table tr {
+    max-width: 100%;
+}
+table td {
+    padding: 10px;
+    border-top: 1px solid #c7dce8;
+}
+table tr td:nth-child(1) {
+    padding-left: 0px;
+}
+"""
+
+TEMPLATE = """
+<html>
+    <head>
+        <style type='text/css'>
+            {styles}
+        </style>
+        <title>hintapi Debugger</title>
+    </head>
+    <body>
+        <h1>500 Server Error</h1>
+        <div class="traceback-container">
+            <p class="traceback-title">{error}</p>
+            <div>{exc_html}</div>
+        </div>
+        <div class="environs">
+            {environs}
+        </div>
+    </body>
+</html>
+"""
+
+FRAME_TEMPLATE = """
+<div class="frame">
+    <p class="frame-title"><code class="frame-filename">{frame_filename}</code>
+    in <b><code>{frame_name}</code></b> at line {frame_lineno}</p>
+    <input type="radio" name="more" {checked} class="more"/>
+    <div class="detail">
+        <div id="{frame_filename}-{frame_lineno}" class="source">
+            {code_context}
+        </div>
+        {locals}
+    </div>
+</div>
+"""
+
+LOCAL_VARS = """
+<table class="local-vars">
+    <tbody>
+        {vars}
+    </tbody>
+</table>
+"""
+
+ENVIRON_VARS = """
+<table class="environ-vars">
+    <thead>
+        <tr>
+            <td>
+                <strong>OS Environ</strong>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <strong>Name</strong>
+            </td>
+            <td>
+                <strong>Value</strong>
+            </td>
+        </tr>
+    </thead>
+    <tbody>
+        {vars}
+    </tbody>
+</table>
+"""
+
+VAR = """
+<tr>
+    <td>
+        <pre class="name">{name}</pre>
+    </td>
+    <td>
+        <pre class="value">{value}</pre>
+    </td>
+</tr>
+"""
+
+LINE = """
+<p><span class="frame-line code">
+<span class="lineno">{lineno}.</span> {line}</span></p>
+"""
+
+CENTER_LINE = """
+<p class="center-line"><span class="frame-line center-line code">
+<span class="lineno">{lineno}.</span> {line}</span></p>
+"""
+
+
+class DebugMiddleware:
+    def __init__(self, app: WSGIApp) -> None:
+        self.app = app
+
+    def __call__(
+        self, environ: Environ, start_response: StartResponse
+    ) -> typing.Iterable[bytes]:
+
+        try:
+
+            def _start_response(
+                status: str,
+                response_headers: typing.List[typing.Tuple[str, str]],
+                exc_info: ExcInfo = None,
+            ) -> None:
+                if exc_info is None:
+                    start_response(status, response_headers)
+                else:
+                    raise exc_info[1].with_traceback(exc_info[2])
+
+            yield from self.app(environ, typing.cast(StartResponse, _start_response))
+        except BaseException as exc:
+            request = environ["app"].factory_class.http(environ)
+            response = self.debug_response(request, exc)
+            yield from response(environ, start_response)
+
+            raise exc
+
+    def format_line(
+        self, index: int, line: str, frame_lineno: int, frame_index: int
+    ) -> str:
+        values = {
+            # HTML escape - line could contain < or >
+            "line": html.escape(line).replace(" ", "&nbsp"),
+            "lineno": (frame_lineno - frame_index) + index,
+        }
+
+        if index != frame_index:
+            return LINE.format(**values)
+        return CENTER_LINE.format(**values)
+
+    def generate_frame_html(self, frame: inspect.FrameInfo, is_collapsed: bool) -> str:
+        code_context = "".join(
+            self.format_line(index, line, frame.lineno, frame.index)  # type: ignore
+            for index, line in enumerate(frame.code_context or [])
+        )
+        _locals_vars = frame.frame.f_locals.copy()
+        locals_var = LOCAL_VARS.format(
+            vars=(
+                (
+                    VAR.format(name=name, value=html.escape(format(value)))
+                    for name, value in _locals_vars.items()
+                )
+                | F("".join)
+            )
+        )
+
+        values = {
+            # HTML escape - filename could contain < or >, especially if it's a virtual file e.g. <stdin> in the REPL
+            "frame_filename": html.escape(frame.filename),
+            "frame_lineno": frame.lineno,
+            # HTML escape - if you try very hard it's possible to name a function with < or >
+            "frame_name": html.escape(frame.function),
+            "code_context": code_context,
+            "checked": "checked" if not is_collapsed else "",
+            "locals": locals_var,
+        }
+        return FRAME_TEMPLATE.format(**values)
+
+    def generate_html(self, exc: BaseException, limit: int = 7) -> str:
+        traceback_obj = traceback.TracebackException.from_exception(
+            exc, capture_locals=True
+        )
+
+        exc_html = ""
+        is_collapsed = False
+        exc_traceback = exc.__traceback__
+        if exc_traceback is not None:
+            frames = inspect.getinnerframes(exc_traceback, limit)
+            for frame in reversed(frames):
+                exc_html += self.generate_frame_html(frame, is_collapsed)
+                is_collapsed = True
+
+        error = f"{html.escape(traceback_obj.exc_type.__name__)}: {html.escape(str(traceback_obj))}"
+
+        environs = ENVIRON_VARS.format(
+            vars="".join(
+                VAR.format(name=name, value=html.escape(value))
+                for name, value in os.environ.items()
+            )
+        )
+
+        return TEMPLATE.format(
+            styles=STYLES, error=error, exc_html=exc_html, environs=environs
+        )
+
+    def generate_plain_text(self, exc: BaseException) -> str:
+        return "".join(traceback.format_tb(exc.__traceback__))
+
+    def debug_response(self, request: HttpRequest, exc: BaseException) -> HttpResponse:
+        if request.accepts("text/html"):
+            content = self.generate_html(exc)
+            return HTMLResponse(content, status_code=500)
+        else:
+            content = self.generate_plain_text(exc)
+            return PlainTextResponse(content, status_code=500)

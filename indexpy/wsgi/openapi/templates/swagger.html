@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.30.0/swagger-ui.css">
+    <title>OpenAPI power by hintapi</title>
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.48.0/swagger-ui-bundle.js"></script>
+    <script>
+        let version = null;
+        const evtSource = new EventSource("./heartbeat");
+        evtSource.onmessage = function (event) {
+            if (event.id === version) {
+                return
+            }
+            version = event.id;
+            const spec = JSON.parse(event.data);
+
+            SwaggerUIBundle({
+                spec,
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                deepLinking: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                persistAuthorization: true
+            })
+        }
+    </script>
+</body>
+
+</html>

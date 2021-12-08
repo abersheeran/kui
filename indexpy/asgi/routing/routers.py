@@ -381,8 +381,8 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         ```
             @routes.http_middleware
             def middleware(endpoint):
-                def wrapper():
-                    return endpoint()
+                async def wrapper():
+                    return await endpoint()
                 return wrapper
         ```
         """
@@ -397,8 +397,8 @@ class Routes(typing.Sequence[BaseRoute], RouteRegisterMixin):
         ```
             @routes.socket_middleware
             def middleware(endpoint):
-                def wrapper():
-                    endpoint()
+                async def wrapper():
+                    await endpoint()
                 return wrapper
         ```
         """

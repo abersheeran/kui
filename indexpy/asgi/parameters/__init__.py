@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
-from contextlib import contextmanager
+from contextlib import _GeneratorContextManager, asynccontextmanager, contextmanager
 from itertools import groupby
 from typing import (
     Any,
@@ -19,13 +19,19 @@ from typing import (
 )
 from typing import cast as typing_cast
 
-from baize.wsgi import FormData
+from baize.asgi import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from typing_extensions import Annotated, get_args, get_origin, get_type_hints
 
+from ..concurrency import always_async
 from ..exceptions import RequestValidationError
 from ..requests import request
-from ..utils import is_gen_callable, safe_issubclass
+from ..utils import (
+    is_async_gen_callable,
+    is_coroutine_callable,
+    is_gen_callable,
+    safe_issubclass,
+)
 from .fields import DependInfo, FieldInfo, RequestInfo, Undefined
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
@@ -164,11 +170,16 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         return callback
 
     depend_functions = {
-        name: create_new_callback(info.call) for name, info in depend_attrs.items()
+        name: create_new_callback(
+            typing_cast(
+                CallableObject, always_async(info.call) if info.to_async else info.call
+            )
+        )
+        for name, info in depend_attrs.items()
     }
 
     @functools.wraps(callback)
-    def callback_with_auto_bound_params(*args, **kwargs):
+    async def callback_with_auto_bound_params(*args, **kwargs):
         data: List[Any] = []
         keyword_params: Dict[str, Any] = {}
 
@@ -176,16 +187,31 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         need_closes = []
         for name, function in depend_functions.items():
             info = depend_attrs[name]
-            if is_gen_callable(info.call):
-                generator = contextmanager(function)()
-                if inspect.isawaitable(generator.gen):
-                    generator.gen = generator.gen
-                keyword_params[name] = generator.__enter__()
-                need_closes.append(generator)
+            if is_async_gen_callable(info.call):
+                asyncgenerator = asynccontextmanager(function)()
+                if inspect.isawaitable(asyncgenerator.gen):
+                    asyncgenerator.gen = await asyncgenerator.gen
+                keyword_params[name] = await asyncgenerator.__aenter__()
+                need_closes.append(asyncgenerator)
+            elif is_coroutine_callable(info.call):
+                keyword_params[name] = await function()
+            elif is_gen_callable(info.call):
+                if info.to_async:
+                    asyncgenerator = asynccontextmanager(function)()
+                    if inspect.isawaitable(asyncgenerator.gen):
+                        asyncgenerator.gen = await asyncgenerator.gen
+                    keyword_params[name] = await asyncgenerator.__aenter__()
+                    need_closes.append(asyncgenerator)
+                else:
+                    generator = contextmanager(function)()
+                    if inspect.isawaitable(generator.gen):
+                        generator.gen = await generator.gen
+                    keyword_params[name] = generator.__enter__()
+                    need_closes.append(generator)
             else:
                 result = function()
                 if inspect.isawaitable(result):
-                    result = result
+                    result = await result
                 keyword_params[name] = result
 
         # try to get parameters model and parse
@@ -220,7 +246,7 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
 
         # try to get body model and parse
         if request_body:
-            _body_data = request.data()
+            _body_data = await request.data()
             if isinstance(_body_data, FormData):
                 _body_data = _merge_multi_value(_body_data.multi_items())
             try:
@@ -257,11 +283,14 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
         try:
             result = callback(*args, **{**keyword_params, **kwargs})  # type: ignore
             if inspect.isawaitable(result):
-                result = result
+                result = await result
             return result
         finally:
             for need_close in need_closes:
-                need_close.__exit__(None, None, None)
+                if isinstance(need_close, _GeneratorContextManager):
+                    need_close.__exit__(None, None, None)
+                else:
+                    await need_close.__aexit__(None, None, None)
 
     handler = callback_with_auto_bound_params
 
@@ -337,12 +366,16 @@ def auto_params(handler: CallableObject) -> CallableObject:
             )
         setattr(new_class, "__raw_handler__", handler)
         return new_class
-    else:
+    elif inspect.iscoroutinefunction(handler) or (
+        callable(handler) and inspect.iscoroutinefunction(handler.__call__)  # type: ignore
+    ):
         old_callback = handler
         new_callback = create_new_callback(handler)
         setattr(new_callback, "__docs_responses__", parse_docs_responses(old_callback))
         setattr(new_callback, "__raw_handler__", handler)
         return new_callback
+    else:
+        return handler
 
 
 def update_wrapper(
