@@ -9,7 +9,7 @@ body:
       options:
         - label: There are no similar issues or pull requests for this yet.
           required: true
-        - label: I discussed this idea on the [community chat](https://gitter.im/encode/community) and feedback is positive.
+        - label: I discussed this idea on the [community chat](https://github.com/index-py/index.py/discussions) and feedback is positive.
           required: true
   - type: textarea
     id: problem
