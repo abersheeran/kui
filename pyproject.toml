@@ -15,7 +15,7 @@ packages = [
 ]
 readme = "README.md"
 repository = "https://github.com/abersheeran/index.py"
-version = "0.21.8"
+version = "0.21.9"
 
 [tool.poetry.scripts]
 index-cli = "indexpy.cli:index_cli"
