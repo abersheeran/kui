@@ -40,6 +40,8 @@ class HeaderInfo(FieldInfo):
     _in: Literal["header"] = "header"
 
     def __init__(self, default: Any = Undefined, **kwargs: Any) -> None:
+        if isinstance(kwargs.get("alias"), str):
+            kwargs["alias"] = kwargs["alias"].lower()
         self.exclusive = kwargs.pop("exclusive")
         super().__init__(default, **kwargs)
 

@@ -54,7 +54,7 @@ async def test_header():
     app = Index()
 
     @app.router.http.get("/")
-    async def header(name: Annotated[str, Header()]):
+    async def header(name: Annotated[str, Header(alias="Name")]):
         return name
 
     async with TestClient(app) as client:
