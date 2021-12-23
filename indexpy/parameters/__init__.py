@@ -279,7 +279,9 @@ def create_new_callback(callback: CallableObject) -> CallableObject:
 
             for _data in data:
                 if _data.__class__.__name__ == "temporary_model":
-                    keyword_params.update(_data.dict())
+                    keyword_params.update(
+                        {name: getattr(_data, name) for name in _data.__fields__.keys()}
+                    )
                 elif _data.__class__.__name__ == "temporary_exclusive_model":
                     keyword_params[exclusive_models[_data.__class__]] = _data.__root__
                 else:
