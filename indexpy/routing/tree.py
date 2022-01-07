@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple
 from typing import cast as typing_cast
 
-from baize.routing import AnyConvertor, Convertor, compile_path
+from baize.routing import AnyConvertor, Convertor, StringConvertor, compile_path
 
 RouteType = Tuple[str, Dict[str, Convertor], Callable[[], Any]]
 
@@ -23,6 +23,7 @@ def find_common_prefix(x: str, y: str) -> str:
     """
     find the longest common prefix of x and y
     """
+    i = -1
     for i in range(min(len(x), len(y))):
         if x[i] != y[i]:
             return x[:i]
@@ -50,10 +51,16 @@ def append(
         param_name = path_format[1 : length - 1]
         convertor = param_convertors[param_name]
         re_pattern = re.compile(convertor.regex)
-        if isinstance(convertor, AnyConvertor) and path_format[-1] != "}":
+        if isinstance(convertor, AnyConvertor) and length != len(path_format):
             raise ValueError(
                 "`AnyConvertor` is only allowed to appear at the end of path"
             )
+        if (
+            isinstance(convertor, StringConvertor)
+            and length != len(path_format)
+            and path_format[length] != "/"
+        ):
+            raise ValueError("Only `/` is allowed after `StringConvertor`")
         for node in (
             node for node in point.next_nodes or () if node.re_pattern is not None
         ):
@@ -107,9 +114,10 @@ class RadixTree:
         if path[0] != "/":
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
-        if path_format == path and self.search(path) != (None, None):
+        matched_route, _ = self.search(path)
+        if path_format == path and matched_route is not None:
             raise ValueError(
-                f"This constant route {path} can be matched by the added routes."
+                f"This constant route `{path}` can be matched by the added routes `{matched_route[0]}`."
             )
         point = append(self.root, path_format[1:], param_convertors)
 
@@ -118,7 +126,7 @@ class RadixTree:
 
         point.route = (path_format, param_convertors, endpoint)
 
-    def search(self, path: str) -> Tuple[Dict[str, Any], Callable] | Tuple[None, None]:
+    def search(self, path: str) -> Tuple[RouteType, Dict[str, Any]] | Tuple[None, None]:
         stack: List[Tuple[str, TreeNode]] = [(path, self.root)]
         params: Dict[str, Any] = {}
 
@@ -141,15 +149,7 @@ class RadixTree:
                 if point.route is None:
                     return None, None
                 else:
-                    _, param_convertors, endpoint = point.route
-                    return (
-                        {
-                            name: param_convertors[name].to_python(value)
-                            for name, value in params.items()
-                            if name in param_convertors
-                        },
-                        endpoint,
-                    )
+                    return point.route, params
 
             path = path[length:]
             for node in point.next_nodes or ():

@@ -65,6 +65,7 @@ def test_tree_fail_search(tree: RadixTree, path):
         "/sayhi/aber",
         "/hello/{time:int}",
         "a",
+        "/static/{filename}.py",
     ],
 )
 def test_tree_fail_add(tree, path):
