@@ -48,6 +48,8 @@ Index.py implements the [ASGI3](http://asgi.readthedocs.io/en/latest/) interface
 
 - Lots of correct type annotations
 - Flexible and efficient routing system
+- Routing middleware that can act on any route and route group
+- Dependency injection suitable for middleware and view
 - Visual API interface and online debugging
 - Support [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) and WebSocket
 - Built-in deployment commands

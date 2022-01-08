@@ -48,10 +48,12 @@ Index.py 实现了 [ASGI3](http://asgi.readthedocs.io/en/latest/) 接口，并�
 
 - 大量正确的类型注释
 - 灵活且高效的路由系统
+- 能作用于任意路由及路由分组上的路由中间件
+- 适用于中间件与视图的依赖注入
 - 可视化 API 接口与在线调试
 - 支持 [Server-sent events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events/Using_server-sent_events) 与 WebSocket
 - 自带一键部署命令 (基于 uvicorn 与 gunicorn)
-- 可使用任何可用的 ASGI 生态
+- 可使用任何标准 ASGI 生态
 
 ## Install
 
