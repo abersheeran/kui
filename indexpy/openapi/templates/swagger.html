@@ -10,15 +10,7 @@
     <div id="swagger-ui"></div>
     <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3.48.0/swagger-ui-bundle.js"></script>
     <script>
-        let version = null;
-        const evtSource = new EventSource("./heartbeat");
-        evtSource.onmessage = function (event) {
-            if (event.id === version) {
-                return
-            }
-            version = event.id;
-            const spec = JSON.parse(event.data);
-
+        const loadSwagger = (spec) => {
             SwaggerUIBundle({
                 spec,
                 dom_id: '#swagger-ui',
@@ -33,6 +25,26 @@
                 persistAuthorization: true
             })
         }
+
+        (async () => {
+            const res = await fetch("./json");
+            const json = await res.json();
+            loadSwagger(json);
+
+            if (res.headers.get("reload") === "false") return;
+
+            // Auto reload
+            let version = res.headers.get("hash");
+            const evtSource = new EventSource("./heartbeat");
+            evtSource.onmessage = function (event) {
+                if (event.lastEventId === version) {
+                    return
+                }
+                version = event.lastEventId;
+                loadSwagger(JSON.parse(event.data))
+            }
+        })();
+
     </script>
 </body>
 

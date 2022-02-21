@@ -43,6 +43,7 @@ class OpenAPI:
         tags: Dict[str, TagDetail] = {},
         template_name: Literal["redoc", "swagger", "rapidoc"] = "swagger",
         template: str = "",
+        reload: bool = True,
     ) -> None:
         if template == "":
             template = (
@@ -50,6 +51,7 @@ class OpenAPI:
             ).read_text(encoding="utf8")
 
         self.html_template = template
+        self.reload = reload
 
         self.openapi = spec.OpenAPI(
             openapi="3.0.3",
@@ -206,7 +208,7 @@ class OpenAPI:
         openapi = copy.deepcopy(self.openapi)
         openapi["servers"] = [
             {
-                "url": f"{request.url.scheme}://{request.url.netloc}",
+                "url": "/",
                 "description": "Current server",
             },
             spec.Server(
@@ -245,7 +247,11 @@ class OpenAPI:
         async def json_docs():
             openapi = self.create_docs(request)
             return JSONResponse(
-                openapi, headers={"hash": md5(json.dumps(openapi).encode()).hexdigest()}
+                openapi,
+                headers={
+                    "hash": md5(json.dumps(openapi).encode()).hexdigest(),
+                    "reload": str(self.reload).lower(),
+                },
             )
 
         async def heartbeat():
@@ -256,7 +262,7 @@ class OpenAPI:
                     "data": json.dumps(openapi),
                 }
                 while not request.app.should_exit:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(60)
 
             return g()
 
