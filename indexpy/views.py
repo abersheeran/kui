@@ -6,7 +6,7 @@ from inspect import isfunction
 from typing import TYPE_CHECKING, Any, Callable, Generator, List, TypeVar
 from typing import cast as typing_cast
 
-from baize.asgi import Message
+from baize.typing import Message
 from typing_extensions import Literal
 
 from .requests import request, websocket

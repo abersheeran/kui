@@ -16,7 +16,9 @@ class FileRoutes(typing.Iterable[BaseRoute]):
         allow_underline: bool = False,
         suffix: str = "",
     ) -> None:
-        dirpath = Path(importlib.import_module(module_name).__file__).absolute().parent
+        __file__ = importlib.import_module(module_name).__file__
+        assert __file__ is not None
+        dirpath = Path(__file__).absolute().parent
 
         self.namespace = namespace
         self._list: typing.List[typing.Union[HttpRoute, SocketRoute]] = []

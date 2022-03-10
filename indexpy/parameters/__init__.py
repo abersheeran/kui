@@ -18,7 +18,7 @@ from typing import (
 )
 from typing import cast as typing_cast
 
-from baize.asgi import FormData
+from baize.datastructures import FormData
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
 from typing_extensions import Annotated, get_args, get_origin, get_type_hints
 

@@ -6,7 +6,7 @@ import os
 import traceback
 import typing
 
-from baize.asgi import ASGIApp, Message, Receive, Scope, Send
+from baize.typing import ASGIApp, Message, Receive, Scope, Send
 
 if typing.TYPE_CHECKING:
     from .requests import HttpRequest

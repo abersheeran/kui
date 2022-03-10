@@ -17,7 +17,8 @@ from typing import (
     overload,
 )
 
-from baize.asgi import HTTPException, PlainTextResponse
+from baize.asgi import PlainTextResponse
+from baize.exceptions import HTTPException
 from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 from typing_extensions import Literal
@@ -38,8 +39,8 @@ class RequestValidationError(Exception):
     def errors(self) -> List[Dict[str, Any]]:
         errors = self.validation_error.errors()
         for error in errors:
-            error["in"] = self.in_
-        return errors
+            error["in"] = self.in_  # type: ignore
+        return errors  # type: ignore
 
     def json(self, *, indent: Union[None, int, str] = 2) -> str:
         return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)

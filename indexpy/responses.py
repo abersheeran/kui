@@ -4,6 +4,7 @@ import typing
 from http import HTTPStatus
 
 from baize import asgi as baize_asgi
+from baize.typing import ServerSentEvent
 from pydantic import BaseModel, create_model
 from pydantic.json import pydantic_encoder
 from pydantic.typing import display_as_type
@@ -26,7 +27,6 @@ __all__ = [
 ]
 
 HttpResponse = baize_asgi.Response
-ServerSentEvent = baize_asgi.ServerSentEvent
 
 
 class JSONResponse(baize_asgi.JSONResponse):

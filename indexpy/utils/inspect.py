@@ -16,22 +16,19 @@ def is_coroutine_callable(call: Callable) -> TypeGuard[Callable[..., Awaitable]]
         return inspect.iscoroutinefunction(call)
     if inspect.isclass(call):
         return False
-    call = getattr(call, "__call__", None)
-    return inspect.iscoroutinefunction(call)
+    return inspect.iscoroutinefunction(getattr(call, "__call__", None))
 
 
 def is_async_gen_callable(call: Callable) -> TypeGuard[Callable[..., AsyncGenerator]]:
     if inspect.isasyncgenfunction(call):
         return True
-    call = getattr(call, "__call__", None)
-    return inspect.isasyncgenfunction(call)
+    return inspect.isasyncgenfunction(getattr(call, "__call__", None))
 
 
 def is_gen_callable(call: Callable) -> TypeGuard[Callable[..., Generator]]:
     if inspect.isgeneratorfunction(call):
         return True
-    call = getattr(call, "__call__", None)
-    return inspect.isgeneratorfunction(call)
+    return inspect.isgeneratorfunction(getattr(call, "__call__", None))
 
 
 def get_raw_handler(handler: Any) -> Any:

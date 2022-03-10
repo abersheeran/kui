@@ -22,9 +22,8 @@ from typing import (
     Union,
 )
 
-from baize.asgi import Receive, Scope, Send
 from baize.datastructures import URL
-from baize.typing import ASGIApp
+from baize.typing import ASGIApp, Receive, Scope, Send
 from typing_extensions import Literal
 
 from .debug import DebugMiddleware
