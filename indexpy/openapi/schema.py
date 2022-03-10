@@ -63,7 +63,8 @@ def schema_request_body(
     return {
         "required": True,
         "content": {
-            content_type: {"schema": deepcopy(schema)} for content_type in content_types
+            content_type: {"schema": typing_cast(spec.Schema, deepcopy(schema))}
+            for content_type in content_types
         },
     }, definitions
 
@@ -73,7 +74,7 @@ def schema_response(
 ) -> Tuple[Dict[str, spec.MediaType], dict]:
     if isinstance(content, dict):
         return content, {}
-    schema = deepcopy(content.schema(ref_template=REF_TEMPLATE))
+    schema = deepcopy(content.schema(by_alias=False, ref_template=REF_TEMPLATE))
     schema.pop("title")
     definitions = schema.pop("definitions", {})
     return {
