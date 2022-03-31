@@ -82,7 +82,7 @@ else:
             return jinja2.ChoiceLoader(templates_loaders)
 
         def get_env(self, loader: jinja2.BaseLoader) -> jinja2.Environment:
-            @jinja2.contextfunction
+            @jinja2.pass_context
             def url_for(context: dict, name: str, **path_params: Any) -> str:
                 router = request.app.router
                 return router.url_for(name, path_params)
