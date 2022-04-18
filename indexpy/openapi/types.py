@@ -5,7 +5,7 @@ from baize.datastructures import UploadFile as _UploadFile
 
 class UploadFile(_UploadFile):
     """
-    wrap starlette UploadFile for pydantic
+    wrap starlette UploadFile for baize
     """
 
     @classmethod
@@ -18,7 +18,7 @@ class UploadFile(_UploadFile):
 
     @classmethod
     def validate(cls, v):
-        if not isinstance(v, UploadFile):
+        if not isinstance(v, _UploadFile):
             raise TypeError("file required")
         return v
 
