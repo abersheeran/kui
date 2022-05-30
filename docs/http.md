@@ -321,7 +321,7 @@ async def return_redirect():
 ```python
 import asyncio
 
-from indexpy import StreamingResponse
+from indexpy import StreamResponse
 
 
 async def slow_numbers(minimum, maximum):
@@ -334,7 +334,7 @@ async def slow_numbers(minimum, maximum):
 
 async def return_stream(scope, receive, send):
     generator = slow_numbers(1, 10)
-    return StreamingResponse(generator, content_type='text/html')
+    return StreamResponse(generator, content_type='text/html')
 ```
 
 ### FileResponse
