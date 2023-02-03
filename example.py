@@ -3,27 +3,24 @@ from pathlib import Path as FilePath
 
 from typing_extensions import Annotated
 
-from indexpy import (
+from xing.asgi import (
     HTTPException,
     HttpRoute,
-    Index,
+    Xing,
     SocketRoute,
     required_method,
     websocket,
+    Path,
+    allow_cors,
+    OpenAPI,
 )
-from indexpy.parameters.field_functions import Path
-from indexpy.openapi import OpenAPI
 
 
 async def homepage():
     """
     Homepage
     """
-    return "hello, index.py"
-
-
-async def exc():
-    raise Exception("For get debug page.")
+    return "Xīng"
 
 
 async def message():
@@ -60,15 +57,16 @@ async def ws():
     await websocket.close()
 
 
-app = Index(
-    debug=True,
+app = Xing(
     routes=[
         HttpRoute("/", homepage),
-        HttpRoute("/exc", exc),
         HttpRoute("/message", message),
         HttpRoute("/sources/{filepath:any}", sources) @ required_method("GET"),
         SocketRoute("/", ws),
     ],
+    http_middlewares=[
+        allow_cors(),
+    ],
 )
-app.router << "/docs" // OpenAPI().routes
+app.router <<= "/docs" // OpenAPI(template_name="redoc").routes
 app.state.wait_time = 1

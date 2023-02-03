@@ -1,82 +1,75 @@
-[tool.poetry]
-authors = ["abersheeran <me@abersheeran.com>"]
-classifiers = [
-  "License :: OSI Approved :: Apache Software License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: Implementation :: CPython",
+[project]
+name = "xing"
+version = "1.0.0"
+description = "An easy-to-use web framework."
+authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
+dependencies = [
+    "baize<0.19.0,>=0.18.2",
+    "pydantic<2.0,>=1.8",
+    "typing-extensions>=3.10.0",
 ]
-description = "An easy-to-use high-performance asynchronous web framework."
-documentation = "https://index-py.abersheeran.com/"
-homepage = "https://github.com/abersheeran/index.py"
-license = "Apache-2.0"
-name = "index.py"
-packages = [
-  {include = "indexpy"},
-]
+requires-python = ">=3.7,<4.0"
 readme = "README.md"
-repository = "https://github.com/abersheeran/index.py"
-version = "0.21.15"
+license = { text = "Apache-2.0" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
 
-[tool.poetry.scripts]
-index-cli = "indexpy.cli:index_cli"
+[project.urls]
+homepage = "https://github.com/abersheeran/xing"
+repository = "https://github.com/abersheeran/xing"
+documentation = "https://xing.abersheeran.com/"
 
-[tool.poetry.dependencies]
-python = "^3.7"
+[project.optional-dependencies]
+cli = ["click<9.0,>=8.0"]
 
-baize = "<1.0.0,>=0.15.0"
-click = {version = "^8.0", optional = true}
-pydantic = "^1.8"
-typing-extensions = "^3.10.0"
+[project.scripts]
 
-[tool.poetry.extras]
-cli = ["click"] # for index-cli commands
-docs = ["mkdocs", "mkdocs-material", "mkdocs-static-i18n"]
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "flake8>=5.0.4",
+    "black>=23.1.0",
+    "isort>=5.11.5",
+    "mypy @ git+https://github.com/python/mypy.git",
+]
+test = [
+    "async-asgi-testclient<2.0.0,>=1.4.11",
+    "pytest<8.0.0,>=7.2.1",
+    "pytest-asyncio<1.0,>=0.20.3",
+    "pytest-cov<5.0.0,>=4.0.0",
+]
+docs = [
+    "mkdocs[i18n]==1.2.4",
+    "mkdocs-static-i18n==0.46",
+    "mkdocs-material==7.1.0",
+]
 
-[tool.poetry.dev-dependencies]
-flake8 = "*"
-mypy = {version = "*", allow-prereleases = true}
-types-click = "^7.1.0"
-
-black = {version = "*", allow-prereleases = true}
-isort = "*"
-
-# for tests
-async-asgi-testclient = "^1.4.6"
-pytest = "^6.2.5"
-pytest-asyncio = "^0.12"
-pytest-cov = "^2.8.1"
-
-# only docs
-mkdocs = {extras = ["i18n"], version = "^1.2.1"}
-mkdocs-material = "^7.1.8"
-mkdocs-static-i18n = "^0.16"
+[tool.pdm.build]
+includes = ["xing"]
 
 [tool.isort]
 profile = "black"
 
 [tool.coverage.run]
-omit = [
-  "*/.venv/*",
-  "*/tests/*",
-  "indexpy/status.py",
-  "indexpy/cli.py",
-  "indexpy/routing/commands.py",
-]
+omit = ["*/.venv/*", "*/tests/*", "xing/status.py"]
 
 [tool.coverage.report]
 exclude_lines = [
-  "pragma: no cover",
-  "raise NotImplementedError",
-  "return NotImplemented",
-  "if False:",
-  "assert False",
-  "if typing.TYPE_CHECKING:",
-  "if TYPE_CHECKING:",
-  "pass",
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "return NotImplemented",
+    "if False:",
+    "assert False",
+    "if typing.TYPE_CHECKING:",
+    "if TYPE_CHECKING:",
+    "pass",
 ]
 show_missing = true
 skip_covered = true
 
 [build-system]
-build-backend = "poetry.masonry.api"
-requires = ["poetry>=0.12"]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
