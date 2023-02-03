@@ -43,6 +43,8 @@ jobs:
           cache: true
       - name: Install dependencies
         run: pdm sync
+      - name: Export executable path
+        run: export PATH=$PATH:$(pdm info --packages)/bin
       - name: Static type and format checking
         run: python script/check.py
       - name: Generate coverage report
