@@ -45,12 +45,10 @@ jobs:
         run: pdm sync
       - name: Static type and format checking
         run: |
-          export PATH=$PATH:$(pdm info --packages)/bin
-          python script/check.py
+          pdm run check xing tests
       - name: Generate coverage report
         run: |
-          export PATH=$PATH:$(pdm info --packages)/bin
-          pytest --cov=./ --cov-report=xml
+          pdm run test --cov=./xing --cov-report=xml tests
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:

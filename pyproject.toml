@@ -28,6 +28,22 @@ cli = ["click<9.0,>=8.0"]
 [project.scripts]
 
 [tool.pdm]
+[tool.pdm.scripts]
+lint-isort = "isort {args}"
+lint-black = "black {args}"
+lint = { composite = ["lint-isort", "lint-black"] }
+check-isort = "isort --check --diff {args}"
+check-black = "black --check --diff {args}"
+check-flake8 = "flake8 --ignore W503,E203,E501,E731 {args}"
+check-mypy = "mypy {args}"
+check = { composite = [
+    "check-isort",
+    "check-black",
+    "check-flake8",
+    "check-mypy",
+] }
+test = "pytest {args}"
+
 [tool.pdm.dev-dependencies]
 dev = [
     "flake8>=5.0.4",
@@ -49,6 +65,10 @@ docs = [
 
 [tool.pdm.build]
 includes = ["xing"]
+
+[tool.mypy]
+ignore_missing_imports = true
+exclude = ["xing/openapi/specification.py"]
 
 [tool.isort]
 profile = "black"
