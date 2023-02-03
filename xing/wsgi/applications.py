@@ -53,7 +53,9 @@ class Xing:
         self.factory_class = factory_class
         self.templates = templates
         self.exception_middleware = ExceptionMiddleware(exception_handlers)
-        self.router = Router(routes, http_middlewares, socket_middlewares)
+        self.router = Router(
+            routes, [*http_middlewares, self.exception_middleware], socket_middlewares
+        )
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorHandlerType
