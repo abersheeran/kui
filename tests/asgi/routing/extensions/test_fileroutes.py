@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from xing.asgi import Routes
 from xing.routing.extensions import FileRoutes
 
