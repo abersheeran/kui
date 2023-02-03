@@ -1,5 +1,5 @@
 [project]
-name = "xing"
+name = "kui"
 version = "1.0.0"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
@@ -18,9 +18,9 @@ classifiers = [
 ]
 
 [project.urls]
-homepage = "https://github.com/abersheeran/xing"
-repository = "https://github.com/abersheeran/xing"
-documentation = "https://xing.abersheeran.com/"
+homepage = "https://github.com/abersheeran/kui"
+repository = "https://github.com/abersheeran/kui"
+documentation = "https://kui.abersheeran.com/"
 
 [project.optional-dependencies]
 cli = ["click<9.0,>=8.0"]
@@ -64,17 +64,17 @@ docs = [
 ]
 
 [tool.pdm.build]
-includes = ["xing"]
+includes = ["kui"]
 
 [tool.mypy]
 ignore_missing_imports = true
-exclude = ["xing/openapi/specification.py"]
+exclude = ["kui/openapi/specification.py"]
 
 [tool.isort]
 profile = "black"
 
 [tool.coverage.run]
-omit = ["*/.venv/*", "*/tests/*", "xing/status.py"]
+omit = ["*/.venv/*", "*/tests/*", "kui/status.py"]
 
 [tool.coverage.report]
 exclude_lines = [

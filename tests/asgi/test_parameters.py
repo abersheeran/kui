@@ -4,12 +4,12 @@ import pytest
 from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
 
-from xing.asgi import Body, Cookie, Depends, Header, Path, Query, Request, Xing
+from kui.asgi import Body, Cookie, Depends, Header, Kui, Path, Query, Request
 
 
 @pytest.mark.asyncio
 async def test_path():
-    app = Xing()
+    app = Kui()
 
     @app.router.http.get("/")
     @app.router.http.get("/{name}", name=None)
@@ -32,7 +32,7 @@ async def test_path():
 
 @pytest.mark.asyncio
 async def test_query():
-    app = Xing()
+    app = Kui()
 
     @app.router.http.get("/")
     async def query(name: Annotated[str, Query(...)]):
@@ -50,7 +50,7 @@ async def test_query():
 
 @pytest.mark.asyncio
 async def test_header():
-    app = Xing()
+    app = Kui()
 
     @app.router.http.get("/")
     async def header(name: Annotated[str, Header(alias="Name")]):
@@ -68,7 +68,7 @@ async def test_header():
 
 @pytest.mark.asyncio
 async def test_cookie():
-    app = Xing()
+    app = Kui()
 
     @app.router.http.get("/")
     async def cookie(name: Annotated[str, Cookie()]):
@@ -86,7 +86,7 @@ async def test_cookie():
 
 @pytest.mark.asyncio
 async def test_body():
-    app = Xing()
+    app = Kui()
 
     @app.router.http.post("/")
     async def body(name: Annotated[str, Body()]):
@@ -104,23 +104,23 @@ async def test_body():
 
 @pytest.mark.asyncio
 async def test_request():
-    app0 = Xing()
+    app0 = Kui()
 
     @app0.router.http.get("/")
-    async def homepage(app: Annotated[Xing, Request()]):
+    async def homepage(app: Annotated[Kui, Request()]):
         return str(app is app0)
 
     @app0.router.http.get("/no-attr")
-    async def no_attr(application: Annotated[Xing, Request()]):
+    async def no_attr(application: Annotated[Kui, Request()]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default")
-    async def no_attr_with_default(application: Annotated[Xing, Request(app0)]):
+    async def no_attr_with_default(application: Annotated[Kui, Request(app0)]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default-factory")
     async def no_attr_with_default_factory(
-        application: Annotated[Xing, Request(default_factory=lambda: app0)],
+        application: Annotated[Kui, Request(default_factory=lambda: app0)],
     ):
         return str(application is app0)
 
@@ -142,7 +142,7 @@ async def test_request():
 
 @pytest.mark.asyncio
 async def test_depend():
-    app = Xing()
+    app = Kui()
 
     def get_name(name: Annotated[str, Body(...)]):
         return name
@@ -204,7 +204,7 @@ async def test_depend():
 
 @pytest.mark.asyncio
 async def test_middleware():
-    app = Xing()
+    app = Kui()
 
     def middleware(endpoint):
         async def middleware_wrapper(query: str = Query(...)):

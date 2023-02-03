@@ -31,7 +31,7 @@ class FactoryClass:
     http: Type[HttpRequest] = HttpRequest
 
 
-class Xing:
+class Kui:
     state: ImmutableAttribute[State] = ImmutableAttribute()
 
     def __init__(

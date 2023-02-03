@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from xing.utils.objects import Singleton
+from kui.utils.objects import Singleton
 
 
 def test_singleton():

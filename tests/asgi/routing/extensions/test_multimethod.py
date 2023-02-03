@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from async_asgi_testclient import TestClient
 
-from xing.asgi import HttpRoute, HttpView
-from xing.asgi import MultimethodRoutes as Routes
+from kui.asgi import HttpRoute, HttpView
+from kui.asgi import MultimethodRoutes as Routes
 
 
 def test_routes():
@@ -42,7 +42,7 @@ def test_routes():
 
 
 def test_mulitmethodroutes():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
     routes = Routes(base_class=HttpView)
 
@@ -58,7 +58,7 @@ def test_mulitmethodroutes():
     async def delete_user():
         pass
 
-    app = Xing(routes=routes)
+    app = Kui(routes=routes)
 
     endpoint = app.router.search("http", "/user")[1]
     assert issubclass(endpoint, routes.base_class)
@@ -71,7 +71,7 @@ def test_mulitmethodroutes():
 
 
 def test_mulitmethodroutes_with_prefix():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
     routes = Routes(base_class=HttpView)
 
@@ -87,7 +87,7 @@ def test_mulitmethodroutes_with_prefix():
     async def delete_user():
         pass
 
-    app = Xing(routes="/api" // routes)
+    app = Kui(routes="/api" // routes)
 
     endpoint = app.router.search("http", "/api/user")[1]
     assert issubclass(endpoint, routes.base_class)
@@ -101,7 +101,7 @@ def test_mulitmethodroutes_with_prefix():
 
 @pytest.mark.asyncio
 async def test_mulitmethodroutes_with_parameters():
-    from xing.asgi import Path, Xing
+    from kui.asgi import Kui, Path
 
     routes = Routes(base_class=HttpView)
 
@@ -113,7 +113,7 @@ async def test_mulitmethodroutes_with_parameters():
     async def name(name: str = Path(...)):
         return name
 
-    app = Xing(routes=routes)
+    app = Kui(routes=routes)
 
     async with TestClient(app) as client:
         resp = await client.get("/aber")

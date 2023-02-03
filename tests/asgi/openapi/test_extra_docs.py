@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from xing.openapi.extra_docs import merge_openapi_info
+from kui.openapi.extra_docs import merge_openapi_info
 
 
 @pytest.mark.parametrize(

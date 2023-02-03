@@ -10,7 +10,7 @@ from ..parameters.field_functions import (
     Query,
     Request,
 )
-from .applications import Xing
+from .applications import Kui
 from .cors import allow_cors
 from .requests import HttpRequest, request
 from .responses import (
@@ -30,7 +30,7 @@ from .routing import HttpRoute, Routes, SocketRoute
 from .views import HttpView, required_method
 
 __all__ = [
-    "Xing",
+    "Kui",
     "HttpRequest",
     "request",
     "HTTPException",

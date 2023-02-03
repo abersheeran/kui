@@ -43,7 +43,7 @@ class TagDetail(TagDetailOptional):
 class OpenAPI:
     def __init__(
         self,
-        info: spec.Info = {"title": "Xīng API", "version": "1.0.0"},
+        info: spec.Info = {"title": "Kuí API", "version": "1.0.0"},
         security_schemes: Dict[str, spec.SecurityScheme | spec.Reference] = {},
         *,
         tags: Dict[str, TagDetail] = {},

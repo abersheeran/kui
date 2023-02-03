@@ -2,9 +2,9 @@ from __future__ import annotations
 
 
 def test_decorator():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
-    app = Xing()
+    app = Kui()
 
     @app.router.http("/hello", name="hello")
     async def hello():
@@ -23,9 +23,9 @@ def test_decorator():
 
 
 def test_decorator_required_method():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
-    app = Xing()
+    app = Kui()
 
     @app.router.http.get("/get")
     async def need_get():
@@ -55,10 +55,10 @@ def test_decorator_required_method():
 
 
 def test_lshift():
-    from xing.asgi import Xing
-    from xing.asgi.routing import HttpRoute, SocketRoute
+    from kui.asgi import Kui
+    from kui.asgi.routing import HttpRoute, SocketRoute
 
-    app = Xing()
+    app = Kui()
 
     async def hello():
         return "hello world"
@@ -81,9 +81,9 @@ def test_lshift():
 
 
 def test_url_for():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
-    app = Xing()
+    app = Kui()
 
     @app.router.http("/hello", name="hello")
     @app.router.http("/hello/{name}", name="hello-with-name")
@@ -95,7 +95,7 @@ def test_url_for():
 
 
 def test_prefix():
-    from xing.asgi.routing import HttpRoute, Routes
+    from kui.asgi.routing import HttpRoute, Routes
 
     assert [
         route.path
@@ -118,7 +118,7 @@ def test_prefix():
 
 
 def test_routes_operator():
-    from xing.asgi import HttpRoute, Routes
+    from kui.asgi import HttpRoute, Routes
 
     routes = Routes()
     routes << Routes(
@@ -149,9 +149,9 @@ def test_routes_operator():
 
 
 def test_empty_path():
-    from xing.asgi import Xing
+    from kui.asgi import Kui
 
-    app = Xing()
+    app = Kui()
 
     @app.router.http("")
     async def homepage():

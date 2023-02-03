@@ -7,10 +7,10 @@ from async_asgi_testclient import TestClient
 
 
 def test_application():
-    from xing.asgi import Xing
-    from xing.utils import State
+    from kui.asgi import Kui
+    from kui.utils import State
 
-    app = Xing()
+    app = Kui()
     with pytest.raises(RuntimeError):
         app.state = State()
 
@@ -27,7 +27,7 @@ async def test_example_application():
     async with TestClient(app) as client:
         response = await client.get("/")
         assert response.status_code == 200
-        assert response.text == "Xīng"
+        assert response.text == "Kuí"
 
         response = await client.get("/message")
         assert response.status_code == 200
@@ -51,7 +51,7 @@ def test_custom_application_response_converter():
     from dataclasses import asdict, dataclass
     from typing import Mapping
 
-    from xing.asgi import HttpResponse, JSONResponse, PlainTextResponse, Xing
+    from kui.asgi import HttpResponse, JSONResponse, Kui, PlainTextResponse
 
     @dataclass
     class Error:
@@ -59,7 +59,7 @@ def test_custom_application_response_converter():
         title: str = ""
         message: str = ""
 
-    app = Xing(
+    app = Kui(
         response_converters={
             Error: lambda error, status=400, headers=None: JSONResponse(
                 asdict(error), status, headers

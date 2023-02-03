@@ -38,7 +38,7 @@ from .responses import (
 from .routing import Router
 from .templates import BaseTemplates
 
-LifespanCallback = Callable[["Xing"], Any]
+LifespanCallback = Callable[["Kui"], Any]
 T_LifespanCallback = TypeVar("T_LifespanCallback", bound=LifespanCallback)
 
 
@@ -52,7 +52,7 @@ class Lifespan:
         Handle ASGI lifespan messages, which allows us to manage application
         startup and shutdown events.
         """
-        app: Xing = scope["app"]
+        app: Kui = scope["app"]
 
         message = await receive()
         assert message["type"] == "lifespan.startup"
@@ -87,7 +87,7 @@ class FactoryClass:
     websocket: Type[WebSocket] = WebSocket
 
 
-class Xing:
+class Kui:
     state: ImmutableAttribute[State] = ImmutableAttribute()
 
     def __init__(

@@ -3,16 +3,16 @@ from __future__ import annotations
 import pytest
 from async_asgi_testclient import TestClient
 
-from xing.asgi import allow_cors
+from kui.asgi import allow_cors
 
 
 @pytest.mark.asyncio
 async def test_cors():
     cors_middleware = allow_cors()
 
-    from xing.asgi import HttpRoute, Xing
+    from kui.asgi import HttpRoute, Kui
 
-    app = Xing()
+    app = Kui()
 
     async def homepage():
         return "homepage"

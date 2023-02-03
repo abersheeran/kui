@@ -3,10 +3,10 @@ from pathlib import Path as FilePath
 
 from typing_extensions import Annotated
 
-from xing.asgi import (
+from kui.asgi import (
     HTTPException,
     HttpRoute,
-    Xing,
+    Kui,
     SocketRoute,
     required_method,
     websocket,
@@ -20,7 +20,7 @@ async def homepage():
     """
     Homepage
     """
-    return "Xīng"
+    return "Kuí"
 
 
 async def message():
@@ -57,7 +57,7 @@ async def ws():
     await websocket.close()
 
 
-app = Xing(
+app = Kui(
     routes=[
         HttpRoute("/", homepage),
         HttpRoute("/message", message),

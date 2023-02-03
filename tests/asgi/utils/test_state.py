@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from xing.utils import State
+from kui.utils import State
 
 
 @pytest.mark.asyncio

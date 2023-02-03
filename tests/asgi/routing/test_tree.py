@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pytest
 
-from xing.routing.tree import RadixTree
+from kui.routing.tree import RadixTree
 
 
 @pytest.fixture

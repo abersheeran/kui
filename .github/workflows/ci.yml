@@ -9,7 +9,7 @@ on:
     paths:
       - ".github/workflows/ci.yml"
       - "**.py"
-      - "!xing/__version__.py"
+      - "!kui/__version__.py"
       - poetry.lock
   pull_request:
     branches:
@@ -17,7 +17,7 @@ on:
     paths:
       - ".github/workflows/ci.yml"
       - "**.py"
-      - "!xing/__version__.py"
+      - "!kui/__version__.py"
       - poetry.lock
 
 jobs:
@@ -45,10 +45,10 @@ jobs:
         run: pdm sync
       - name: Static type and format checking
         run: |
-          pdm run check xing tests
+          pdm run check kui tests
       - name: Generate coverage report
         run: |
-          pdm run test --cov=./xing --cov-report=xml tests
+          pdm run test --cov=./kui --cov-report=xml tests
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:

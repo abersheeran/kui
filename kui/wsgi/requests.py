@@ -12,7 +12,7 @@ from baize.wsgi import Request as BaiZeRequest
 from typing_extensions import Annotated
 
 if typing.TYPE_CHECKING:
-    from .applications import Xing
+    from .applications import Kui
 
 from ..utils import State, bind_contextvar
 
@@ -30,7 +30,7 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
         return State(self._environ["state"])
 
     @cached_property
-    def app(self) -> Xing:
+    def app(self) -> Kui:
         return self["app"]  # type: ignore
 
 

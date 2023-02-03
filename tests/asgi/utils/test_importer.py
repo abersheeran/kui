@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from xing.utils.importer import import_module
+from kui.utils.importer import import_module
 
 
 def test_import_module():
