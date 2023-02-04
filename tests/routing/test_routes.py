@@ -55,8 +55,7 @@ def test_decorator_required_method():
 
 
 def test_lshift():
-    from kui.asgi import Kui
-    from kui.asgi.routing import HttpRoute, SocketRoute
+    from kui.asgi import HttpRoute, Kui, SocketRoute
 
     app = Kui()
 
@@ -95,7 +94,7 @@ def test_url_for():
 
 
 def test_prefix():
-    from kui.asgi.routing import HttpRoute, Routes
+    from kui.asgi import HttpRoute, Routes
 
     async def endpoint():
         pass
