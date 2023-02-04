@@ -2,15 +2,17 @@ from __future__ import annotations
 
 import inspect
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
 from typing import cast as typing_cast
 
 from baize.datastructures import ContentType
 from pydantic import BaseModel
 from typing_extensions import Literal, get_args, get_type_hints
 
-from ..asgi.requests import HttpRequest as ASGIHttpRequest
-from ..wsgi.requests import HttpRequest as WSGIHttpRequest
+if TYPE_CHECKING:
+    from ..asgi.requests import HttpRequest as ASGIHttpRequest
+    from ..wsgi.requests import HttpRequest as WSGIHttpRequest
+
 from . import specification as spec
 from .types import UploadFile
 

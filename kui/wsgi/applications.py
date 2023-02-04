@@ -20,7 +20,6 @@ from .responses import (
     PlainTextResponse,
     RedirectResponse,
     SendEventResponse,
-    convert_response,
 )
 from .routing import Router
 from .templates import BaseTemplates
@@ -82,11 +81,22 @@ class Kui:
                     "http", request.get("PATH_INFO", "")
                 )
                 request["PATH_PARAMS"] = path_params
-                response = convert_response(handler())
+                response = handler()
             except NoMatchFound:
-                raise HTTPException(404)
+                http_exception: HTTPException[None] = HTTPException(404)
+                error_handler = self.exception_middleware.lookup_handler(http_exception)
+                if error_handler is None:
+                    raise RuntimeError(
+                        "No exception handler found for HTTPException(404)"
+                    )
+                response = error_handler(http_exception)
+
+            if isinstance(response, tuple):
+                response = self.response_converter(*response)
             else:
-                yield from response(environ, start_response)
+                response = self.response_converter(response)
+
+            yield from response(environ, start_response)
         finally:
             request.close()
             request_var.reset(token)

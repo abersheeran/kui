@@ -12,6 +12,7 @@ from ..parameters.field_functions import (
 )
 from .applications import Kui
 from .cors import allow_cors
+from .openapi import OpenAPI
 from .requests import HttpRequest, request
 from .responses import (
     FileResponse,
@@ -31,6 +32,7 @@ from .views import HttpView, required_method
 
 __all__ = [
     "Kui",
+    "OpenAPI",
     "HttpRequest",
     "request",
     "HTTPException",
