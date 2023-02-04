@@ -5,37 +5,41 @@ from async_asgi_testclient import TestClient
 
 from kui.asgi import HttpRoute, HttpView
 from kui.asgi import MultimethodRoutes as Routes
+from kui.utils import safe_issubclass
 
 
 def test_routes():
+    async def endpoint():
+        pass
+
     routes = Routes(base_class=HttpView)
-    routes << Routes(
-        HttpRoute("/login", test_mulitmethodroutes),
-        HttpRoute("/register", test_mulitmethodroutes),
+    routes <<= Routes(
+        HttpRoute("/login", endpoint),
+        HttpRoute("/register", endpoint),
         base_class=HttpView,
     )
-    routes == Routes(
-        HttpRoute("/login", test_mulitmethodroutes),
-        HttpRoute("/register", test_mulitmethodroutes),
+    assert routes == Routes(
+        HttpRoute("/login", endpoint),
+        HttpRoute("/register", endpoint),
         base_class=HttpView,
     )
 
-    (
+    assert (
         routes
         << Routes(
-            HttpRoute("/t/login", test_mulitmethodroutes),
-            HttpRoute("/t/register", test_mulitmethodroutes),
+            HttpRoute("/t/login", endpoint),
+            HttpRoute("/t/register", endpoint),
             base_class=HttpView,
         )
     ) == (
         Routes(
-            HttpRoute("/login", test_mulitmethodroutes),
-            HttpRoute("/register", test_mulitmethodroutes),
+            HttpRoute("/login", endpoint),
+            HttpRoute("/register", endpoint),
             base_class=HttpView,
         )
         + Routes(
-            HttpRoute("/t/login", test_mulitmethodroutes),
-            HttpRoute("/t/register", test_mulitmethodroutes),
+            HttpRoute("/t/login", endpoint),
+            HttpRoute("/t/register", endpoint),
             base_class=HttpView,
         )
     )
@@ -61,7 +65,7 @@ def test_mulitmethodroutes():
     app = Kui(routes=routes)
 
     endpoint = app.router.search("http", "/user")[1]
-    assert issubclass(endpoint, routes.base_class)
+    assert safe_issubclass(endpoint, routes.base_class)
     assert hasattr(endpoint, "__methods__")
     assert (
         hasattr(endpoint, "get")
@@ -90,7 +94,7 @@ def test_mulitmethodroutes_with_prefix():
     app = Kui(routes="/api" // routes)
 
     endpoint = app.router.search("http", "/api/user")[1]
-    assert issubclass(endpoint, routes.base_class)
+    assert safe_issubclass(endpoint, routes.base_class)
     assert hasattr(endpoint, "__methods__")
     assert (
         hasattr(endpoint, "get")

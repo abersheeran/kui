@@ -2,21 +2,22 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterator, List, Optional, Pattern, Tuple
+from typing import Any, Dict, Generic, Iterator, List, Optional, Pattern, Tuple, TypeVar
 from typing import cast as typing_cast
 
 from baize.routing import AnyConvertor, Convertor, StringConvertor, compile_path
 
-RouteType = Tuple[str, Dict[str, Convertor], Callable[[], Any]]
+T = TypeVar("T")
+RouteType = Tuple[str, Dict[str, Convertor], T]
 
 
 @dataclass
-class TreeNode:
+class TreeNode(Generic[T]):
     characters: str
     re_pattern: Optional[Pattern] = None
     next_nodes: Optional[List[TreeNode]] = None
 
-    route: Optional[RouteType] = None
+    route: Optional[RouteType[T]] = None
 
 
 def find_common_prefix(x: str, y: str) -> str:
@@ -31,8 +32,8 @@ def find_common_prefix(x: str, y: str) -> str:
 
 
 def append(
-    point: TreeNode, path_format: str, param_convertors: Dict[str, Convertor]
-) -> TreeNode:
+    point: TreeNode[T], path_format: str, param_convertors: Dict[str, Convertor]
+) -> TreeNode[T]:
     """
     Construct the node corresponding to the specified path and return.
 
@@ -72,7 +73,7 @@ def append(
             if node.characters == param_name:
                 return append(node, path_format[length:], param_convertors)
 
-        new_node = TreeNode(characters=param_name, re_pattern=re_pattern)
+        new_node: TreeNode[T] = TreeNode(characters=param_name, re_pattern=re_pattern)
         point.next_nodes.insert(0, new_node)
         return append(new_node, path_format[length:], param_convertors)
     else:
@@ -90,7 +91,7 @@ def append(
                 return append(node, path_format[len(prefix) :], param_convertors)
 
             node_index = point.next_nodes.index(node)
-            prefix_node = TreeNode(characters=prefix, next_nodes=[])
+            prefix_node: TreeNode[T] = TreeNode(characters=prefix, next_nodes=[])
             point.next_nodes[node_index] = prefix_node
             node.characters = node.characters[len(prefix) :]
             typing_cast(List[TreeNode], prefix_node.next_nodes).insert(0, node)
@@ -106,11 +107,11 @@ def append(
         return append(new_node, path_format[length:], param_convertors)
 
 
-class RadixTree:
+class RadixTree(Generic[T]):
     def __init__(self) -> None:
-        self.root = TreeNode("/")
+        self.root = TreeNode[T]("/")
 
-    def append(self, path: str, endpoint: Callable) -> None:
+    def append(self, path: str, endpoint: T) -> None:
         if path[0] != "/":
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
@@ -126,8 +127,10 @@ class RadixTree:
 
         point.route = (path_format, param_convertors, endpoint)
 
-    def search(self, path: str) -> Tuple[RouteType, Dict[str, Any]] | Tuple[None, None]:
-        stack: List[Tuple[str, TreeNode]] = [(path, self.root)]
+    def search(
+        self, path: str
+    ) -> Tuple[RouteType[T], Dict[str, Any]] | Tuple[None, None]:
+        stack: List[Tuple[str, TreeNode[T]]] = [(path, self.root)]
         params: Dict[str, Any] = {}
 
         while stack:
@@ -157,7 +160,7 @@ class RadixTree:
 
         return None, None
 
-    def iterator(self) -> Iterator[Tuple[str, Callable]]:
+    def iterator(self) -> Iterator[Tuple[str, T]]:
         stack: List[TreeNode] = [self.root]
 
         while stack:

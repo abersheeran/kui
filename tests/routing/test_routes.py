@@ -66,7 +66,7 @@ def test_lshift():
     async def hello_ws():
         ...
 
-    (
+    app.router = (
         app.router
         << HttpRoute("/hello", hello, name="hello")
         << SocketRoute("/hello", hello_ws, name="hello_ws")
@@ -97,21 +97,24 @@ def test_url_for():
 def test_prefix():
     from kui.asgi.routing import HttpRoute, Routes
 
+    async def endpoint():
+        pass
+
     assert [
         route.path
         for route in (
             "/auth"
             // Routes(
-                HttpRoute("/login", test_prefix),
-                HttpRoute("/register", test_prefix),
+                HttpRoute("/login", endpoint),
+                HttpRoute("/register", endpoint),
             )
         )
     ] == [
         route.path
         for route in (
             Routes(
-                HttpRoute("/auth/login", test_prefix),
-                HttpRoute("/auth/register", test_prefix),
+                HttpRoute("/auth/login", endpoint),
+                HttpRoute("/auth/register", endpoint),
             )
         )
     ]
@@ -120,30 +123,33 @@ def test_prefix():
 def test_routes_operator():
     from kui.asgi import HttpRoute, Routes
 
+    async def endpoint():
+        pass
+
     routes = Routes()
-    routes << Routes(
-        HttpRoute("/login", test_routes_operator),
-        HttpRoute("/register", test_routes_operator),
+    routes = routes << Routes(
+        HttpRoute("/login", endpoint),
+        HttpRoute("/register", endpoint),
     )
-    routes == Routes(
-        HttpRoute("/login", test_routes_operator),
-        HttpRoute("/register", test_routes_operator),
+    assert routes == Routes(
+        HttpRoute("/login", endpoint),
+        HttpRoute("/register", endpoint),
     )
 
-    (
+    assert (
         routes
         << Routes(
-            HttpRoute("/login", test_routes_operator),
-            HttpRoute("/register", test_routes_operator),
+            HttpRoute("/login", endpoint),
+            HttpRoute("/register", endpoint),
         )
     ) == (
         Routes(
-            HttpRoute("/login", test_routes_operator),
-            HttpRoute("/register", test_routes_operator),
+            HttpRoute("/login", endpoint),
+            HttpRoute("/register", endpoint),
         )
         + Routes(
-            HttpRoute("/login", test_routes_operator),
-            HttpRoute("/register", test_routes_operator),
+            HttpRoute("/login", endpoint),
+            HttpRoute("/register", endpoint),
         )
     )
 

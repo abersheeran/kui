@@ -469,8 +469,8 @@ class Router(RouteRegisterMixin[ViewType], typing.Generic[ViewType]):
         http_middlewares: typing.Sequence[MiddlewareType[ViewType]] = [],
         socket_middlewares: typing.Sequence[MiddlewareType[ViewType]] = [],
     ) -> None:
-        self.http_tree = RadixTree()
-        self.websocket_tree = RadixTree()
+        self.http_tree = RadixTree[ViewType]()
+        self.websocket_tree = RadixTree[ViewType]()
 
         self.routes_mapping: typing.Dict[str, RouteType] = {}
 

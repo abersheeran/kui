@@ -31,7 +31,12 @@ cli = ["click<9.0,>=8.0"]
 [tool.pdm.scripts]
 lint-isort = "isort {args}"
 lint-black = "black {args}"
-lint = { composite = ["lint-isort", "lint-black"] }
+lint = { composite = [
+    "lint-isort",
+    "lint-black",
+    "check-flake8",
+    "check-mypy",
+] }
 check-isort = "isort --check --diff {args}"
 check-black = "black --check --diff {args}"
 check-flake8 = "flake8 --ignore W503,E203,E501,E731 {args}"
@@ -56,6 +61,7 @@ test = [
     "pytest<8.0.0,>=7.2.1",
     "pytest-asyncio<1.0,>=0.20.3",
     "pytest-cov<5.0.0,>=4.0.0",
+    "httpx>=0.23.3",
 ]
 docs = [
     "mkdocs[i18n]==1.2.4",
