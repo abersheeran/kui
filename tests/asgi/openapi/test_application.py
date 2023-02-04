@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from kui.asgi import (
+    Depends,
     Header,
     HTMLResponse,
     HttpRoute,
@@ -17,7 +18,6 @@ from kui.asgi import (
     OpenAPI,
     Path,
     Routes,
-    request,
     required_method,
 )
 
@@ -493,18 +493,18 @@ def test_openapi_single_function_summary_and_description():
         """
         return ""
 
-    assert openapi._generate_path(request, app.router.search("http", "/0")[1], "/")[
-        0
-    ] == {"get": {"summary": "Summary", "description": "Description"}}
-    assert openapi._generate_path(request, app.router.search("http", "/1")[1], "/")[
-        0
-    ] == {"get": {"summary": "Summary"}}
-    assert openapi._generate_path(request, app.router.search("http", "/2")[1], "/")[
-        0
-    ] == {"get": {"summary": "Summary", "description": "Description"}}
-    assert openapi._generate_path(request, app.router.search("http", "/3")[1], "/")[
-        0
-    ] == {"get": {"summary": "Summary", "description": "Description"}}
+    assert openapi._generate_path(app, app.router.search("http", "/0")[1], "/")[0] == {
+        "get": {"summary": "Summary", "description": "Description"}
+    }
+    assert openapi._generate_path(app, app.router.search("http", "/1")[1], "/")[0] == {
+        "get": {"summary": "Summary"}
+    }
+    assert openapi._generate_path(app, app.router.search("http", "/2")[1], "/")[0] == {
+        "get": {"summary": "Summary", "description": "Description"}
+    }
+    assert openapi._generate_path(app, app.router.search("http", "/3")[1], "/")[0] == {
+        "get": {"summary": "Summary", "description": "Description"}
+    }
 
 
 def test_openapi_single_function_tags():
@@ -516,7 +516,7 @@ def test_openapi_single_function_tags():
     async def homepage():
         return ""
 
-    assert openapi._generate_path(request, app.router.search("http", "/")[1], "/") == (
+    assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
         {"get": {"tags": ["tag0"]}},
         {},
     )
@@ -534,7 +534,93 @@ def test_openapi_routes_tags():
         HttpRoute("/", homepage) @ required_method("GET"), tags=["tag0"]
     )
 
-    assert openapi._generate_path(request, app.router.search("http", "/")[1], "/") == (
+    assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
         {"get": {"tags": ["tag0"]}},
+        {},
+    )
+
+
+def test_openapi_depend_response():
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= "/docs" // openapi.routes
+
+    async def get_current_user(
+        authorization: str = Header(..., description="JWT Token")
+    ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
+        pass
+
+    @app.router.http.get("/")
+    async def homepage(user: Annotated[Any, Depends(get_current_user)]) -> Any:
+        pass
+
+    assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
+        {
+            "get": {
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "authorization",
+                        "description": "JWT Token",
+                        "required": True,
+                        "schema": {"title": "Authorization", "type": "string"},
+                        "deprecated": False,
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "loc": {
+                                                "title": "Location",
+                                                "description": "error field",
+                                                "type": "array",
+                                                "items": {"type": "string"},
+                                            },
+                                            "type": {
+                                                "title": "Type",
+                                                "description": "error type",
+                                                "type": "string",
+                                            },
+                                            "msg": {
+                                                "title": "Message",
+                                                "description": "error message",
+                                                "type": "string",
+                                            },
+                                            "ctx": {
+                                                "title": "Context",
+                                                "description": "error context",
+                                                "type": "string",
+                                            },
+                                            "in": {
+                                                "title": "In",
+                                                "type": "string",
+                                                "enum": [
+                                                    "path",
+                                                    "query",
+                                                    "header",
+                                                    "cookie",
+                                                    "body",
+                                                ],
+                                            },
+                                        },
+                                        "required": ["loc", "type", "msg"],
+                                    },
+                                }
+                            }
+                        },
+                    },
+                    "401": {
+                        "description": "No permission -- see authorization schemes"
+                    },
+                },
+            }
+        },
         {},
     )

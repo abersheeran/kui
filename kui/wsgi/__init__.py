@@ -13,7 +13,7 @@ from ..parameters.field_functions import (
 from .applications import Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
-from .requests import HttpRequest, request
+from .requests import HttpRequest, request, request_var
 from .responses import (
     FileResponse,
     HTMLResponse,
@@ -35,6 +35,7 @@ __all__ = [
     "OpenAPI",
     "HttpRequest",
     "request",
+    "request_var",
     "HTTPException",
     "Body",
     "Cookie",

@@ -13,7 +13,14 @@ from ..parameters.field_functions import (
 from .applications import Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
-from .requests import HttpRequest, WebSocket, request, websocket
+from .requests import (
+    HttpRequest,
+    WebSocket,
+    request,
+    request_var,
+    websocket,
+    websocket_var,
+)
 from .responses import (
     FileResponse,
     HTMLResponse,
@@ -36,7 +43,9 @@ __all__ = [
     "HttpRequest",
     "WebSocket",
     "request",
+    "request_var",
     "websocket",
+    "websocket_var",
     "HTTPException",
     "Body",
     "Cookie",

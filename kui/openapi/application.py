@@ -22,8 +22,8 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Literal, TypedDict
 
 if TYPE_CHECKING:
-    from ..asgi import HttpRequest as ASGIHttpRequest
-    from ..wsgi import HttpRequest as WSGIHttpRequest
+    from ..asgi import Kui as ASGIKui, HttpRequest as ASGIHttpRequest
+    from ..wsgi import Kui as WSGIKui, HttpRequest as WSGIHttpRequest
 
 from ..exceptions import RequestValidationError
 from ..parameters import _get_response_docs
@@ -78,7 +78,7 @@ class OpenAPI:
         self.definitions: dict = {}
 
     def _generate_paths(
-        self, request: ASGIHttpRequest | WSGIHttpRequest
+        self, application: ASGIKui | WSGIKui
     ) -> Tuple[spec.Paths, dict]:
         _definitions: dict = {}
         update_definitions = lambda path_item, x: _definitions.update(x) or path_item
@@ -88,16 +88,16 @@ class OpenAPI:
                 (
                     path_format,
                     update_definitions(
-                        *self._generate_path(request, handler, path_format)
+                        *self._generate_path(application, handler, path_format)
                     ),
                 )
-                for path_format, handler in request.app.router.http_tree.iterator()
+                for path_format, handler in application.router.http_tree.iterator()
             )
             if openapi_path_item
         }, _definitions
 
     def _generate_path(
-        self, request: ASGIHttpRequest | WSGIHttpRequest, view: Any, path: str
+        self, application: ASGIKui | WSGIKui, view: Any, path: str
     ) -> Tuple[spec.PathItem, dict]:
         """
         Generate documents under a path
@@ -108,7 +108,7 @@ class OpenAPI:
             result = clear_empty(
                 {
                     method: update_definitions(
-                        *self._generate_method(request, getattr(view, method), path)
+                        *self._generate_method(application, getattr(view, method), path)
                     )
                     for method in (
                         method.lower()
@@ -121,7 +121,7 @@ class OpenAPI:
             result = clear_empty(
                 {
                     typing.cast(str, view.__method__).lower(): update_definitions(
-                        *self._generate_method(request, view, path)
+                        *self._generate_method(application, view, path)
                     ),
                 }
             )
@@ -131,7 +131,7 @@ class OpenAPI:
         return typing.cast(spec.PathItem, result), _definitions
 
     def _generate_method(
-        self, request: ASGIHttpRequest | WSGIHttpRequest, func: Any, path: str
+        self, application: ASGIKui | WSGIKui, func: Any, path: str
     ) -> Tuple[spec.Operation, dict]:
         result: Dict[str, Any] = {}
         _definitions: dict = {}
@@ -170,7 +170,7 @@ class OpenAPI:
         # generate request body schema
         request_body = update_definitions(
             *schema_request_body(
-                create_model(getattr(func, "__docs_request_body__", [])), request
+                create_model(getattr(func, "__docs_request_body__", [])), application
             )
         )
         result["requestBody"] = request_body
@@ -178,7 +178,7 @@ class OpenAPI:
         # generate responses schema
         responses: spec.Responses = {}
         if parameters or request_body:
-            handler = request.app.exception_middleware.lookup_handler(
+            handler = application.exception_middleware.lookup_handler(
                 RequestValidationError(ValidationError([], BaseModel), "body")
             )
             if handler is None:
@@ -234,7 +234,7 @@ class OpenAPI:
                 },
             ),
         ]
-        openapi["paths"], definitions = copy.deepcopy(self._generate_paths(request))
+        openapi["paths"], definitions = copy.deepcopy(self._generate_paths(request.app))
         for path_item in openapi["paths"].values():
             for operation in filter(lambda x: isinstance(x, dict), path_item.values()):
                 operation = typing.cast(spec.Operation, operation)
