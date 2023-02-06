@@ -5,6 +5,7 @@ site_description: An easy-to-use web framework.
 # Repository
 repo_name: abersheeran/kui
 repo_url: https://github.com/abersheeran/kui
+edit_uri: blob/master/docs/docs/
 
 # Copyright
 copyright: Copyright &copy; 2023 by Kuí.
