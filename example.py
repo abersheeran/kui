@@ -7,12 +7,12 @@ from kui.asgi import (
     HTTPException,
     HttpRoute,
     Kui,
+    OpenAPI,
+    Path,
     SocketRoute,
+    allow_cors,
     required_method,
     websocket,
-    Path,
-    allow_cors,
-    OpenAPI,
 )
 
 

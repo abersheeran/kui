@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 from ..exceptions import RequestValidationError
 from ..utils import safe_issubclass
-from .fields import DependInfo, FieldInfo, RequestInfo, Undefined
+from .fields import DependInfo, FieldInfo, RequestAttrInfo, Undefined
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
@@ -158,18 +158,18 @@ def _parse_depends_attrs(sig: inspect.Signature) -> Dict[str, DependInfo]:
     }
 
 
-def _parse_request_attrs(sig: inspect.Signature) -> Dict[str, RequestInfo]:
+def _parse_request_attrs(sig: inspect.Signature) -> Dict[str, RequestAttrInfo]:
     return {
         **{
             name: param.default
             for name, param in sig.parameters.items()
-            if isinstance(param.default, RequestInfo)
+            if isinstance(param.default, RequestAttrInfo)
         },
         **{
             name: get_args(param.annotation)[1]
             for name, param in sig.parameters.items()
             if get_origin(param.annotation) is Annotated
-            and isinstance(get_args(param.annotation)[1], RequestInfo)
+            and isinstance(get_args(param.annotation)[1], RequestAttrInfo)
         },
     }
 
@@ -180,11 +180,11 @@ def _create_new_signature(sig: inspect.Signature) -> inspect.Signature:
             param
             for param in sig.parameters.values()
             if not (
-                isinstance(param.default, (FieldInfo, RequestInfo, DependInfo))
+                isinstance(param.default, (FieldInfo, RequestAttrInfo, DependInfo))
                 or (
                     get_origin(param.annotation) is Annotated
                     and isinstance(
-                        get_args(param.annotation)[1], (FieldInfo, RequestInfo)
+                        get_args(param.annotation)[1], (FieldInfo, RequestAttrInfo)
                     )
                 )
             )
@@ -284,7 +284,8 @@ def _validate_parameters(
 
 
 def _validate_request_attr(
-    request_attrs: Dict[str, RequestInfo], request: ASGIHttpRequest | WSGIHttpRequest
+    request_attrs: Dict[str, RequestAttrInfo],
+    request: ASGIHttpRequest | WSGIHttpRequest,
 ) -> Dict[str, Any]:
     result = {}
     for name, info in request_attrs.items():

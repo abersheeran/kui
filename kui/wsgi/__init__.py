@@ -8,9 +8,9 @@ from ..parameters.field_functions import (
     Header,
     Path,
     Query,
-    Request,
+    RequestAttr,
 )
-from .applications import Kui
+from .applications import FactoryClass, Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
 from .requests import HttpRequest, request, request_var
@@ -28,10 +28,12 @@ from .responses import (
     convert_response,
 )
 from .routing import HttpRoute, Routes, SocketRoute
+from .templates import Jinja2Templates
 from .views import HttpView, required_method
 
 __all__ = [
     "Kui",
+    "FactoryClass",
     "OpenAPI",
     "HttpRequest",
     "request",
@@ -42,7 +44,7 @@ __all__ = [
     "Header",
     "Path",
     "Query",
-    "Request",
+    "RequestAttr",
     "Depends",
     "HttpResponse",
     "FileResponse",
@@ -61,4 +63,5 @@ __all__ = [
     "HttpRoute",
     "SocketRoute",
     "allow_cors",
+    "Jinja2Templates",
 ]

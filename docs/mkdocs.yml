@@ -1,0 +1,73 @@
+site_name: Kuí
+site_url: https://kui.aber.sh
+site_description: An easy-to-use web framework.
+
+# Repository
+repo_name: abersheeran/kui
+repo_url: https://github.com/abersheeran/kui
+
+# Copyright
+copyright: Copyright &copy; 2023 by Kuí.
+
+# Configuration
+theme:
+  name: material
+  features:
+    - content.action.edit
+    - content.action.view
+    - search.suggest
+    - search.highlight
+    - search.share
+    - navigation.tabs
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      lang:
+        - zh
+        - en
+
+# Customization
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/abersheeran
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/kui/
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+# Page tree
+nav:
+  - Intro: index.md
+  - ASGI:
+      - Intro: asgi/index.md
+      - Application: asgi/application.md
+      - Routing: asgi/routing.md
+      - Http: asgi/http.md
+      - Lifespan: asgi/lifespan.md
+      - WebSocket: asgi/websocket.md
+      - Dependency injection: asgi/dependency-injection.md
+      - OpenAPI Docs: asgi/openapi.md
+  - WSGI:
+      - Intro: wsgi/index.md
+      - Application: wsgi/application.md
+      - Routing: wsgi/routing.md
+      - Http: wsgi/http.md
+      - Dependency injection: wsgi/dependency-injection.md
+      - OpenAPI Docs: wsgi/openapi.md

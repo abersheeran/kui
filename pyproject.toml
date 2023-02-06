@@ -20,7 +20,7 @@ classifiers = [
 [project.urls]
 homepage = "https://github.com/abersheeran/kui"
 repository = "https://github.com/abersheeran/kui"
-documentation = "https://kui.abersheeran.com/"
+documentation = "https://kui.aber.sh"
 
 [project.optional-dependencies]
 cli = ["click<9.0,>=8.0"]
@@ -62,11 +62,6 @@ test = [
     "pytest-asyncio<1.0,>=0.20.3",
     "pytest-cov<5.0.0,>=4.0.0",
     "httpx>=0.23.3",
-]
-docs = [
-    "mkdocs[i18n]==1.2.4",
-    "mkdocs-static-i18n==0.46",
-    "mkdocs-material==7.1.0",
 ]
 
 [tool.pdm.build]

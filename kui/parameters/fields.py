@@ -67,7 +67,7 @@ class BodyInfo(FieldInfo):
 
 
 @dataclass
-class RequestInfo:
+class RequestAttrInfo:
     __slots__ = ("default", "default_factory", "alias")
 
     default: Any

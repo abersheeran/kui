@@ -4,7 +4,7 @@ import pytest
 from httpx import Client
 from typing_extensions import Annotated
 
-from kui.wsgi import Body, Cookie, Depends, Header, Kui, Path, Query, Request
+from kui.wsgi import Body, Cookie, Depends, Header, Kui, Path, Query, RequestAttr
 
 
 def test_path():
@@ -106,20 +106,20 @@ def test_request():
     app0 = Kui()
 
     @app0.router.http.get("/")
-    def homepage(app: Annotated[Kui, Request()]):
+    def homepage(app: Annotated[Kui, RequestAttr()]):
         return str(app is app0)
 
     @app0.router.http.get("/no-attr")
-    def no_attr(application: Annotated[Kui, Request()]):
+    def no_attr(application: Annotated[Kui, RequestAttr()]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default")
-    def no_attr_with_default(application: Annotated[Kui, Request(app0)]):
+    def no_attr_with_default(application: Annotated[Kui, RequestAttr(app0)]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default-factory")
     def no_attr_with_default_factory(
-        application: Annotated[Kui, Request(default_factory=lambda: app0)],
+        application: Annotated[Kui, RequestAttr(default_factory=lambda: app0)],
     ):
         return str(application is app0)
 

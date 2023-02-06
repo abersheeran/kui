@@ -114,7 +114,7 @@ def TemplateResponse(
 
 def convert_response(response: typing.Any) -> HttpResponse:
     """
-    shortcut for automatic
+    shortcut for convert response to HttpResponse
 
     Example:
 
@@ -123,9 +123,9 @@ def convert_response(response: typing.Any) -> HttpResponse:
     It is equivalent to:
 
         if isinstance(response, tuple):
-            response = automatic(*response)
+            response = app.response_converter(*response)
         else:
-            response = automatic(response)
+            response = app.response_converter(response)
 
     """
     if isinstance(response, tuple):

@@ -4,7 +4,7 @@ import pytest
 from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
 
-from kui.asgi import Body, Cookie, Depends, Header, Kui, Path, Query, Request
+from kui.asgi import Body, Cookie, Depends, Header, Kui, Path, Query, RequestAttr
 
 
 @pytest.mark.asyncio
@@ -107,20 +107,20 @@ async def test_request():
     app0 = Kui()
 
     @app0.router.http.get("/")
-    async def homepage(app: Annotated[Kui, Request()]):
+    async def homepage(app: Annotated[Kui, RequestAttr()]):
         return str(app is app0)
 
     @app0.router.http.get("/no-attr")
-    async def no_attr(application: Annotated[Kui, Request()]):
+    async def no_attr(application: Annotated[Kui, RequestAttr()]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default")
-    async def no_attr_with_default(application: Annotated[Kui, Request(app0)]):
+    async def no_attr_with_default(application: Annotated[Kui, RequestAttr(app0)]):
         return str(application is app0)
 
     @app0.router.http.get("/no-attr-with-default-factory")
     async def no_attr_with_default_factory(
-        application: Annotated[Kui, Request(default_factory=lambda: app0)],
+        application: Annotated[Kui, RequestAttr(default_factory=lambda: app0)],
     ):
         return str(application is app0)
 

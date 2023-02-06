@@ -11,7 +11,7 @@ from .fields import (
     HeaderInfo,
     PathInfo,
     QueryInfo,
-    RequestInfo,
+    RequestAttrInfo,
 )
 
 T = TypeVar("T")
@@ -197,7 +197,7 @@ def Body(
     return field_info
 
 
-def Request(
+def RequestAttr(
     default: Any = Undefined,
     *,
     default_factory: Optional[NoArgAnyCallable] = None,
@@ -214,7 +214,7 @@ def Request(
     """
     if default is not Undefined and default_factory is not None:
         raise ValueError("cannot specify both default and default_factory")
-    return RequestInfo(default, default_factory=default_factory, alias=alias)
+    return RequestAttrInfo(default, default_factory=default_factory, alias=alias)
 
 
 def Depends(call: Callable, *, cache=True) -> Any:
