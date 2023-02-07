@@ -36,7 +36,11 @@ try:
 
     from ..templates import Jinja2TemplatesBase
 except ImportError:
-    pass
+
+    class Jinja2Templates:
+        def __init__(self) -> None:
+            raise NotImplementedError('Install "jinja2" to use Jinja2Templates')
+
 else:
 
     class _Jinja2TemplateResponse(SmallResponse):
@@ -65,7 +69,7 @@ else:
         router = request.app.router
         return router.url_for(name, path_params)
 
-    class Jinja2Templates(Jinja2TemplatesBase):
+    class Jinja2Templates(Jinja2TemplatesBase):  # type: ignore
         """
         templates = Jinja2Templates("dir", "package:dir")
 
