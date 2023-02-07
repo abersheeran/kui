@@ -136,7 +136,7 @@ class MsgPackRequest(HttpRequest):
         )
 
 
-app = Index(factory_class=FactoryClass(http=MsgPackRequest))
+app = Kui(factory_class=FactoryClass(http=MsgPackRequest))
 ```
 
 ## 描述响应结果
