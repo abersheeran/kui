@@ -27,7 +27,7 @@ from .responses import (
     TemplateResponse,
     convert_response,
 )
-from .routing import HttpRoute, Routes, SocketRoute
+from .routing import HttpRoute, MultimethodRoutes, Routes, SocketRoute
 from .templates import Jinja2Templates
 from .views import HttpView, required_method
 
@@ -59,6 +59,7 @@ __all__ = [
     "convert_response",
     "required_method",
     "HttpView",
+    "MultimethodRoutes",
     "Routes",
     "HttpRoute",
     "SocketRoute",
