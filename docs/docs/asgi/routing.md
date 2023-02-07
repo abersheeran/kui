@@ -372,9 +372,9 @@ routes = ("/admin" // auth_routes) + ("/account" // auth_routes)
 `MultimethodRoutes` 是一个特殊的路由序列，它允许你使用如下方式注册路由，在不显式使用类的情况下拆分同一个 PATH 下的不同方法到多个函数中。除此之外，均与 `Routes` 相同。
 
 ```python
-from kui.asgi import Kui, MultimethodRoutes
+from kui.asgi import Kui, MultimethodRoutes, HttpView
 
-routes = MultimethodRoutes()
+routes = MultimethodRoutes(base_class=HttpView)
 
 
 @routes.http.get("/user")
