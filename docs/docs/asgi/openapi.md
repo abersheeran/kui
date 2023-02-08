@@ -243,6 +243,7 @@ async def required_auth(authorization: Annotated[str, Header()]) -> Annotated[An
 ```python
 from typing_extensions import Annotated
 from kui.asgi import Kui, OpenAPI
+from kui.openapi import describe_extra_docs
 
 app = Kui()
 
