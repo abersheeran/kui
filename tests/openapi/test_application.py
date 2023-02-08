@@ -109,6 +109,7 @@ async def test_openapi_page():
                     "responses": {
                         "200": {
                             "description": "Request fulfilled, document follows",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -129,6 +130,7 @@ async def test_openapi_page():
                         "200": {
                             "description": "Request fulfilled, document follows",
                             "content": {"text/html": {"schema": {"type": "string"}}},
+                            "headers": {},
                         }
                     },
                 },
@@ -149,6 +151,7 @@ async def test_openapi_page():
                                     }
                                 }
                             },
+                            "headers": {},
                         }
                     },
                 },
@@ -175,6 +178,7 @@ async def test_openapi_page():
                     "responses": {
                         "422": {
                             "description": "",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -239,6 +243,7 @@ async def test_openapi_page():
                     "responses": {
                         "422": {
                             "description": "",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -288,6 +293,7 @@ async def test_openapi_page():
                         "200": {
                             "description": "Request fulfilled, document follows",
                             "content": {"text/html": {"schema": {"type": "string"}}},
+                            "headers": {},
                         },
                         "401": {
                             "description": "No permission -- see authorization schemes"
@@ -308,6 +314,7 @@ async def test_openapi_page():
                     "responses": {
                         "422": {
                             "description": "",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -367,6 +374,7 @@ async def test_openapi_page():
                                     }
                                 }
                             },
+                            "headers": {},
                         },
                         "401": {
                             "description": "No permission -- see authorization schemes"
@@ -387,6 +395,7 @@ async def test_openapi_page():
                     "responses": {
                         "422": {
                             "description": "",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -568,6 +577,7 @@ def test_openapi_depend_response():
                 "responses": {
                     "422": {
                         "description": "",
+                        "headers": {},
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -615,9 +625,47 @@ def test_openapi_depend_response():
                         },
                     },
                     "401": {
-                        "description": "No permission -- see authorization schemes"
+                        "description": "No permission -- see authorization schemes",
                     },
                 },
             }
         }
     )
+
+
+def test_openapi_multi_type_responses():
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= "/docs" // openapi.routes
+
+    class Message(BaseModel):
+        message: str
+
+    @app.router.http.get("/")
+    async def homepage() -> Annotated[
+        Any, JSONResponse[200, {}, Message], HTMLResponse[200]
+    ]:
+        pass
+
+    assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == {
+        "get": {
+            "responses": {
+                "200": {
+                    "description": "Request fulfilled, document follows",
+                    "headers": {},
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {"title": "Message", "type": "string"}
+                                },
+                                "required": ["message"],
+                            }
+                        },
+                        "text/html": {"schema": {"type": "string"}},
+                    },
+                }
+            }
+        }
+    }

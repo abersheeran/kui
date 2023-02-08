@@ -77,9 +77,8 @@ def schema_request_body(
     }
 
 
-def schema_response(
-    content: Union[Type[BaseModel], Dict[str, spec.MediaType]]
-) -> Dict[str, spec.MediaType]:
+def schema_response(content: Union[Type[BaseModel], spec.Schema]) -> spec.Schema:
     if isinstance(content, dict):
         return content
-    return {"application/json": {"schema": _schema(content)}}
+    else:
+        return _schema(content)

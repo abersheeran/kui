@@ -1,7 +1,7 @@
 """
 OpenAPI specification 3.0.3
 
-https://swagger.io/specification/
+https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md
 """
 from __future__ import annotations
 

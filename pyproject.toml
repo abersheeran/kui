@@ -6,7 +6,7 @@ authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
 dependencies = [
     "baize<0.19.0,>=0.18.2",
     "pydantic<2.0,>=1.8",
-    "typing-extensions>=3.10.0",
+    "typing-extensions>=4.2.0",
 ]
 requires-python = ">=3.7,<4.0"
 readme = "README.md"
@@ -54,7 +54,7 @@ dev = [
     "flake8>=5.0.4",
     "black>=23.1.0",
     "isort>=5.11.5",
-    "mypy @ git+https://github.com/python/mypy.git",
+    "mypy>=1.0.0",
 ]
 test = [
     "async-asgi-testclient<2.0.0,>=1.4.11",
@@ -69,7 +69,6 @@ includes = ["kui"]
 
 [tool.mypy]
 ignore_missing_imports = true
-exclude = ["kui/openapi/specification.py"]
 
 [tool.isort]
 profile = "black"

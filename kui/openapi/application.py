@@ -156,20 +156,36 @@ class OpenAPI:
 
         # generate responses schema
         responses: spec.Responses = {}
+        __docs_responses__: List[spec.Responses] = getattr(
+            func, "__docs_responses__", []
+        )
         if parameters or request_body:
             handler = application.exception_middleware.lookup_handler(
                 RequestValidationError(ValidationError([], BaseModel), "body")
             )
             if handler is None:
                 raise RuntimeError
-            for status, info in _get_response_docs(handler).items():
-                _ = responses[status] = copy.copy(info)
-                if _.get("content") is not None:
-                    _["content"] = schema_response(_["content"])
-        for status, info in getattr(func, "__docs_responses__", {}).items():
-            _ = responses[status] = copy.copy(info)
-            if _.get("content") is not None:
-                _["content"] = schema_response(_["content"])
+            __docs_responses__.extend(_get_response_docs(handler))
+
+        for response_docs in __docs_responses__:
+            for response in response_docs.values():
+                for media_type, media_type_value in list(
+                    response.get("content", {}).items()
+                ):
+                    schema = schema_response(media_type_value["schema"])  # type: ignore
+                    response.get("content", {})[media_type]["schema"] = schema
+
+            need_merge_status_codes = set(responses.keys()) & set(response_docs.keys())
+            if need_merge_status_codes:
+                for status_code in need_merge_status_codes:
+                    content = {
+                        **responses[status_code].get("content", {}),
+                        **response_docs[status_code].get("content", {}),
+                    }
+                    if content:
+                        responses[status_code]["content"] = content
+            else:
+                responses.update(response_docs)
 
         result["responses"] = responses
 

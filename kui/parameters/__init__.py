@@ -193,8 +193,8 @@ def _create_new_signature(sig: inspect.Signature) -> inspect.Signature:
     )
 
 
-def _get_response_docs(handler: Callable[..., Any]) -> Dict[str, Any]:
-    response_docs: Dict[str, Any] = {}
+def _get_response_docs(handler: Callable[..., Any]) -> List[Dict[Any, Any]]:
+    response_docs: List[Dict[Any, Any]] = []
     for response in get_args(
         (
             get_type_hints(handler.__call__, include_extras=True)  # type: ignore
@@ -206,7 +206,7 @@ def _get_response_docs(handler: Callable[..., Any]) -> Dict[str, Any]:
         ).get("return")
     ):
         if isinstance(response, dict):
-            response_docs.update(response)
+            response_docs.append(response)
     return copy.deepcopy(response_docs)
 
 
@@ -242,8 +242,8 @@ def _update_docs(
             __parameters__.setdefault(key, []).extend(value)
         setattr(handler, "__docs_parameters__", __parameters__)
 
-        __responses__: Dict[Any, Any] = getattr(handler, "__docs_responses__", {})
-        __responses__.update(_get_response_docs(func))
+        __responses__: List[Dict[Any, Any]] = getattr(handler, "__docs_responses__", [])
+        __responses__.extend(_get_response_docs(func))
         setattr(handler, "__docs_responses__", __responses__)
 
 
@@ -381,7 +381,7 @@ def update_wrapper(
 
 
 def parse_docs_responses(callback):
-    return {
-        **getattr(callback, "__docs_responses__", {}),
-        **_get_response_docs(callback),
-    }
+    return [
+        *getattr(callback, "__docs_responses__", []),
+        *_get_response_docs(callback),
+    ]
