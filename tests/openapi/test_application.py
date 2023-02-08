@@ -493,16 +493,16 @@ def test_openapi_single_function_summary_and_description():
         """
         return ""
 
-    assert openapi._generate_path(app, app.router.search("http", "/0")[1], "/")[0] == {
+    assert openapi._generate_path(app, app.router.search("http", "/0")[1], "/") == {
         "get": {"summary": "Summary", "description": "Description"}
     }
-    assert openapi._generate_path(app, app.router.search("http", "/1")[1], "/")[0] == {
+    assert openapi._generate_path(app, app.router.search("http", "/1")[1], "/") == {
         "get": {"summary": "Summary"}
     }
-    assert openapi._generate_path(app, app.router.search("http", "/2")[1], "/")[0] == {
+    assert openapi._generate_path(app, app.router.search("http", "/2")[1], "/") == {
         "get": {"summary": "Summary", "description": "Description"}
     }
-    assert openapi._generate_path(app, app.router.search("http", "/3")[1], "/")[0] == {
+    assert openapi._generate_path(app, app.router.search("http", "/3")[1], "/") == {
         "get": {"summary": "Summary", "description": "Description"}
     }
 
@@ -517,8 +517,7 @@ def test_openapi_single_function_tags():
         return ""
 
     assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
-        {"get": {"tags": ["tag0"]}},
-        {},
+        {"get": {"tags": ["tag0"]}}
     )
 
 
@@ -535,8 +534,7 @@ def test_openapi_routes_tags():
     )
 
     assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
-        {"get": {"tags": ["tag0"]}},
-        {},
+        {"get": {"tags": ["tag0"]}}
     )
 
 
@@ -621,6 +619,5 @@ def test_openapi_depend_response():
                     },
                 },
             }
-        },
-        {},
+        }
     )

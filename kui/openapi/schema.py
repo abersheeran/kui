@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 from typing import cast as typing_cast
 
 from baize.datastructures import ContentType
@@ -17,6 +17,12 @@ from . import specification as spec
 from .types import UploadFile
 
 REF_TEMPLATE = "#/components/schemas/{model}"
+
+
+def _schema(model: Type[BaseModel]) -> spec.Schema:
+    schema = deepcopy(model.schema(ref_template=REF_TEMPLATE))
+    schema.pop("title")
+    return typing_cast(spec.Schema, schema)
 
 
 def schema_parameter(
@@ -45,13 +51,10 @@ def schema_parameter(
 
 def schema_request_body(
     body: Type[BaseModel] | None, application: ASGIKui | WSGIKui
-) -> Tuple[Optional[spec.RequestBody], dict]:
+) -> Optional[spec.RequestBody]:
     if body is None:
-        return None, {}
+        return None
 
-    schema: Dict = deepcopy(body.schema(ref_template=REF_TEMPLATE))
-    schema.pop("title")
-    definitions = schema.pop("definitions", {})
     content_types = [
         str(v)
         for v in get_args(
@@ -69,20 +72,14 @@ def schema_request_body(
     return {
         "required": True,
         "content": {
-            content_type: {"schema": typing_cast(spec.Schema, deepcopy(schema))}
-            for content_type in content_types
+            content_type: {"schema": _schema(body)} for content_type in content_types
         },
-    }, definitions
+    }
 
 
 def schema_response(
     content: Union[Type[BaseModel], Dict[str, spec.MediaType]]
-) -> Tuple[Dict[str, spec.MediaType], dict]:
+) -> Dict[str, spec.MediaType]:
     if isinstance(content, dict):
-        return content, {}
-    schema = deepcopy(content.schema(by_alias=False, ref_template=REF_TEMPLATE))
-    schema.pop("title")
-    definitions = schema.pop("definitions", {})
-    return {
-        "application/json": {"schema": typing_cast(spec.Schema, schema)}
-    }, definitions
+        return content
+    return {"application/json": {"schema": _schema(content)}}

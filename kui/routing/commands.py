@@ -11,16 +11,13 @@ from ..utils import import_from_string
 from ..utils.inspect import get_object_filepath, get_raw_handler
 from .extensions.multimethod import is_multimethod_view
 
-if typing.TYPE_CHECKING:
-    from kui.asgi import Kui
-
 
 @click.command(help="display all urls in application")
 @click.argument("application")
 def display_urls(application):
     sys.path.insert(0, os.getcwd())
-    index_app: Kui = import_from_string(application)
-    for path, handler in index_app.router.http_tree.iterator():
+    app: typing.Any = import_from_string(application)
+    for path, handler in app.router.http_tree.iterator():
         click.secho("* ", nl=False)
         click.secho(path, fg="green", nl=False)
         click.secho(" => ", nl=False)

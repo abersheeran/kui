@@ -233,8 +233,36 @@ class Tag(_TagRequired, total=False):
 
 Reference = TypedDict("Reference", {"$ref": str})
 
+_Schema = TypedDict("_Schema", {"not": Union[Reference, "Schema"]}, total=False)
 
-class Schema(TypedDict, total=False):
+
+class Schema(_Schema, total=False):
+    title: str
+    multipleOf: float
+    maximum: float
+    exclusiveMaximum: bool
+    minimum: float
+    exclusiveMinimum: bool
+    maxLength: int
+    minLength: int
+    pattern: str
+    maxItems: int
+    minItems: int
+    uniqueItems: bool
+    maxProperties: int
+    minProperties: int
+    required: List[str]
+    enum: List[Any]
+    type: str
+    allOf: List[Reference | Schema]
+    oneOf: List[Reference | Schema]
+    anyOf: List[Reference | Schema]
+    items: Reference | Schema
+    properties: Dict[str, Reference | Schema]
+    additionalProperties: bool | Reference | Schema
+    description: str
+    format: str
+    default: Any
     nullable: bool
     discriminator: Discriminator
     readOnly: bool
