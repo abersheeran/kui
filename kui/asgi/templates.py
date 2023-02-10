@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from baize.asgi import SmallResponse
+from baize.datastructures import URL
 from typing_extensions import Protocol
 
 from .requests import request
@@ -68,9 +69,8 @@ else:
             return text.encode(self.charset)
 
     @jinja2.pass_context
-    def url_for(context: dict, name: str, **path_params: Any) -> str:
-        router = request.app.router
-        return router.url_for(name, path_params)
+    def url_for(context: dict, name: str, path_params: Mapping[str, Any]) -> URL:
+        return request.url_for(name, path_params)
 
     class Jinja2Templates(Jinja2TemplatesBase):  # type: ignore
         """

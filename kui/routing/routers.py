@@ -534,7 +534,7 @@ class Router(RouteRegisterMixin[ViewType], typing.Generic[ViewType]):
     def url_for(
         self,
         name: str,
-        path_params: typing.Dict[str, typing.Any] = {},
+        path_params: typing.Mapping[str, typing.Any] = {},
     ) -> str:
         if name not in self.routes_mapping:
             raise NoRouteFound(f"No route with name '{name}' exists")

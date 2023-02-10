@@ -10,7 +10,7 @@ from baize.asgi import HTTPConnection as BaiZeHTTPConnection
 from baize.asgi import Request as BaiZeRequest
 from baize.asgi import WebSocket as BaiZeWebSocket
 from baize.asgi import WebSocketDisconnect, WebSocketState
-from baize.datastructures import ContentType
+from baize.datastructures import URL, ContentType
 from baize.exceptions import HTTPException
 from baize.utils import cached_property
 from typing_extensions import Annotated
@@ -30,12 +30,14 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
 
     @cached_property
     def state(self) -> State:
-        self._scope.setdefault("state", {})
-        return State(self._scope["state"])
+        return self.setdefault("state", State())
 
     @cached_property
     def app(self) -> Kui:
         return self["app"]  # type: ignore
+
+    def url_for(self, name: str, path_params: typing.Mapping[str, typing.Any]) -> URL:
+        return self.url.replace(path=self.app.router.url_for(name, path_params))
 
 
 class HttpRequest(BaiZeRequest, HTTPConnection):
