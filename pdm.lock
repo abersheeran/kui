@@ -29,8 +29,8 @@ summary = "Classes Without Boilerplate"
 
 [[package]]
 name = "baize"
-version = "0.18.2"
-requires_python = ">=3.6.2"
+version = "0.19.1"
+requires_python = ">=3.7"
 summary = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 dependencies = [
     "typing-extensions>=4.1.1; python_version < \"3.8\"",
@@ -356,7 +356,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.1"
-content_hash = "sha256:1614b02f2f80f50d5a2a8f99614db044df85caf20a87d3a1271b908678e6f14d"
+content_hash = "sha256:ab57ec0aa8fd0f939cc5fdf29b2df19f79b070bad63de175f6c66ec59838814d"
 
 [metadata.files]
 "anyio 3.6.2" = [
@@ -370,24 +370,24 @@ content_hash = "sha256:1614b02f2f80f50d5a2a8f99614db044df85caf20a87d3a1271b90867
     {url = "https://files.pythonhosted.org/packages/21/31/3f468da74c7de4fcf9b25591e682856389b3400b4b62f201e65f15ea3e07/attrs-22.2.0.tar.gz", hash = "sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99"},
     {url = "https://files.pythonhosted.org/packages/fb/6e/6f83bf616d2becdf333a1640f1d463fef3150e2e926b7010cb0f81c95e88/attrs-22.2.0-py3-none-any.whl", hash = "sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836"},
 ]
-"baize 0.18.2" = [
-    {url = "https://files.pythonhosted.org/packages/0a/b2/976256dcf673a722a1e7b5a6c51f3baa383a2f03e81a36e9f8c70a054acb/baize-0.18.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:64682bdfa36e38088bc74f257daa80ada2b0baf5653de7e539de5dac56648557"},
-    {url = "https://files.pythonhosted.org/packages/12/ab/ac3a306a3361fc03641a5bf2a4c82cb6b74c5391219ffee6f6265d352628/baize-0.18.2-cp310-cp310-win_amd64.whl", hash = "sha256:c343d88502489dbba618e7bd35e4500b9e49e306f7ffafa744e5fa41b47fd80f"},
-    {url = "https://files.pythonhosted.org/packages/22/10/8491f89e5e7606e4c7f4236069bd9f5f94bf4171654997a88da20600bd59/baize-0.18.2-py3-none-any.whl", hash = "sha256:dcd29e9e1adbe246817fcd0ffd58be5d651c7993a6ab79e8da93bf84335990f5"},
-    {url = "https://files.pythonhosted.org/packages/32/d8/433670219d2dc0dd4f8bff302774c1387538d606a8abc65a2081edfb72f1/baize-0.18.2-cp36-cp36m-win_amd64.whl", hash = "sha256:af3b4f1e968a8e061d80afa7e4c49bf13c68d501568ff3e920570cea2bddb5e3"},
-    {url = "https://files.pythonhosted.org/packages/4f/62/33aecb46d0bea82180e88baa53565575f40b409b846ed587bc939eb867b4/baize-0.18.2-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:4ee9886321d3d83b6975a5ffd7ddfac15d88748a327e27d32e1cc255c41e601c"},
-    {url = "https://files.pythonhosted.org/packages/4f/a0/b20f419b173ccef51f7482b168a3750c17e73c61c808c593001460b55b26/baize-0.18.2.tar.gz", hash = "sha256:1f88393f83b73e551538e13d96385a7bd28f854d79285a3ba6342f468224aaec"},
-    {url = "https://files.pythonhosted.org/packages/67/af/ece13d9404432281e9a4c66e564d26c28372a16eae3233d79a12185568f6/baize-0.18.2-cp38-cp38-win_amd64.whl", hash = "sha256:acb31343f4c769c31a1cfb0ee8d8ea9f2dcec248dc8e4da046148cedeb921dd6"},
-    {url = "https://files.pythonhosted.org/packages/6a/fc/6e579b70c0d2f0515608655ce5f7270e25a1ed448fae6c26efbdde4a06a1/baize-0.18.2-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:f14f9113d811fabe115a3915a6c84526615601c82214645ecd79ae45f53ba76c"},
-    {url = "https://files.pythonhosted.org/packages/78/c8/95190672a898acb0bf60ddf17f43b15220243ae8da74442bb6f0e85e19df/baize-0.18.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e602745748f7454384f173b1b0980a7efe33305acc3d2a2ae02db718d3cd867c"},
-    {url = "https://files.pythonhosted.org/packages/9d/b8/b740cc839b3c04022eb9945523405b3365e2f435464f56d539806b3c40dc/baize-0.18.2-cp37-cp37m-win_amd64.whl", hash = "sha256:4b5b6f9e6a794c6e5da83638ab44227c2347e4ae2e7d6b39bb8fa7e6ae1b7ade"},
-    {url = "https://files.pythonhosted.org/packages/b6/cb/431733e78d3a2d3d497fff0f81fb1459d687758b7583e051ba7fcede2a3f/baize-0.18.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d82fc9a2021d89c8ac9d9f55a95cc4151f289293767d9fa88f7382985f60ad86"},
-    {url = "https://files.pythonhosted.org/packages/c3/06/30c28d208263fce5121f3240e93300d16314b91c1fb6615bdeff169fe177/baize-0.18.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fadd4c8607a9f69cc30b8a1395e593ef286393faffa79b52ea8a5e8f512933e3"},
-    {url = "https://files.pythonhosted.org/packages/cc/02/5f4a56d908ff8f981572bb3b11753877a0cb76854a2b867461b94ae9b7c1/baize-0.18.2-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:8d454d738442fea89fef432b39d70a1f01a8bd5cf05ab74aad11fc2e86ec720c"},
-    {url = "https://files.pythonhosted.org/packages/cf/94/2d6319c7525c24c8d0ed86c0ebef225f2ccbc94d00d189e1f0884131e4cf/baize-0.18.2-cp39-cp39-win_amd64.whl", hash = "sha256:a9e6bc38684194c680d29612f344b7e10c85812eb7a968bab20a916490351f93"},
-    {url = "https://files.pythonhosted.org/packages/d8/f4/9242b7925afdea7a21434144b59b6bb2a739b1c91afbd0b115e6fd5f89fc/baize-0.18.2-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:17a50eb3f8c7ee3c659acbd432428739c2fc318003aa85ecfe4a6ab6181b095b"},
-    {url = "https://files.pythonhosted.org/packages/db/5b/1925e8dab7fba946ae6e0d78056634558d40ebce28352a1075adb4ff6bd8/baize-0.18.2-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:36ecfecee9f71fb732377889c174a4c86d44800276ca31d425ebdc8679f8fbf9"},
-    {url = "https://files.pythonhosted.org/packages/fe/84/da4f7783dcc081f7a8360e2a7ddee3d2145ff5e20d704d3782b6800a63e3/baize-0.18.2-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:81affa27f14790895300544b70d485f8bd8b3eb359fc10dd2c94e7cd16021dad"},
+"baize 0.19.1" = [
+    {url = "https://files.pythonhosted.org/packages/1d/3c/64c3ce1f8217dae0173467a13ee5e34a23f93780abe0c1058fd75c822773/baize-0.19.1-cp39-cp39-win_amd64.whl", hash = "sha256:d2d86b898937ccb4078c14420d19f960e9a55524b412d65171906b4adb86aa38"},
+    {url = "https://files.pythonhosted.org/packages/2c/5f/cbbb12c561c8de2672e6b8e1be36cdeb0b161ca667784c7ae9155ee19c49/baize-0.19.1-cp38-cp38-win_amd64.whl", hash = "sha256:07f2a9283b9b8a20a2777be35c320a244c3e2a85a9bbb03cc4ef953e4113eb82"},
+    {url = "https://files.pythonhosted.org/packages/5f/2e/347be868bb492887708d6001f0afc7c7b88f3ca42f749b263d3e506e828d/baize-0.19.1-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:0691c6f41dae00f488d6c336111ff28468a83fa3cf5fe563af014f1970703db0"},
+    {url = "https://files.pythonhosted.org/packages/78/3e/4194ca188fcf437b2639eff7e6c14a379a7a0e2f009058fec32f6f8d6d8a/baize-0.19.1-py3-none-any.whl", hash = "sha256:75e2cc7f5de9904568b1423400e3ad0b2d17d0dff6366e9eb0823364c76aa6dd"},
+    {url = "https://files.pythonhosted.org/packages/89/53/85d2fd343631f3b605872e8332b6bbdb1a54de190666a2f0b897ca2554b5/baize-0.19.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a2d20610d5ffe7653c76ad3297b45dd3fea329f04e292a1017b0349150d70e58"},
+    {url = "https://files.pythonhosted.org/packages/8f/4f/69ffe1a0b274c3353fa44d1354dec52505f33d611a6c3d5ee1eb35aa1740/baize-0.19.1-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:46d823cd3060645e0a0e58cb5cd96a6c873cb6998dfe83e6eaa55e1ec02488c9"},
+    {url = "https://files.pythonhosted.org/packages/8f/7c/01291e6e2ebaac47f4a6c0f1009dc06eeb8a3e72ca10dac9d9ba15c6c9e4/baize-0.19.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ac7c98443d0570e25da7e073c9c39226b14cbb2c0ec68aa5dd4e142dea37b7f7"},
+    {url = "https://files.pythonhosted.org/packages/9d/08/a1f5c897db8a02723bde6aae911f2f434192984a2a9152d199855323c4ea/baize-0.19.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:e98ea346fe25964a7cf41585a9495fa81d18e31b7b9bf3359fe2e48d2bbce0e2"},
+    {url = "https://files.pythonhosted.org/packages/9e/b1/565da7e16cb46e3923efa65cf8871bc8339fccfe369fbaae1960176a76d8/baize-0.19.1-cp310-cp310-win_amd64.whl", hash = "sha256:9e47987fc43114bc76b5613dbdba95b8d7b8d3d7c494ad4b500e4d58af67452b"},
+    {url = "https://files.pythonhosted.org/packages/a8/73/81cf1d347b8d023d9c09c095872342f550b766a9ff3abc2fb58b93e11e09/baize-0.19.1.tar.gz", hash = "sha256:cda3616e6ac3e4dfe0d1eb3c647d4a7f95f4348e0ae56ae172978cebf10f6e2c"},
+    {url = "https://files.pythonhosted.org/packages/ad/0d/81b8a8babc62994d91dc9066af15e04324a581bdb88f47686ca856e8de87/baize-0.19.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:62eb7aab63e5c3b3e53d0e38e199082f9a3c6d41237a6c9e916c93b4076e7aa8"},
+    {url = "https://files.pythonhosted.org/packages/ae/31/0e25d5cbad879fdba091f65430a123bf9827b81a2beac0904480437b4ade/baize-0.19.1-cp37-cp37m-win_amd64.whl", hash = "sha256:abb77248fc57b8e5aa82f2ce64e38853613691b1ce5c804e3454915dc4719ebc"},
+    {url = "https://files.pythonhosted.org/packages/b7/59/664b5b04a009bab1fef2650342843794f71be24f1a4d34d93005723197e5/baize-0.19.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:fa398b4c85cb162ecabeef072897c5edb8e9af635e09a3137c96b01e9930bcc0"},
+    {url = "https://files.pythonhosted.org/packages/c5/bd/b7560f13b0b3ca190557fbcc02c69e7cee2de4246ad8579ca0127de88985/baize-0.19.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a6aa7b12aa13a1421d5c3527bddc2bf51d06127347f8b6bf844c9604e53a35d3"},
+    {url = "https://files.pythonhosted.org/packages/ee/ab/6cd09f8f60fe16dcc9782ddba10d84e00fe25a25c8abeae6a6324c43654c/baize-0.19.1-cp311-cp311-win_amd64.whl", hash = "sha256:362fa41aeb6275f7bd5df160ca232fa3d510f3e0ff42f346be6782c54179ebcb"},
+    {url = "https://files.pythonhosted.org/packages/f8/56/37921dc7e603d409efe235c910b7e6d2b46d5a8cce5ca06690579f33019f/baize-0.19.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fa6aaa54794ce16153ac587b74d7e4b25a756f0b6e1fe1e9857eb6b18a74e8ea"},
+    {url = "https://files.pythonhosted.org/packages/ff/76/a528fd7378c640546eb2f456d4b5a1a4ca20c7df3b5ff00bb97fcc6deb35/baize-0.19.1-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:4335d4945ee20827a890ead944dbde7dd1f6e6f665e5b91b969d6b46ae371489"},
 ]
 "black 23.1.0" = [
     {url = "https://files.pythonhosted.org/packages/01/8a/065d0a59c1ebe13186b12a2fa3965a41fc1588828709995e2630004d216e/black-23.1.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8178318cb74f98bc571eef19068f6ab5613b3e59d4f47771582f04e175570ed8"},
