@@ -264,7 +264,8 @@ def _pop_definitions(d: Dict[str, Any]) -> Dict[str, spec.Schema]:
             definitions.update(_pop_definitions(value))
         elif isinstance(value, (list, tuple)):
             for v in value:
-                definitions.update(_pop_definitions(v))
+                if isinstance(v, dict):
+                    definitions.update(_pop_definitions(v))
         else:
             pass
     return definitions
