@@ -25,6 +25,7 @@ class MultimethodRoutes(Routes[ViewType]):
         http_middlewares: typing.Sequence[typing.Any] = [],
         socket_middlewares: typing.Sequence[typing.Any] = [],
     ) -> None:
+        self.base_class = base_class
         super().__init__(
             *iterable,
             namespace=namespace,
@@ -32,7 +33,6 @@ class MultimethodRoutes(Routes[ViewType]):
             http_middlewares=http_middlewares,
             socket_middlewares=socket_middlewares,
         )
-        self.base_class = base_class
 
     def append(self: Self, route: BaseRoute[ViewType]) -> Self:
         if hasattr(route.endpoint, "__methods__"):

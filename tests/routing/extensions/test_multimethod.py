@@ -5,6 +5,7 @@ from async_asgi_testclient import TestClient
 
 from kui.asgi import HttpRoute, HttpView
 from kui.asgi import MultimethodRoutes as Routes
+from kui.asgi import required_method
 from kui.utils import safe_issubclass
 
 
@@ -48,11 +49,12 @@ def test_routes():
 def test_mulitmethodroutes():
     from kui.asgi import Kui
 
-    routes = Routes(base_class=HttpView)
-
-    @routes.http.get("/user")
     async def list_user():
         pass
+
+    routes = Routes(
+        HttpRoute("/user", list_user) @ required_method("GET"), base_class=HttpView
+    )
 
     @routes.http.post("/user")
     async def create_user():
