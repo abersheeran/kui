@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import copy
-import inspect
-import operator
 import typing
-from functools import reduce
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, TypeVar
 
@@ -19,7 +16,7 @@ from ..exceptions import RequestValidationError
 from ..parameters import _get_response_docs
 from . import specification as spec
 from .extra_docs import merge_openapi_info
-from .schema import schema_parameter, schema_request_body, schema_response
+from .schema import schema_request_body, schema_response
 
 
 class TagDetailOptional(TypedDict, total=False):
@@ -62,6 +59,8 @@ class OpenAPI:
         if security_schemes:
             components = self.openapi.setdefault("components", {})
             components["securitySchemes"] = security_schemes
+
+        self.security_schemes: Dict[str, spec.SecurityScheme | spec.Reference] = {}
 
         self.path2tag: Dict[str, List[str]] = {}
         for tag_name, tag_info in tags.items():
@@ -123,29 +122,14 @@ class OpenAPI:
         ):
             result["description"] = func.__docs_description__
 
-        if isinstance(func.__doc__, str):
-            clean_doc = inspect.cleandoc(func.__doc__)
-            if "summary" not in result and "description" not in result:
-                result.update(
-                    zip(("summary", "description"), clean_doc.split("\n\n", 1))
-                )
-            elif "description" not in result:
-                result["description"] = clean_doc
+        # generate security
+        result["security"] = []
+        for security_dict in getattr(func, "__docs_security__", []):
+            self.security_schemes.update(copy.deepcopy(security_dict["scheme"]))
+            result["security"].append(copy.deepcopy(security_dict["required"]))
 
         # generate params schema
-        parameters = reduce(
-            operator.add,
-            map(
-                lambda key: schema_parameter(
-                    _create_model(
-                        getattr(func, "__docs_parameters__", {}).get(key, [])
-                    ),
-                    typing.cast(Literal["path", "query", "header", "cookie"], key),
-                ),
-                ["path", "query", "header", "cookie"],
-            ),
-        )
-        result["parameters"] = parameters
+        result["parameters"] = parameters = getattr(func, "__docs_parameters__", [])
 
         # generate request body schema
         request_body = schema_request_body(
@@ -227,6 +211,7 @@ class OpenAPI:
                 },
             ),
         ]
+        self.security_schemes = {}
         paths = copy.deepcopy(self._generate_paths(request.app))
         for path_item in paths.values():
             for operation in filter(lambda x: isinstance(x, dict), path_item.values()):
@@ -234,6 +219,8 @@ class OpenAPI:
                 if "responses" not in operation:
                     operation["responses"] = {}
         components = openapi.setdefault("components", {})
+        if self.security_schemes:
+            components.setdefault("securitySchemes", {}).update(self.security_schemes)
         schemas = components.setdefault("schemas", {})
         schemas.update(**_pop_definitions(paths))
         openapi["paths"] = paths

@@ -1,10 +1,22 @@
 import inspect
+import io
 
+import httpx
 import pytest
 from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
 
-from kui.asgi import Body, Cookie, Depends, Header, Kui, Path, Query, RequestAttr
+from kui.asgi import (
+    Body,
+    Cookie,
+    Depends,
+    Header,
+    Kui,
+    Path,
+    Query,
+    RequestAttr,
+    UploadFile,
+)
 
 
 @pytest.mark.asyncio
@@ -224,3 +236,22 @@ async def test_middleware():
         assert resp.text == "aber"
 
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters
+
+
+@pytest.mark.asyncio
+async def test_upload_file():
+    app = Kui()
+
+    @app.router.http.post("/")
+    async def upload_file(file: Annotated[UploadFile, Body(...)]):
+        return {
+            "filename": file.filename,
+            "content": file.read().decode("utf8"),
+        }
+
+    async with httpx.AsyncClient(app=app, base_url="http://testserver") as client:
+        resp = await client.post("/", files={"file": ("file", io.BytesIO(b"123"))})
+        assert resp.json() == {"filename": "file", "content": "123"}
+
+        resp = await client.post("/", files={"file0": io.BytesIO(b"123")})
+        assert resp.status_code == 422

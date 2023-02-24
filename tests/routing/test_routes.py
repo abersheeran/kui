@@ -47,11 +47,11 @@ def test_decorator_required_method():
     async def need_delete():
         ...
 
-    assert app.router.search("http", "/get")[1].__name__ == "need_get"
-    assert app.router.search("http", "/post")[1].__name__ == "need_post"
-    assert app.router.search("http", "/put")[1].__name__ == "need_put"
-    assert app.router.search("http", "/patch")[1].__name__ == "need_patch"
-    assert app.router.search("http", "/delete")[1].__name__ == "need_delete"
+    assert app.router.search("http", "/get")[1].__method__ == "GET"
+    assert app.router.search("http", "/post")[1].__method__ == "POST"
+    assert app.router.search("http", "/put")[1].__method__ == "PUT"
+    assert app.router.search("http", "/patch")[1].__method__ == "PATCH"
+    assert app.router.search("http", "/delete")[1].__method__ == "DELETE"
 
 
 def test_lshift():

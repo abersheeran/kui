@@ -63,12 +63,14 @@ nav:
       - Http: asgi/http.md
       - Lifespan: asgi/lifespan.md
       - WebSocket: asgi/websocket.md
-      - Dependency injection: asgi/dependency-injection.md
-      - OpenAPI Docs: asgi/openapi.md
   - WSGI:
       - Intro: wsgi/index.md
       - Application: wsgi/application.md
       - Routing: wsgi/routing.md
       - Http: wsgi/http.md
-      - Dependency injection: wsgi/dependency-injection.md
-      - OpenAPI Docs: wsgi/openapi.md
+  - Dependency injection:
+      - Intro: dependency-injection/index.md
+      - Request Parameters: dependency-injection/request.md
+      - Depends: dependency-injection/depends.md
+      - Security: dependency-injection/security.md
+      - OpenAPI Document: dependency-injection/openapi.md

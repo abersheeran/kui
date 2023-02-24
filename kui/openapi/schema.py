@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import inspect
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Optional, Type, Union
 from typing import cast as typing_cast
 
 from baize.datastructures import ContentType
 from pydantic import BaseModel
-from typing_extensions import Literal, get_args, get_type_hints
+from typing_extensions import get_args, get_type_hints
 
 if TYPE_CHECKING:
     from ..asgi import Kui as ASGIKui
@@ -23,30 +23,6 @@ def _schema(model: Type[BaseModel]) -> spec.Schema:
     schema = deepcopy(model.schema(ref_template=REF_TEMPLATE))
     schema.pop("title")
     return typing_cast(spec.Schema, schema)
-
-
-def schema_parameter(
-    m: Optional[Type[BaseModel]],
-    position: Literal["path", "query", "header", "cookie"],
-) -> List[spec.Parameter]:
-    if m is None:
-        return []
-
-    _schemas = deepcopy(m.schema(ref_template=REF_TEMPLATE))
-    properties: Dict[str, Any] = _schemas["properties"]
-    required = _schemas.get("required", ())
-
-    return [
-        {
-            "in": position,
-            "name": name,
-            "description": schema.pop("description", ""),
-            "required": name in required,  # type: ignore
-            "schema": schema,
-            "deprecated": schema.pop("deprecated", False),
-        }
-        for name, schema in properties.items()
-    ]
 
 
 def schema_request_body(

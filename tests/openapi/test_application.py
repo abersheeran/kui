@@ -1,7 +1,8 @@
 import json
 from http import HTTPStatus
-from typing import Any, List
+from typing import Any, List, Tuple
 
+import httpx
 import pytest
 from async_asgi_testclient import TestClient
 from pydantic import BaseModel
@@ -18,6 +19,9 @@ from kui.asgi import (
     OpenAPI,
     Path,
     Routes,
+    api_key_auth_dependency,
+    basic_auth,
+    bearer_auth,
     required_method,
 )
 
@@ -106,6 +110,7 @@ async def test_openapi_page():
             "/hello": {
                 "get": {
                     "summary": "hello",
+                    "description": "hello",
                     "responses": {
                         "200": {
                             "description": "Request fulfilled, document follows",
@@ -140,6 +145,7 @@ async def test_openapi_page():
                     "responses": {
                         "201": {
                             "description": "Document created, URL follows",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -151,7 +157,6 @@ async def test_openapi_page():
                                     }
                                 }
                             },
-                            "headers": {},
                         }
                     },
                 },
@@ -230,6 +235,8 @@ async def test_openapi_page():
             },
             "/middleware/http-view": {
                 "get": {
+                    "summary": "...",
+                    "description": "......",
                     "parameters": [
                         {
                             "in": "header",
@@ -241,55 +248,6 @@ async def test_openapi_page():
                         }
                     ],
                     "responses": {
-                        "422": {
-                            "description": "",
-                            "headers": {},
-                            "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "loc": {
-                                                    "title": "Location",
-                                                    "description": "error field",
-                                                    "type": "array",
-                                                    "items": {"type": "string"},
-                                                },
-                                                "type": {
-                                                    "title": "Type",
-                                                    "description": "error type",
-                                                    "type": "string",
-                                                },
-                                                "msg": {
-                                                    "title": "Message",
-                                                    "description": "error message",
-                                                    "type": "string",
-                                                },
-                                                "ctx": {
-                                                    "title": "Context",
-                                                    "description": "error context",
-                                                    "type": "string",
-                                                },
-                                                "in": {
-                                                    "title": "In",
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "path",
-                                                        "query",
-                                                        "header",
-                                                        "cookie",
-                                                        "body",
-                                                    ],
-                                                },
-                                            },
-                                            "required": ["loc", "type", "msg"],
-                                        },
-                                    }
-                                }
-                            },
-                        },
                         "200": {
                             "description": "Request fulfilled, document follows",
                             "content": {"text/html": {"schema": {"type": "string"}}},
@@ -298,20 +256,6 @@ async def test_openapi_page():
                         "401": {
                             "description": "No permission -- see authorization schemes"
                         },
-                    },
-                },
-                "post": {
-                    "parameters": [
-                        {
-                            "in": "header",
-                            "name": "authorization",
-                            "description": "JWT Token",
-                            "required": True,
-                            "schema": {"title": "Authorization", "type": "string"},
-                            "deprecated": False,
-                        }
-                    ],
-                    "responses": {
                         "422": {
                             "description": "",
                             "headers": {},
@@ -361,8 +305,25 @@ async def test_openapi_page():
                                 }
                             },
                         },
+                    },
+                },
+                "post": {
+                    "summary": "...",
+                    "description": "......",
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
+                        }
+                    ],
+                    "responses": {
                         "201": {
                             "description": "Document created, URL follows",
+                            "headers": {},
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -374,25 +335,10 @@ async def test_openapi_page():
                                     }
                                 }
                             },
-                            "headers": {},
                         },
                         "401": {
                             "description": "No permission -- see authorization schemes"
                         },
-                    },
-                },
-                "delete": {
-                    "parameters": [
-                        {
-                            "in": "header",
-                            "name": "authorization",
-                            "description": "JWT Token",
-                            "required": True,
-                            "schema": {"title": "Authorization", "type": "string"},
-                            "deprecated": False,
-                        }
-                    ],
-                    "responses": {
                         "422": {
                             "description": "",
                             "headers": {},
@@ -442,9 +388,74 @@ async def test_openapi_page():
                                 }
                             },
                         },
+                    },
+                },
+                "delete": {
+                    "summary": "...",
+                    "description": "......",
+                    "parameters": [
+                        {
+                            "in": "header",
+                            "name": "authorization",
+                            "description": "JWT Token",
+                            "required": True,
+                            "schema": {"title": "Authorization", "type": "string"},
+                            "deprecated": False,
+                        }
+                    ],
+                    "responses": {
                         "204": {"description": "Request fulfilled, nothing follows"},
                         "401": {
                             "description": "No permission -- see authorization schemes"
+                        },
+                        "422": {
+                            "description": "",
+                            "headers": {},
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "loc": {
+                                                    "title": "Location",
+                                                    "description": "error field",
+                                                    "type": "array",
+                                                    "items": {"type": "string"},
+                                                },
+                                                "type": {
+                                                    "title": "Type",
+                                                    "description": "error type",
+                                                    "type": "string",
+                                                },
+                                                "msg": {
+                                                    "title": "Message",
+                                                    "description": "error message",
+                                                    "type": "string",
+                                                },
+                                                "ctx": {
+                                                    "title": "Context",
+                                                    "description": "error context",
+                                                    "type": "string",
+                                                },
+                                                "in": {
+                                                    "title": "In",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "path",
+                                                        "query",
+                                                        "header",
+                                                        "cookie",
+                                                        "body",
+                                                    ],
+                                                },
+                                            },
+                                            "required": ["loc", "type", "msg"],
+                                        },
+                                    }
+                                }
+                            },
                         },
                     },
                 },
@@ -545,6 +556,107 @@ def test_openapi_routes_tags():
     assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == (
         {"get": {"tags": ["tag0"]}}
     )
+
+
+@pytest.mark.asyncio
+async def test_openapi_security():
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= "/docs" // openapi.routes
+
+    @app.router.http.get("/basic")
+    async def basic(user_and_password: Annotated[Tuple[str, str], Depends(basic_auth)]):
+        return ", ".join(user_and_password)
+
+    @app.router.http.get("/bearer")
+    async def bearer(token: Annotated[str, Depends(bearer_auth)]):
+        return token
+
+    @app.router.http.get("/api-key")
+    async def api_key(
+        api_key: Annotated[str, Depends(api_key_auth_dependency("api-key"))]
+    ):
+        return api_key
+
+    async with httpx.AsyncClient(app=app, base_url="http://testserver") as client:
+        resp = await client.get("/docs/json")
+        openapi_json = resp.json()
+
+        assert openapi_json == {
+            "openapi": "3.0.3",
+            "info": {"title": "Kuí API", "version": "1.0.0"},
+            "paths": {
+                "/basic": {
+                    "get": {
+                        "security": [{"BasicAuth": []}, {"BasicAuth": []}],
+                        "responses": {
+                            "401": {
+                                "description": "No permission -- see authorization schemes",
+                                "headers": {
+                                    "WWW-Authenticate": {
+                                        "description": "Basic authentication",
+                                        "schema": {"type": "string"},
+                                    }
+                                },
+                            }
+                        },
+                    }
+                },
+                "/bearer": {
+                    "get": {
+                        "security": [{"BearerAuth": []}, {"BearerAuth": []}],
+                        "responses": {
+                            "401": {
+                                "description": "No permission -- see authorization schemes",
+                                "headers": {
+                                    "WWW-Authenticate": {
+                                        "description": "Bearer token",
+                                        "schema": {"type": "string"},
+                                    }
+                                },
+                            }
+                        },
+                    }
+                },
+                "/api-key": {
+                    "get": {
+                        "security": [{"ApiKeyAuth": []}, {"ApiKeyAuth": []}],
+                        "responses": {
+                            "401": {
+                                "description": "No permission -- see authorization schemes"
+                            }
+                        },
+                    }
+                },
+            },
+            "tags": [],
+            "components": {
+                "securitySchemes": {
+                    "BasicAuth": {"type": "http", "scheme": "basic"},
+                    "BearerAuth": {"type": "http", "scheme": "bearer"},
+                    "ApiKeyAuth": {"type": "apiKey", "name": "api-key", "in": "header"},
+                },
+                "schemas": {},
+            },
+            "servers": [
+                {"url": "/", "description": "Current server"},
+                {
+                    "url": "{scheme}://{address}/",
+                    "description": "Custom API Server Host",
+                    "variables": {
+                        "scheme": {
+                            "default": "http",
+                            "enum": ["http", "https"],
+                            "description": "http or https",
+                        },
+                        "address": {
+                            "default": "testserver",
+                            "description": "api server's host[:port]",
+                        },
+                    },
+                },
+            ],
+        }
 
 
 def test_openapi_depend_response():

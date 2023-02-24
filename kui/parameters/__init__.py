@@ -10,6 +10,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Optional,
     Sequence,
     Tuple,
     Type,
@@ -19,11 +20,12 @@ from typing import (
 from typing import cast as typing_cast
 
 from pydantic import BaseConfig, BaseModel, ValidationError, create_model
-from typing_extensions import Annotated, get_args, get_origin, get_type_hints
+from typing_extensions import Annotated, Literal, get_args, get_origin, get_type_hints
 
 if TYPE_CHECKING:
     from ..asgi import HttpRequest as ASGIHttpRequest
     from ..wsgi import HttpRequest as WSGIHttpRequest
+    from ..openapi import specification as spec
 
 from ..exceptions import RequestValidationError
 from ..utils import safe_issubclass
@@ -66,7 +68,7 @@ def _merge_multi_value(
 def _parse_parameters_and_request_body_to_model(
     sig: inspect.Signature,
 ) -> Tuple[
-    Dict[str, Type[BaseModel]] | None,
+    Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]] | None,
     Type[BaseModel] | None,
     Dict[Type[BaseModel], str],
 ]:
@@ -139,7 +141,14 @@ def _parse_parameters_and_request_body_to_model(
     else:
         parameters = None
 
-    return parameters, request_body, exclusive_models
+    return (
+        typing_cast(
+            Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]],
+            parameters,
+        ),
+        request_body,
+        exclusive_models,
+    )
 
 
 def _parse_depends_attrs(sig: inspect.Signature) -> Dict[str, DependInfo]:
@@ -193,6 +202,58 @@ def _create_new_signature(sig: inspect.Signature) -> inspect.Signature:
     )
 
 
+def _get_security(m: Type[BaseModel]) -> Dict[str, Dict[Any, Any]]:
+    return {
+        field.alias: field.field_info.extra["security"]
+        for field in m.__fields__.values()
+        if field.field_info.extra.get("security", None)
+    }
+
+
+def _get_parameters_docs(
+    m: Optional[Type[BaseModel]],
+    position: Literal["path", "query", "header", "cookie"],
+) -> List[spec.Parameter]:
+    if m is None:
+        return []
+
+    _schemas: Dict[str, Any] = copy.deepcopy(m.schema())
+    properties: Dict[str, Any] = _schemas["properties"]
+    required: Sequence[str] = _schemas.get("required", ())
+    security_fields = set(_get_security(m).keys())
+
+    return [
+        {
+            "in": position,
+            "name": name,
+            "description": schema.pop("description", ""),
+            "required": name in required,
+            "schema": schema,
+            "deprecated": schema.pop("deprecated", False),
+        }
+        for name, schema in properties.items()
+        if name not in security_fields
+    ]
+
+
+def _merge_parameters_docs(
+    x: List[spec.Parameter], y: List[spec.Parameter]
+) -> List[spec.Parameter]:
+    result = x + [
+        param
+        for param in y
+        if not any(
+            map(
+                lambda x_param: (
+                    x_param["name"] == param["name"] and x_param["in"] == param["in"]
+                ),
+                x,
+            )
+        )
+    ]
+    return result
+
+
 def _get_response_docs(handler: Callable[..., Any]) -> List[Dict[Any, Any]]:
     response_docs: List[Dict[Any, Any]] = []
     for response in get_args(
@@ -213,10 +274,21 @@ def _get_response_docs(handler: Callable[..., Any]) -> List[Dict[Any, Any]]:
 def _update_docs(
     old_handler: Callable[..., Any],
     handler: Callable[..., Any],
-    parameters: Dict[str, Type[BaseModel]] | None,
+    parameters: Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]]
+    | None,
     request_body: Type[BaseModel] | None,
     depend_functions: Dict[str, Callable[..., Any]],
 ) -> None:
+    if isinstance(handler.__doc__, str):
+        clean_doc = inspect.cleandoc(handler.__doc__)
+        if not hasattr(handler, "__docs_summary__") and not hasattr(
+            handler, "__docs_description__"
+        ):
+            for k, value in zip(("summary", "description"), clean_doc.split("\n\n", 1)):
+                setattr(handler, f"__docs_{k}__", value)
+        elif not hasattr(handler, "__docs_description__"):
+            setattr(handler, "__docs_description__", clean_doc)
+
     if request_body is not None:
         __request_body__: List[Type[BaseModel]] = getattr(
             handler, "__docs_request_body__", []
@@ -225,11 +297,15 @@ def _update_docs(
         setattr(handler, "__docs_request_body__", __request_body__)
 
     if parameters is not None:
-        __parameters__: Dict[str, List[Type[BaseModel]]] = getattr(
-            handler, "__docs_parameters__", {}
-        )
-        for key, parameter_model in parameters.items():
-            __parameters__.setdefault(key, []).append(parameter_model)
+        __parameters__: List[Any] = getattr(handler, "__docs_parameters__", [])
+        __security__: List[Any] = getattr(handler, "__docs_security__", [])
+        for position, model in parameters.items():
+            __parameters__ = _merge_parameters_docs(
+                __parameters__, _get_parameters_docs(model, position)
+            )
+            for security in _get_security(model).values():
+                __security__.append(security)
+        setattr(handler, "__docs_security__", __security__)
         setattr(handler, "__docs_parameters__", __parameters__)
 
     for func in depend_functions.values():
@@ -237,10 +313,18 @@ def _update_docs(
         __request_body__.extend(getattr(func, "__docs_request_body__", []))
         setattr(handler, "__docs_request_body__", __request_body__)
 
-        __parameters__ = getattr(handler, "__docs_parameters__", {})
-        for key, value in getattr(func, "__docs_parameters__", {}).items():
-            __parameters__.setdefault(key, []).extend(value)
-        setattr(handler, "__docs_parameters__", __parameters__)
+        setattr(
+            handler,
+            "__docs_parameters__",
+            _merge_parameters_docs(
+                getattr(handler, "__docs_parameters__", []),
+                getattr(func, "__docs_parameters__", []),
+            ),
+        )
+
+        __security__ = getattr(handler, "__docs_security__", [])
+        __security__.extend(getattr(func, "__docs_security__", []))
+        setattr(handler, "__docs_security__", __security__)
 
         __responses__: List[Dict[Any, Any]] = getattr(handler, "__docs_responses__", [])
         __responses__.extend(_get_response_docs(func))
@@ -248,7 +332,8 @@ def _update_docs(
 
 
 def _validate_parameters(
-    parameters: Dict[str, Type[BaseModel]], request: ASGIHttpRequest | WSGIHttpRequest
+    parameters: Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]],
+    request: ASGIHttpRequest | WSGIHttpRequest,
 ) -> List[BaseModel]:
     data = []
 
