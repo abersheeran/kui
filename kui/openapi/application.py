@@ -123,10 +123,11 @@ class OpenAPI:
             result["description"] = func.__docs_description__
 
         # generate security
-        result["security"] = []
+        security_set = {}
         for security_dict in getattr(func, "__docs_security__", []):
             self.security_schemes.update(copy.deepcopy(security_dict["scheme"]))
-            result["security"].append(copy.deepcopy(security_dict["required"]))
+            security_set.update(copy.deepcopy(security_dict["required"]))
+        result["security"] = [{k: v} for k, v in security_set.items()]
 
         # generate params schema
         result["parameters"] = parameters = getattr(func, "__docs_parameters__", [])
