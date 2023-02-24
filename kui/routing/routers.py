@@ -76,15 +76,15 @@ class HttpRegister(typing.Generic[ViewType]):
         """
 
         def register(endpoint: ViewType) -> ViewType:
-            route: HttpRoute[ViewType] = reduce(
-                operator.matmul,
-                middlewares,
-                self._http_route(path, endpoint, name, summary, description, tags),
+            route: HttpRoute[ViewType] = self._http_route(
+                path, endpoint, name, summary, description, tags
             )
             if method != "any":
                 route = route @ self._required_method(method.upper())
 
-            _ = self.__routes << route
+            reduce(operator.matmul, middlewares, route)
+
+            self.__routes <<= route
             return endpoint
 
         return register
