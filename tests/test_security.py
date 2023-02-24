@@ -3,7 +3,14 @@ from typing import Tuple
 import httpx
 from typing_extensions import Annotated
 
-from kui.wsgi import Depends, Kui, api_key_auth_dependency, basic_auth, bearer_auth
+from kui.wsgi import (
+    Depends,
+    Kui,
+    OpenAPI,
+    api_key_auth_dependency,
+    basic_auth,
+    bearer_auth,
+)
 
 
 def test_basic_auth():
@@ -48,3 +55,47 @@ def test_bearer_auth():
         assert client.get("/").status_code == 401
 
         assert client.get("/", headers={"Authorization": "Bearer 123"}).text == "123"
+
+
+def test_auth_openapi():
+    app = Kui()
+    app.router <<= "/docs" // OpenAPI().routes
+
+    def required_auth(token: Annotated[str, Depends(bearer_auth)]):
+        return {"name": "username", "role": "User"}
+
+    @app.router.http.get("/")
+    def homepage(user: Annotated[dict, Depends(required_auth)]):
+        return user
+
+    with httpx.Client(app=app, base_url="http://testServer") as client:
+        assert client.get("/docs/json").json() == {
+            "openapi": "3.0.3",
+            "info": {"title": "Kuí API", "version": "1.0.0"},
+            "paths": {
+                "/": {"get": {"security": [{"BearerAuth": []}], "responses": {}}}
+            },
+            "tags": [],
+            "components": {
+                "securitySchemes": {"BearerAuth": {"type": "http", "scheme": "bearer"}},
+                "schemas": {},
+            },
+            "servers": [
+                {"url": "/", "description": "Current server"},
+                {
+                    "url": "{scheme}://{address}/",
+                    "description": "Custom API Server Host",
+                    "variables": {
+                        "scheme": {
+                            "default": "http",
+                            "enum": ["http", "https"],
+                            "description": "http or https",
+                        },
+                        "address": {
+                            "default": "testserver",
+                            "description": "api server's host[:port]",
+                        },
+                    },
+                },
+            ],
+        }

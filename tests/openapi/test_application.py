@@ -588,7 +588,7 @@ async def test_openapi_security():
             "paths": {
                 "/basic": {
                     "get": {
-                        "security": [{"BasicAuth": []}, {"BasicAuth": []}],
+                        "security": [{"BasicAuth": []}],
                         "responses": {
                             "401": {
                                 "description": "No permission -- see authorization schemes",
@@ -604,7 +604,7 @@ async def test_openapi_security():
                 },
                 "/bearer": {
                     "get": {
-                        "security": [{"BearerAuth": []}, {"BearerAuth": []}],
+                        "security": [{"BearerAuth": []}],
                         "responses": {
                             "401": {
                                 "description": "No permission -- see authorization schemes",
@@ -620,7 +620,7 @@ async def test_openapi_security():
                 },
                 "/api-key": {
                     "get": {
-                        "security": [{"ApiKeyAuth": []}, {"ApiKeyAuth": []}],
+                        "security": [{"ApiKeyAuth": []}],
                         "responses": {
                             "401": {
                                 "description": "No permission -- see authorization schemes"
