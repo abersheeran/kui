@@ -237,28 +237,3 @@ def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, Htt
 
 !!! tip ""
     具体的字段可参考 [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#operationObject)。
-
-例如你可以使用它来描述 Kuí 并不自带的 `security`：
-
-```python
-from typing_extensions import Annotated
-from kui.wsgi import Kui, OpenAPI
-from kui.openapi import describe_extra_docs
-
-app = Kui()
-
-openapi = OpenAPI(
-    security_schemes={"BearerAuth": {"type": "http", "scheme": "bearer"}},
-)
-app.router << ("/docs" // openapi.routes)
-
-
-def required_auth(endpoint):
-    describe_extra_docs(endpoint, {"security": [{"BearerAuth": []}]})
-
-    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
-        ...
-        return await endpoint()
-
-    return wrapper
-```

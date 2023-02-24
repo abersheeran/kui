@@ -37,7 +37,7 @@ class BaseRoute(typing.Generic[ViewType]):
                 if new_callback is not old_callback:
                     update_wrapper(new_callback, old_callback)
                     new_callback = self._auto_params(new_callback)
-                setattr(endpoint, method, new_callback)
+                setattr(endpoint, method, staticmethod(new_callback))
         else:
             old_callback = endpoint
             new_callback = middleware(old_callback)

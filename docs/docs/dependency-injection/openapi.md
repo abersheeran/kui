@@ -1,7 +1,7 @@
 编写如下代码，访问你服务上 `/docs/` 即可看到生成的文档。
 
 ```python
-from kui.asgi import Kui, OpenAPI
+from kui.wsgi import Kui, OpenAPI
 
 app = Kui()
 
@@ -33,13 +33,13 @@ OpenAPI(
 在注册路由时传入 `tags` 参数，
 
 ```python
-from kui.asgi import Routes
+from kui.wsgi import Routes
 
 routes = Routes()
 
 
 @routes.http.get('/', tags=["tag-name", "tag-name-2"])
-async def handler():
+def handler():
     return "/"
 ```
 
@@ -50,10 +50,10 @@ async def handler():
 例如：
 
 ```python
-from kui.asgi import HTTPView
+from kui.wsgi import HTTPView
 
 
-async def handler():
+def handler():
     """
     api summary
 
@@ -64,7 +64,7 @@ async def handler():
 
 
 class ClassHandler(HTTPView):
-    async def get(self):
+    def get(self):
         """
         api summary
 
@@ -77,26 +77,26 @@ class ClassHandler(HTTPView):
 你也可以在注册路由传入参数。
 
 ```python
-from kui.asgi import Routes
+from kui.wsgi import Routes
 
 routes = Routes()
 
 
 @routes.http.get('/', summary="api summary", description="api description.............")
-async def handler():
+def handler():
     return "/"
 ```
 
 如果你的 description 很长，也可以只给装饰器传入 `summary` 参数，`description` 将自动使用整个 `__doc__`。
 
 ```python
-from kui.asgi import Routes
+from kui.wsgi import Routes
 
 routes = Routes()
 
 
 @routes.http.get('/', summary="api summary")
-async def handler():
+def handler():
     """
     api description..........................
     .........................................
@@ -107,7 +107,7 @@ async def handler():
 
 ## 描述请求参数
 
-当你使用[依赖注入](./dependency-injection.md)时，请求参数将自动生成。
+当你使用[依赖注入](./index.md)时，请求参数将自动生成。
 
 ### 修改 Content-Type
 
@@ -122,13 +122,13 @@ from http import HTTPStatus
 import msgpack
 from typing_extensions import Annotated
 
-from kui.asgi import Kui, FactoryClass, HttpRequest
+from kui.wsgi import Kui, FactoryClass, HttpRequest
 
 
 class MsgPackRequest(HttpRequest):
-    async def data(self) -> Annotated[typing.Any, ContentType("application/x-msgpack")]:
+    def data(self) -> Annotated[typing.Any, ContentType("application/x-msgpack")]:
         if self.content_type == "application/x-msgpack":
-            return msgpack.unpackb(await self.body)
+            return msgpack.unpackb(self.body)
 
         raise HTTPException(
             HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
@@ -145,13 +145,13 @@ app = Kui(factory_class=FactoryClass(http=MsgPackRequest))
 
 ```python
 from typing_extensions import Annotated
-from kui.asgi import Kui, JSONResponse
+from kui.wsgi import Kui, JSONResponse
 
 app = Kui()
 
 
 @app.router.http.get("/hello")
-async def hello() -> Annotated[Any, JSONResponse[200, {}, List[str]]]:
+def hello() -> Annotated[Any, JSONResponse[200, {}, List[str]]]:
     """
     hello
     """
@@ -162,7 +162,7 @@ async def hello() -> Annotated[Any, JSONResponse[200, {}, List[str]]]:
 
 ```python
 from typing_extensions import Annotated
-from kui.asgi import Kui, JSONResponse
+from kui.wsgi import Kui, JSONResponse
 from pydantic import BaseModel
 
 app = Kui()
@@ -174,7 +174,7 @@ class ErrorMessage(BaseModel):
 
 
 @app.router.http.get("/hello")
-async def hello() -> Annotated[
+def hello() -> Annotated[
     Any,
     JSONResponse[200, {}, List[str]],
     JSONResponse[400, {}, ErrorMessage]
@@ -187,7 +187,7 @@ async def hello() -> Annotated[
 
 使用不同的 Response 子类可以生成不同的响应结果文档。
 
-!!! tip "缺省"
+!!! tip
     只有第一个参数是必须的，其他参数都可不填。
 
 所有响应里的 `headers` 参数应当是一个标准的 [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) 中所需要的 Headers 字典。例如：`{"Location": {"schema": {"type": "string"}}}`。
@@ -205,14 +205,12 @@ async def hello() -> Annotated[
 
 ### 在中间件里使用
 
-在中间件里的使用方式并没有什么不同。
-
 ```python
 from typing_extensions import Annotated
 
 
 def required_auth(endpoint):
-    async def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
         ...
         return await endpoint()
 
@@ -221,13 +219,11 @@ def required_auth(endpoint):
 
 ### 在依赖函数里使用
 
-在依赖函数里的使用方式并没有什么不同。
-
 ```python
 from typing_extensions import Annotated
 
 
-async def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
     ...
 ```
 

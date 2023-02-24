@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..exceptions import HTTPException
+from ..openapi.types import UploadFile
 from ..parameters.field_functions import (
     Body,
     Cookie,
@@ -10,6 +11,7 @@ from ..parameters.field_functions import (
     Query,
     RequestAttr,
 )
+from ..security import api_key_auth_dependency, basic_auth, bearer_auth
 from .applications import FactoryClass, Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
@@ -46,6 +48,10 @@ __all__ = [
     "Query",
     "RequestAttr",
     "Depends",
+    "api_key_auth_dependency",
+    "basic_auth",
+    "bearer_auth",
+    "UploadFile",
     "HttpResponse",
     "FileResponse",
     "HTMLResponse",

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, Optional, TypeVar
 
 from pydantic.fields import NoArgAnyCallable, Undefined
+from typing_extensions import Literal
 
 from .fields import (
     BodyInfo,
@@ -225,3 +226,49 @@ def Depends(call: Callable, *, cache=True) -> Any:
     :param cache: whether to cache the result of the dependency call in the request state
     """
     return DependInfo(call, cache=cache)
+
+
+def RequiredApiKeyAuth(
+    name: str, position: Literal["query", "header", "cookie"] = "header"
+) -> Any:
+    if position == "query":
+        class_ = Query
+    elif position == "header":
+        class_ = Header
+    elif position == "cookie":
+        class_ = Cookie
+    else:
+        raise ValueError(
+            f"Invalid position {position}, must be one of ('query', 'header', 'cookie')"
+        )
+
+    return class_(
+        alias=name,
+        title="API Key",
+        security={
+            "scheme": {"ApiKeyAuth": {"type": "apiKey", "name": name, "in": position}},
+            "required": {"ApiKeyAuth": []},
+        },
+    )
+
+
+def RequiredBearerAuth() -> Any:
+    return Header(
+        alias="authorization",
+        title="Bearer Auth",
+        security={
+            "scheme": {"BearerAuth": {"type": "http", "scheme": "bearer"}},
+            "required": {"BearerAuth": []},
+        },
+    )
+
+
+def RequiredBasicAuth() -> Any:
+    return Header(
+        alias="authorization",
+        title="Basic Auth",
+        security={
+            "scheme": {"BasicAuth": {"type": "http", "scheme": "basic"}},
+            "required": {"BasicAuth": []},
+        },
+    )

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import typing
 from http import HTTPStatus
 
@@ -23,10 +22,9 @@ ErrorHandlerType = typing.Callable[[typing.Any], typing.Awaitable[typing.Any]]
 
 class ExceptionMiddleware(ExceptionMiddlewareBase[ErrorHandlerType]):
     def __call__(self, endpoint: AsyncViewType) -> AsyncViewType:
-        @functools.wraps(endpoint)
-        async def wrapper(*args, **kwargs) -> typing.Any:
+        async def wrapper() -> typing.Any:
             try:
-                return await endpoint(*args, **kwargs)
+                return await endpoint()
             except BaseException as exc:
                 handler = self.lookup_handler(exc)
                 if handler is None:

@@ -1,10 +1,22 @@
 import inspect
+import io
 
+import httpx
 import pytest
 from httpx import Client
 from typing_extensions import Annotated
 
-from kui.wsgi import Body, Cookie, Depends, Header, Kui, Path, Query, RequestAttr
+from kui.wsgi import (
+    Body,
+    Cookie,
+    Depends,
+    Header,
+    Kui,
+    Path,
+    Query,
+    RequestAttr,
+    UploadFile,
+)
 
 
 def test_path():
@@ -223,3 +235,21 @@ def test_middleware():
         assert resp.text == "aber"
 
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters
+
+
+def test_upload_file():
+    app = Kui()
+
+    @app.router.http.post("/")
+    def upload_file(file: Annotated[UploadFile, Body(...)]):
+        return {
+            "filename": file.filename,
+            "content": file.read().decode("utf8"),
+        }
+
+    with httpx.Client(app=app, base_url="http://testserver") as client:
+        resp = client.post("/", files={"file": ("file", io.BytesIO(b"123"))})
+        assert resp.json() == {"filename": "file", "content": "123"}
+
+        resp = client.post("/", files={"file0": io.BytesIO(b"123")})
+        assert resp.status_code == 422

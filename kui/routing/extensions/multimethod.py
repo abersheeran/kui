@@ -1,16 +1,11 @@
 from __future__ import annotations
 
 import typing
-from functools import wraps
 
 from typing_extensions import Self
 
 from ...routing import BaseRoute, HttpRoute, Routes
 from ..typing import ViewType
-
-exclude_self = lambda func: wraps(func)(
-    lambda self, *args, **kwargs: func(*args, **kwargs)
-)
 
 
 class MultimethodRoutes(Routes[ViewType]):
@@ -67,7 +62,7 @@ class MultimethodRoutes(Routes[ViewType]):
                             method.lower(): getattr(r.endpoint, method.lower())
                             for method in r.endpoint.__methods__  # type: ignore
                         },
-                        route.endpoint.__method__.lower(): exclude_self(route.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
                     },
                 )
             else:
@@ -75,8 +70,8 @@ class MultimethodRoutes(Routes[ViewType]):
                     "_MultimethodEndpoint",
                     (self.base_class, _MultiMethodView),
                     {
-                        r.endpoint.__method__.lower(): exclude_self(r.endpoint),  # type: ignore
-                        route.endpoint.__method__.lower(): exclude_self(route.endpoint),  # type: ignore
+                        r.endpoint.__method__.lower(): staticmethod(r.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
                     },
                 )
             # replacing route inplace
