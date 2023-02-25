@@ -153,6 +153,9 @@ class OpenAPI:
             __docs_responses__.extend(_get_response_docs(handler))
 
         for response_docs in __docs_responses__:
+            for k, v in list(response_docs.items()):
+                response_docs[str(k)] = v
+
             for response in response_docs.values():
                 for media_type, media_type_value in list(
                     response.get("content", {}).items()
