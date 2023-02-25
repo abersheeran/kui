@@ -154,6 +154,7 @@ class OpenAPI:
 
         for response_docs in __docs_responses__:
             for k, v in list(response_docs.items()):
+                del response_docs[k]
                 response_docs[str(k)] = v
 
             for response in response_docs.values():
