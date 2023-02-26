@@ -38,7 +38,7 @@ app = Kui(
 `app.state` 用于存储全局变量。以下是结合 [Lifespan](../lifespan/) 使用 redis 的样例。
 
 ```python
-import redis
+import redis.asyncio
 from kui.asgi import Kui
 
 
