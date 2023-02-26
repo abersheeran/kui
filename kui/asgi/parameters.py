@@ -9,6 +9,7 @@ from contextlib import (
     contextmanager,
 )
 from typing import Any, Callable, Dict, List, TypeVar
+from typing import cast as typing_cast
 
 from baize.datastructures import FormData
 from pydantic import BaseModel, ValidationError
@@ -121,7 +122,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                     _convert_model_data_to_keyword_arguments(data, exclusive_models)
                 )
 
-                result = callback(*args, **{**keyword_params, **kwargs})  # type: ignore
+                result = callback(*args, **{**keyword_params, **kwargs})
                 if inspect.isawaitable(result):
                     result = await result
                 return result
@@ -146,7 +147,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
         depend_functions,
     )
 
-    return callback_with_auto_bound_params  # type: ignore
+    return typing_cast(CallableObject, callback_with_auto_bound_params)
 
 
 auto_params = create_auto_params(_create_new_callback)

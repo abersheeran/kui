@@ -60,9 +60,9 @@ class MultimethodRoutes(Routes[ViewType]):
                     {
                         **{
                             method.lower(): getattr(r.endpoint, method.lower())
-                            for method in r.endpoint.__methods__  # type: ignore
+                            for method in r.endpoint.__methods__
                         },
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
                     },
                 )
             else:
@@ -71,11 +71,11 @@ class MultimethodRoutes(Routes[ViewType]):
                     (self.base_class, _MultiMethodView),
                     {
                         r.endpoint.__method__.lower(): staticmethod(r.endpoint),  # type: ignore
-                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),  # type: ignore
+                        route.endpoint.__method__.lower(): staticmethod(route.endpoint),
                     },
                 )
             # replacing route inplace
-            r.endpoint = endpoint  # type: ignore
+            r.endpoint = typing.cast(ViewType, endpoint)
         return self
 
 

@@ -67,24 +67,24 @@ app = Kui()
 
 @app.router.http("/cat")
 class Cat(HttpView):
-    @staticmethod
-    async def get():
+    @classmethod
+    async def get(cls):
         return request.method
 
-    @staticmethod
-    async def post():
+    @classmethod
+    async def post(cls):
         return request.method
 
-    @staticmethod
-    async def put(self):
+    @classmethod
+    async def put(cls):
         return request.method
 
-    @staticmethod
-    async def patch():
+    @classmethod
+    async def patch(cls):
         return request.method
 
-    @staticmethod
-    async def delete():
+    @classmethod
+    async def delete(cls):
         return request.method
 ```
 

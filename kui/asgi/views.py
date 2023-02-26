@@ -70,9 +70,10 @@ class HttpView:
             status_code=405, headers={"Allow": ", ".join(self.__methods__)}
         )
 
-    async def options(self) -> HttpResponse:
+    @classmethod
+    async def options(cls) -> HttpResponse:
         """Handle responding to requests for the OPTIONS HTTP verb."""
-        return HttpResponse(headers={"Allow": ", ".join(self.__methods__)})
+        return HttpResponse(headers={"Allow": ", ".join(cls.__methods__)})
 
 
 class SocketView:

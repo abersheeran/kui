@@ -10,11 +10,13 @@ async def test_http_view():
 
     @app.router.http("/")
     class Home(HttpView):
-        @staticmethod
-        async def get():
+        @classmethod
+        async def get(cls):
             return "OK"
 
     async with httpx.AsyncClient(app=app, base_url="http://testServer") as client:
         assert (await client.get("/")).content == b"OK"
 
         assert (await client.post("/")).status_code == 405
+
+        assert (await client.options("/")).headers["Allow"] == "GET, OPTIONS"

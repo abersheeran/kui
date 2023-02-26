@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import operator
 import typing
 from dataclasses import dataclass
@@ -31,7 +32,7 @@ class BaseRoute(typing.Generic[ViewType]):
     def __matmul__(self: Self, middleware: MiddlewareType[ViewType]) -> Self:
         endpoint = self.endpoint
         if hasattr(endpoint, "__methods__"):
-            for method in map(str.lower, endpoint.__methods__):  # type: ignore
+            for method in map(str.lower, endpoint.__methods__):
                 old_callback = getattr(endpoint, method)
                 new_callback = middleware(old_callback)
                 if new_callback is not old_callback:
@@ -64,14 +65,21 @@ class HttpRoute(BaseRoute[ViewType], typing.Generic[ViewType]):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+
+        w: typing.Any
+        if inspect.ismethod(self.endpoint):
+            w = self.endpoint.__func__
+        else:
+            w = self.endpoint
+
         if self.summary:
-            setattr(self.endpoint, "__docs_summary__", self.summary)
+            setattr(w, "__docs_summary__", self.summary)
 
         if self.description:
-            setattr(self.endpoint, "__docs_description__", self.description)
+            setattr(w, "__docs_description__", self.description)
 
         if self.tags:
-            setattr(self.endpoint, "__docs_tags__", list(self.tags))
+            setattr(w, "__docs_tags__", list(self.tags))
 
     def extend_middlewares(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))

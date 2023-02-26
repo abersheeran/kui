@@ -32,10 +32,10 @@ cli = ["click<9.0,>=8.0"]
 lint-isort = "isort {args}"
 lint-black = "black {args}"
 lint = { composite = [
-    "lint-isort",
-    "lint-black",
-    "check-flake8",
-    "check-mypy",
+    "lint-isort kui tests",
+    "lint-black kui tests",
+    "check-flake8 kui tests",
+    "check-mypy kui tests",
 ] }
 check-isort = "isort --check --diff {args}"
 check-black = "black --check --diff {args}"
@@ -50,12 +50,7 @@ check = { composite = [
 test = "pytest {args}"
 
 [tool.pdm.dev-dependencies]
-dev = [
-    "flake8>=5.0.4",
-    "black>=23.1.0",
-    "isort>=5.11.5",
-    "mypy>=1.0.0",
-]
+dev = ["flake8>=5.0.4", "black>=23.1.0", "isort>=5.11.5", "mypy>=1.0.0"]
 test = [
     "async-asgi-testclient<2.0.0,>=1.4.11",
     "pytest<8.0.0,>=7.2.1",
@@ -86,6 +81,7 @@ exclude_lines = [
     "if typing.TYPE_CHECKING:",
     "if TYPE_CHECKING:",
     "pass",
+    "\\.\\.\\.",
 ]
 show_missing = true
 skip_covered = true

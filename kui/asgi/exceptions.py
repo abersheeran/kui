@@ -43,15 +43,12 @@ class ExceptionMiddleware(ExceptionMiddlewareBase[ErrorHandlerType]):
         if exc.status_code in {204, 304}:
             return HttpResponse(status_code=exc.status_code, headers=exc.headers)
         else:
-            return typing.cast(
-                HttpResponse,
-                request.app.response_converter(
-                    exc.content
-                    if exc.content is not None
-                    else HTTPStatus(exc.status_code).description,
-                    exc.status_code,
-                    exc.headers,
-                ),
+            return request.app.response_converter(
+                exc.content
+                if exc.content is not None
+                else HTTPStatus(exc.status_code).description,
+                exc.status_code,
+                exc.headers,
             )
 
     async def validation_error(

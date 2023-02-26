@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import inspect
 import operator
 import typing
 from copy import deepcopy
@@ -29,6 +30,16 @@ class NoRouteFound(Exception):
 
 
 class HttpRegister(typing.Generic[ViewType]):
+    """
+    shortcut for `self << HttpRoute(path, endpoint, name)`
+
+    example:
+    ```python
+        @routes.http("/path", name="endpoint-name")
+        class Endpoint(HttpViewType): ...
+    ```
+    """
+
     def __init__(self, routes: RouteRegisterMixin[ViewType]) -> None:
         self.__routes = routes
 
@@ -329,6 +340,21 @@ class RouteRegisterMixin(abc.ABC, typing.Generic[ViewType]):
         return register
 
 
+def _set_tags(tags: typing.Iterable[str] | None = None):
+    def _set_tags_middleware(endpoint: ViewType) -> ViewType:
+        stupid_type_checker = endpoint
+        w: typing.Any
+        if inspect.ismethod(stupid_type_checker):
+            w = stupid_type_checker.__func__
+        else:
+            w = endpoint
+        all_tags = list(getattr(w, "__docs_tags__", [])) + list(tags or [])
+        setattr(w, "__docs_tags__", all_tags)
+        return endpoint
+
+    return _set_tags_middleware
+
+
 class Routes(
     typing.Sequence[BaseRoute[ViewType]],
     RouteRegisterMixin[ViewType],
@@ -347,16 +373,7 @@ class Routes(
         self.namespace = namespace
         self._list: typing.List[BaseRoute[ViewType]] = []
         self._http_middlewares = list(http_middlewares)
-        self._http_middlewares.append(
-            lambda endpoint: (
-                setattr(  # type: ignore
-                    endpoint,
-                    "__docs_tags__",
-                    list(getattr(endpoint, "__docs_tags__", [])) + list(tags or []),
-                )
-                or endpoint
-            )
-        )
+        self._http_middlewares.append(_set_tags(tags))
         self._socket_middlewares = list(socket_middlewares)
         for route in iterable:
             _ = self << route

@@ -69,6 +69,7 @@ class HttpView(metaclass=HttpViewMeta):
             status_code=405, headers={"Allow": ", ".join(self.__methods__)}
         )
 
-    def options(self) -> HttpResponse:
+    @classmethod
+    def options(cls) -> HttpResponse:
         """Handle responding to requests for the OPTIONS HTTP verb."""
-        return HttpResponse(headers={"Allow": ", ".join(self.__methods__)})
+        return HttpResponse(headers={"Allow": ", ".join(cls.__methods__)})

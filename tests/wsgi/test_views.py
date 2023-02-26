@@ -8,11 +8,13 @@ def test_http_view():
 
     @app.router.http("/")
     class Home(HttpView):
-        @staticmethod
-        def get():
+        @classmethod
+        def get(cls):
             return "OK"
 
     with httpx.Client(app=app, base_url="http://testServer") as client:
         assert client.get("/").content == b"OK"
 
         assert client.post("/").status_code == 405
+
+        assert client.options("/").headers["Allow"] == "GET, OPTIONS"

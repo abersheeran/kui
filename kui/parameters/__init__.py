@@ -126,7 +126,7 @@ def _parse_parameters_and_request_body_to_model(
         if safe_issubclass(params, BaseModel):
             model = params
         else:
-            model = create_model("temporary_model", **params)  # type: ignore
+            model = create_model("temporary_model", **params)
         raw_parameters[key] = model
 
     request_body: Type[BaseModel] | None
@@ -279,6 +279,9 @@ def _update_docs(
     request_body: Type[BaseModel] | None,
     depend_functions: Dict[str, Callable[..., Any]],
 ) -> None:
+    if inspect.ismethod(handler):
+        handler = handler.__func__  # type: ignore
+
     if isinstance(handler.__doc__, str):
         clean_doc = inspect.cleandoc(handler.__doc__)
         if not hasattr(handler, "__docs_summary__") and not hasattr(
@@ -307,6 +310,8 @@ def _update_docs(
                 __security__.append(security)
         setattr(handler, "__docs_security__", __security__)
         setattr(handler, "__docs_parameters__", __parameters__)
+
+    setattr(handler, "__docs_responses__", parse_docs_responses(old_handler))
 
     for func in depend_functions.values():
         __request_body__ = getattr(handler, "__docs_request_body__", [])
@@ -429,25 +434,25 @@ def create_auto_params(
     def auto_params(handler: CallableObject) -> CallableObject:
         if hasattr(handler, "__methods__"):
             new_class = _create_new_class(handler)
-            for method in map(lambda x: x.lower(), handler.__methods__):  # type: ignore
+            for method in map(lambda x: x.lower(), handler.__methods__):
                 old_callback = getattr(handler, method)
                 new_callback = create_new_callback(old_callback)
                 setattr(new_class, method, new_callback)  # note: set to new class
-                setattr(
-                    new_callback,
-                    "__docs_responses__",
-                    parse_docs_responses(old_callback),
-                )
-            setattr(new_class, "__raw_handler__", handler)
+            setattr(
+                new_class,
+                "__raw_handler__",
+                getattr(handler, "__raw_handler__", handler),
+            )
             return new_class
         else:
             old_callback = handler
             new_callback = create_new_callback(old_callback)
             setattr(
-                new_callback, "__docs_responses__", parse_docs_responses(old_callback)
+                new_callback,
+                "__raw_handler__",
+                getattr(handler, "__raw_handler__", handler),
             )
-            setattr(new_callback, "__raw_handler__", handler)
-            return new_callback  # type: ignore
+            return new_callback
 
     return auto_params
 
@@ -461,6 +466,8 @@ def update_wrapper(
     for attr in dir(old_handler):
         if attr.startswith("__docs_") or attr in ("__method__", "__methods__"):
             setattr(new_handler, attr, getattr(old_handler, attr))
+
+    setattr(new_handler, "__raw_handler__", old_handler)
 
     return new_handler
 
