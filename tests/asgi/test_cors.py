@@ -22,3 +22,6 @@ async def test_cors():
     async with TestClient(app, headers={"origin": "testserver"}) as client:
         resp = await client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"
+
+        resp = await client.options("/")
+        assert resp.headers["access-control-allow-origin"] == "testserver"

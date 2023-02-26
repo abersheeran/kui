@@ -5,7 +5,7 @@ import re
 from typing import Any, Callable, Dict, Iterable, Pattern
 
 from .requests import request
-from .responses import convert_response
+from .responses import HttpResponse, convert_response
 from .routing import SyncViewType
 
 
@@ -49,7 +49,11 @@ def allow_cors(
             if origin and any(
                 origin_pattern.fullmatch(origin) for origin_pattern in allow_origins
             ):
-                response = convert_response(endpoint())
+                # Preflight request
+                if request.method == "OPTIONS":
+                    response = HttpResponse()
+                else:
+                    response = convert_response(endpoint())
                 response.headers.update(config_dict)
                 response.headers["Access-Control-Allow-Origin"] = origin
                 return response

@@ -22,3 +22,6 @@ def test_cors():
     ) as client:
         resp = client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"
+
+        resp = client.options("/")
+        assert resp.headers["access-control-allow-origin"] == "testserver"
