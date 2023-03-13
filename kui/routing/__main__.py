@@ -1,4 +1,4 @@
-from .commands import display_urls
+from .commands import main
 
 if __name__ == "__main__":
-    display_urls()
+    main()

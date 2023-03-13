@@ -5,37 +5,68 @@ import inspect
 import os
 import sys
 import typing
+from fnmatch import fnmatchcase
 
-from ..utils import import_from_string
+from ..utils import F, import_from_string
 from ..utils.inspect import get_object_filepath, get_raw_handler
-from .extensions.multimethod import is_multimethod_view
+from .routers import Router
 
 
-def display_urls() -> None:
+def main(argv: typing.Sequence[str] = sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "application", type=str, help="Application path like: module:attr"
+        "application", type=str, help="application path like: module:attr"
     )
-    args = parser.parse_args()
-    application = args.application
+    parser.add_argument(
+        "--match",
+        type=str,
+        help="match path by unix filename pattern matching",
+    )
+    parser.add_argument(
+        "--not-match",
+        type=str,
+        help="only display no matched path by unix filename pattern matching",
+    )
+    args = parser.parse_args(argv)
+
+    match_func_list = []
+    if args.match is not None:
+        match_func_list.append(lambda p, h: fnmatchcase(p, args.match))
+    if args.not_match is not None:
+        match_func_list.append(lambda p, h: not fnmatchcase(p, args.not_match))
 
     sys.path.insert(0, os.getcwd())
-    app: typing.Any = import_from_string(application)
-    for path, handler in app.router.http_tree.iterator():
-        print("* ", end="")
-        print(path, end="")
-        print(" => ", end="")
+    display_urls(import_from_string(args.application).router, match_func_list)
 
-        handler = get_raw_handler(handler)
 
-        if is_multimethod_view(handler):
-            print("Is multi-method Endpoint")
-            for method in handler.__methods__:
-                func = get_raw_handler(getattr(handler, method.lower()))
-                filepath = get_object_filepath(func)
-                whitespaces = " " * (len(path) + len("* ") + len(" => "))
-                print(whitespaces + "| " + method + " => ", end="")
-                print(filepath + ":" + str(func.__code__.co_firstlineno))
+def display_urls(
+    router: Router,
+    match_func_list: typing.Iterable[typing.Callable[[str, typing.Any], bool]],
+) -> None:
+    filter_path = F(
+        filter, lambda p_h: match_func_list | F(map, lambda f: f(*p_h)) | F(all)
+    )
+
+    for path, handler in router.http_tree.iterator() | filter_path:
+        raw_handler = get_raw_handler(handler)
+
+        if hasattr(handler, "__methods__"):
+            for method in raw_handler.__methods__:
+                func = get_raw_handler(getattr(raw_handler, method.lower()))
+                print_url(
+                    method,
+                    path,
+                    get_object_filepath(func),
+                    func.__code__.co_firstlineno,
+                )
         else:
-            filepath = get_object_filepath(handler)
-            print(filepath + ":" + str(inspect.getsourcelines(handler)[1]))
+            print_url(
+                getattr(handler, "__method__", "ANY"),
+                path,
+                get_object_filepath(raw_handler),
+                inspect.getsourcelines(raw_handler)[1],
+            )
+
+
+def print_url(method: str, path: str, filepath: str, lineno: int) -> None:
+    print(f"{method:<7} {path} => {filepath}:{lineno}")
