@@ -40,7 +40,13 @@ def bearer_auth(
             401,
             headers={"WWW-Authenticate": "Bearer"},
         )
-    type, token = authorization.strip().split(" ", maxsplit=1)
+    try:
+        type, token = authorization.strip().split(" ", maxsplit=1)
+    except ValueError:
+        raise HTTPException(
+            401,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if type != "Bearer":
         raise HTTPException(
             401,
@@ -73,7 +79,13 @@ def basic_auth(
             401,
             headers={"WWW-Authenticate": "Basic"},
         )
-    type, token = authorization.strip().split(" ", maxsplit=1)
+    try:
+        type, token = authorization.strip().split(" ", maxsplit=1)
+    except ValueError:
+        raise HTTPException(
+            401,
+            headers={"WWW-Authenticate": "Basic"},
+        )
     if type != "Basic":
         raise HTTPException(
             401,
