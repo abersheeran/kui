@@ -4,10 +4,17 @@ import typing
 from http import HTTPStatus
 
 from pydantic import BaseModel, create_model
+from pydantic.json import pydantic_encoder
 from pydantic.typing import display_as_type
 
 from .openapi import specification as spec
 from .utils import safe_issubclass
+
+
+def _json_encoder(obj: typing.Any) -> typing.Any:
+    if isinstance(obj, BaseModel):
+        return obj.dict(by_alias=True)
+    return pydantic_encoder(obj)
 
 
 class JSONResponseMixin:

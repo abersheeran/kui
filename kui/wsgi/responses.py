@@ -4,7 +4,6 @@ import typing
 
 from baize import wsgi as baize_wsgi
 from baize.typing import ServerSentEvent
-from pydantic.json import pydantic_encoder
 
 from ..responses import (
     FileResponseMixin,
@@ -14,6 +13,7 @@ from ..responses import (
     RedirectResponseMixin,
     SendEventResponseMixin,
     StreamResponseMixin,
+    _json_encoder,
 )
 from .requests import request
 
@@ -43,7 +43,7 @@ class JSONResponse(JSONResponseMixin, baize_wsgi.JSONResponse):
         **kwargs: typing.Any,
     ) -> None:
         json_kwargs: typing.Dict[str, typing.Any] = {
-            "default": pydantic_encoder,
+            "default": _json_encoder,
         }
         json_kwargs.update(**kwargs)
         super().__init__(
