@@ -163,3 +163,18 @@ def test_empty_path():
         return "homepage"
 
     assert app.router.search("http", "/")[0] == {}
+
+
+def test_routes_slice():
+    from kui.asgi import HttpRoute, Routes
+
+    async def endpoint():
+        pass
+
+    routes = Routes(
+        HttpRoute("/login", endpoint),
+        HttpRoute("/register", endpoint),
+    )
+
+    assert routes[:] == routes
+    assert routes[1:] == [routes[1]]

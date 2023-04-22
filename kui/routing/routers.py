@@ -383,14 +383,11 @@ class Routes(
         ...
 
     @typing.overload
-    def __getitem__(self, index: slice) -> typing.NoReturn:
+    def __getitem__(self, index: slice) -> typing.List[BaseRoute[ViewType]]:
         ...
 
     def __getitem__(self, index):
-        if isinstance(index, int):
-            return self._list[index]
-        else:
-            raise TypeError("Slicing syntax is not allowed")
+        return self._list[index]
 
     def __len__(self) -> int:
         return len(self._list)
@@ -440,6 +437,9 @@ class Routes(
                 return wrapper
         ```
         """
+        if len(self) > 0:
+            raise RuntimeError("Can not append middleware after route")
+
         self._http_middlewares.append(middleware)
         return middleware
 
@@ -456,6 +456,9 @@ class Routes(
                 return wrapper
         ```
         """
+        if len(self) > 0:
+            raise RuntimeError("Can not append middleware after route")
+
         self._socket_middlewares.append(middleware)
         return middleware
 
