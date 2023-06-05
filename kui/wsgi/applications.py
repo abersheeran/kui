@@ -9,8 +9,10 @@ from typing import Any, Callable, Iterable, List, Mapping, NoReturn, Optional, T
 from baize.datastructures import URL
 from baize.typing import Environ, StartResponse
 
+from ..cors import CORSConfig
 from ..routing import BaseRoute, MiddlewareType, NoMatchFound, SyncViewType
 from ..utils import ImmutableAttribute, State
+from .cors import allow_cors
 from .exceptions import ErrorHandlerType, ExceptionMiddleware, HTTPException
 from .requests import HttpRequest, request_var
 from .responses import (
@@ -41,6 +43,7 @@ class Kui:
         http_middlewares: List[MiddlewareType[SyncViewType]] = [],
         socket_middlewares: List[MiddlewareType[SyncViewType]] = [],
         exception_handlers: Mapping[int | Type[BaseException], ErrorHandlerType] = {},
+        cors_config: Optional[CORSConfig] = None,
         factory_class: FactoryClass = FactoryClass(),
         response_converters: Mapping[type, Callable[..., HttpResponse]] = {},
     ) -> None:
@@ -51,10 +54,16 @@ class Kui:
         self.should_exit = False
         self.factory_class = factory_class
         self.templates = templates
+
+        http_middlewares = [*http_middlewares]
+
         self.exception_middleware = ExceptionMiddleware(exception_handlers)
-        self.router = Router(
-            routes, [*http_middlewares, self.exception_middleware], socket_middlewares
-        )
+        http_middlewares.append(self.exception_middleware)
+
+        if cors_config is not None:
+            http_middlewares.append(allow_cors(**cors_config))
+
+        self.router = Router(routes, http_middlewares, socket_middlewares)
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorHandlerType

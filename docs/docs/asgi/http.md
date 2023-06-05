@@ -608,3 +608,11 @@ routes = Routes(..., http_middlewares=[allow_cors()])
 - `expose_headers: Iterable[str]`：能在响应中列出的请求头。对应 [`Access-Control-Expose-Headers`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Expose-Headers)。
 - `allow_credentials: bool`：为真时则允许跨域请求携带 Cookies，反之不允许。默认为 `False`。
 - `max_age: int`：预请求的缓存时间。默认为 `600` 秒。
+
+如果你需要在全局开启 CORS，可以给 `Kui` 传入 `cors_config` 参数。它是一个字典，键值与 `allow_cors` 参数相同。
+
+```python
+from kui.asgi import Kui
+
+app = Kui(cors_config={})
+```

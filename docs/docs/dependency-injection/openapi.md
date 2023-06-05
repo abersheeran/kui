@@ -76,6 +76,9 @@ class ClassHandler(HTTPView):
 
 你也可以在注册路由传入参数。
 
+!!! tip
+    参数传入时，会覆盖掉从 `__doc__` 中解析出的内容。
+
 ```python
 from kui.wsgi import Routes
 
@@ -84,24 +87,6 @@ routes = Routes()
 
 @routes.http.get('/', summary="api summary", description="api description.............")
 def handler():
-    return "/"
-```
-
-如果你的 description 很长，也可以只给装饰器传入 `summary` 参数，`description` 将自动使用整个 `__doc__`。
-
-```python
-from kui.wsgi import Routes
-
-routes = Routes()
-
-
-@routes.http.get('/', summary="api summary")
-def handler():
-    """
-    api description..........................
-    .........................................
-    .........................................
-    """
     return "/"
 ```
 
