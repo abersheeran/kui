@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from typing import Any
+from typing import Any, Dict
 
 
-class State(dict):
+class State(Dict[str, Any]):
     """
     An object that can be used to store arbitrary state.
     """

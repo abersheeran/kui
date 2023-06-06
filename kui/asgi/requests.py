@@ -30,7 +30,7 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
 
     @cached_property
     def state(self) -> State:
-        return self.setdefault("state", State())
+        return State(self.setdefault("state", {}))
 
     @cached_property
     def app(self) -> Kui:
