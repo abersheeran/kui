@@ -10,7 +10,7 @@ on:
       - ".github/workflows/ci.yml"
       - "**.py"
       - "!kui/__version__.py"
-      - poetry.lock
+      - pdm.lock
   pull_request:
     branches:
       - master
@@ -18,7 +18,7 @@ on:
       - ".github/workflows/ci.yml"
       - "**.py"
       - "!kui/__version__.py"
-      - poetry.lock
+      - pdm.lock
 
 jobs:
   tests:
@@ -45,7 +45,7 @@ jobs:
         run: pdm sync
       - name: Static type and format checking
         run: |
-          pdm run check kui tests
+          pdm run check
       - name: Generate coverage report
         run: |
           pdm run test --cov=./kui --cov-report=xml tests
