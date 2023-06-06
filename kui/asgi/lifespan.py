@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import traceback
-from contextlib import asynccontextmanager, AbstractAsyncContextManager, nullcontext
+from contextlib import asynccontextmanager, nullcontext
 from typing import TYPE_CHECKING, Any, Callable, List, Tuple, AsyncGenerator
 
 from baize.typing import Receive, Scope, Send
@@ -61,7 +61,7 @@ def asynccontextmanager_lifespan(
     Convert `asynccontextmanager` function to `on_startup` and `on_shutdown`
     """
     context_manager_func = asynccontextmanager(func)
-    context_manager: AbstractAsyncContextManager = nullcontext()
+    context_manager: Any = nullcontext()
 
     async def on_startup(app: Kui) -> None:
         nonlocal context_manager
