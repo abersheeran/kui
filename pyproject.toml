@@ -27,28 +27,24 @@ cli = ["click<9.0,>=8.0"]
 
 [tool.pdm]
 [tool.pdm.scripts]
-lint-isort = "isort {args}"
-lint-black = "black {args}"
+lint-ruff = "ruff --fix {args}"
 lint = { composite = [
-    "lint-isort kui tests",
-    "lint-black kui tests",
-    "check-flake8 kui tests",
-    "check-mypy kui tests",
+    "lint-ruff kui tests",
+    "check",
 ] }
-check-isort = "isort --check --diff {args}"
-check-black = "black --check --diff {args}"
-check-flake8 = "flake8 --ignore W503,E203,E501,E731 {args}"
+check-ruff = "ruff check {args}"
 check-mypy = "mypy {args}"
 check = { composite = [
-    "check-isort",
-    "check-black",
-    "check-flake8",
-    "check-mypy",
+    "check-ruff kui tests",
+    "check-mypy kui tests",
 ] }
 test = "pytest {args}"
 
 [tool.pdm.dev-dependencies]
-dev = ["flake8>=5.0.4", "black>=23.1.0", "isort>=5.11.5", "mypy>=1.0.0"]
+dev = [
+    "mypy>=1.0.0",
+    "ruff>=0.0.270",
+]
 test = [
     "async-asgi-testclient<2.0.0,>=1.4.11",
     "pytest<8.0.0,>=7.2.1",
@@ -65,6 +61,12 @@ ignore_missing_imports = true
 
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+ignore = [
+    "E501",
+    "E731",
+]
 
 [tool.coverage.run]
 omit = ["*/.venv/*", "*/tests/*", "kui/status.py"]
