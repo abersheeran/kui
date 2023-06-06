@@ -3,8 +3,6 @@ from __future__ import annotations
 import copy
 import dataclasses
 import functools
-import inspect
-import traceback
 from pathlib import PurePath
 from types import AsyncGeneratorType
 from typing import (
@@ -40,47 +38,10 @@ from .responses import (
 from .routing import Router
 from .templates import BaseTemplates
 
-LifespanCallback = Callable[["Kui"], Any]
-T_LifespanCallback = TypeVar("T_LifespanCallback", bound=LifespanCallback)
+from .lifespan import Lifespan, LifespanCallback
 
 
-@dataclasses.dataclass
-class Lifespan:
-    on_startup: List[LifespanCallback] = dataclasses.field(default_factory=list)
-    on_shutdown: List[LifespanCallback] = dataclasses.field(default_factory=list)
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        """
-        Handle ASGI lifespan messages, which allows us to manage application
-        startup and shutdown events.
-        """
-        app: Kui = scope["app"]
-
-        message = await receive()
-        assert message["type"] == "lifespan.startup"
-        try:
-            for handler in self.on_startup:
-                result = handler(app)
-                if inspect.isawaitable(result):
-                    await result
-        except BaseException:
-            msg = traceback.format_exc()
-            await send({"type": "lifespan.startup.failed", "message": msg})
-            raise
-        await send({"type": "lifespan.startup.complete"})
-
-        message = await receive()
-        assert message["type"] == "lifespan.shutdown"
-        try:
-            for handler in self.on_shutdown:
-                result = handler(app)
-                if inspect.isawaitable(result):
-                    await result
-        except BaseException:
-            msg = traceback.format_exc()
-            await send({"type": "lifespan.shutdown.failed", "message": msg})
-            raise
-        await send({"type": "lifespan.shutdown.complete"})
+LifespanCallbackTypeVar = TypeVar("LifespanCallbackTypeVar", bound=LifespanCallback)
 
 
 @dataclasses.dataclass
@@ -140,11 +101,11 @@ class Kui:
 
         return decorator
 
-    def on_startup(self, func: T_LifespanCallback) -> T_LifespanCallback:
+    def on_startup(self, func: LifespanCallbackTypeVar) -> LifespanCallbackTypeVar:
         self.lifespan.on_startup.append(func)
         return func
 
-    def on_shutdown(self, func: T_LifespanCallback) -> T_LifespanCallback:
+    def on_shutdown(self, func: LifespanCallbackTypeVar) -> LifespanCallbackTypeVar:
         self.lifespan.on_shutdown.append(func)
         return func
 

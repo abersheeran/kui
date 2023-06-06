@@ -49,3 +49,24 @@ app = Kui(
     on_shutdown=[logger_on_shutdown],
 )
 ```
+
+## `asynccontextmanager`
+
+Kuí 提供了 `asynccontextmanager_lifespan` 函数，它可以将异步生成器函数转换为 `on_startup` 和 `on_shutdown` 事件处理程序。
+
+```python
+from kui.asgi.lifespan import asynccontextmanager_lifespan
+
+
+async def f(app: Kui):
+    logger.info("Called on startup")
+    yield
+    logger.info("Called on shutdown")
+
+
+on_startup, on_shutdown = asynccontextmanager_lifespan(f)
+app = Kui(
+    on_startup=[on_startup],
+    on_shutdown=[on_shutdown],
+)
+```
