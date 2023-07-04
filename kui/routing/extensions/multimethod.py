@@ -56,7 +56,7 @@ class MultimethodRoutes(Routes[ViewType], typing.Generic[ViewType]):
             if hasattr(r.endpoint, "__methods__"):
                 endpoint = type(
                     r.endpoint.__name__,
-                    (self.base_class,),
+                    (self.base_class, _MultiMethodView),
                     {
                         **{
                             method.lower(): getattr(r.endpoint, method.lower())
