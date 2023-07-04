@@ -43,29 +43,30 @@ async def test_openapi_page():
         name: str
 
     @app.router.http.get("/path/{name}")
-    async def path(name: str = Path(...)):
+    async def path(name: Annotated[str, Path(...)]):
         pass
 
     @app.router.http("/http-view")
     class HTTPClass(HttpView):
-        async def get(self) -> Annotated[Any, HTMLResponse[200]]:
+        @classmethod
+        async def get(cls) -> Annotated[Any, HTMLResponse[200]]:
             """
             ...
 
             ......
             """
 
-        async def post(
-            self,
-        ) -> Annotated[Any, JSONResponse[201, {}, Username]]:
+        @classmethod
+        async def post(cls) -> Annotated[Any, JSONResponse[201, {}, Username]]:
             """
             ...
 
             ......
             """
 
+        @classmethod
         async def delete(
-            self,
+            cls,
         ) -> Annotated[Any, {"204": {"description": HTTPStatus(204).description}}]:
             """
             ...
@@ -75,7 +76,7 @@ async def test_openapi_page():
 
     def just_middleware(endpoint):
         async def wrapper(
-            authorization: str = Header(..., description="JWT Token")
+            authorization: Annotated[str, Header(..., description="JWT Token")]
         ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
             return await endpoint()
 
@@ -110,7 +111,6 @@ async def test_openapi_page():
             "/hello": {
                 "get": {
                     "summary": "hello",
-                    "description": "hello",
                     "responses": {
                         "200": {
                             "description": "Request fulfilled, document follows",
@@ -520,7 +520,7 @@ def test_openapi_single_function_summary_and_description():
         "get": {"summary": "Summary"}
     }
     assert openapi._generate_path(app, app.router.search("http", "/2")[1], "/") == {
-        "get": {"summary": "Summary", "description": "Description"}
+        "get": {"summary": "Summary"}
     }
     assert openapi._generate_path(app, app.router.search("http", "/3")[1], "/") == {
         "get": {"summary": "Summary", "description": "Description"}
@@ -665,7 +665,7 @@ def test_openapi_depend_response():
     app.router <<= "/docs" // openapi.routes
 
     async def get_current_user(
-        authorization: str = Header(..., description="JWT Token")
+        authorization: Annotated[str, Header(..., description="JWT Token")]
     ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
         pass
 

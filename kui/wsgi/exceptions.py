@@ -32,7 +32,7 @@ class ExceptionMiddleware(ExceptionMiddlewareBase[ErrorHandlerType]):
                 else:
                     return handler(exc)
 
-        return wrapper
+        return wrapper  # type: ignore
 
     def _init_internal_handlers(self) -> None:
         self.add_exception_handler(HTTPException, self.http_exception)

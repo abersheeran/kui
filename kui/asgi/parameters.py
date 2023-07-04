@@ -21,10 +21,8 @@ from ..parameters import (
     _merge_multi_value,
     _parse_depends_attrs,
     _parse_parameters_and_request_body_to_model,
-    _parse_request_attrs,
     _update_docs,
     _validate_parameters,
-    _validate_request_attr,
     create_auto_params,
 )
 from ..utils import is_async_gen_callable, is_coroutine_callable, is_gen_callable
@@ -45,16 +43,15 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
         parameters,
         request_body,
         exclusive_models,
+        security_info,
     ) = _parse_parameters_and_request_body_to_model(sig)
-
-    request_attrs = _parse_request_attrs(sig)
 
     depend_attrs = _parse_depends_attrs(sig)
     depend_functions = {
         name: _create_new_callback(info.call) for name, info in depend_attrs.items()
     }
 
-    if not (parameters or request_body or request_attrs or depend_attrs):
+    if not (parameters or request_body or depend_attrs):
         callback_with_auto_bound_params = callback
     else:
 
@@ -108,15 +105,11 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                         _body_data = _merge_multi_value(_body_data.multi_items())
 
                     try:
-                        data.append(request_body.parse_obj(_body_data))
+                        data.append(
+                            request_body.model_validate(_body_data)
+                        )
                     except ValidationError as e:
                         raise RequestValidationError(e, "body")
-
-                # try to get request instance attributes
-                if request_attrs:
-                    keyword_params.update(
-                        _validate_request_attr(request_attrs, request)
-                    )
 
                 keyword_params.update(
                     _convert_model_data_to_keyword_arguments(data, exclusive_models)
@@ -145,6 +138,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
         parameters,
         request_body,
         depend_functions,
+        security_info,
     )
 
     return typing_cast(CallableObject, callback_with_auto_bound_params)

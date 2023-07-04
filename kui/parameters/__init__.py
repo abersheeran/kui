@@ -12,6 +12,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -19,7 +20,8 @@ from typing import (
 )
 from typing import cast as typing_cast
 
-from pydantic import BaseConfig, BaseModel, ValidationError, create_model
+from pydantic import BaseModel, RootModel, ValidationError, create_model
+from pydantic.fields import FieldInfo
 from typing_extensions import Annotated, Literal, get_args, get_origin, get_type_hints
 
 if TYPE_CHECKING:
@@ -29,23 +31,27 @@ if TYPE_CHECKING:
 
 from ..exceptions import RequestValidationError
 from ..utils import safe_issubclass
-from .fields import DependInfo, FieldInfo, RequestAttrInfo, Undefined
+from .fields import (
+    BaseHTTPFieldInfo,
+    InPath,
+    InQuery,
+    InHeader,
+    InCookie,
+    InBody,
+    Depends,
+)
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
 
-def create_model_config(
-    title: str | None = None, description: str | None = None
-) -> Type[BaseConfig]:
-    class ExclusiveModelConfig(BaseConfig):
-        schema_extra = {
-            k: v
-            for k, v in {"title": title, "description": description}.items()
-            if v is not None
-        }
-
-    return ExclusiveModelConfig
-
+get_annotated_args = lambda tp: [
+    j
+    for i in (
+        (get_annotated_args(t) if get_origin(t) is Annotated else [t])  # type: ignore
+        for t in get_args(tp)
+    )
+    for j in i
+]
 
 sorted_groupby = lambda iterable, key: groupby(sorted(iterable, key=key), key=key)
 
@@ -71,19 +77,20 @@ def _parse_parameters_and_request_body_to_model(
     Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]] | None,
     Type[BaseModel] | None,
     Dict[Type[BaseModel], str],
+    Dict[Literal["path", "query", "header", "cookie"], Dict[str, Any]],
 ]:
     raw_parameters: Dict[str, Any] = {
         key: {} for key in ["path", "query", "header", "cookie", "body"]
     }
     exclusive_models: Dict[Type[BaseModel], str] = {}
+    security_info: Dict[
+        Literal["path", "query", "header", "cookie"], Dict[str, Any]
+    ] = {"path": {}, "query": {}, "header": {}, "cookie": {}}
 
     for name, param in sig.parameters.items():
         if not (
-            isinstance(param.default, FieldInfo)
-            or (
-                get_origin(param.annotation) is Annotated
-                and isinstance(get_args(param.annotation)[1], FieldInfo)
-            )
+            get_origin(param.default) is Annotated
+            or get_origin(param.annotation) is Annotated
         ):
             continue
 
@@ -92,32 +99,46 @@ def _parse_parameters_and_request_body_to_model(
                 f"Parameter {name} cannot be defined as positional only parameters."
             )
 
-        if isinstance(param.default, FieldInfo):
-            type_ = param.annotation
-            info = param.default
-        else:
-            type_, info = get_args(param.annotation)
+        if get_origin(param.default) is Annotated:
+            raise RuntimeError(
+                f"Parameter {name} default value cannot be defined as {param.default}."
+            )
 
-        if getattr(info, "exclusive", False):
+        type_, *annontated_list = get_annotated_args(param.annotation)
+        kui_field: Union[InPath, InQuery, InHeader, InCookie, InBody]
+        for kui_field in filter(
+            lambda x: isinstance(x, (InPath, InQuery, InHeader, InCookie, InBody)),
+            annontated_list,
+        ):
+            break
+        else:
+            # If there is no kui field, skip it.
+            continue
+
+        if kui_field.exclusive:
             if safe_issubclass(type_, BaseModel):
                 model = type_
             else:
-                model = create_model(
-                    "temporary_exclusive_model",
-                    __config__=create_model_config(info.title, info.description),
-                    __root__=(type_, ...),
-                )
-            raw_parameters[info._in] = model
+                model = RootModel[type_]  # type: ignore
+            raw_parameters[kui_field._in] = model
             exclusive_models[model] = name
         else:
-            if safe_issubclass(raw_parameters[info._in], BaseModel):
+            if safe_issubclass(raw_parameters[kui_field._in], BaseModel):
                 raise RuntimeError(
-                    f"{info._in.capitalize()}(exclusive=True) "
-                    f"and {info._in.capitalize()} cannot be used at the same time"
+                    f"{kui_field._in.capitalize()}(exclusive=True) "
+                    f"and {kui_field._in.capitalize()} cannot be used at the same time"
                 )
-            if type_ == param.empty:
-                type_ = Any
-            raw_parameters[info._in][name] = (type_, info)
+            field_info = next(
+                filter(lambda x: isinstance(x, FieldInfo), annontated_list)
+            )
+            raw_parameters[kui_field._in][name] = (type_, field_info)
+            if (
+                isinstance(kui_field, (InQuery, InHeader, InCookie))
+                and kui_field.security
+            ):
+                security_info[kui_field._in][
+                    field_info.alias or name
+                ] = kui_field.security
 
     for key, params in filter(
         lambda kv: kv[1],
@@ -148,38 +169,23 @@ def _parse_parameters_and_request_body_to_model(
         ),
         request_body,
         exclusive_models,
+        security_info,
     )
 
 
-def _parse_depends_attrs(sig: inspect.Signature) -> Dict[str, DependInfo]:
-    return {
-        **{
-            name: param.default
-            for name, param in sig.parameters.items()
-            if isinstance(param.default, DependInfo)
-        },
-        **{
-            name: get_args(param.annotation)[1]
-            for name, param in sig.parameters.items()
-            if get_origin(param.annotation) is Annotated
-            and isinstance(get_args(param.annotation)[1], DependInfo)
-        },
-    }
+def _parse_depends_attrs(sig: inspect.Signature) -> Dict[str, Depends]:
+    if {
+        name: param.default
+        for name, param in sig.parameters.items()
+        if isinstance(param.default, Depends)
+    }:
+        raise RuntimeError("Depends cannot be used as default value of parameters.")
 
-
-def _parse_request_attrs(sig: inspect.Signature) -> Dict[str, RequestAttrInfo]:
     return {
-        **{
-            name: param.default
-            for name, param in sig.parameters.items()
-            if isinstance(param.default, RequestAttrInfo)
-        },
-        **{
-            name: get_args(param.annotation)[1]
-            for name, param in sig.parameters.items()
-            if get_origin(param.annotation) is Annotated
-            and isinstance(get_args(param.annotation)[1], RequestAttrInfo)
-        },
+        name: get_args(param.annotation)[1]
+        for name, param in sig.parameters.items()
+        if get_origin(param.annotation) is Annotated
+        and isinstance(get_args(param.annotation)[1], Depends)
     }
 
 
@@ -189,12 +195,10 @@ def _create_new_signature(sig: inspect.Signature) -> inspect.Signature:
             param
             for param in sig.parameters.values()
             if not (
-                isinstance(param.default, (FieldInfo, RequestAttrInfo, DependInfo))
+                isinstance(param.default, (BaseHTTPFieldInfo, Depends))
                 or (
                     get_origin(param.annotation) is Annotated
-                    and isinstance(
-                        get_args(param.annotation)[1], (FieldInfo, RequestAttrInfo)
-                    )
+                    and isinstance(get_args(param.annotation)[1], FieldInfo)
                 )
             )
         ],
@@ -202,25 +206,17 @@ def _create_new_signature(sig: inspect.Signature) -> inspect.Signature:
     )
 
 
-def _get_security(m: Type[BaseModel]) -> Dict[str, Dict[Any, Any]]:
-    return {
-        field.alias: field.field_info.extra["security"]
-        for field in m.__fields__.values()
-        if field.field_info.extra.get("security", None)
-    }
-
-
 def _get_parameters_docs(
     m: Optional[Type[BaseModel]],
     position: Literal["path", "query", "header", "cookie"],
+    security_fields: Set[str],
 ) -> List[spec.Parameter]:
     if m is None:
         return []
 
-    _schemas: Dict[str, Any] = copy.deepcopy(m.schema())
+    _schemas: Dict[str, Any] = copy.deepcopy(m.model_json_schema())
     properties: Dict[str, Any] = _schemas["properties"]
     required: Sequence[str] = _schemas.get("required", ())
-    security_fields = set(_get_security(m).keys())
 
     return [
         {
@@ -278,6 +274,7 @@ def _update_docs(
     | None,
     request_body: Type[BaseModel] | None,
     depend_functions: Dict[str, Callable[..., Any]],
+    security_info: Dict[Literal["path", "query", "header", "cookie"], Dict[str, Any]],
 ) -> None:
     if inspect.ismethod(handler):
         handler = handler.__func__  # type: ignore
@@ -304,10 +301,12 @@ def _update_docs(
         __security__: List[Any] = getattr(handler, "__docs_security__", [])
         for position, model in parameters.items():
             __parameters__ = _merge_parameters_docs(
-                __parameters__, _get_parameters_docs(model, position)
+                __parameters__,
+                _get_parameters_docs(
+                    model, position, set(security_info[position].keys())
+                ),
             )
-            for security in _get_security(model).values():
-                __security__.append(security)
+        __security__.extend(info for p in security_info.values() for info in p.values())
         setattr(handler, "__docs_security__", __security__)
         setattr(handler, "__docs_parameters__", __parameters__)
 
@@ -344,14 +343,14 @@ def _validate_parameters(
 
     if "path" in parameters:
         try:
-            data.append(parameters["path"].parse_obj(request.path_params))
+            data.append(parameters["path"].model_validate(request.path_params))
         except ValidationError as e:
             raise RequestValidationError(e, "path")
 
     if "query" in parameters:
         try:
             data.append(
-                parameters["query"].parse_obj(
+                parameters["query"].model_validate(
                     _merge_multi_value(request.query_params.multi_items())
                 )
             )
@@ -360,40 +359,17 @@ def _validate_parameters(
 
     if "header" in parameters:
         try:
-            data.append(parameters["header"].parse_obj(request.headers))
+            data.append(parameters["header"].model_validate(request.headers._dict))
         except ValidationError as e:
             raise RequestValidationError(e, "header")
 
     if "cookie" in parameters:
         try:
-            data.append(parameters["cookie"].parse_obj(request.cookies))
+            data.append(parameters["cookie"].model_validate(request.cookies))
         except ValidationError as e:
             raise RequestValidationError(e, "cookie")
 
     return data
-
-
-def _validate_request_attr(
-    request_attrs: Dict[str, RequestAttrInfo],
-    request: ASGIHttpRequest | WSGIHttpRequest,
-) -> Dict[str, Any]:
-    result = {}
-    for name, info in request_attrs.items():
-        try:
-            value: Any = functools.reduce(
-                lambda attr, name: getattr(attr, name),
-                (info.alias or name).split("."),
-                request,
-            )
-        except AttributeError:
-            if info.default is not Undefined:
-                value = info.default
-            elif info.default_factory is not None:
-                value = info.default_factory()
-            else:
-                raise
-        result[name] = value
-    return result
 
 
 def _convert_model_data_to_keyword_arguments(
@@ -403,10 +379,10 @@ def _convert_model_data_to_keyword_arguments(
     for _data in data:
         if _data.__class__.__name__ == "temporary_model":
             result.update(
-                {name: getattr(_data, name) for name in _data.__fields__.keys()}
+                {name: getattr(_data, name) for name in _data.model_fields.keys()}
             )
-        elif _data.__class__.__name__ == "temporary_exclusive_model":
-            result[exclusive_models[_data.__class__]] = _data.__root__  # type: ignore
+        elif isinstance(_data, RootModel):
+            result[exclusive_models[_data.__class__]] = _data.root  # type: ignore
         else:
             result[exclusive_models[_data.__class__]] = _data
     return result

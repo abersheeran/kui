@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 from inspect import isfunction
 from typing import TYPE_CHECKING, Any, Callable, List
 from typing import cast as typing_cast
@@ -21,7 +20,6 @@ def required_method(method: str) -> Callable[[SyncViewType], SyncViewType]:
         if not isfunction(function):
             raise TypeError("`required_method` can only decorate function")
 
-        @functools.wraps(function)
         def wrapper(*args, **kwargs):
             if request.method in allow_methods:
                 return function(*args, **kwargs)

@@ -1,7 +1,10 @@
 import typing
 
-SyncViewType = typing.Callable[..., typing.Any]
-AsyncViewType = typing.Callable[..., typing.Awaitable[typing.Any]]
+SyncView = typing.Callable[..., typing.Any]
+AsyncView = typing.Callable[..., typing.Awaitable[typing.Any]]
 
-ViewType = typing.TypeVar("ViewType", bound=typing.Union[SyncViewType, AsyncViewType])
+
+SyncViewType = typing.TypeVar("SyncViewType", bound=SyncView)
+AsyncViewType = typing.TypeVar("AsyncViewType", bound=AsyncView)
+ViewType = typing.TypeVar("ViewType", bound=typing.Union[SyncView, AsyncView])
 MiddlewareType = typing.Callable[[ViewType], ViewType]

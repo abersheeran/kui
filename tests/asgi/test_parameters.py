@@ -14,7 +14,6 @@ from kui.asgi import (
     Kui,
     Path,
     Query,
-    RequestAttr,
     UploadFile,
 )
 
@@ -115,44 +114,6 @@ async def test_body():
 
 
 @pytest.mark.asyncio
-async def test_request():
-    app0 = Kui()
-
-    @app0.router.http.get("/")
-    async def homepage(app: Annotated[Kui, RequestAttr()]):
-        return str(app is app0)
-
-    @app0.router.http.get("/no-attr")
-    async def no_attr(application: Annotated[Kui, RequestAttr()]):
-        return str(application is app0)
-
-    @app0.router.http.get("/no-attr-with-default")
-    async def no_attr_with_default(application: Annotated[Kui, RequestAttr(app0)]):
-        return str(application is app0)
-
-    @app0.router.http.get("/no-attr-with-default-factory")
-    async def no_attr_with_default_factory(
-        application: Annotated[Kui, RequestAttr(default_factory=lambda: app0)],
-    ):
-        return str(application is app0)
-
-    async with TestClient(app0) as client:
-        resp = await client.get("/")
-        assert resp.text == "True"
-
-        with pytest.raises(AttributeError):
-            await client.get("/no-attr")
-
-        resp = await client.get("/no-attr-with-default")
-        assert resp.text == "True"
-
-        resp = await client.get("/no-attr-with-default-factory")
-        assert resp.text == "True"
-
-    assert not inspect.signature(app0.router.search("http", "/")[1]).parameters
-
-
-@pytest.mark.asyncio
 async def test_depend():
     app = Kui()
 
@@ -219,13 +180,13 @@ async def test_middleware():
     app = Kui()
 
     def middleware(endpoint):
-        async def middleware_wrapper(query: str = Query(...)):
+        async def middleware_wrapper(query: Annotated[str, Query(...)]):
             return await endpoint()
 
         return middleware_wrapper
 
     @app.router.http.get("/", middlewares=[middleware])
-    async def cookie(name: str = Cookie()):
+    async def cookie(name: Annotated[str, Cookie()]):
         return name
 
     async with TestClient(app) as client:

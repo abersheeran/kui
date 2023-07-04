@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from copy import deepcopy
 from typing import TYPE_CHECKING, Optional, Type, Union
 from typing import cast as typing_cast
@@ -8,6 +7,8 @@ from typing import cast as typing_cast
 from baize.datastructures import ContentType
 from pydantic import BaseModel
 from typing_extensions import get_args, get_type_hints
+
+from ..utils import safe_issubclass
 
 if TYPE_CHECKING:
     from ..asgi import Kui as ASGIKui
@@ -20,7 +21,7 @@ REF_TEMPLATE = "#/components/schemas/{model}"
 
 
 def _schema(model: Type[BaseModel]) -> spec.Schema:
-    schema = deepcopy(model.schema(ref_template=REF_TEMPLATE))
+    schema = deepcopy(model.model_json_schema(ref_template=REF_TEMPLATE))
     schema.pop("title")
     return typing_cast(spec.Schema, schema)
 
@@ -41,8 +42,8 @@ def schema_request_body(
         if isinstance(v, ContentType)
     ]
 
-    for field in body.__fields__.values():
-        if inspect.isclass(field.type_) and issubclass(field.type_, UploadFile):
+    for field in body.model_fields.values():
+        if safe_issubclass(field.annotation, UploadFile):
             content_types = ["multipart/form-data"]
 
     return {

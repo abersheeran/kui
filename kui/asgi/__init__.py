@@ -9,7 +9,6 @@ from ..parameters.field_functions import (
     Header,
     Path,
     Query,
-    RequestAttr,
 )
 from ..security import api_key_auth_dependency, basic_auth, bearer_auth
 from .applications import FactoryClass, Kui
@@ -56,7 +55,6 @@ __all__ = [
     "Header",
     "Path",
     "Query",
-    "RequestAttr",
     "Depends",
     "api_key_auth_dependency",
     "basic_auth",

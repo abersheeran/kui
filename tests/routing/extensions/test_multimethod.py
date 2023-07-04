@@ -1,9 +1,9 @@
-from __future__ import annotations
+from typing_extensions import Annotated
 
 import pytest
 from async_asgi_testclient import TestClient
 
-from kui.asgi import HttpRoute, HttpView
+from kui.asgi import HttpRoute, HttpView, Path, Kui, Query
 from kui.asgi import MultimethodRoutes as Routes
 from kui.asgi import required_method
 from kui.utils import safe_issubclass
@@ -107,8 +107,6 @@ def test_mulitmethodroutes_with_prefix():
 
 @pytest.mark.asyncio
 async def test_mulitmethodroutes_with_parameters():
-    from kui.asgi import Kui, Path
-
     routes = Routes(base_class=HttpView)
 
     @routes.http.get("/{name}", name=None)
@@ -116,13 +114,20 @@ async def test_mulitmethodroutes_with_parameters():
     @routes.http.put("/{name}", name=None)
     @routes.http.patch("/{name}", name=None)
     @routes.http.delete("/{name}", name=None)
-    async def name(name: str = Path(...)):
-        return name
+    async def name(
+        name: Annotated[str, Path()],
+        status: Annotated[int, Query(200)],
+    ):
+        return name, status
 
     app = Kui(routes=routes)
 
     async with TestClient(app) as client:
         resp = await client.get("/aber")
+        assert resp.text == "aber"
+
+        resp = await client.post("/aber", query_string={"status": 201})
+        assert resp.status_code == 201
         assert resp.text == "aber"
 
         resp = await client.get("/")

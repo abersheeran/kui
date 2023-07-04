@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import json
 from inspect import isfunction
 from typing import TYPE_CHECKING, Any, Callable, Generator, List
@@ -25,10 +24,9 @@ def required_method(method: str) -> Callable[[AsyncViewType], AsyncViewType]:
         if not isfunction(function):
             raise TypeError("`required_method` can only decorate function")
 
-        @functools.wraps(function)
-        async def wrapper(*args, **kwargs):
+        async def wrapper():
             if request.method in allow_methods:
-                return await function(*args, **kwargs)
+                return await function()
             elif request.method == "OPTIONS":
                 return HttpResponse(headers=headers)
             else:

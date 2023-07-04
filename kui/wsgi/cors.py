@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import re
 from typing import Any, Callable, Dict, Iterable, Pattern
 
@@ -43,7 +42,6 @@ def allow_cors(
     config_dict = {k: v for k, v in config_dict.items() if v}
 
     def decorator(endpoint: SyncViewType) -> SyncViewType:
-        @functools.wraps(endpoint)
         def cors_wrapper() -> Any:
             origin = request.headers.get("origin", None)
             if origin and any(
@@ -60,6 +58,6 @@ def allow_cors(
             else:
                 return endpoint()
 
-        return cors_wrapper
+        return cors_wrapper  # type: ignore
 
     return decorator
