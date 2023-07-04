@@ -781,3 +781,87 @@ def test_openapi_multi_type_responses():
             }
         }
     }
+
+
+@pytest.mark.asyncio
+async def test_openapi_components_schemas():
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= Routes("/docs" // openapi.routes, namespace="docs")
+
+    class M(BaseModel):
+        message: str
+
+    class N(BaseModel):
+        m: M
+
+    @app.router.http.get("/hello")
+    async def hello() -> Annotated[Any, JSONResponse[200, {}, N]]:
+        """
+        hello
+        """
+        pass
+
+    client = TestClient(app)
+    response = await client.get("/docs/json")
+    assert response.status_code == 200
+    assert len(response.headers["hash"]) == 32
+
+    openapi_docs_text = response.text
+    assert json.loads(openapi_docs_text) == {
+        "openapi": "3.0.3",
+        "info": {"title": "Kuí API", "version": "1.0.0"},
+        "paths": {
+            "/hello": {
+                "get": {
+                    "summary": "hello",
+                    "responses": {
+                        "200": {
+                            "description": "Request fulfilled, document follows",
+                            "headers": {},
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "properties": {
+                                            "m": {"$ref": "#/components/schemas/M"}
+                                        },
+                                        "required": ["m"],
+                                        "type": "object",
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            }
+        },
+        "tags": [],
+        "components": {
+            "schemas": {
+                "M": {
+                    "properties": {"message": {"title": "Message", "type": "string"}},
+                    "required": ["message"],
+                    "title": "M",
+                    "type": "object",
+                }
+            }
+        },
+        "servers": [
+            {"url": "/", "description": "Current server"},
+            {
+                "url": "{scheme}://{address}/",
+                "description": "Custom API Server Host",
+                "variables": {
+                    "scheme": {
+                        "default": "http",
+                        "enum": ["http", "https"],
+                        "description": "http or https",
+                    },
+                    "address": {
+                        "default": "localhost",
+                        "description": "api server's host[:port]",
+                    },
+                },
+            },
+        ],
+    }, openapi_docs_text

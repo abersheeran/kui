@@ -249,7 +249,7 @@ def _pop_definitions(d: Dict[str, Any]) -> Dict[str, spec.Schema]:
     definitions: Dict[str, Any] = {}
     for key, value in d.items():
         if key == "schema":
-            return value.pop("definitions", {})
+            return value.pop("$defs", {})
 
         if isinstance(value, dict):
             definitions.update(_pop_definitions(value))
