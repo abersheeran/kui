@@ -1,15 +1,13 @@
 import base64
 from http import HTTPStatus
-from typing import Callable, Tuple, Union
+from typing import Callable, Tuple, Type, Union
 
 from typing_extensions import Annotated, Literal
 
+from pydantic import Field
+
 from .exceptions import HTTPException
-from .parameters.field_functions import (
-    RequiredApiKeyAuth,
-    RequiredBasicAuth,
-    RequiredBearerAuth,
-)
+from .parameters.fields import InHeader, InQuery, InCookie
 
 __all__ = [
     "bearer_auth",
@@ -17,7 +15,16 @@ __all__ = [
 
 
 def bearer_auth(
-    authorization: Annotated[Union[str, None], RequiredBearerAuth()]
+    authorization: Annotated[
+        Union[str, None],
+        Field(default=None, alias="authorization", title="Bearer Auth"),
+        InHeader(
+            security={
+                "scheme": {"BearerAuth": {"type": "http", "scheme": "bearer"}},
+                "required": {"BearerAuth": []},
+            }
+        ),
+    ]
 ) -> Annotated[
     str,
     {
@@ -56,7 +63,16 @@ def bearer_auth(
 
 
 def basic_auth(
-    authorization: Annotated[Union[str, None], RequiredBasicAuth()]
+    authorization: Annotated[
+        Union[str, None],
+        Field(default=None, alias="authorization", title="Basic Auth"),
+        InHeader(
+            security={
+                "scheme": {"BasicAuth": {"type": "http", "scheme": "basic"}},
+                "required": {"BasicAuth": []},
+            }
+        ),
+    ]
 ) -> Annotated[
     Tuple[str, str],
     {
@@ -102,9 +118,35 @@ def api_key_auth_dependency(
     """
     Create API key authentication dependency.
     """
+    class_: Union[Type[InQuery], Type[InHeader], Type[InCookie]]
+    if position == "query":
+        class_ = InQuery
+    elif position == "header":
+        class_ = InHeader
+    elif position == "cookie":
+        class_ = InCookie
+    else:
+        raise ValueError(
+            f"Invalid position {position}, must be one of ('query', 'header', 'cookie')"
+        )
 
     def api_key_auth(
-        api_key: Annotated[Union[str, None], RequiredApiKeyAuth(name, position)]
+        api_key: Annotated[
+            Union[str, None],
+            Field(
+                default=None,
+                alias=name,
+                title="API Key",
+            ),
+            class_(
+                security={
+                    "scheme": {
+                        "ApiKeyAuth": {"type": "apiKey", "name": name, "in": position}
+                    },
+                    "required": {"ApiKeyAuth": []},
+                }
+            ),
+        ]
     ) -> Annotated[str, {401: {"description": HTTPStatus(401).description}}]:
         if api_key is None:
             raise HTTPException(401)

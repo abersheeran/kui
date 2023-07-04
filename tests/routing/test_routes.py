@@ -1,4 +1,7 @@
 from __future__ import annotations
+import functools
+
+import pytest
 
 
 def test_decorator():
@@ -178,3 +181,23 @@ def test_routes_slice():
 
     assert routes[:] == routes
     assert routes[1:] == [routes[1]]
+
+
+def test_middleware_check_wraps():
+    from kui.asgi import HttpRoute
+
+    async def endpoint():
+        return "hello world"
+
+    def middleware(endpoint):
+        @functools.wraps(endpoint)
+        async def wrapped():
+            return endpoint()
+
+        return wrapped
+
+    with pytest.raises(
+        RuntimeError,
+        match="Cannot use `@functools.wraps` on a middleware.",
+    ):
+        _ = HttpRoute("/hello", endpoint) @ middleware

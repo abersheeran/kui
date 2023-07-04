@@ -5,7 +5,6 @@ import typing
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, TypeVar
 
-from pydantic import BaseModel, ValidationError
 from typing_extensions import Literal, TypedDict
 
 if TYPE_CHECKING:
@@ -145,8 +144,8 @@ class OpenAPI:
             func, "__docs_responses__", []
         )
         if parameters or request_body:
-            handler = application.exception_middleware.lookup_handler(
-                RequestValidationError(ValidationError([], BaseModel), "body")
+            handler = application.exception_middleware._lookup_exception_handler(
+                RequestValidationError
             )
             if handler is None:
                 raise RuntimeError

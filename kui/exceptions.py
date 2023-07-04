@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import abc
-import json
 from typing import Any, Callable, Dict, Generic, List, Mapping, Type, TypeVar, Union
 
 from baize.exceptions import HTTPException
 from pydantic import ValidationError
-from pydantic.json import pydantic_encoder
 from typing_extensions import Literal
 
 
@@ -25,8 +23,8 @@ class RequestValidationError(Exception):
             error["in"] = self.in_  # type: ignore
         return errors  # type: ignore
 
-    def json(self, *, indent: Union[None, int, str] = 2) -> str:
-        return json.dumps(self.errors(), indent=indent, default=pydantic_encoder)
+    def json(self, *, indent: Union[None, int] = 2) -> str:
+        return self.validation_error.json(indent=indent)
 
     @staticmethod
     def schema() -> Dict[str, Any]:
@@ -100,11 +98,13 @@ class ExceptionMiddlewareBase(Generic[ErrorHandlerType], abc.ABC):
         if isinstance(exc, HTTPException):
             handler = self._status_handlers.get(exc.status_code)
         if handler is None:
-            handler = self._lookup_exception_handler(exc)
+            handler = self._lookup_exception_handler(type(exc))
         return handler
 
-    def _lookup_exception_handler(self, exc: BaseException) -> ErrorHandlerType | None:
-        for cls in type(exc).__mro__:
+    def _lookup_exception_handler(
+        self, exc_type: Type[BaseException]
+    ) -> ErrorHandlerType | None:
+        for cls in exc_type.__mro__:
             if cls in self._exception_handlers:
                 return self._exception_handlers[cls]
         return None

@@ -35,6 +35,8 @@ class BaseRoute(typing.Generic[ViewType]):
             for method in map(str.lower, endpoint.__methods__):
                 old_callback = getattr(endpoint, method)
                 new_callback = middleware(old_callback)
+                if getattr(new_callback, "__wrapped__", None) is old_callback:
+                    raise RuntimeError("Cannot use `@functools.wraps` on a middleware.")
                 if new_callback is not old_callback:
                     update_wrapper(new_callback, old_callback)
                     new_callback = self._auto_params(new_callback)
@@ -42,6 +44,8 @@ class BaseRoute(typing.Generic[ViewType]):
         else:
             old_callback = endpoint
             new_callback = middleware(old_callback)
+            if getattr(new_callback, "__wrapped__", None) is old_callback:
+                raise RuntimeError("Cannot use `@functools.wraps` on a middleware.")
             if new_callback is not old_callback:
                 update_wrapper(new_callback, old_callback)
                 new_callback = self._auto_params(new_callback)

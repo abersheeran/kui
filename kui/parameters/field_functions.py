@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional, TypeVar
 
-from pydantic.fields import NoArgAnyCallable, Undefined
-from typing_extensions import Literal
+from pydantic import Field
+from pydantic_core import PydanticUndefined as Undefined
+from typing_extensions import Annotated
 
 from .fields import (
-    BodyInfo,
-    CookieInfo,
-    DependInfo,
-    HeaderInfo,
-    PathInfo,
-    QueryInfo,
-    RequestAttrInfo,
+    InPath,
+    InQuery,
+    InHeader,
+    InCookie,
+    InBody,
+    Depends as DependInfo,
 )
 
 T = TypeVar("T")
@@ -21,7 +21,7 @@ T = TypeVar("T")
 def Path(
     default: Any = Undefined,
     *,
-    default_factory: Optional[NoArgAnyCallable] = None,
+    default_factory: Optional[Callable[[], None]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -39,25 +39,23 @@ def Path(
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
     :param exclusive: decide whether this field receives all parameters
-    :param **extra: any additional keyword arguments will be added as is to the schema
+    :param **extra: any pydantic field kwargs
     """
-    field_info = PathInfo(
+    field_info = Field(
         default,
         default_factory=default_factory,
         alias=alias,
         title=title,
         description=description,
-        exclusive=exclusive,
         **extra,
     )
-    field_info._validate()
-    return field_info
+    return Annotated[Any, field_info, InPath(exclusive=exclusive)]
 
 
 def Query(
     default: Any = Undefined,
     *,
-    default_factory: Optional[NoArgAnyCallable] = None,
+    default_factory: Optional[Callable[[], None]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -75,25 +73,23 @@ def Query(
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
     :param exclusive: decide whether this field receives all parameters
-    :param **extra: any additional keyword arguments will be added as is to the schema
+    :param **extra: any pydantic field kwargs
     """
-    field_info = QueryInfo(
+    field_info = Field(
         default,
         default_factory=default_factory,
         alias=alias,
         title=title,
         description=description,
-        exclusive=exclusive,
         **extra,
     )
-    field_info._validate()
-    return field_info
+    return Annotated[Any, field_info, InQuery(exclusive=exclusive)]
 
 
 def Header(
     default: Any = Undefined,
     *,
-    default_factory: Optional[NoArgAnyCallable] = None,
+    default_factory: Optional[Callable[[], None]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -111,25 +107,23 @@ def Header(
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
     :param exclusive: decide whether this field receives all parameters
-    :param **extra: any additional keyword arguments will be added as is to the schema
+    :param **extra: any pydantic field kwargs
     """
-    field_info = HeaderInfo(
+    field_info = Field(
         default,
         default_factory=default_factory,
-        alias=alias,
+        alias=alias.lower() if alias else None,
         title=title,
         description=description,
-        exclusive=exclusive,
         **extra,
     )
-    field_info._validate()
-    return field_info
+    return Annotated[Any, field_info, InHeader(exclusive=exclusive)]
 
 
 def Cookie(
     default: Any = Undefined,
     *,
-    default_factory: Optional[NoArgAnyCallable] = None,
+    default_factory: Optional[Callable[[], None]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -147,25 +141,23 @@ def Cookie(
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
     :param exclusive: decide whether this field receives all parameters
-    :param **extra: any additional keyword arguments will be added as is to the schema
+    :param **extra: any pydantic field kwargs
     """
-    field_info = CookieInfo(
+    field_info = Field(
         default,
         default_factory=default_factory,
         alias=alias,
         title=title,
         description=description,
-        exclusive=exclusive,
         **extra,
     )
-    field_info._validate()
-    return field_info
+    return Annotated[Any, field_info, InCookie(exclusive=exclusive)]
 
 
 def Body(
     default: Any = Undefined,
     *,
-    default_factory: Optional[NoArgAnyCallable] = None,
+    default_factory: Optional[Callable[[], None]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -183,39 +175,17 @@ def Body(
     :param title: can be any string, used in the schema
     :param description: can be any string, used in the schema
     :param exclusive: decide whether this field receives all parameters
-    :param **extra: any additional keyword arguments will be added as is to the schema
+    :param **extra: any pydantic field kwargs
     """
-    field_info = BodyInfo(
+    field_info = Field(
         default,
         default_factory=default_factory,
         alias=alias,
         title=title,
         description=description,
-        exclusive=exclusive,
         **extra,
     )
-    field_info._validate()
-    return field_info
-
-
-def RequestAttr(
-    default: Any = Undefined,
-    *,
-    default_factory: Optional[NoArgAnyCallable] = None,
-    alias: str | None = None,
-) -> Any:
-    """
-    Used to provide extra information about a field.
-
-    :param default: since this is replacing the field’s default, its first argument is used
-      to set the default, use ellipsis (``...``) to indicate the field is required
-    :param default_factory: callable that will be called when a default value is needed for this field
-      If both `default` and `default_factory` are set, an error is raised.
-    :param alias: the public name of the field
-    """
-    if default is not Undefined and default_factory is not None:
-        raise ValueError("cannot specify both default and default_factory")
-    return RequestAttrInfo(default, default_factory=default_factory, alias=alias)
+    return Annotated[Any, field_info, InBody(exclusive=exclusive)]
 
 
 def Depends(call: Callable, *, cache=True) -> Any:
@@ -226,49 +196,3 @@ def Depends(call: Callable, *, cache=True) -> Any:
     :param cache: whether to cache the result of the dependency call in the request state
     """
     return DependInfo(call, cache=cache)
-
-
-def RequiredApiKeyAuth(
-    name: str, position: Literal["query", "header", "cookie"] = "header"
-) -> Any:
-    if position == "query":
-        class_ = Query
-    elif position == "header":
-        class_ = Header
-    elif position == "cookie":
-        class_ = Cookie
-    else:
-        raise ValueError(
-            f"Invalid position {position}, must be one of ('query', 'header', 'cookie')"
-        )
-
-    return class_(
-        alias=name,
-        title="API Key",
-        security={
-            "scheme": {"ApiKeyAuth": {"type": "apiKey", "name": name, "in": position}},
-            "required": {"ApiKeyAuth": []},
-        },
-    )
-
-
-def RequiredBearerAuth() -> Any:
-    return Header(
-        alias="authorization",
-        title="Bearer Auth",
-        security={
-            "scheme": {"BearerAuth": {"type": "http", "scheme": "bearer"}},
-            "required": {"BearerAuth": []},
-        },
-    )
-
-
-def RequiredBasicAuth() -> Any:
-    return Header(
-        alias="authorization",
-        title="Basic Auth",
-        security={
-            "scheme": {"BasicAuth": {"type": "http", "scheme": "basic"}},
-            "required": {"BasicAuth": []},
-        },
-    )

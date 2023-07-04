@@ -3,18 +3,15 @@ from __future__ import annotations
 import typing
 from http import HTTPStatus
 
-from pydantic import BaseModel, create_model
-from pydantic.json import pydantic_encoder
-from pydantic.typing import display_as_type
+from pydantic import BaseModel, RootModel
+from pydantic_core import to_jsonable_python
 
 from .openapi import specification as spec
 from .utils import safe_issubclass
 
 
 def _json_encoder(obj: typing.Any) -> typing.Any:
-    if isinstance(obj, BaseModel):
-        return obj.dict(by_alias=True)
-    return pydantic_encoder(obj)
+    return to_jsonable_python(obj)
 
 
 class JSONResponseMixin:
@@ -54,9 +51,11 @@ class JSONResponseMixin:
         }
 
         if content:
-            real_content: spec.Schema | typing.Type[BaseModel] | typing.Dict[
-                typing.Any, typing.Any
-            ]
+            real_content: (
+                spec.Schema
+                | typing.Type[BaseModel]
+                | typing.Dict[typing.Any, typing.Any]
+            )
             if isinstance(content, dict):
                 real_content = content
             elif getattr(content, "__origin__", None) is None and safe_issubclass(
@@ -64,9 +63,7 @@ class JSONResponseMixin:
             ):
                 real_content = content
             else:
-                real_content = create_model(
-                    f"ParsingModel[{display_as_type(content)}]", __root__=(content, ...)
-                )
+                real_content = RootModel[content]  # type: ignore
             docs[str(status_code)]["content"] = {
                 "application/json": {"schema": real_content}
             }

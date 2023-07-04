@@ -8,7 +8,7 @@ from ...routing import BaseRoute, HttpRoute, Routes
 from ..typing import ViewType
 
 
-class MultimethodRoutes(Routes[ViewType]):
+class MultimethodRoutes(Routes[ViewType], typing.Generic[ViewType]):
     def __init__(
         self,
         *iterable: typing.Union[

@@ -2,7 +2,6 @@ import inspect
 import io
 
 import httpx
-import pytest
 from httpx import Client
 from typing_extensions import Annotated
 
@@ -14,7 +13,6 @@ from kui.wsgi import (
     Kui,
     Path,
     Query,
-    RequestAttr,
     UploadFile,
 )
 
@@ -114,43 +112,6 @@ def test_body():
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters
 
 
-def test_request():
-    app0 = Kui()
-
-    @app0.router.http.get("/")
-    def homepage(app: Annotated[Kui, RequestAttr()]):
-        return str(app is app0)
-
-    @app0.router.http.get("/no-attr")
-    def no_attr(application: Annotated[Kui, RequestAttr()]):
-        return str(application is app0)
-
-    @app0.router.http.get("/no-attr-with-default")
-    def no_attr_with_default(application: Annotated[Kui, RequestAttr(app0)]):
-        return str(application is app0)
-
-    @app0.router.http.get("/no-attr-with-default-factory")
-    def no_attr_with_default_factory(
-        application: Annotated[Kui, RequestAttr(default_factory=lambda: app0)],
-    ):
-        return str(application is app0)
-
-    with Client(app=app0, base_url="http://testServer") as client:
-        resp = client.get("/")
-        assert resp.text == "True"
-
-        with pytest.raises(AttributeError):
-            client.get("/no-attr")
-
-        resp = client.get("/no-attr-with-default")
-        assert resp.text == "True"
-
-        resp = client.get("/no-attr-with-default-factory")
-        assert resp.text == "True"
-
-    assert not inspect.signature(app0.router.search("http", "/")[1]).parameters
-
-
 def test_depend():
     app = Kui()
 
@@ -216,13 +177,13 @@ def test_middleware():
     app = Kui()
 
     def middleware(endpoint):
-        def middleware_wrapper(query: str = Query(...)):
+        def middleware_wrapper(query: Annotated[str, Query(...)]):
             return endpoint()
 
         return middleware_wrapper
 
     @app.router.http.get("/", middlewares=[middleware])
-    def cookie(name: str = Cookie()):
+    def cookie(name: Annotated[str, Cookie()]):
         return name
 
     with Client(

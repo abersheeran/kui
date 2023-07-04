@@ -315,26 +315,6 @@ routes = Routes(
 )
 ```
 
-当然，你同样可以使用装饰器来注册中间件，与上例的结果没有什么不同。
-
-```python
-routes = Routes(...)
-
-
-@routes.http_middleware
-async def one_http_middleware(endpoint):
-    async def wrapper():
-        return await endpoint()
-    return wrapper
-
-
-@routes.socket_middleware
-async def one_socket_middleware(endpoint):
-    async def wrapper():
-        await endpoint()
-    return wrapper
-```
-
 ### 公共前缀
 
 有时候某一组的路由我们希望放到同一个前缀下，如下两段代码的结果是相同的。
