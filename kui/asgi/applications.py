@@ -19,6 +19,7 @@ from typing import (
 
 from baize.datastructures import URL
 from baize.typing import Receive, Scope, Send
+from pydantic import BaseModel
 from typing_extensions import Literal
 
 from ..cors import CORSConfig
@@ -192,6 +193,7 @@ def create_response_converter(
         ),
     )
     response_converter.register(URL, RedirectResponse)
+    response_converter.register(BaseModel, JSONResponse)
 
     for type_, converter in converters.items():
         response_converter.register(type_, converter)

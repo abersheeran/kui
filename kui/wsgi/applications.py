@@ -8,6 +8,7 @@ from typing import Any, Callable, Iterable, List, Mapping, NoReturn, Optional, T
 
 from baize.datastructures import URL
 from baize.typing import Environ, StartResponse
+from pydantic import BaseModel
 
 from ..cors import CORSConfig
 from ..routing import BaseRoute, MiddlewareType, NoMatchFound, SyncViewType
@@ -151,6 +152,7 @@ def create_response_converter(
         ),
     )
     response_converter.register(URL, RedirectResponse)
+    response_converter.register(BaseModel, JSONResponse)
 
     for type_, converter in converters.items():
         response_converter.register(type_, converter)
