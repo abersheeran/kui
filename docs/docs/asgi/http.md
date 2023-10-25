@@ -405,20 +405,24 @@ async def homepage():
 
 ```python
 import asyncio
-from kui.asgi import Kui, SendEventResponse
+from typing import AsyncGenerator
+from kui.asgi import Kui, SendEventResponse, ServerSentEvent
 
 app = Kui()
 
 
 @app.router.http("/message")
 async def message():
-    async def message_gen():
+    async def message_gen() -> AsyncGenerator[ServerSentEvent, None]:
         for i in range(101):
             await asyncio.sleep(1)
             yield {"id": i, "data": "hello"}
 
     return SendEventResponse(message_gen())
 ```
+
+!!! tip ""
+    通常情况下使用浏览器自带的 [EventSource](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource) 即可满足使用需求，但有时候你或许会需要在更复杂的场景中使用 Server-sent events（例如 OpenAI 提供的 ChatGPT 接口），使用 [@microsoft/fetch-event-source](https://github.com/Azure/fetch-event-source) 可以完成更复杂的功能。
 
 ### 响应的简化写法
 
