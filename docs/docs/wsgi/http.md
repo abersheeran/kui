@@ -421,7 +421,7 @@ def message():
     return SendEventResponse(message_gen())
 ```
 
-!!! tip ""
+!!! tip "浏览器前端开发"
     通常情况下使用浏览器自带的 [EventSource](https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource) 即可满足使用需求，但有时候你或许会需要在更复杂的场景中使用 Server-sent events（例如 OpenAI 提供的 ChatGPT 接口），使用 [@microsoft/fetch-event-source](https://github.com/Azure/fetch-event-source) 可以完成更复杂的功能。
 
 ### 响应的简化写法
