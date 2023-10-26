@@ -1,18 +1,18 @@
-## 初始化参数
+## Initializing Parameters
 
-除去本文档其他地方提到的参数外，`Kui` 还支持以下初始化参数。
+In addition to the parameters mentioned elsewhere in this document, `Kui` also supports the following initialization parameters.
 
 ### `http_middlewares`
 
-此参数用于添加全局 HTTP 中间件。
+This parameter is used to add global HTTP middlewares.
 
 ### `socket_middlewares`
 
-此参数用于添加全局 WebSocket 中间件。
+This parameter is used to add global WebSocket middlewares.
 
 ### `factory_class`
 
-此参数用于自定义 HttpRequest、WebSocket 类。
+This parameter is used to customize the `HttpRequest` and `WebSocket` classes.
 
 ```python
 from kui.asgi import Kui, HttpRequest, WebSocket
@@ -31,18 +31,18 @@ app = Kui(
 )
 ```
 
-## 属性
+## Attributes
 
 ### `state`
 
-`app.state` 用于存储全局变量。以下是结合 [Lifespan](../lifespan/) 使用 redis 的样例。
+`app.state` is used to store global variables. Here is an example using Redis in conjunction with [Lifespan](../lifespan/).
 
 ```python
 import redis.asyncio
 from kui.asgi import Kui
 
 
-async def init_redis(app: Kui)
+async def init_redis(app: Kui):
     app.state.redis = redis.asyncio.Redis.from_url(
         os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
         decode_responses=True,
@@ -61,26 +61,13 @@ app = Kui(
 
 ### `should_exit`
 
-`app.should_exit` 用于指示 Application 是否将被关闭。
+`app.should_exit` is used to indicate whether the Application should be closed.
 
 !!! notice
-    该属性需要启动的服务器支持。
+    This attribute requires support from the server being started.
 
     ```python
     from kui.asgi import Kui, websocket
-
-    # See https://stackoverflow.com/questions/58133694/graceful-shutdown-of-uvicorn-starlette-app-with-websockets
-    origin_handle_exit = uvicorn.Server.handle_exit
-
-    def handle_exit(self: uvicorn.Server, sig, frame):
-        application = self.config.loaded_app
-        while not isinstance(application, Kui):
-            application = application.app
-        application.should_exit = True
-        return origin_handle_exit(self, sig, frame)
-
-    uvicorn.Server.handle_exit = handle_exit
-
 
     app = Kui()
 
@@ -96,5 +83,14 @@ app = Kui(
 
 
     if __name__ == "__main__":
+        # See https://stackoverflow.com/questions/58133694/graceful-shutdown-of-uvicorn-starlette-app-with-websockets
+        origin_handle_exit = uvicorn.Server.handle_exit
+
+        def handle_exit(self: uvicorn.Server, sig, frame):
+            app.should_exit = True
+            return origin_handle_exit(self, sig, frame)
+
+        uvicorn.Server.handle_exit = handle_exit
+
         uvicorn.run(app)
     ```

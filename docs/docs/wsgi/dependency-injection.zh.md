@@ -6,10 +6,10 @@
 
 ```python
 from typing_extensions import Annotated
-from kui.asgi import Query
+from kui.wsgi import Query
 
 
-async def getlist(
+def getlist(
     page_num: Annotated[int, Query(...)],
     page_size: Annotated[int, Query(...)],
 ):
@@ -20,7 +20,7 @@ async def getlist(
 
 ```python
 from typing_extensions import Annotated
-from kui.asgi import Query
+from kui.wsgi import Query
 from pydantic import BaseModel
 
 
@@ -29,7 +29,7 @@ class PageQuery(BaseModel):
     page_size: int
 
 
-async def getlist(query: Annotated[PageQuery, Query(exclusive=True)]):
+def getlist(query: Annotated[PageQuery, Query(exclusive=True)]):
     ...
 ```
 
@@ -39,7 +39,7 @@ async def getlist(query: Annotated[PageQuery, Query(exclusive=True)]):
 - `Query`：`request.query_params`
 - `Header`：`request.headers`
 - `Cookie`：`request.cookies`
-- `Body`：`await request.data()`
+- `Body`：`request.data()`
 
 通过这样标注的请求参数，不仅会自动校验、转换类型，还能自动生成接口文档。在你需要接口文档的情况下，十分推荐这么使用。
 
@@ -60,49 +60,22 @@ def get_name(name: Annotated[str, Query(...)]):
     return name.lower()
 
 
-async def hello(name: Annotated[str, Depends(get_name)]):
+def hello(name: Annotated[str, Depends(get_name)]):
     return f"hello {name}"
 ```
 
 比较特殊的是，如果你使用 `Depends(......)` 标注的可调用对象是一个生成器函数，那么它将会被 [`contextlib`](https://docs.python.org/3/library/contextlib.html) 改造，`yield` 值被注入视图中，清理部分在视图函数退出后执行（无论视图函数是正常返回或是抛出异常，均会执行清理过程）。在获取某些需要清理的资源时，这特别有效。
 
 ```python
-async def get_db_connection():
+def get_db_connection():
     connection = ...  # get connection
     try:
         yield connection
     finally:
-        await connection.close()
+        connection.close()
 
 
-async def get_user(db: Annotated[Connection, Depends(get_db_connection)]):
-    ...
-```
-
-## 读取 `request` 属性
-
-或许有时候你需要直接读取 `request` 的某些属性，以配合中间件使用。但直接使用 `request.attr` 又失去了 Type hint 的好处，那么可以选择使用如下方式。
-
-如下例所示，当 `code` 被调用时会自动读取 `request.user` 并作为函数参数传入函数中。
-
-```python
-from typing_extensions import Annotated
-from kui.asgi import RequestAttr
-from yourmodule import User
-
-
-async def code(user: Annotated[User, RequestAttr()]):
-    ...
-```
-
-当需要读取的属性名称不能作为参数名称时，也可以为 `RequestAttr` 传入一个字符串作为属性名进行读取。如下例所示，`request.user.name` 将会作为函数参数 `username` 传入函数中。
-
-```python
-from typing_extensions import Annotated
-from kui.asgi import RequestAttr
-
-
-async def code(username: Annotated[str, RequestAttr(alias="user.name")]):
+def get_user(db: Annotated[Connection, Depends(get_db_connection)]):
     ...
 ```
 
@@ -115,9 +88,9 @@ from typing_extensions import Annotated
 
 
 def required_auth(endpoint):
-    async def wrapper(authorization: Annotated[str, Header()]):
+    def wrapper(authorization: Annotated[str, Header()]):
         ...
-        return await endpoint()
+        return endpoint()
 
     return wrapper
 ```

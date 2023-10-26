@@ -28,6 +28,16 @@ plugins:
       lang:
         - zh
         - en
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: zh
+          name: 简体中文
+          build: true
 
 # Customization
 extra:

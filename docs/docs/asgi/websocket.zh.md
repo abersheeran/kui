@@ -109,3 +109,66 @@ user_name = websocket.state.user.name  # 读
 
 del websocket.state.user  # 删
 ```
+
+## WebSocket Object
+
+Each WebSocket connection corresponds to a `kui.asgi.WebSocket` object, which has a pair of `receive`/`send` functions. However, for convenience, three pairs of recv/send functions are wrapped on top of them.
+
+- `receive_bytes`/`send_bytes`: Receive/Send data of type `bytes`.
+
+- `receive_text`/`send_text`: Receive/Send data of type `text`.
+
+- `receive_json`/`send_json`: Receive/Send data of type `bytes`/`text`, but using JSON format as an intermediary. This means you can directly send/receive any object that can be parsed by `json.dumps`/`json.loads`.
+
+In addition, the WebSocket object also has some attributes similar to the HttpRequest object.
+
+### URL
+
+You can access the request path through `websocket.url`. This attribute is an object that resembles a string and exposes all the components that can be parsed from the URL.
+
+For example: `websocket.url.path`, `websocket.url.port`, `websocket.url.scheme`
+
+### Path Parameters
+
+`websocket.path_params` is a dictionary that contains all the parsed path parameters.
+
+### Headers
+
+`websocket.headers` is a case-insensitive multi-value dictionary.
+
+The `key` obtained from `websocket.headers.keys()`/`websocket.headers.items()` will be in lowercase.
+
+### Query Parameters
+
+`websocket.query_params` is a multi-value dictionary.
+
+For example: `websocket.query_params['search']`
+
+### Client Address
+
+`websocket.client` is a `namedtuple` defined as `namedtuple("Address", ["host", "port"])`.
+
+To get the client's hostname or IP address: `websocket.client.host`.
+
+To get the port used by the client in the current connection: `websocket.client.port`.
+
+!!!notice
+    Any element in the tuple can be None. This depends on the values passed by the server.
+
+### Cookies
+
+`websocket.cookies` is a standard dictionary defined as `Dict[str, str]`.
+
+For example: `websocket.cookies.get('mycookie')`
+
+### State
+
+In some cases, it may be necessary to store additional custom information in the `request`. You can use `websocket.state` for storage.
+
+```python
+websocket.state.user = User(name="Alice")  # Write
+
+user_name = websocket.state.user.name  # Read
+
+del websocket.state.user  # Delete
+```
