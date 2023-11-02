@@ -27,9 +27,11 @@ cli = ["click<9.0,>=8.0"]
 
 [tool.pdm]
 [tool.pdm.scripts]
+format = "ruff format {args}"
 lint-ruff = "ruff --fix {args}"
 lint = { composite = [
     "lint-ruff kui tests",
+    "format kui tests",
     "check",
 ] }
 check-ruff = "ruff check {args}"
@@ -46,10 +48,10 @@ dev = [
     "ruff>=0.0.270",
 ]
 test = [
-    "async-asgi-testclient<2.0.0,>=1.4.11",
-    "pytest<8.0.0,>=7.2.1",
-    "pytest-asyncio<1.0,>=0.20.3",
-    "pytest-cov<5.0.0,>=4.0.0",
+    "async-asgi-testclient>=1.4.11",
+    "pytest>=7.2.1",
+    "pytest-asyncio>=0.20.3",
+    "pytest-cov>=4.0.0",
     "httpx>=0.23.3",
 ]
 

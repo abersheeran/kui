@@ -105,9 +105,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                         _body_data = _merge_multi_value(_body_data.multi_items())
 
                     try:
-                        data.append(
-                            request_body.model_validate(_body_data)
-                        )
+                        data.append(request_body.model_validate(_body_data))
                     except ValidationError as e:
                         raise RequestValidationError(e, "body")
 

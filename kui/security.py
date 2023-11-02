@@ -24,7 +24,7 @@ def bearer_auth(
                 "required": {"BearerAuth": []},
             }
         ),
-    ]
+    ],
 ) -> Annotated[
     str,
     {
@@ -72,7 +72,7 @@ def basic_auth(
                 "required": {"BasicAuth": []},
             }
         ),
-    ]
+    ],
 ) -> Annotated[
     Tuple[str, str],
     {
@@ -146,7 +146,7 @@ def api_key_auth_dependency(
                     "required": {"ApiKeyAuth": []},
                 }
             ),
-        ]
+        ],
     ) -> Annotated[str, {401: {"description": HTTPStatus(401).description}}]:
         if api_key is None:
             raise HTTPException(401)

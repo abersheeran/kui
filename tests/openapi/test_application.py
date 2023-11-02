@@ -754,9 +754,9 @@ def test_openapi_multi_type_responses():
         message: str
 
     @app.router.http.get("/")
-    async def homepage() -> Annotated[
-        Any, JSONResponse[200, {}, Message], HTMLResponse[200]
-    ]:
+    async def homepage() -> (
+        Annotated[Any, JSONResponse[200, {}, Message], HTMLResponse[200]]
+    ):
         pass
 
     assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == {
