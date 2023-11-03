@@ -30,16 +30,16 @@ def get_user(db: Annotated[Connection, Depends(get_db_connection)]):
 
 !!! tip "Asynchronous Dependencies"
 
-If your dependency is asynchronous, you can also use `Depends(func)` to annotate an asynchronous callable object. However, please note that this can only be used in ASGI mode.
-
-```python
-async def get_db_connection():
-    connection = ...  # get connection
-    try:
-        yield connection
-    finally:
-        await connection.close()
-```
+    If your dependency is asynchronous, you can also use `Depends(func)` to annotate an asynchronous callable object. However, please note that this can only be used in ASGI mode.
+    
+    ```python
+    async def get_db_connection():
+        connection = ...  # get connection
+        try:
+            yield connection
+        finally:
+            await connection.close()
+    ```
 
 ## Cache
 
