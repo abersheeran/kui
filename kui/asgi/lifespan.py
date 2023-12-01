@@ -55,7 +55,7 @@ class Lifespan:
 
 
 def asynccontextmanager_lifespan(
-    func: Callable[["Kui"], AsyncGenerator[None, None]]
+    func: Callable[["Kui"], AsyncGenerator[Any, None]]
 ) -> Tuple[LifespanCallback, LifespanCallback]:
     """
     Convert `asynccontextmanager` function to `on_startup` and `on_shutdown`
