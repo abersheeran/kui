@@ -161,7 +161,7 @@ class Kui:
 
 
 def create_response_converter(
-    converters: Mapping[type, Callable[..., HttpResponse]]
+    converters: Mapping[type, Callable[..., HttpResponse]],
 ) -> functools._SingleDispatchCallable[HttpResponse]:
     """
     Create a converter for convert response.

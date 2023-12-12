@@ -76,7 +76,7 @@ async def test_openapi_page():
 
     def just_middleware(endpoint):
         async def wrapper(
-            authorization: Annotated[str, Header(..., description="JWT Token")]
+            authorization: Annotated[str, Header(..., description="JWT Token")],
         ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
             return await endpoint()
 
@@ -574,7 +574,7 @@ async def test_openapi_security():
 
     @app.router.http.get("/api-key")
     async def api_key(
-        api_key: Annotated[str, Depends(api_key_auth_dependency("api-key"))]
+        api_key: Annotated[str, Depends(api_key_auth_dependency("api-key"))],
     ):
         return api_key
 
@@ -665,7 +665,7 @@ def test_openapi_depend_response():
     app.router <<= "/docs" // openapi.routes
 
     async def get_current_user(
-        authorization: Annotated[str, Header(..., description="JWT Token")]
+        authorization: Annotated[str, Header(..., description="JWT Token")],
     ) -> Annotated[Any, {"401": {"description": HTTPStatus(401).description}}]:
         pass
 

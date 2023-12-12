@@ -57,7 +57,7 @@ sorted_groupby = lambda iterable, key: groupby(sorted(iterable, key=key), key=ke
 
 
 def _merge_multi_value(
-    items: Sequence[Tuple[str, Any]]
+    items: Sequence[Tuple[str, Any]],
 ) -> Dict[str, Union[Any, List[Any]]]:
     """
     If there are values with the same key value, they are merged into a List.
@@ -401,7 +401,7 @@ def _create_new_class(cls):
 
 
 def create_auto_params(
-    create_new_callback: Callable[[CallableObject], CallableObject]
+    create_new_callback: Callable[[CallableObject], CallableObject],
 ) -> Callable[[CallableObject], CallableObject]:
     """
     Create auto_params

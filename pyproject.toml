@@ -22,9 +22,6 @@ homepage = "https://github.com/abersheeran/kui"
 repository = "https://github.com/abersheeran/kui"
 documentation = "https://kui.aber.sh"
 
-[project.optional-dependencies]
-cli = ["click<9.0,>=8.0"]
-
 [tool.pdm]
 [tool.pdm.scripts]
 format = "ruff format {args}"
