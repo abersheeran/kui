@@ -17,6 +17,7 @@ from typing import (
     TypeVar,
 )
 
+from baize.asgi import Files, Pages
 from baize.datastructures import URL
 from baize.typing import Receive, Scope, Send
 from pydantic import BaseModel
@@ -180,6 +181,8 @@ def create_response_converter(
 
     response_converter.register(type(None), _none)
     response_converter.register(HttpResponse, lambda x: x)
+    response_converter.register(Files, lambda x: x)
+    response_converter.register(Pages, lambda x: x)
     response_converter.register(dict, JSONResponse)
     response_converter.register(list, JSONResponse)
     response_converter.register(tuple, JSONResponse)

@@ -6,6 +6,7 @@ from pathlib import PurePath
 from types import GeneratorType
 from typing import Any, Callable, Iterable, List, Mapping, NoReturn, Optional, Type
 
+from baize.wsgi import Files, Pages
 from baize.datastructures import URL
 from baize.typing import Environ, StartResponse
 from pydantic import BaseModel
@@ -139,6 +140,8 @@ def create_response_converter(
 
     response_converter.register(type(None), _none)
     response_converter.register(HttpResponse, lambda x: x)
+    response_converter.register(Files, lambda x: x)
+    response_converter.register(Pages, lambda x: x)
     response_converter.register(dict, JSONResponse)
     response_converter.register(list, JSONResponse)
     response_converter.register(tuple, JSONResponse)
