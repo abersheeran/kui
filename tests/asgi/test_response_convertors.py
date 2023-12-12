@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from baize.asgi import Files
