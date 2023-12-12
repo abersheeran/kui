@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from baize.wsgi import Files
 from pydantic import BaseModel
 from kui.wsgi import Kui
 from httpx import Client
