@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from baize.asgi import Files
+from baize.asgi import Files, Response
 from pydantic import BaseModel
 from kui.asgi import Kui
 from async_asgi_testclient import TestClient
@@ -19,14 +19,14 @@ async def test_pydantic_base_model():
     async def message():
         return Message(message="Hello, World!")
 
-    @app.router.http("/static/{_:any}")
+    @app.router.http("/{_:any}")
     async def static_files():
-        return Files(Path(__file__).absolute().parent)
+        return Files(Path(__file__).absolute().parent, handle_404=Response(404))
 
     client = TestClient(app)
     response = await client.get("/message")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello, World!"}
 
-    response = await client.get("/static/test_response_convertors.py")
+    response = await client.get("/test_response_convertors.py")
     assert response.status_code == 200
