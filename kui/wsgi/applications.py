@@ -6,9 +6,10 @@ from pathlib import PurePath
 from types import GeneratorType
 from typing import Any, Callable, Iterable, List, Mapping, NoReturn, Optional, Type
 
-from baize.wsgi import Files, Pages
 from baize.datastructures import URL
 from baize.typing import Environ, StartResponse
+from baize.wsgi import Files, Hosts, Pages, Subpaths
+from baize.wsgi import Router as BaizeRouter
 from pydantic import BaseModel
 
 from ..cors import CORSConfig
@@ -142,6 +143,9 @@ def create_response_converter(
     response_converter.register(HttpResponse, lambda x: x)
     response_converter.register(Files, lambda x: x)
     response_converter.register(Pages, lambda x: x)
+    response_converter.register(Subpaths, lambda x: x)
+    response_converter.register(BaizeRouter, lambda x: x)
+    response_converter.register(Hosts, lambda x: x)
     response_converter.register(dict, JSONResponse)
     response_converter.register(list, JSONResponse)
     response_converter.register(tuple, JSONResponse)

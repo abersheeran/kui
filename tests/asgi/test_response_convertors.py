@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import pytest
-
+from async_asgi_testclient import TestClient
 from baize.asgi import Files, Response
 from pydantic import BaseModel
+
 from kui.asgi import Kui
-from async_asgi_testclient import TestClient
 
 
 @pytest.mark.asyncio

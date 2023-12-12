@@ -8,8 +8,10 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence,
 from typing_extensions import Literal, TypedDict
 
 if TYPE_CHECKING:
-    from ..asgi import Kui as ASGIKui, HttpRequest as ASGIHttpRequest
-    from ..wsgi import Kui as WSGIKui, HttpRequest as WSGIHttpRequest
+    from ..asgi import HttpRequest as ASGIHttpRequest
+    from ..asgi import Kui as ASGIKui
+    from ..wsgi import HttpRequest as WSGIHttpRequest
+    from ..wsgi import Kui as WSGIKui
 
 from ..exceptions import RequestValidationError
 from ..parameters import _get_response_docs

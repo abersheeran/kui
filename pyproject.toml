@@ -67,6 +67,9 @@ ignore = [
     "E731",
 ]
 
+[tool.ruff.lint]
+select = ["I"]
+
 [tool.coverage.run]
 omit = ["*/.venv/*", "*/tests/*", "kui/status.py"]
 

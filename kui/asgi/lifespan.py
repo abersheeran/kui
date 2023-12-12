@@ -4,7 +4,7 @@ import dataclasses
 import inspect
 import traceback
 from contextlib import asynccontextmanager, nullcontext
-from typing import TYPE_CHECKING, Any, Callable, List, Tuple, AsyncGenerator
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, List, Tuple
 
 from baize.typing import Receive, Scope, Send
 

@@ -2,12 +2,11 @@ import base64
 from http import HTTPStatus
 from typing import Callable, Tuple, Type, Union
 
+from pydantic import Field
 from typing_extensions import Annotated, Literal
 
-from pydantic import Field
-
 from .exceptions import HTTPException
-from .parameters.fields import InHeader, InQuery, InCookie
+from .parameters.fields import InCookie, InHeader, InQuery
 
 __all__ = [
     "bearer_auth",

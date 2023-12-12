@@ -17,7 +17,8 @@ from typing import (
     TypeVar,
 )
 
-from baize.asgi import Files, Pages
+from baize.asgi import Files, Hosts, Pages, Subpaths
+from baize.asgi import Router as BaizeRouter
 from baize.datastructures import URL
 from baize.typing import Receive, Scope, Send
 from pydantic import BaseModel
@@ -28,6 +29,7 @@ from ..routing import AsyncViewType, BaseRoute, MiddlewareType, NoMatchFound
 from ..utils import ImmutableAttribute, State
 from .cors import allow_cors
 from .exceptions import ErrorHandlerType, ExceptionMiddleware, HTTPException
+from .lifespan import Lifespan, LifespanCallback
 from .requests import HttpRequest, WebSocket, request_var, websocket_var
 from .responses import (
     FileResponse,
@@ -39,9 +41,6 @@ from .responses import (
 )
 from .routing import Router
 from .templates import BaseTemplates
-
-from .lifespan import Lifespan, LifespanCallback
-
 
 LifespanCallbackTypeVar = TypeVar("LifespanCallbackTypeVar", bound=LifespanCallback)
 
@@ -183,6 +182,9 @@ def create_response_converter(
     response_converter.register(HttpResponse, lambda x: x)
     response_converter.register(Files, lambda x: x)
     response_converter.register(Pages, lambda x: x)
+    response_converter.register(Subpaths, lambda x: x)
+    response_converter.register(BaizeRouter, lambda x: x)
+    response_converter.register(Hosts, lambda x: x)
     response_converter.register(dict, JSONResponse)
     response_converter.register(list, JSONResponse)
     response_converter.register(tuple, JSONResponse)

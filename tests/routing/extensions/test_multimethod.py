@@ -1,11 +1,9 @@
-from typing_extensions import Annotated
-
 import pytest
 from async_asgi_testclient import TestClient
+from typing_extensions import Annotated
 
-from kui.asgi import HttpRoute, HttpView, Path, Kui, Query
+from kui.asgi import HttpRoute, HttpView, Kui, Path, Query, required_method
 from kui.asgi import MultimethodRoutes as Routes
-from kui.asgi import required_method
 from kui.utils import safe_issubclass
 
 

@@ -7,12 +7,14 @@ from pydantic_core import PydanticUndefined as Undefined
 from typing_extensions import Annotated
 
 from .fields import (
+    Depends as DependInfo,
+)
+from .fields import (
+    InBody,
+    InCookie,
+    InHeader,
     InPath,
     InQuery,
-    InHeader,
-    InCookie,
-    InBody,
-    Depends as DependInfo,
 )
 
 T = TypeVar("T")

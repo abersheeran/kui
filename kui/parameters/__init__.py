@@ -26,19 +26,19 @@ from typing_extensions import Annotated, Literal, get_args, get_origin, get_type
 
 if TYPE_CHECKING:
     from ..asgi import HttpRequest as ASGIHttpRequest
-    from ..wsgi import HttpRequest as WSGIHttpRequest
     from ..openapi import specification as spec
+    from ..wsgi import HttpRequest as WSGIHttpRequest
 
 from ..exceptions import RequestValidationError
 from ..utils import safe_issubclass
 from .fields import (
     BaseHTTPFieldInfo,
+    Depends,
+    InBody,
+    InCookie,
+    InHeader,
     InPath,
     InQuery,
-    InHeader,
-    InCookie,
-    InBody,
-    Depends,
 )
 
 CallableObject = TypeVar("CallableObject", bound=Callable)

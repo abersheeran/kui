@@ -4,8 +4,8 @@ from typing import Any
 
 from baize.datastructures import UploadFile as _UploadFile
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic_core import core_schema
 from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import core_schema
 
 
 class UploadFile(_UploadFile):

@@ -1,9 +1,10 @@
 from pathlib import Path
 
 from baize.wsgi import Files, Response
-from pydantic import BaseModel
-from kui.wsgi import Kui
 from httpx import Client
+from pydantic import BaseModel
+
+from kui.wsgi import Kui
 
 
 def test_pydantic_base_model():
