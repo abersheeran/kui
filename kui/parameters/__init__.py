@@ -20,9 +20,16 @@ from typing import (
 )
 from typing import cast as typing_cast
 
-from pydantic import BaseModel, RootModel, ValidationError, create_model
+from pydantic import BaseModel, ValidationError, create_model
 from pydantic.fields import FieldInfo
 from typing_extensions import Annotated, Literal, get_args, get_origin, get_type_hints
+
+from ..pydantic_compatible import (
+    create_root_model,
+    get_model_fields,
+    get_model_json_schema,
+    validate_model,
+)
 
 if TYPE_CHECKING:
     from ..asgi import HttpRequest as ASGIHttpRequest
@@ -116,10 +123,7 @@ def _parse_parameters_and_request_body_to_model(
             continue
 
         if kui_field.exclusive:
-            if safe_issubclass(type_, BaseModel):
-                model = type_
-            else:
-                model = RootModel[type_]  # type: ignore
+            model = create_root_model(type_)
             raw_parameters[kui_field._in] = model
             exclusive_models[model] = name
         else:
@@ -214,7 +218,7 @@ def _get_parameters_docs(
     if m is None:
         return []
 
-    _schemas: Dict[str, Any] = copy.deepcopy(m.model_json_schema())
+    _schemas: Dict[str, Any] = get_model_json_schema(m)
     properties: Dict[str, Any] = _schemas["properties"]
     required: Sequence[str] = _schemas.get("required", ())
 
@@ -338,20 +342,21 @@ def _update_docs(
 def _validate_parameters(
     parameters: Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]],
     request: ASGIHttpRequest | WSGIHttpRequest,
-) -> List[BaseModel]:
+) -> List[Tuple[Type[BaseModel], Any]]:
     data = []
 
     if "path" in parameters:
         try:
-            data.append(parameters["path"].model_validate(request.path_params))
+            data.append(validate_model(parameters["path"], request.path_params))
         except ValidationError as e:
             raise RequestValidationError(e, "path")
 
     if "query" in parameters:
         try:
             data.append(
-                parameters["query"].model_validate(
-                    _merge_multi_value(request.query_params.multi_items())
+                validate_model(
+                    parameters["query"],
+                    _merge_multi_value(request.query_params.multi_items()),
                 )
             )
         except ValidationError as e:
@@ -359,13 +364,13 @@ def _validate_parameters(
 
     if "header" in parameters:
         try:
-            data.append(parameters["header"].model_validate(request.headers._dict))
+            data.append(validate_model(parameters["header"], request.headers._dict))
         except ValidationError as e:
             raise RequestValidationError(e, "header")
 
     if "cookie" in parameters:
         try:
-            data.append(parameters["cookie"].model_validate(request.cookies))
+            data.append(validate_model(parameters["cookie"], request.cookies))
         except ValidationError as e:
             raise RequestValidationError(e, "cookie")
 
@@ -373,18 +378,15 @@ def _validate_parameters(
 
 
 def _convert_model_data_to_keyword_arguments(
-    data: List[BaseModel], exclusive_models: Dict[Type[BaseModel], str]
+    data: List[Tuple[Type[BaseModel], Any]],
+    exclusive_models: Dict[Type[BaseModel], str],
 ) -> Dict[str, Any]:
     result = {}
-    for _data in data:
-        if _data.__class__.__name__ == "temporary_model":
-            result.update(
-                {name: getattr(_data, name) for name in _data.model_fields.keys()}
-            )
-        elif isinstance(_data, RootModel):
-            result[exclusive_models[_data.__class__]] = _data.root  # type: ignore
+    for model, value in data:
+        if model.__name__ == "temporary_model":
+            result.update(value)
         else:
-            result[exclusive_models[_data.__class__]] = _data
+            result[exclusive_models[model]] = value
     return result
 
 

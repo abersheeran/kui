@@ -44,7 +44,7 @@ class HttpRegister(typing.Generic[ViewType]):
         self.__routes = routes
 
     @cached_property
-    def _required_method(self) -> typing.Callable[[str], MiddlewareType[ViewType]]:
+    def _required_method(self) -> typing.Callable[[str], MiddlewareType]:
         for origin_base in self.__orig_bases__:  # type: ignore
             if safe_issubclass(get_origin(origin_base), HttpRegister):
                 generic_type = get_args(origin_base)[0]
@@ -77,7 +77,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -105,7 +105,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -134,7 +134,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -163,7 +163,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -192,7 +192,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -221,7 +221,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -250,7 +250,7 @@ class HttpRegister(typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
         summary: str | None = None,
         description: str | None = None,
         tags: typing.Iterable[str] | None = None,
@@ -317,7 +317,7 @@ class RouteRegisterMixin(abc.ABC, typing.Generic[ViewType]):
         path: str,
         *,
         name: typing.Optional[str] = "",
-        middlewares: typing.Iterable[typing.Callable[[ViewType], ViewType]] = [],
+        middlewares: typing.Iterable[MiddlewareType] = [],
     ) -> typing.Callable[[ViewType], ViewType]:
         """
         shortcut for `self << SocketRoute(path, endpoint, name)`
@@ -367,7 +367,7 @@ class Routes(
         ],
         namespace: str = "",
         tags: typing.Iterable[str] | None = None,
-        http_middlewares: typing.Sequence[MiddlewareType[ViewType]] = [],
+        http_middlewares: typing.Sequence[MiddlewareType] = [],
         socket_middlewares: typing.Sequence[typing.Any] = [],
     ) -> None:
         self.namespace = namespace
@@ -486,8 +486,8 @@ class Router(RouteRegisterMixin[ViewType], typing.Generic[ViewType]):
     def __init__(
         self,
         routes: typing.Iterable[BaseRoute[ViewType]],
-        http_middlewares: typing.Sequence[MiddlewareType[ViewType]] = [],
-        socket_middlewares: typing.Sequence[MiddlewareType[ViewType]] = [],
+        http_middlewares: typing.Sequence[MiddlewareType] = [],
+        socket_middlewares: typing.Sequence[MiddlewareType] = [],
     ) -> None:
         self.http_tree = RadixTree[ViewType]()
         self.websocket_tree = RadixTree[ViewType]()

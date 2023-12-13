@@ -3,10 +3,10 @@ from __future__ import annotations
 import typing
 from http import HTTPStatus
 
-from pydantic import BaseModel, RootModel
-from pydantic_core import to_jsonable_python
+from pydantic import BaseModel
 
 from .openapi import specification as spec
+from .pydantic_compatible import create_root_model, to_jsonable_python
 from .utils import safe_issubclass
 
 
@@ -63,7 +63,7 @@ class JSONResponseMixin:
             ):
                 real_content = content
             else:
-                real_content = RootModel[content]  # type: ignore
+                real_content = create_root_model(content)
             docs[str(status_code)]["content"] = {
                 "application/json": {"schema": real_content}
             }
