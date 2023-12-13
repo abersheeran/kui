@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 from ..exceptions import RequestValidationError
 from ..parameters import _get_response_docs
+from ..pydantic_compatible import DEFINITIONS_KEY
 from . import specification as spec
 from .extra_docs import merge_openapi_info
 from .schema import schema_request_body, schema_response
@@ -251,7 +252,7 @@ def _pop_definitions(d: Dict[str, Any]) -> Dict[str, spec.Schema]:
     definitions: Dict[str, Any] = {}
     for key, value in d.items():
         if key == "schema":
-            return value.pop("$defs", {})
+            return value.pop(DEFINITIONS_KEY, {})
 
         if isinstance(value, dict):
             definitions.update(_pop_definitions(value))

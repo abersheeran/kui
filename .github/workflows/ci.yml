@@ -38,15 +38,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-          version: 2.4.2
-          enable-pep582: true # Enable PEP 582 package loading globally
+          version: "2.10"
           cache: true
       - name: Install dependencies
         run: pdm sync
       - name: Static type and format checking
         run: |
           pdm run check
-      - name: Generate coverage report
+      - name: Run tests
+        run: |
+          pdm run test --cov=./kui --cov-report=xml tests
+      - name: Install pydantic v1
+        run: |
+          pip install -U pydantic==1.10.*
+      - name: Run tests
         run: |
           pdm run test --cov=./kui --cov-report=xml tests
       - name: Upload coverage to Codecov
@@ -78,8 +83,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-          version: 2.4.2
-          enable-pep582: true # Enable PEP 582 package loading globally
+          version: "2.10"
           cache: true
 
       - name: Publish

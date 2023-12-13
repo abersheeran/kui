@@ -3,19 +3,11 @@ from __future__ import annotations
 from typing import Any, Callable, Optional, TypeVar
 
 from pydantic import Field
-from pydantic_core import PydanticUndefined as Undefined
 from typing_extensions import Annotated
 
-from .fields import (
-    Depends as DependInfo,
-)
-from .fields import (
-    InBody,
-    InCookie,
-    InHeader,
-    InPath,
-    InQuery,
-)
+from ..pydantic_compatible import Undefined
+from .fields import Depends as DependInfo
+from .fields import InBody, InCookie, InHeader, InPath, InQuery
 
 T = TypeVar("T")
 

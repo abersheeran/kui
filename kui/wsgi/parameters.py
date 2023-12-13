@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import inspect
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, List, TypeVar
+from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar
 from typing import cast as typing_cast
 
 from baize.datastructures import FormData
@@ -20,6 +20,7 @@ from ..parameters import (
     _validate_parameters,
     create_auto_params,
 )
+from ..pydantic_compatible import validate_model
 from ..utils import is_gen_callable
 from .requests import request
 
@@ -52,7 +53,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
 
         @functools.wraps(callback)
         def callback_with_auto_bound_params(*args, **kwargs) -> Any:
-            data: List[BaseModel] = []
+            data: List[Tuple[Type[BaseModel], Any]] = []
             keyword_params: Dict[str, Any] = {}
 
             need_closes = []
@@ -86,7 +87,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                         _body_data = _merge_multi_value(_body_data.multi_items())
 
                     try:
-                        data.append(request_body.model_validate(_body_data))
+                        data.append(validate_model(request_body, _body_data))
                     except ValidationError as e:
                         raise RequestValidationError(e, "body")
 
