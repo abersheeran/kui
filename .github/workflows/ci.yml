@@ -38,7 +38,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-          version: "2.10"
+          version: "2.10.4"
           cache: true
       - name: Install dependencies
         run: pdm sync
@@ -83,7 +83,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-          version: "2.10"
+          version: "2.10.4"
           cache: true
 
       - name: Publish
