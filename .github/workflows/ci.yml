@@ -50,7 +50,7 @@ jobs:
           pdm run test --cov=./kui --cov-report=xml tests
       - name: Install pydantic v1
         run: |
-          pip install -U pydantic==1.10.*
+          pdm run python -m pip install -U pydantic==1.10.*
       - name: Run tests
         run: |
           pdm run test --cov=./kui --cov-report=xml tests
