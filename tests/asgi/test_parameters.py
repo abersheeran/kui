@@ -112,6 +112,14 @@ async def test_body():
 
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters
 
+    @app.router.http.post("/exclusive")
+    async def exclusive(name: Annotated[str, Body(exclusive=True)]):
+        return name
+
+    async with TestClient(app) as client:
+        resp = await client.post("/exclusive", json="aber")
+        assert resp.text == "aber"
+
 
 @pytest.mark.asyncio
 async def test_depend():
