@@ -128,7 +128,7 @@ async def test_depend():
     def get_name(name: Annotated[str, Body(...)]):
         return name
 
-    @app.router.http.get("/")
+    @app.router.http.post("/")
     async def homepage(name: Annotated[str, Depends(get_name)]):
         return name
 
@@ -142,7 +142,7 @@ async def test_depend():
         finally:
             in_gen = False
 
-    @app.router.http.get("/gen")
+    @app.router.http.post("/gen")
     async def depend_gen(name: Annotated[str, Depends(gen)]):
         assert in_gen
         return name
@@ -150,7 +150,7 @@ async def test_depend():
     async def async_get_name(name: Annotated[str, Body(...)]):
         return name
 
-    @app.router.http.get("/async/")
+    @app.router.http.post("/async/")
     async def depend_async(name: Annotated[str, Depends(async_get_name)]):
         return name
 
@@ -162,25 +162,56 @@ async def test_depend():
         finally:
             in_gen = False
 
-    @app.router.http.get("/async/gen")
+    @app.router.http.post("/async/gen")
     async def depend_async_gen(name: Annotated[str, Depends(async_gen)]):
         assert in_gen
         return name
 
+    count = 0
+
+    async def cached_get_name(name: Annotated[str, Body(...)]):
+        nonlocal count
+        count += 1
+        return name
+
+    @app.router.http.post("/cache/enable")
+    async def cache_enable(
+        name0: Annotated[str, Depends(cached_get_name, cache=True)],
+        name1: Annotated[str, Depends(cached_get_name, cache=True)],
+    ):
+        assert name0 == name1
+        return name0
+
+    @app.router.http.post("/cache/disable")
+    async def cache_disable(
+        name0: Annotated[str, Depends(cached_get_name, cache=False)],
+        name1: Annotated[str, Depends(cached_get_name, cache=False)],
+    ):
+        assert name0 == name1
+        return name0
+
     async with TestClient(app) as client:
-        resp = await client.get("/", json={"name": "aber"})
+        resp = await client.post("/", json={"name": "aber"})
         assert resp.text == "aber"
 
-        resp = await client.get("/gen", query_string={"name": "123"})
+        resp = await client.post("/gen", query_string={"name": "123"})
         assert resp.text == "123"
         assert not in_gen
 
-        resp = await client.get("/async/", json={"name": "123"})
+        resp = await client.post("/async/", json={"name": "123"})
         assert resp.text == "123"
 
-        resp = await client.get("/async/gen", query_string={"name": "123"})
+        resp = await client.post("/async/gen", query_string={"name": "123"})
         assert resp.text == "123"
         assert not in_gen
+
+        resp = await client.post("/cache/enable", json={"name": "123"})
+        assert resp.text == "123"
+        assert count == 1
+
+        resp = await client.post("/cache/disable", json={"name": "123"})
+        assert resp.text == "123"
+        assert count == 3
 
 
 @pytest.mark.asyncio

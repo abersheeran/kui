@@ -157,6 +157,29 @@ def test_depend():
         assert in_gen
         return name
 
+    count = 0
+
+    def cached_get_name(name: Annotated[str, Body(...)]):
+        nonlocal count
+        count += 1
+        return name
+
+    @app.router.http.post("/cache/enable")
+    def cache_enable(
+        name0: Annotated[str, Depends(cached_get_name, cache=True)],
+        name1: Annotated[str, Depends(cached_get_name, cache=True)],
+    ):
+        assert name0 == name1
+        return name0
+
+    @app.router.http.post("/cache/disable")
+    def cache_disable(
+        name0: Annotated[str, Depends(cached_get_name, cache=False)],
+        name1: Annotated[str, Depends(cached_get_name, cache=False)],
+    ):
+        assert name0 == name1
+        return name0
+
     with Client(app=app, base_url="http://testServer") as client:
         resp = client.post("/", json={"name": "aber"})
         assert resp.text == "aber"
@@ -171,6 +194,14 @@ def test_depend():
         resp = client.post("/async/gen", params={"name": "123"})
         assert resp.text == "123"
         assert not in_gen
+
+        resp = client.post("/cache/enable", json={"name": "123"})
+        assert resp.text == "123"
+        assert count == 1
+
+        resp = client.post("/cache/disable", json={"name": "123"})
+        assert resp.text == "123"
+        assert count == 3
 
 
 def test_middleware():
