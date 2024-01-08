@@ -90,8 +90,10 @@ class SocketView:
                     data = await self.decode(message)
                     await self.on_receive(data)
                 elif message["type"] == "websocket.disconnect":
-                    close_code = int(message.get("code", 1000))
+                    close_code = message.get("code", 1000)
                     break
+                else:
+                    raise RuntimeError("Unexpected message type: %s" % message["type"])
         except Exception as exc:
             close_code = 1011
             raise exc
