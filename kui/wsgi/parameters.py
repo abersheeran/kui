@@ -53,7 +53,6 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
 
         @functools.wraps(callback)
         def callback_with_auto_bound_params(*args, **kwargs) -> Any:
-            data: List[Tuple[Type[BaseModel], Any]] = []
             keyword_params: Dict[str, Any] = {}
 
             need_closes = []
