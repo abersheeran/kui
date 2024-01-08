@@ -9,6 +9,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     List,
     Optional,
     Sequence,
@@ -20,6 +21,7 @@ from typing import (
 )
 from typing import cast as typing_cast
 
+from baize.datastructures import FormData
 from pydantic import BaseModel, ValidationError, create_model
 from pydantic.fields import FieldInfo
 from typing_extensions import Annotated, Literal, get_args, get_origin, get_type_hints
@@ -339,10 +341,11 @@ def _update_docs(
         setattr(handler, "__docs_responses__", __responses__)
 
 
-def _validate_parameters(
+def _validate_parameters_and_request_body(
     parameters: Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]],
+    request_body: Type[BaseModel] | None,
     request: ASGIHttpRequest | WSGIHttpRequest,
-) -> List[Tuple[Type[BaseModel], Any]]:
+) -> Generator[None, Any, List[Tuple[Type[BaseModel], Any]]]:
     data = []
 
     if "path" in parameters:
@@ -373,6 +376,17 @@ def _validate_parameters(
             data.append(validate_model(parameters["cookie"], request.cookies))
         except ValidationError as e:
             raise RequestValidationError(e, "cookie")
+
+    # try to get body model and parse
+    if request_body:
+        _body_data = yield
+        if isinstance(_body_data, FormData):
+            _body_data = _merge_multi_value(_body_data.multi_items())
+
+        try:
+            data.append(validate_model(request_body, _body_data))
+        except ValidationError as e:
+            raise RequestValidationError(e, "body")
 
     return data
 

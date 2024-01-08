@@ -17,7 +17,7 @@ from ..parameters import (
     _parse_depends_attrs,
     _parse_parameters_and_request_body_to_model,
     _update_docs,
-    _validate_parameters,
+    _validate_parameters_and_request_body,
     create_auto_params,
 )
 from ..pydantic_compatible import validate_model
@@ -76,20 +76,21 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                     if info.cache:
                         cache[info.call] = keyword_params[name]
 
-                # try to get parameters model and parse
-                if parameters:
-                    data.extend(_validate_parameters(parameters, request))
+                data: List[Tuple[Type[BaseModel], Any]]
 
-                # try to get body model and parse
-                if request_body:
+                try:
+                    g = _validate_parameters_and_request_body(
+                        parameters or {}, request_body, request
+                    )
+                    g.send(None)
                     _body_data = request.data()
                     if isinstance(_body_data, FormData):
                         _body_data = _merge_multi_value(_body_data.multi_items())
-
-                    try:
-                        data.append(validate_model(request_body, _body_data))
-                    except ValidationError as e:
-                        raise RequestValidationError(e, "body")
+                    g.send(_body_data)
+                except StopIteration as e:
+                    data = e.value
+                else:
+                    raise NotImplementedError
 
                 keyword_params.update(
                     _convert_model_data_to_keyword_arguments(data, exclusive_models)
