@@ -44,7 +44,6 @@ class Kui:
         templates: Optional[BaseTemplates] = None,
         routes: Iterable[BaseRoute] = [],
         http_middlewares: List[MiddlewareType[SyncViewType]] = [],
-        socket_middlewares: List[MiddlewareType[SyncViewType]] = [],
         exception_handlers: Mapping[int | Type[BaseException], ErrorHandlerType] = {},
         cors_config: Optional[CORSConfig] = None,
         factory_class: FactoryClass = FactoryClass(),
@@ -66,7 +65,7 @@ class Kui:
         if cors_config is not None:
             http_middlewares.append(allow_cors(**cors_config))
 
-        self.router = Router(routes, http_middlewares, socket_middlewares)
+        self.router = Router(routes, http_middlewares, [])
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorHandlerType
