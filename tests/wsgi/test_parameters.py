@@ -3,6 +3,7 @@ import io
 
 import httpx
 from httpx import Client
+from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from kui.wsgi import (
@@ -244,4 +245,24 @@ def test_upload_file():
         assert resp.json() == {"filename": "file", "content": "123"}
 
         resp = client.post("/", files={"file0": io.BytesIO(b"123")})
+        assert resp.status_code == 422
+
+
+def test_parameters_nest_model():
+    app = Kui()
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+    @app.router.http.post("/")
+    def create_user(user: Annotated[User, Body(...)]):
+        assert user.age >= 18
+        return user
+
+    with httpx.Client(app=app, base_url="http://testserver") as client:
+        resp = client.post("/", json={"user": {"name": "aber", "age": 18}})
+        assert resp.json() == {"name": "aber", "age": 18}
+
+        resp = client.post("/", json={"name": "aber", "age": 18})
         assert resp.status_code == 422

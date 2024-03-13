@@ -4,6 +4,7 @@ import io
 import httpx
 import pytest
 from async_asgi_testclient import TestClient
+from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from kui.asgi import (
@@ -254,4 +255,25 @@ async def test_upload_file():
         assert resp.json() == {"filename": "file", "content": "123"}
 
         resp = await client.post("/", files={"file0": io.BytesIO(b"123")})
+        assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_parameters_nest_model():
+    app = Kui()
+
+    class User(BaseModel):
+        name: str
+        age: int
+
+    @app.router.http.post("/")
+    async def create_user(user: Annotated[User, Body(...)]):
+        assert user.age >= 18
+        return user
+
+    async with httpx.AsyncClient(app=app, base_url="http://testserver") as client:
+        resp = await client.post("/", json={"user": {"name": "aber", "age": 18}})
+        assert resp.json() == {"name": "aber", "age": 18}
+
+        resp = await client.post("/", json={"name": "aber", "age": 18})
         assert resp.status_code == 422

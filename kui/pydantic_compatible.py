@@ -30,7 +30,7 @@ if IS_V1:
         if hasattr(res, "__root__"):
             return model, res.__root__
         else:
-            return model, res.dict(by_alias=False)
+            return model, res.__dict__
 
     def get_model_fields(model: Type[BaseModel]) -> Dict[str, ModelField]:  # type: ignore
         return model.__fields__  # type: ignore
@@ -53,7 +53,7 @@ else:
         if isinstance(res, RootModel):
             return model, res.root
         else:
-            return model, res.model_dump(by_alias=False)
+            return model, res.__dict__
 
     def get_model_fields(model: Type[BaseModel]) -> Dict[str, FieldInfo]:  # type: ignore
         return model.model_fields
