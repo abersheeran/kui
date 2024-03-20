@@ -15,7 +15,7 @@ T = TypeVar("T")
 def Path(
     default: Any = Undefined,
     *,
-    default_factory: Optional[Callable[[], None]] = None,
+    default_factory: Optional[Callable[[], Any]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -49,7 +49,7 @@ def Path(
 def Query(
     default: Any = Undefined,
     *,
-    default_factory: Optional[Callable[[], None]] = None,
+    default_factory: Optional[Callable[[], Any]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -83,7 +83,7 @@ def Query(
 def Header(
     default: Any = Undefined,
     *,
-    default_factory: Optional[Callable[[], None]] = None,
+    default_factory: Optional[Callable[[], Any]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -117,7 +117,7 @@ def Header(
 def Cookie(
     default: Any = Undefined,
     *,
-    default_factory: Optional[Callable[[], None]] = None,
+    default_factory: Optional[Callable[[], Any]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
@@ -151,7 +151,7 @@ def Cookie(
 def Body(
     default: Any = Undefined,
     *,
-    default_factory: Optional[Callable[[], None]] = None,
+    default_factory: Optional[Callable[[], Any]] = None,
     alias: str | None = None,
     title: str | None = None,
     description: str | None = None,
