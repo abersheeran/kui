@@ -1,6 +1,6 @@
 [project]
 name = "kui"
-version = "1.7.1"
+version = "1.7.2"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
 dependencies = [
