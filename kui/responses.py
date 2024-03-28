@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import typing
 from http import HTTPStatus
 
@@ -14,8 +15,8 @@ def _json_encoder(obj: typing.Any) -> typing.Any:
     return to_jsonable_python(obj)
 
 
-class JSONResponseMixin:
-    def __class_getitem__(
+class JSONResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[
             int,
@@ -71,8 +72,14 @@ class JSONResponseMixin:
         return docs
 
 
-class FileResponseMixin:
-    def __class_getitem__(
+class JSONResponseMixin(metaclass=JSONResponseDocsMetaclass):
+    """
+    JSON response with OpenAPI docs support
+    """
+
+
+class FileResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[str, typing.Dict[str, spec.Header | spec.Reference]]
         | str,
@@ -104,8 +111,14 @@ class FileResponseMixin:
         }
 
 
-class PlainTextResponseMixin:
-    def __class_getitem__(
+class FileResponseMixin(metaclass=FileResponseDocsMetaclass):
+    """
+    File response with OpenAPI docs support
+    """
+
+
+class PlainTextResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
@@ -128,8 +141,14 @@ class PlainTextResponseMixin:
         }
 
 
-class HTMLResponseMixin:
-    def __class_getitem__(
+class PlainTextResponseMixin(metaclass=PlainTextResponseDocsMetaclass):
+    """
+    Plain text response with OpenAPI docs support
+    """
+
+
+class HTMLResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
@@ -152,8 +171,14 @@ class HTMLResponseMixin:
         }
 
 
-class RedirectResponseMixin:
-    def __class_getitem__(
+class HTMLResponseMixin(metaclass=HTMLResponseDocsMetaclass):
+    """
+    HTML response with OpenAPI docs support
+    """
+
+
+class RedirectResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
@@ -178,8 +203,14 @@ class RedirectResponseMixin:
         }
 
 
-class SendEventResponseMixin:
-    def __class_getitem__(
+class RedirectResponseMixin(metaclass=RedirectResponseDocsMetaclass):
+    """
+    Redirect response with OpenAPI docs support
+    """
+
+
+class SendEventResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
@@ -204,8 +235,14 @@ class SendEventResponseMixin:
         }
 
 
-class StreamResponseMixin:
-    def __class_getitem__(
+class SendEventResponseMixin(metaclass=SendEventResponseDocsMetaclass):
+    """
+    Send event response with OpenAPI docs support
+    """
+
+
+class StreamResponseDocsMetaclass(abc.ABCMeta):
+    def __getitem__(
         cls,
         parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
@@ -233,3 +270,9 @@ class StreamResponseMixin:
                 },
             }
         }
+
+
+class StreamResponseMixin(metaclass=StreamResponseDocsMetaclass):
+    """
+    Stream response with OpenAPI docs support
+    """
