@@ -43,7 +43,7 @@ class Kui:
         *,
         templates: Optional[BaseTemplates] = None,
         routes: Iterable[BaseRoute] = [],
-        http_middlewares: List[MiddlewareType[SyncViewType]] = [],
+        http_middlewares: List[MiddlewareType] = [],
         exception_handlers: Mapping[int | Type[BaseException], ErrorHandlerType] = {},
         cors_config: Optional[CORSConfig] = None,
         factory_class: FactoryClass = FactoryClass(),

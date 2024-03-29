@@ -25,11 +25,11 @@ class BaseRoute(typing.Generic[ViewType]):
 
     def _extend_middlewares(
         self,
-        middlewares: typing.Iterable[MiddlewareType[ViewType]],
+        middlewares: typing.Iterable[MiddlewareType],
     ) -> None:
         reduce(operator.matmul, middlewares, self)
 
-    def __matmul__(self: Self, middleware: MiddlewareType[ViewType]) -> Self:
+    def __matmul__(self: Self, middleware: MiddlewareType) -> Self:
         endpoint = self.endpoint
         if hasattr(endpoint, "__methods__"):
             for method in map(str.lower, endpoint.__methods__):
@@ -49,7 +49,7 @@ class BaseRoute(typing.Generic[ViewType]):
             if new_callback is not old_callback:
                 update_wrapper(new_callback, old_callback)
                 new_callback = self._auto_params(new_callback)
-            self.endpoint = new_callback
+            self.endpoint = new_callback  # type: ignore
         return self
 
     def __post_init__(self) -> None:
