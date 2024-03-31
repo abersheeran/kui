@@ -190,12 +190,14 @@ def hello() -> Annotated[
 
 ### 在中间件里使用
 
+和在视图函数中使用一样，你可以在中间件中使用 `Annotated` 来描述响应结果。
+
 ```python
 from typing_extensions import Annotated
 
 
 def required_auth(endpoint):
-    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, JSONResponse[401]]:
         ...
         return await endpoint()
 
@@ -204,11 +206,13 @@ def required_auth(endpoint):
 
 ### 在依赖函数里使用
 
+和在视图函数中使用一样，你可以在依赖函数中使用 `Annotated` 来描述响应结果。
+
 ```python
 from typing_extensions import Annotated
 
 
-def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, JSONResponse[401]]:
     ...
 ```
 

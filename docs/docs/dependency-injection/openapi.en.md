@@ -188,27 +188,31 @@ The `headers` parameter in all responses should be a standard [OpenAPI Response]
 
 In addition, you can also directly use a standard [OpenAPI Response](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#responseObject) dictionary (`dict`) to describe the response result. It will be parsed and inserted into the final generated API documentation.
 
-### Usage in Middleware
+### Using in Middleware
+
+Just like using in view functions, you can use `Annotated` to describe the response result in middleware.
 
 ```python
 from typing_extensions import Annotated
 
 
 def required_auth(endpoint):
-    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+    def wrapper(authorization: Annotated[str, Header()]) -> Annotated[Any, JSONResponse[401]]:
         ...
         return await endpoint()
 
     return wrapper
 ```
 
-### Usage in Dependency Functions
+### Using in Dependency Functions
+
+Just like using in view functions, you can use `Annotated` to describe the response result in dependency functions.
 
 ```python
 from typing_extensions import Annotated
 
 
-def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, HttpResponse[401]]:
+def required_auth(authorization: Annotated[str, Header()]) -> Annotated[Any, JSONResponse[401]]:
     ...
 ```
 
