@@ -21,7 +21,7 @@ class JSONResponseDocsMetaclass(abc.ABCMeta):
         parameters: typing.Tuple[
             int,
             typing.Dict[str, spec.Header | spec.Reference],
-            typing.Type[BaseModel] | spec.Schema | type,
+            typing.Type[BaseModel] | spec.Schema | typing.Any,
         ]
         | typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
         | int,
