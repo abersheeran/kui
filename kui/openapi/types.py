@@ -50,7 +50,7 @@ else:
         @classmethod
         def validate(cls, v):
             if not isinstance(v, _UploadFile):
-                raise TypeError(
+                raise ValueError(
                     f"Expected UploadFile, received {v.__class__.__name__} instead."
                 )
             return v
