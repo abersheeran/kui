@@ -11,8 +11,16 @@ from .pydantic_compatible import create_root_model, to_jsonable_python
 from .utils import safe_issubclass
 
 
-def _json_encoder(obj: typing.Any) -> typing.Any:
-    return to_jsonable_python(obj)
+def create_json_encoder(
+    *json_encoders: typing.Tuple[type, typing.Callable[[typing.Any], typing.Any]],
+) -> typing.Callable[[typing.Any], typing.Any]:
+    def json_encoder(obj: typing.Any) -> typing.Any:
+        for type_, encoder in json_encoders:
+            if isinstance(obj, type_):
+                return encoder(obj)
+        return to_jsonable_python(obj)
+
+    return json_encoder
 
 
 class JSONResponseDocsMetaclass(abc.ABCMeta):

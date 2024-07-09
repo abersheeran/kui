@@ -23,6 +23,19 @@ app = Kui(
 )
 ```
 
+### `json_encoder`
+
+此参数用于自定义 JSON 编码器。
+
+```python
+from kui.wsgi import Kui
+from typedmongo import Table
+
+app = Kui(json_encoder={
+    Table: lambda table: table.dump(),
+})
+```
+
 ## 属性
 
 ### `state`

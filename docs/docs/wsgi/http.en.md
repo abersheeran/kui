@@ -303,22 +303,7 @@ def return_json():
     return JSONResponse({'hello': 'world'})
 ```
 
-`JSONResponse` exposes all the options of `json.dumps` as keyword arguments for customization. For example, in many cases, the built-in JSON converter in Python may not meet the serialization needs of the actual project. You can customize how to handle objects that cannot be serialized by overriding the `default` method.
-
-```python
-import decimal
-from kui.wsgi import JSONResponse
-
-
-def custom_convert(obj):
-    if isinstance(obj, decimal.Decimal):
-        return str(obj)
-    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-
-def return_json():
-    return JSONResponse({'hello': 'world'}, default=custom_convert)
-```
+`JSONResponse` exposes all the options of `json.dumps` as keyword arguments for customization.
 
 ### RedirectResponse
 

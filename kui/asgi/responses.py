@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import typing
 
 from baize import asgi as baize_asgi
@@ -13,7 +14,6 @@ from ..responses import (
     RedirectResponseMixin,
     SendEventResponseMixin,
     StreamResponseMixin,
-    _json_encoder,
 )
 from .requests import request
 
@@ -35,20 +35,10 @@ HttpResponse = baize_asgi.Response
 
 
 class JSONResponse(JSONResponseMixin, baize_asgi.JSONResponse):
-    def __init__(
-        self,
-        content: typing.Any,
-        status_code: int = 200,
-        headers: typing.Optional[typing.Mapping[str, str]] = None,
-        **kwargs: typing.Any,
-    ) -> None:
-        json_kwargs: typing.Dict[str, typing.Any] = {
-            "default": _json_encoder,
-        }
-        json_kwargs.update(**kwargs)
-        super().__init__(
-            content, status_code=status_code, headers=headers, **json_kwargs
-        )
+    async def render(self, content: typing.Any) -> bytes:
+        if not self.json_kwargs.get("default"):
+            self.json_kwargs["default"] = request.app.json_encoder
+        return json.dumps(content, **self.json_kwargs).encode(self.charset)
 
 
 class FileResponse(

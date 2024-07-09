@@ -23,6 +23,19 @@ app = Kui(
 )
 ```
 
+### `json_encoder`
+
+This parameter is used to customize the JSON encoder.
+
+```python
+from kui.wsgi import Kui
+from typedmongo import Table
+
+app = Kui(json_encoder={
+    Table: lambda table: table.dump(),
+})
+```
+
 ## Properties
 
 ### `state`

@@ -25,6 +25,7 @@ from pydantic import BaseModel
 from typing_extensions import Literal
 
 from ..cors import CORSConfig
+from ..responses import create_json_encoder
 from ..routing import AsyncViewType, BaseRoute, MiddlewareType, NoMatchFound
 from ..utils import ImmutableAttribute, State
 from .cors import allow_cors
@@ -67,11 +68,13 @@ class Kui:
         cors_config: Optional[CORSConfig] = None,
         factory_class: FactoryClass = FactoryClass(),
         response_converters: Mapping[type, Callable[..., HttpResponse]] = {},
+        json_encoder: Mapping[type, Callable[[Any], Any]] = {},
     ) -> None:
         self.should_exit = False
 
         self.state = State()
         self.response_converter = create_response_converter(response_converters)
+        self.json_encoder = create_json_encoder(*json_encoder.items())
         self.factory_class = factory_class
         self.templates = templates
         self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))

@@ -303,21 +303,7 @@ async def return_json():
     return JSONResponse({'hello': 'world'})
 ```
 
-`JSONResponse` 以关键词参数的形式暴露出全部 `json.dumps` 的选项以供自定义。例如在很多时候，Python 内置的 `json` 转换器无法满足实际项目的序列化需求，可以通过覆盖 `default` 方法来自定义无法序列化的对象该如何处理。
-
-```python
-import decimal
-from kui.asgi import JSONResponse
-
-
-def custom_convert(obj):
-    if isinstance(obj, decimal.Decimal):
-        return str(obj)
-    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-
-async def return_json():
-    return JSONResponse({'hello': 'world'}, default=custom_convert)
+`JSONResponse` 以关键词参数的形式暴露出全部 `json.dumps` 的选项以供自定义。
 ```
 
 ### RedirectResponse
