@@ -193,6 +193,8 @@ def create_response_converter(
     response_converter.register(tuple, JSONResponse)
     response_converter.register(bytes, PlainTextResponse)
     response_converter.register(str, PlainTextResponse)
+    # Because of we can't call `await anext(ag)` in the `response_converter` function,
+    # so we can't convert `AsyncGenerator` to `SendEventResponse | StreamResponse`.
     response_converter.register(AsyncGeneratorType, SendEventResponse)
     response_converter.register(
         PurePath,
