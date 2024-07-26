@@ -4,7 +4,7 @@ version = "1.8.0"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
 dependencies = [
-    "baize<0.21.0,>=0.20.0",
+    "baize>=0.20.0",
     "pydantic>=1.10",
     "typing-extensions>=4.2.0",
 ]

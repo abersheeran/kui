@@ -5,7 +5,7 @@
 groups = ["default", "dev", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:e17ebac31f37b153ef21346f534b96be9769ae84a3efb2af8454c76bd2807224"
+content_hash = "sha256:a584ae33a6bb1964ab5e94e6c98951b575150dcf1e4ba35b9bef90254fd39651"
 
 [[package]]
 name = "annotated-types"
@@ -50,30 +50,30 @@ files = [
 
 [[package]]
 name = "baize"
-version = "0.20.8"
+version = "0.22.0"
 requires_python = ">=3.7"
 summary = "Powerful and exquisite WSGI/ASGI framework/toolkit."
 dependencies = [
     "typing-extensions>=4.1.1; python_version < \"3.8\"",
 ]
 files = [
-    {file = "baize-0.20.8-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:cee1b5ae52e238b6628a6c1084d4d00276c3a33b0c91e2f158b91c8518a3b723"},
-    {file = "baize-0.20.8-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7386ea92755cfc35a42aea57f704399d761b19fc5723961fd58e04c38002f146"},
-    {file = "baize-0.20.8-cp310-cp310-win_amd64.whl", hash = "sha256:aaa82265088ccdce541e90cbbcf916dd1a7c950acdfca129603f3ac0f49e03b8"},
-    {file = "baize-0.20.8-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:cb28ea2756891768eb81e9967b52b5ff9fcc768d2b1a0afb46e8b0bc8ec32590"},
-    {file = "baize-0.20.8-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cf0a818b1a3cc7cef5782c35e16697ba2a7f22446d31eb0014459bcf5dece67a"},
-    {file = "baize-0.20.8-cp311-cp311-win_amd64.whl", hash = "sha256:1c845915e287eadf297e9c9ef138849b3c616965d65e5a228e1c7125b3612624"},
-    {file = "baize-0.20.8-cp37-cp37m-macosx_11_0_x86_64.whl", hash = "sha256:2749bbb3cd7ddbe45dc9afbe90c226cc0cf9b5104ce37881474ce7ba3275d897"},
-    {file = "baize-0.20.8-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6e78f25ac305cbace25e57e002cadbeec6128c32b9abc560dc10abad6f4c9a2b"},
-    {file = "baize-0.20.8-cp37-cp37m-win_amd64.whl", hash = "sha256:53c2aa5dbd510b540e9e51b1dd72065fd0addf791e41020d454a45639d1ac838"},
-    {file = "baize-0.20.8-cp38-cp38-macosx_11_0_x86_64.whl", hash = "sha256:5d4e6f2238f1f9211e741ded9bc34297b3d459ec5eac2dd66b2d1a6e3744bc1b"},
-    {file = "baize-0.20.8-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a315ed5feda35324bf2d0fd8b0b424b32e0ee5d02f44ad54d5bb2689b8f40a73"},
-    {file = "baize-0.20.8-cp38-cp38-win_amd64.whl", hash = "sha256:d533592cf076b9c1e5b0b57324de75342024b0ccd9ed23a69bf0a702aec22078"},
-    {file = "baize-0.20.8-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:f3f0a6b7ba006efd1f779107efcc8e01e38aecd63f21f62a046321b654b7c6f8"},
-    {file = "baize-0.20.8-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e910b14b0fe8d8b34c135d0cea94fc9053036b953eaefa8b5f2dd6cc3115bd05"},
-    {file = "baize-0.20.8-cp39-cp39-win_amd64.whl", hash = "sha256:6da5d0c1243a90e54987f7b37ea7e112592fadf9b80d2de4d067307b53770e55"},
-    {file = "baize-0.20.8-py3-none-any.whl", hash = "sha256:562bd3eeca18efd9e2518e8e0e01689b76e0de3368bff71ea3b0b1a5c5c792a5"},
-    {file = "baize-0.20.8.tar.gz", hash = "sha256:966eea93830beb003d8992218483d70fdd8955baedf225e519c8c3a0fe89dd64"},
+    {file = "baize-0.22.0-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:49bcae2ee3af8050e125d8d27870dd4f75da4bfda1c86ebf9dc4072bc56c7ef4"},
+    {file = "baize-0.22.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5a345ae675e20b0aef8e858a2891871dcb8b97be8c7b0fb43d8e00901d1cde61"},
+    {file = "baize-0.22.0-cp310-cp310-win_amd64.whl", hash = "sha256:c813a3e84c112a0845ea5ba8bc3e90d22de29dc32059a802909a0e5d9c098fa5"},
+    {file = "baize-0.22.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:290823c63552f66bdb72463e65a6b6236f831f3513ac8df2d39b7360cc9e7ee6"},
+    {file = "baize-0.22.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b52306fc1db1a5cdf160abf3a9858c411fb4aa990798c96fd54e1fcab8d59f81"},
+    {file = "baize-0.22.0-cp311-cp311-win_amd64.whl", hash = "sha256:3548269f0572ed81add7d7ff9cf1ffeaabcf70a57fb73f7c21d26c4b6e354207"},
+    {file = "baize-0.22.0-cp37-cp37m-macosx_11_0_x86_64.whl", hash = "sha256:1c572b905d39c240fe4488608a5f2bcb253ddb5b4dbf3fd3c84fc38ac01863ea"},
+    {file = "baize-0.22.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9823e256cb7614a12de1a7fa82094c6ee3fe98b5028d2ae5ef57f42f41901951"},
+    {file = "baize-0.22.0-cp37-cp37m-win_amd64.whl", hash = "sha256:1068dfd875e564647c48297c6dad0c75933802901c9360cbc02a16f949a54a82"},
+    {file = "baize-0.22.0-cp38-cp38-macosx_12_0_x86_64.whl", hash = "sha256:4640379f948d230484cddf5043df9c1aae0333863b2348909bba332502094c8f"},
+    {file = "baize-0.22.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:425a00ccfdfc1efadc24f80496c26ebbd06102e68533e578d983f447e3687eb3"},
+    {file = "baize-0.22.0-cp38-cp38-win_amd64.whl", hash = "sha256:54ccc438492c2234cc9004af7c8714ed27b7902582178834d30ead890dc28590"},
+    {file = "baize-0.22.0-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:f5973e5183d5117fe6a5bd0e8c1ceee08fa2e428cb3692f177ce5e5fff0ba760"},
+    {file = "baize-0.22.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4abfd9b0a7e2da982e8b042ede92554be0a4b2854d76342a230bf007e89b6aff"},
+    {file = "baize-0.22.0-cp39-cp39-win_amd64.whl", hash = "sha256:fa080704d592b4380df3ad9f25e34254cbd591b7548ca8d6f4d57ba2595fb004"},
+    {file = "baize-0.22.0-py3-none-any.whl", hash = "sha256:48bc6db5db0f7b5f57eae5e2a3f8687e5a8330853400ebcc84681040c1a5cc46"},
+    {file = "baize-0.22.0.tar.gz", hash = "sha256:defffb84611d2fb64eb83cd2a4ae4f30bb86868431d9df6a5981e5589edc5783"},
 ]
 
 [[package]]
