@@ -296,13 +296,13 @@ routes = Routes(..., namespace="namespace")
 通过 `Routes` 你可以为整组路由注册一个或多个中间件。以下为简单的样例：
 
 ```python
-async def one_http_middleware(endpoint):
+def one_http_middleware(endpoint):
     async def wrapper():
         return await endpoint()
     return wrapper
 
 
-async def one_socket_middleware(endpoint):
+def one_socket_middleware(endpoint):
     async def wrapper():
         await endpoint()
     return wrapper

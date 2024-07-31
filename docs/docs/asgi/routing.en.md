@@ -296,13 +296,13 @@ routes = Routes(..., namespace="namespace")
 With `Routes`, you can register one or more middleware for the entire group of routes. Here is a simple example:
 
 ```python
-async def one_http_middleware(endpoint):
+def one_http_middleware(endpoint):
     async def wrapper():
         return await endpoint()
     return wrapper
 
 
-async def one_socket_middleware(endpoint):
+def one_socket_middleware(endpoint):
     async def wrapper():
         await endpoint()
     return wrapper
