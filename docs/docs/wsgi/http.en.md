@@ -326,7 +326,7 @@ import time
 from kui.wsgi import StreamResponse
 
 
-async def slow_numbers(minimum, maximum):
+def slow_numbers(minimum, maximum):
     yield b'<html><body><ul>'
     for number in range(minimum, maximum + 1):
         yield f'<li>{number}</li>'.encode()
