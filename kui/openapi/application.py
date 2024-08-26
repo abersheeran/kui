@@ -49,7 +49,7 @@ class OpenAPI:
         self.reload = reload
 
         self.openapi = spec.OpenAPI(
-            openapi="3.0.3",
+            openapi="3.1.0",
             info=info,
             paths={},
             tags=[
