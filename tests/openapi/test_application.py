@@ -105,7 +105,7 @@ async def test_openapi_page():
 
     openapi_docs_text = response.text
     assert json.loads(openapi_docs_text) == {
-        "openapi": "3.0.3",
+        "openapi": "3.1.0",
         "info": {"title": "Kuí API", "version": "1.0.0"},
         "paths": {
             "/hello": {
@@ -583,7 +583,7 @@ async def test_openapi_security():
         openapi_json = resp.json()
 
         assert openapi_json == {
-            "openapi": "3.0.3",
+            "openapi": "3.1.0",
             "info": {"title": "Kuí API", "version": "1.0.0"},
             "paths": {
                 "/basic": {
@@ -809,7 +809,7 @@ async def test_openapi_components_schemas():
 
     openapi_docs_text = response.text
     assert json.loads(openapi_docs_text) == {
-        "openapi": "3.0.3",
+        "openapi": "3.1.0",
         "info": {"title": "Kuí API", "version": "1.0.0"},
         "paths": {
             "/hello": {

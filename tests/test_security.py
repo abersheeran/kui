@@ -70,7 +70,7 @@ def test_auth_openapi():
 
     with httpx.Client(app=app, base_url="http://testServer") as client:
         assert client.get("/docs/json").json() == {
-            "openapi": "3.0.3",
+            "openapi": "3.1.0",
             "info": {"title": "Kuí API", "version": "1.0.0"},
             "paths": {
                 "/": {"get": {"security": [{"BearerAuth": []}], "responses": {}}}
