@@ -334,7 +334,7 @@ def slow_numbers(minimum, maximum):
     yield b'</ul></body></html>'
 
 
-def return_stream(scope, receive, send):
+def return_stream(environ, start_response):
     generator = slow_numbers(1, 10)
     return StreamResponse(generator, content_type='text/html')
 ```
