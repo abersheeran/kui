@@ -1,5 +1,5 @@
+import httpx
 import pytest
-from async_asgi_testclient import TestClient
 from typing_extensions import Annotated
 
 from kui.asgi import HttpRoute, HttpView, Kui, Path, Query, required_method
@@ -120,11 +120,11 @@ async def test_mulitmethodroutes_with_parameters():
 
     app = Kui(routes=routes)
 
-    async with TestClient(app) as client:
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
         resp = await client.get("/aber")
         assert resp.text == "aber"
 
-        resp = await client.post("/aber", query_string={"status": 201})
+        resp = await client.post("/aber", params={"status": 201})
         assert resp.status_code == 201
         assert resp.text == "aber"
 

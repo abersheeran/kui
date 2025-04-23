@@ -12,7 +12,10 @@ def test_http_view():
         def get(cls):
             return "OK"
 
-    with httpx.Client(app=app, base_url="http://testServer") as client:
+    with httpx.Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         assert client.get("/").content == b"OK"
 
         assert client.post("/").status_code == 405

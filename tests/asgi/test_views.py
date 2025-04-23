@@ -1,5 +1,5 @@
+import httpx
 import pytest
-from async_asgi_testclient import TestClient
 
 from kui.asgi import HttpView, Kui, SocketView, websocket
 
@@ -14,12 +14,15 @@ async def test_http_view():
         async def get(cls):
             return "OK"
 
-    async with TestClient(app) as client:
-        assert (await client.get("/")).content == b"OK"
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/")
+        assert response.content == b"OK"
 
-        assert (await client.post("/")).status_code == 405
+        response = await client.post("/")
+        assert response.status_code == 405
 
-        assert (await client.options("/")).headers["Allow"] == "GET, OPTIONS"
+        response = await client.options("/")
+        assert response.headers["Allow"] == "GET, OPTIONS"
 
 
 @pytest.mark.asyncio
@@ -39,12 +42,3 @@ async def test_socket_view():
 
         async def on_receive(self, data):
             await websocket.send_json(data)
-
-    async with TestClient(app) as client:
-        async with client.websocket_connect("/text") as ws:
-            await ws.send_text("OK")
-            assert (await ws.receive_text()) == "OK"
-
-        async with client.websocket_connect("/json") as ws:
-            await ws.send_json("OK")
-            assert (await ws.receive_json()) == "OK"

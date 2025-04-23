@@ -27,7 +27,10 @@ def test_path():
     def path(name: Annotated[str, Path()]):
         return name
 
-    with Client(app=app, base_url="http://testServer") as client:
+    with Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.get("/aber")
         assert resp.text == "aber"
 
@@ -47,7 +50,10 @@ def test_query():
     def query(name: Annotated[str, Query(...)]):
         return name
 
-    with Client(app=app, base_url="http://testServer") as client:
+    with Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.get("/", params={"name": "aber"})
         assert resp.text == "aber"
 
@@ -64,7 +70,10 @@ def test_header():
     def header(name: Annotated[str, Header(alias="Name")]):
         return name
 
-    with Client(app=app, base_url="http://testServer") as client:
+    with Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.get("/", headers={"name": "aber"})
         assert resp.text == "aber"
 
@@ -82,13 +91,17 @@ def test_cookie():
         return name
 
     with Client(
-        app=app, base_url="http://testServer", cookies={"name": "aber"}
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+        cookies={"name": "aber"},
     ) as client:
         resp = client.get("/")
         assert resp.text == "aber"
 
     with Client(
-        app=app, base_url="http://testServer", cookies={"name0": "aber"}
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+        cookies={"name0": "aber"},
     ) as client:
         resp = client.get("/")
         assert resp.status_code == 422
@@ -103,7 +116,10 @@ def test_body():
     def body(name: Annotated[str, Body()]):
         return name
 
-    with Client(app=app, base_url="http://testServer") as client:
+    with Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.post("/", data={"name": "aber"})
         assert resp.text == "aber"
 
@@ -181,7 +197,10 @@ def test_depend():
         assert name0 == name1
         return name0
 
-    with Client(app=app, base_url="http://testServer") as client:
+    with Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.post("/", json={"name": "aber"})
         assert resp.text == "aber"
 
@@ -219,7 +238,9 @@ def test_middleware():
         return name
 
     with Client(
-        app=app, base_url="http://testServer", cookies={"name": "aber"}
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+        cookies={"name": "aber"},
     ) as client:
         resp = client.get("/")
         assert resp.status_code == 422
@@ -240,7 +261,10 @@ def test_upload_file():
             "content": file.read().decode("utf8"),
         }
 
-    with httpx.Client(app=app, base_url="http://testserver") as client:
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.post("/", files={"file": ("file", io.BytesIO(b"123"))})
         assert resp.json() == {"filename": "file", "content": "123"}
 
@@ -260,7 +284,10 @@ def test_parameters_nest_model():
         assert user.age >= 18
         return user
 
-    with httpx.Client(app=app, base_url="http://testserver") as client:
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
         resp = client.post("/", json={"user": {"name": "aber", "age": 18}})
         assert resp.json() == {"name": "aber", "age": 18}
 

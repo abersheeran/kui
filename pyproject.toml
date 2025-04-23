@@ -4,11 +4,11 @@ version = "1.8.1"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
 dependencies = [
-    "baize>=0.20.0",
-    "pydantic>=1.10",
+    "baize>=0.22.0",
+    "pydantic>=2",
     "typing-extensions>=4.2.0",
 ]
-requires-python = ">=3.7,<4.0"
+requires-python = ">=3.9,<4.0"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 classifiers = [
@@ -45,7 +45,6 @@ dev = [
     "ruff>=0.0.270",
 ]
 test = [
-    "async-asgi-testclient>=1.4.11",
     "pytest>=7.2.1",
     "pytest-asyncio>=0.20.3",
     "pytest-cov>=4.0.0",
@@ -57,9 +56,6 @@ includes = ["kui"]
 
 [tool.mypy]
 ignore_missing_imports = true
-
-[tool.isort]
-profile = "black"
 
 [tool.ruff]
 ignore = [

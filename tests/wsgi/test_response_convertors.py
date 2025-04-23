@@ -1,7 +1,7 @@
 from pathlib import Path
 
+import httpx
 from baize.wsgi import Files, Response
-from httpx import Client
 from pydantic import BaseModel
 
 from kui.wsgi import Kui
@@ -21,7 +21,10 @@ def test_pydantic_base_model():
     def static_files():
         return Files(Path(__file__).absolute().parent, handle_404=Response(404))
 
-    client = Client(app=app, base_url="http://testserver")
+    client = httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    )
     response = client.get("/message")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello, World!"}

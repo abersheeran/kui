@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from httpx import Client
+import httpx
 
 from kui.wsgi import allow_cors
 
@@ -19,8 +19,10 @@ def test_cors():
 
     app.router <<= HttpRoute("/", homepage) @ cors_middleware
 
-    with Client(
-        app=app, base_url="http://testServer", headers={"origin": "testserver"}
+    with httpx.Client(
+        base_url="http://testServer",
+        headers={"origin": "testserver"},
+        transport=httpx.WSGITransport(app=app),  # type: ignore
     ) as client:
         resp = client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"
@@ -45,8 +47,10 @@ def test_cors_global():
 
     app.router <<= HttpRoute("/", homepage)
 
-    with Client(
-        app=app, base_url="http://testServer", headers={"origin": "testserver"}
+    with httpx.Client(
+        base_url="http://testServer",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+        headers={"origin": "testserver"},
     ) as client:
         resp = client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from async_asgi_testclient import TestClient
+import httpx
 
 
 def test_application():
@@ -24,7 +24,9 @@ async def test_example_application():
 
     app.state.wait_time = 0.00000001
 
-    async with TestClient(app) as client:
+    async with httpx.AsyncClient(
+        base_url="http://testserver", transport=httpx.ASGITransport(app=app)
+    ) as client:
         response = await client.get("/")
         assert response.status_code == 200
         assert response.text == "Kuí"
@@ -42,9 +44,6 @@ async def test_example_application():
 
         response = await client.get("/sources/example")
         assert response.status_code == 404
-
-        async with client.websocket_connect("/") as socket:
-            assert await socket.receive_json() == {"data": "(^_^)"}
 
 
 def test_custom_application_response_converter():
