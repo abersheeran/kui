@@ -90,7 +90,9 @@ async def test_openapi_page():
 
     app.router <<= middleware_routes
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         response = await client.get("/docs", follow_redirects=False)
         assert response.status_code == 307
         assert response.headers["location"] == "http://testserver/docs/"
@@ -133,7 +135,9 @@ async def test_openapi_page():
                         "responses": {
                             "200": {
                                 "description": "Request fulfilled, document follows",
-                                "content": {"text/html": {"schema": {"type": "string"}}},
+                                "content": {
+                                    "text/html": {"schema": {"type": "string"}}
+                                },
                                 "headers": {},
                             }
                         },
@@ -150,7 +154,10 @@ async def test_openapi_page():
                                         "schema": {
                                             "type": "object",
                                             "properties": {
-                                                "name": {"title": "Name", "type": "string"}
+                                                "name": {
+                                                    "title": "Name",
+                                                    "type": "string",
+                                                }
                                             },
                                             "required": ["name"],
                                         }
@@ -249,7 +256,9 @@ async def test_openapi_page():
                         "responses": {
                             "200": {
                                 "description": "Request fulfilled, document follows",
-                                "content": {"text/html": {"schema": {"type": "string"}}},
+                                "content": {
+                                    "text/html": {"schema": {"type": "string"}}
+                                },
                                 "headers": {},
                             },
                             "401": {
@@ -328,7 +337,10 @@ async def test_openapi_page():
                                         "schema": {
                                             "type": "object",
                                             "properties": {
-                                                "name": {"title": "Name", "type": "string"}
+                                                "name": {
+                                                    "title": "Name",
+                                                    "type": "string",
+                                                }
                                             },
                                             "required": ["name"],
                                         }
@@ -403,7 +415,9 @@ async def test_openapi_page():
                             }
                         ],
                         "responses": {
-                            "204": {"description": "Request fulfilled, nothing follows"},
+                            "204": {
+                                "description": "Request fulfilled, nothing follows"
+                            },
                             "401": {
                                 "description": "No permission -- see authorization schemes"
                             },
@@ -755,9 +769,9 @@ def test_openapi_multi_type_responses():
         message: str
 
     @app.router.http.get("/")
-    async def homepage() -> (
-        Annotated[Any, JSONResponse[200, {}, Message], HTMLResponse[200]]
-    ):
+    async def homepage() -> Annotated[
+        Any, JSONResponse[200, {}, Message], HTMLResponse[200]
+    ]:
         pass
 
     assert openapi._generate_path(app, app.router.search("http", "/")[1], "/") == {
@@ -803,7 +817,9 @@ async def test_openapi_components_schemas():
         """
         pass
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         response = await client.get("/docs/json")
         assert response.status_code == 200
         assert len(response.headers["hash"]) == 32
@@ -840,7 +856,9 @@ async def test_openapi_components_schemas():
             "components": {
                 "schemas": {
                     "M": {
-                        "properties": {"message": {"title": "Message", "type": "string"}},
+                        "properties": {
+                            "message": {"title": "Message", "type": "string"}
+                        },
                         "required": ["message"],
                         "title": "M",
                         "type": "object",

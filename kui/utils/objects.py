@@ -27,12 +27,10 @@ class ImmutableAttribute(Generic[T]):
         self.private_name = "_" + name
 
     @overload
-    def __get__(self, instance: None, cls: type | None) -> NoReturn:
-        ...
+    def __get__(self, instance: None, cls: type | None) -> NoReturn: ...
 
     @overload
-    def __get__(self, instance: object, cls: type | None) -> T:
-        ...
+    def __get__(self, instance: object, cls: type | None) -> T: ...
 
     def __get__(self, instance, cls):
         if instance is None:

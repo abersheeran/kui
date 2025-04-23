@@ -40,7 +40,7 @@ def Path(
         title=title,
         description=description,
         **extra,
-    )
+    )  # type: ignore
     return Annotated[Any, field_info, InPath()]
 
 
@@ -72,7 +72,7 @@ def Query(
         title=title,
         description=description,
         **extra,
-    )
+    )  # type: ignore
     return Annotated[Any, field_info, InQuery()]
 
 
@@ -104,7 +104,7 @@ def Header(
         title=title,
         description=description,
         **extra,
-    )
+    )  # type: ignore
     return Annotated[Any, field_info, InHeader()]
 
 
@@ -136,7 +136,7 @@ def Cookie(
         title=title,
         description=description,
         **extra,
-    )
+    )  # type: ignore
     return Annotated[Any, field_info, InCookie()]
 
 
@@ -170,7 +170,7 @@ def Body(
         title=title,
         description=description,
         **extra,
-    )
+    )  # type: ignore
     return Annotated[Any, field_info, InBody(exclusive=exclusive)]
 
 

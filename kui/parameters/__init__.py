@@ -142,9 +142,9 @@ def _parse_parameters_and_request_body_to_model(
                 isinstance(kui_field, (InQuery, InHeader, InCookie))
                 and kui_field.security
             ):
-                security_info[kui_field._in][
-                    field_info.alias or name
-                ] = kui_field.security
+                security_info[kui_field._in][field_info.alias or name] = (
+                    kui_field.security
+                )
 
     for key, params in filter(
         lambda kv: kv[1],

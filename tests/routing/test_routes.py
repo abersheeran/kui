@@ -11,12 +11,10 @@ def test_decorator():
     app = Kui()
 
     @app.router.http("/hello", name="hello")
-    async def hello():
-        ...
+    async def hello(): ...
 
     @app.router.websocket("/hello", name="hello_ws")
-    async def hello_ws():
-        ...
+    async def hello_ws(): ...
 
     assert app.router.search("http", "/hello")[0] == {}
     assert app.router.search("websocket", "/hello")[0] == {}
@@ -32,24 +30,19 @@ def test_decorator_required_method():
     app = Kui()
 
     @app.router.http.get("/get")
-    async def need_get():
-        ...
+    async def need_get(): ...
 
     @app.router.http.post("/post")
-    async def need_post():
-        ...
+    async def need_post(): ...
 
     @app.router.http.put("/put")
-    async def need_put():
-        ...
+    async def need_put(): ...
 
     @app.router.http.patch("/patch")
-    async def need_patch():
-        ...
+    async def need_patch(): ...
 
     @app.router.http.delete("/delete")
-    async def need_delete():
-        ...
+    async def need_delete(): ...
 
     assert app.router.search("http", "/get")[1].__method__ == "GET"
     assert app.router.search("http", "/post")[1].__method__ == "POST"
@@ -66,8 +59,7 @@ def test_lshift():
     async def hello():
         return "hello world"
 
-    async def hello_ws():
-        ...
+    async def hello_ws(): ...
 
     app.router = (
         app.router

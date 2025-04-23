@@ -28,7 +28,9 @@ async def test_path():
     async def path(name: Annotated[str, Path()]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/aber")
         assert resp.text == "aber"
 
@@ -49,7 +51,9 @@ async def test_query():
     async def query(name: Annotated[str, Query(...)]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/", params={"name": "aber"})
         assert resp.text == "aber"
 
@@ -67,7 +71,9 @@ async def test_header():
     async def header(name: Annotated[str, Header(alias="Name")]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/", headers={"name": "aber"})
         assert resp.text == "aber"
 
@@ -85,7 +91,9 @@ async def test_cookie():
     async def cookie(name: Annotated[str, Cookie()]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/", cookies={"name": "aber"})
         assert resp.text == "aber"
 
@@ -103,7 +111,9 @@ async def test_body():
     async def body(name: Annotated[str, Body()]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.post("/", data={"name": "aber"})
         assert resp.text == "aber"
 
@@ -116,7 +126,9 @@ async def test_body():
     async def exclusive(name: Annotated[str, Body(exclusive=True)]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.post("/exclusive", json="aber")
         assert resp.text == "aber"
 
@@ -190,7 +202,9 @@ async def test_depend():
         assert name0 == name1
         return name0
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.post("/", json={"name": "aber"})
         assert resp.text == "aber"
 
@@ -228,7 +242,9 @@ async def test_middleware():
     async def cookie(name: Annotated[str, Cookie()]):
         return name
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/", cookies={"name": "aber"})
         assert resp.status_code == 422
 

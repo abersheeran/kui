@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import re
 
-import pytest
 import httpx
+import pytest
 
 from kui.asgi import allow_cors
 
@@ -24,7 +24,7 @@ async def test_cors():
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
         base_url="http://testserver",
-        headers={"origin": "testserver"}
+        headers={"origin": "testserver"},
     ) as client:
         resp = await client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"
@@ -53,7 +53,7 @@ async def test_cors_global():
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app),
         base_url="http://testserver",
-        headers={"origin": "testserver"}
+        headers={"origin": "testserver"},
     ) as client:
         resp = await client.get("/")
         assert resp.headers["access-control-allow-origin"] == "testserver"

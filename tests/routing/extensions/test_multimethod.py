@@ -120,7 +120,9 @@ async def test_mulitmethodroutes_with_parameters():
 
     app = Kui(routes=routes)
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         resp = await client.get("/aber")
         assert resp.text == "aber"
 

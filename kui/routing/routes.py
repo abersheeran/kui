@@ -53,9 +53,9 @@ class BaseRoute(typing.Generic[ViewType]):
         return self
 
     def __post_init__(self) -> None:
-        assert (
-            self.path.startswith("/") or self.path == ""
-        ), "Route path must start with '/'"
+        assert self.path.startswith("/") or self.path == "", (
+            "Route path must start with '/'"
+        )
         if self.name == "":
             self.name = self.endpoint.__name__
         self.endpoint = self._auto_params(self.endpoint)

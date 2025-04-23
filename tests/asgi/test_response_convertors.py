@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import pytest
 import httpx
+import pytest
 from baize.asgi import Files, Response
 from pydantic import BaseModel
 
@@ -23,7 +23,9 @@ async def test_pydantic_base_model():
     async def static_files():
         return Files(Path(__file__).absolute().parent, handle_404=Response(404))
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         response = await client.get("/message")
         assert response.status_code == 200
         assert response.json() == {"message": "Hello, World!"}

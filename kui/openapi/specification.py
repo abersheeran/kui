@@ -3,6 +3,7 @@ OpenAPI specification 3.0.3
 
 https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Union

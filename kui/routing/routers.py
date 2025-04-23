@@ -379,12 +379,10 @@ class Routes(
             _ = self << route
 
     @typing.overload
-    def __getitem__(self, index: int) -> BaseRoute[ViewType]:
-        ...
+    def __getitem__(self, index: int) -> BaseRoute[ViewType]: ...
 
     @typing.overload
-    def __getitem__(self, index: slice) -> typing.List[BaseRoute[ViewType]]:
-        ...
+    def __getitem__(self, index: slice) -> typing.List[BaseRoute[ViewType]]: ...
 
     def __getitem__(self, index):
         return self._list[index]

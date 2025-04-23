@@ -14,7 +14,9 @@ async def test_http_view():
         async def get(cls):
             return "OK"
 
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
         response = await client.get("/")
         assert response.content == b"OK"
 

@@ -3,11 +3,7 @@ name = "kui"
 version = "1.8.1"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
-dependencies = [
-    "baize>=0.22.0",
-    "pydantic>=2",
-    "typing-extensions>=4.2.0",
-]
+dependencies = ["baize>=0.22.0", "pydantic>=2", "typing-extensions>=4.2.0"]
 requires-python = ">=3.9,<4.0"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -25,25 +21,15 @@ documentation = "https://kui.aber.sh"
 [tool.pdm]
 [tool.pdm.scripts]
 format = "ruff format {args}"
-lint-ruff = "ruff --fix {args}"
-lint = { composite = [
-    "lint-ruff kui tests",
-    "format kui tests",
-    "check",
-] }
+lint-ruff = "ruff check --fix {args}"
+lint = { composite = ["lint-ruff kui tests", "format kui tests", "check"] }
 check-ruff = "ruff check {args}"
 check-mypy = "mypy {args}"
-check = { composite = [
-    "check-ruff kui tests",
-    "check-mypy kui tests",
-] }
+check = { composite = ["check-ruff kui tests", "check-mypy kui tests"] }
 test = "pytest {args}"
 
 [tool.pdm.dev-dependencies]
-dev = [
-    "mypy>=1.0.0",
-    "ruff>=0.0.270",
-]
+dev = ["mypy>=1.0.0", "ruff>=0.0.270"]
 test = [
     "pytest>=7.2.1",
     "pytest-asyncio>=0.20.3",
@@ -57,14 +43,9 @@ includes = ["kui"]
 [tool.mypy]
 ignore_missing_imports = true
 
-[tool.ruff]
-ignore = [
-    "E501",
-    "E731",
-]
-
 [tool.ruff.lint]
 select = ["I"]
+ignore = ["E501", "E731"]
 
 [tool.coverage.run]
 omit = ["*/.venv/*", "*/tests/*", "kui/status.py"]

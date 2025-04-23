@@ -5,6 +5,7 @@ https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 
 And RFC 2324 - https://tools.ietf.org/html/rfc2324
 """
+
 HTTP_100_CONTINUE = 100
 HTTP_101_SWITCHING_PROTOCOLS = 101
 HTTP_102_PROCESSING = 102
