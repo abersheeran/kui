@@ -15,6 +15,7 @@ from kui.wsgi import (
     Path,
     Query,
     UploadFile,
+    auto_params,
 )
 
 
@@ -293,3 +294,29 @@ def test_parameters_nest_model():
 
         resp = client.post("/", json={"name": "aber", "age": 18})
         assert resp.status_code == 422
+
+
+def test_auto_params():
+    app = Kui()
+
+    @app.router.http.get("/")
+    def index(name: Annotated[str, Query(...)]):
+        return tf()
+
+    @auto_params
+    def tf(name: str = Query(...)):
+        return name
+
+    @app.router.http("/di")
+    def di(name: Annotated[str, Depends(tf)]):
+        return name
+
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
+        resp = client.get("/?name=123")
+        assert resp.text == "123"
+
+        resp = client.get("/di?name=123")
+        assert resp.text == "123"

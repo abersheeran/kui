@@ -15,6 +15,7 @@ from kui.asgi import (
     Path,
     Query,
     UploadFile,
+    auto_params,
 )
 
 
@@ -296,3 +297,30 @@ async def test_parameters_nest_model():
 
         resp = await client.post("/", json={"name": "aber", "age": 18})
         assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_auto_params():
+    app = Kui()
+
+    @app.router.http.get("/")
+    async def index(name: Annotated[str, Query(...)]):
+        return await tf()
+
+    @auto_params
+    async def tf(name: str = Query(...)):
+        return name
+
+    @app.router.http("/di")
+    async def di(name: Annotated[str, Depends(tf)]):
+        return name
+
+    async with httpx.AsyncClient(
+        base_url="http://testserver",
+        transport=httpx.ASGITransport(app=app),  # type: ignore
+    ) as client:
+        resp = await client.get("/?name=123")
+        assert resp.text == "123"
+
+        resp = await client.get("/di?name=123")
+        assert resp.text == "123"

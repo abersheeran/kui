@@ -14,6 +14,7 @@ from ..security import api_key_auth_dependency, basic_auth, bearer_auth
 from .applications import FactoryClass, Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
+from .parameters import auto_params
 from .requests import (
     HttpRequest,
     WebSocket,
@@ -56,6 +57,7 @@ __all__ = [
     "Path",
     "Query",
     "Depends",
+    "auto_params",
     "api_key_auth_dependency",
     "basic_auth",
     "bearer_auth",

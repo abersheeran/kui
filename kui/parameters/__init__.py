@@ -108,12 +108,11 @@ def _parse_parameters_and_request_body_to_model(
                 f"Parameter {name} cannot be defined as positional only parameters."
             )
 
+        annontated_define = param.annotation
         if get_origin(param.default) is Annotated:
-            raise RuntimeError(
-                f"Parameter {name} default value cannot be defined as {param.default}."
-            )
+            annontated_define = Annotated[annontated_define, param.default]
 
-        type_, *annontated_list = get_annotated_args(param.annotation)
+        type_, *annontated_list = get_annotated_args(annontated_define)
         kui_field: Union[InPath, InQuery, InHeader, InCookie, InBody]
         for kui_field in filter(
             lambda x: isinstance(x, (InPath, InQuery, InHeader, InCookie, InBody)),
