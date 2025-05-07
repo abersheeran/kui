@@ -1,6 +1,6 @@
 [project]
 name = "kui"
-version = "1.9.1"
+version = "1.9.2"
 description = "An easy-to-use web framework."
 authors = [{ name = "abersheeran", email = "me@abersheeran.com" }]
 dependencies = ["baize>=0.22.0", "pydantic>=2", "typing-extensions>=4.2.0"]
