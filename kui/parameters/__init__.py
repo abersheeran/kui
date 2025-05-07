@@ -179,18 +179,22 @@ def _parse_parameters_and_request_body_to_model(
 
 
 def _parse_depends_attrs(sig: inspect.Signature) -> Dict[str, Depends]:
-    if {
-        name: param.default
-        for name, param in sig.parameters.items()
-        if isinstance(param.default, Depends)
-    }:
-        raise RuntimeError("Depends cannot be used as default value of parameters.")
-
     return {
-        name: get_args(param.annotation)[1]
-        for name, param in sig.parameters.items()
-        if get_origin(param.annotation) is Annotated
-        and isinstance(get_args(param.annotation)[1], Depends)
+        **{
+            name: next(
+                filter(lambda x: isinstance(x, Depends), get_args(param.annotation))
+            )
+            for name, param in sig.parameters.items()
+            if (
+                get_origin(param.annotation) is Annotated
+                and any(isinstance(arg, Depends) for arg in get_args(param.annotation))
+            )
+        },
+        **{
+            name: param.default
+            for name, param in sig.parameters.items()
+            if isinstance(param.default, Depends)
+        },
     }
 
 
