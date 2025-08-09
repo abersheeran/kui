@@ -93,12 +93,19 @@ async def test_cookie():
         return name
 
     async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+        cookies={"name": "aber"},
     ) as client:
-        resp = await client.get("/", cookies={"name": "aber"})
+        resp = await client.get("/")
         assert resp.text == "aber"
 
-        resp = await client.get("/", cookies={"name0": "aber"})
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+        cookies={"name0": "aber"},
+    ) as client:
+        resp = await client.get("/")
         assert resp.status_code == 422
 
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters
@@ -244,12 +251,19 @@ async def test_middleware():
         return name
 
     async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+        cookies={"name": "aber"},
     ) as client:
-        resp = await client.get("/", cookies={"name": "aber"})
+        resp = await client.get("/")
         assert resp.status_code == 422
 
-        resp = await client.get("/?query=123", cookies={"name": "aber"})
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+        cookies={"name": "aber"},
+    ) as client:
+        resp = await client.get("/?query=123")
         assert resp.text == "aber"
 
     assert not inspect.signature(app.router.search("http", "/")[1]).parameters

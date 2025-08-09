@@ -115,11 +115,6 @@ class RadixTree(Generic[T]):
         if path[0] != "/":
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
-        matched_route, _ = self.search(path)
-        if path_format == path and matched_route is not None:
-            raise ValueError(
-                f"This constant route `{path}` can be matched by the added routes `{matched_route[0]}`."
-            )
         point = append(self.root, path_format[1:], param_convertors)
 
         if point.route is not None:
@@ -155,7 +150,10 @@ class RadixTree(Generic[T]):
                     return point.route, params
 
             path = path[length:]
-            for node in point.next_nodes or ():
+            children = point.next_nodes or ()
+            for node in (child for child in children if child.re_pattern is not None):
+                stack.append((path, node))
+            for node in (child for child in children if child.re_pattern is None):
                 stack.append((path, node))
 
         return None, None
