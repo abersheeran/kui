@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing as t
+from contextlib import contextmanager
 from contextvars import ContextVar
 
 __all__ = ["bind_contextvar"]
@@ -31,3 +32,10 @@ def bind_contextvar(contextvar: ContextVar[T]) -> T:
             del contextvar.get()[index]  # type: ignore
 
     return ContextVarBind()  # type: ignore
+
+
+@contextmanager
+def context_setter(var: ContextVar[T], value: T) -> t.Generator[None, None, None]:
+    token = var.set(value)
+    yield
+    var.reset(token)

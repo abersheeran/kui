@@ -22,7 +22,7 @@ from ..parameters import (
 )
 from ..pydantic_compatible import validate_model
 from ..utils import is_gen_callable
-from .requests import request
+from .requests import http_connection, request
 
 CallableObject = TypeVar("CallableObject", bound=Callable)
 
@@ -48,7 +48,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
     }
 
     if not (parameters or request_body or depend_attrs):
-        callback_with_auto_bound_params = callback
+        callback_with_auto_bound_params = callback  # type: ignore
     else:
 
         @functools.wraps(callback)
@@ -58,7 +58,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
             need_closes = []
             try:
                 # try to call depend functions
-                cache = request.state.setdefault("depend_functions_cache", {})
+                cache = http_connection.state.setdefault("depend_functions_cache", {})
                 for name, function in depend_functions.items():
                     info = depend_attrs[name]
                     if info.call in cache:
@@ -79,7 +79,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
 
                 try:
                     g = _validate_parameters_and_request_body(
-                        parameters or {}, request_body, request
+                        parameters or {}, request_body, http_connection
                     )
                     g.send(None)
                     _body_data = request.data()

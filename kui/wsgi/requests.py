@@ -57,6 +57,10 @@ class HttpRequest(BaiZeRequest, HTTPConnection):
         raise HTTPException(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
 
 
+http_connection_var: ContextVar[HTTPConnection] = ContextVar("http_connection")
+
+http_connection = bind_contextvar(http_connection_var)
+
 request_var: ContextVar[HttpRequest] = ContextVar("request")
 
 request = bind_contextvar(request_var)

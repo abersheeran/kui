@@ -28,10 +28,17 @@ from ..cors import CORSConfig
 from ..responses import create_json_encoder
 from ..routing import AsyncViewType, BaseRoute, MiddlewareType, NoMatchFound
 from ..utils import ImmutableAttribute, State
+from ..utils.contextvars import context_setter
 from .cors import allow_cors
 from .exceptions import ErrorHandlerType, ExceptionMiddleware, HTTPException
 from .lifespan import Lifespan, LifespanCallback
-from .requests import HttpRequest, WebSocket, request_var, websocket_var
+from .requests import (
+    HttpRequest,
+    WebSocket,
+    http_connection_var,
+    request_var,
+    websocket_var,
+)
 from .responses import (
     FileResponse,
     HttpResponse,
@@ -119,43 +126,50 @@ class Kui:
 
     async def http(self, scope: Scope, receive: Receive, send: Send) -> None:
         request = self.factory_class.http(scope, receive, send)
-        token = request_var.set(request)
-        try:
+        with (
+            context_setter(http_connection_var, request),
+            context_setter(request_var, request),
+        ):
             try:
-                path_params, handler = self.router.search("http", request["path"])
-                request["path_params"] = path_params
-                response = await handler()
-            except NoMatchFound:
-                http_exception: HTTPException[None] = HTTPException(404)
-                error_handler = self.exception_middleware.lookup_handler(http_exception)
-                if error_handler is None:
-                    raise RuntimeError(
-                        "No exception handler found for HTTPException(404)"
+                try:
+                    path_params, handler = self.router.search("http", request["path"])
+                    request["path_params"] = path_params
+                    response = await handler()
+                except NoMatchFound:
+                    http_exception: HTTPException[None] = HTTPException(404)
+                    error_handler = self.exception_middleware.lookup_handler(
+                        http_exception
                     )
-                response = await error_handler(http_exception)
+                    if error_handler is None:
+                        raise RuntimeError(
+                            "No exception handler found for HTTPException(404)"
+                        )
+                    response = await error_handler(http_exception)
 
-            if isinstance(response, tuple):
-                response = self.response_converter(*response)
-            else:
-                response = self.response_converter(response)
+                if isinstance(response, tuple):
+                    response = self.response_converter(*response)
+                else:
+                    response = self.response_converter(response)
 
-            return await response(scope, receive, send)
-        finally:
-            await request.close()
-            request_var.reset(token)
+                return await response(scope, receive, send)
+            finally:
+                await request.close()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = self.factory_class.websocket(scope, receive, send)
-        token = websocket_var.set(websocket)
-        try:
-            path_params, handler = self.router.search("websocket", websocket["path"])
-            websocket["path_params"] = path_params
-        except NoMatchFound:
-            return await websocket.close(1001)
-        else:
-            return await handler()
-        finally:
-            websocket_var.reset(token)
+        with (
+            context_setter(http_connection_var, websocket),
+            context_setter(websocket_var, websocket),
+        ):
+            try:
+                path_params, handler = self.router.search(
+                    "websocket", websocket["path"]
+                )
+                websocket["path_params"] = path_params
+            except NoMatchFound:
+                return await websocket.close(1001)
+            else:
+                return await handler()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

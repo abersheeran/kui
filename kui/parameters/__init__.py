@@ -34,10 +34,8 @@ from ..pydantic_compatible import (
 )
 
 if TYPE_CHECKING:
-    from ..asgi import HttpRequest as ASGIHttpRequest
     from ..asgi.requests import HTTPConnection as ASGIConnection
     from ..openapi import specification as spec
-    from ..wsgi import HttpRequest as WSGIHttpRequest
     from ..wsgi.requests import HTTPConnection as WSGIConnection
 
 from ..exceptions import RequestValidationError

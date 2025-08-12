@@ -16,9 +16,10 @@ from ..cors import CORSConfig
 from ..responses import create_json_encoder
 from ..routing import BaseRoute, MiddlewareType, NoMatchFound, SyncViewType
 from ..utils import ImmutableAttribute, State
+from ..utils.contextvars import context_setter
 from .cors import allow_cors
 from .exceptions import ErrorHandlerType, ExceptionMiddleware, HTTPException
-from .requests import HttpRequest, request_var
+from .requests import HttpRequest, http_connection_var, request_var
 from .responses import (
     FileResponse,
     HttpResponse,
@@ -88,32 +89,36 @@ class Kui:
 
     def app(self, environ: Environ, start_response: StartResponse) -> Iterable[bytes]:
         request = self.factory_class.http(environ)
-        token = request_var.set(request)
-        try:
+        with (
+            context_setter(http_connection_var, request),
+            context_setter(request_var, request),
+        ):
             try:
-                path_params, handler = self.router.search(
-                    "http", request.get("PATH_INFO", "")
-                )
-                request["PATH_PARAMS"] = path_params
-                response = handler()
-            except NoMatchFound:
-                http_exception: HTTPException[None] = HTTPException(404)
-                error_handler = self.exception_middleware.lookup_handler(http_exception)
-                if error_handler is None:
-                    raise RuntimeError(
-                        "No exception handler found for HTTPException(404)"
+                try:
+                    path_params, handler = self.router.search(
+                        "http", request.get("PATH_INFO", "")
                     )
-                response = error_handler(http_exception)
+                    request["PATH_PARAMS"] = path_params
+                    response = handler()
+                except NoMatchFound:
+                    http_exception: HTTPException[None] = HTTPException(404)
+                    error_handler = self.exception_middleware.lookup_handler(
+                        http_exception
+                    )
+                    if error_handler is None:
+                        raise RuntimeError(
+                            "No exception handler found for HTTPException(404)"
+                        )
+                    response = error_handler(http_exception)
 
-            if isinstance(response, tuple):
-                response = self.response_converter(*response)
-            else:
-                response = self.response_converter(response)
+                if isinstance(response, tuple):
+                    response = self.response_converter(*response)
+                else:
+                    response = self.response_converter(response)
 
-            yield from response(environ, start_response)
-        finally:
-            request.close()
-            request_var.reset(token)
+                yield from response(environ, start_response)
+            finally:
+                request.close()
 
     def __call__(
         self, environ: Environ, start_response: StartResponse
