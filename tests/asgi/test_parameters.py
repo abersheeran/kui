@@ -3,6 +3,8 @@ import io
 
 import httpx
 import pytest
+from httpx_ws import aconnect_ws
+from httpx_ws.transport import ASGIWebSocketTransport
 from pydantic import BaseModel
 from typing_extensions import Annotated
 
@@ -14,8 +16,10 @@ from kui.asgi import (
     Kui,
     Path,
     Query,
+    SocketView,
     UploadFile,
     auto_params,
+    websocket,
 )
 
 
@@ -338,3 +342,21 @@ async def test_auto_params():
 
         resp = await client.get("/di?name=123")
         assert resp.text == "123"
+
+
+@pytest.mark.asyncio
+async def test_websocket():
+    app = Kui()
+
+    @app.router.websocket("/")
+    class T(SocketView):
+        def __init__(self, name: Annotated[str, Query(...)]):
+            self.name = name
+
+        async def on_receive(self, data) -> None:
+            await websocket.send_text(self.name)
+
+    async with httpx.AsyncClient(transport=ASGIWebSocketTransport(app=app)) as client:
+        async with aconnect_ws("http://testserver/?name=kui", client=client) as client:
+            await client.send_text("ping")
+            assert await client.receive_text() == "kui"

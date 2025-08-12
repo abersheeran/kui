@@ -35,8 +35,10 @@ from ..pydantic_compatible import (
 
 if TYPE_CHECKING:
     from ..asgi import HttpRequest as ASGIHttpRequest
+    from ..asgi.requests import HTTPConnection as ASGIConnection
     from ..openapi import specification as spec
     from ..wsgi import HttpRequest as WSGIHttpRequest
+    from ..wsgi.requests import HTTPConnection as WSGIConnection
 
 from ..exceptions import RequestValidationError
 from ..utils import safe_issubclass
@@ -347,7 +349,7 @@ def _update_docs(
 def _validate_parameters_and_request_body(
     parameters: Dict[Literal["path", "query", "header", "cookie"], Type[BaseModel]],
     request_body: Type[BaseModel] | None,
-    request: ASGIHttpRequest | WSGIHttpRequest,
+    request: ASGIConnection | WSGIConnection,
 ) -> Generator[None, Any, List[Tuple[Type[BaseModel], Any]]]:
     data = []
 
@@ -438,7 +440,7 @@ def create_auto_params(
                 "__raw_handler__",
                 getattr(handler, "__raw_handler__", handler),
             )
-            return new_class
+            return new_class  # type: ignore
         else:
             old_callback = handler
             new_callback = create_new_callback(old_callback)
