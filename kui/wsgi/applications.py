@@ -118,7 +118,10 @@ class Kui:
 
                 yield from response(environ, start_response)
             finally:
-                request.close()
+                try:
+                    request.background_tasks.run()
+                finally:
+                    request.close()
 
     def __call__(
         self, environ: Environ, start_response: StartResponse

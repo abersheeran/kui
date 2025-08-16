@@ -2,6 +2,7 @@ import inspect
 import io
 
 import httpx
+import pytest
 from httpx import Client
 from pydantic import BaseModel
 from typing_extensions import Annotated
@@ -16,6 +17,7 @@ from kui.wsgi import (
     Query,
     UploadFile,
     auto_params,
+    request,
 )
 
 
@@ -320,3 +322,94 @@ def test_auto_params():
 
         resp = client.get("/di?name=123")
         assert resp.text == "123"
+
+
+def test_request_depends_cache():
+    app = Kui()
+
+    closed = False
+
+    def di():
+        request.state["di"] = "start"
+        yield
+        request.state["di"] = "end"
+        nonlocal closed
+        closed = True
+
+    @auto_params
+    def d(t: str = Depends(di)):
+        assert request.state["di"] == "start"
+
+    @app.router.http.get("/")
+    def index(t: Annotated[str, Depends(di)]):
+        d()
+        assert request.state["di"] == "start"
+        return b""
+
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
+        resp = client.get("/")
+        assert resp.text == ""
+        assert closed
+
+
+def test_request_depends_exception():
+    app = Kui()
+
+    closed = False
+
+    def di():
+        request.state["di"] = "start"
+        try:
+            yield
+        except NotImplementedError:
+            request.state["di"] = "end"
+            nonlocal closed
+            closed = True
+            raise
+
+    @app.router.http.get("/")
+    def index(t: Annotated[str, Depends(di)]):
+        raise NotImplementedError
+
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
+        with pytest.raises(NotImplementedError):
+            client.get("/")
+        assert closed
+
+
+def test_request_depends_cache_exception():
+    app = Kui()
+
+    closed = False
+
+    def di():
+        request.state["di"] = "start"
+        try:
+            yield
+        except NotImplementedError:
+            request.state["di"] = "end"
+            nonlocal closed
+            closed = True
+            raise
+
+    @auto_params
+    def d(t: str = Depends(di)):
+        assert request.state["di"] == "start"
+
+    @app.router.http.get("/")
+    def index(t: Annotated[str, Depends(di, cache=True)]):
+        raise NotImplementedError
+
+    with httpx.Client(
+        base_url="http://testserver",
+        transport=httpx.WSGITransport(app=app),  # type: ignore
+    ) as client:
+        with pytest.raises(NotImplementedError):
+            client.get("/")
+        assert closed

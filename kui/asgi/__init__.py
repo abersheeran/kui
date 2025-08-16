@@ -18,6 +18,8 @@ from .parameters import auto_params
 from .requests import (
     HttpRequest,
     WebSocket,
+    http_connection,
+    http_connection_var,
     request,
     request_var,
     websocket,
@@ -46,6 +48,8 @@ __all__ = [
     "OpenAPI",
     "HttpRequest",
     "WebSocket",
+    "http_connection",
+    "http_connection_var",
     "request",
     "request_var",
     "websocket",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
+import sys
 from contextlib import (
     _AsyncGeneratorContextManager,
     _GeneratorContextManager,
@@ -12,9 +13,8 @@ from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar
 from typing import cast as typing_cast
 
 from baize.datastructures import FormData
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-from ..exceptions import RequestValidationError
 from ..parameters import (
     _convert_model_data_to_keyword_arguments,
     _create_new_signature,
@@ -25,7 +25,6 @@ from ..parameters import (
     _validate_parameters_and_request_body,
     create_auto_params,
 )
-from ..pydantic_compatible import validate_model
 from ..utils import is_async_gen_callable, is_coroutine_callable, is_gen_callable
 from .requests import http_connection, request
 
@@ -76,7 +75,12 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                         if inspect.isawaitable(asyncgenerator.gen):
                             asyncgenerator.gen = await asyncgenerator.gen
                         keyword_params[name] = await asyncgenerator.__aenter__()
-                        need_closes.append(asyncgenerator)
+                        if info.cache:
+                            http_connection.background_tasks.append(
+                                lambda: asyncgenerator.__aexit__(*sys.exc_info())
+                            )
+                        else:
+                            need_closes.append(asyncgenerator)
                     elif is_coroutine_callable(info.call):
                         keyword_params[name] = await function()
                     elif is_gen_callable(info.call):
@@ -84,7 +88,12 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                         if inspect.isawaitable(generator.gen):
                             generator.gen = await generator.gen
                         keyword_params[name] = generator.__enter__()
-                        need_closes.append(generator)
+                        if info.cache:
+                            http_connection.background_tasks.append(
+                                lambda: generator.__exit__(*sys.exc_info())
+                            )
+                        else:
+                            need_closes.append(generator)
                     else:
                         result = function()
                         if inspect.isawaitable(result):
@@ -121,9 +130,9 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
             finally:
                 for need_close in need_closes:
                     if isinstance(need_close, _GeneratorContextManager):
-                        need_close.__exit__(None, None, None)
+                        need_close.__exit__(*sys.exc_info())
                     else:
-                        await need_close.__aexit__(None, None, None)
+                        await need_close.__aexit__(*sys.exc_info())
 
         del callback_with_auto_bound_params.__wrapped__  # type: ignore
 

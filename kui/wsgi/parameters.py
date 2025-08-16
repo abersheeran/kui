@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
+import sys
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar
 from typing import cast as typing_cast
@@ -67,7 +68,12 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                     if is_gen_callable(info.call):
                         generator = contextmanager(function)()
                         keyword_params[name] = generator.__enter__()
-                        need_closes.append(generator)
+                        if info.cache:
+                            http_connection.background_tasks.append(
+                                lambda: generator.__exit__(*sys.exc_info())
+                            )
+                        else:
+                            need_closes.append(generator)
                     else:
                         result = function()
                         keyword_params[name] = result
@@ -99,7 +105,7 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                 return result
             finally:
                 for need_close in need_closes:
-                    need_close.__exit__(None, None, None)
+                    need_close.__exit__(*sys.exc_info())
 
         del callback_with_auto_bound_params.__wrapped__  # type: ignore
 

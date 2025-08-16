@@ -153,7 +153,10 @@ class Kui:
 
                 return await response(scope, receive, send)
             finally:
-                await request.close()
+                try:
+                    await request.background_tasks.run()
+                finally:
+                    await request.close()
 
     async def websocket(self, scope: Scope, receive: Receive, send: Send) -> None:
         websocket = self.factory_class.websocket(scope, receive, send)
@@ -162,14 +165,17 @@ class Kui:
             context_setter(websocket_var, websocket),
         ):
             try:
-                path_params, handler = self.router.search(
-                    "websocket", websocket["path"]
-                )
-                websocket["path_params"] = path_params
-            except NoMatchFound:
-                return await websocket.close(1001)
-            else:
-                return await handler()
+                try:
+                    path_params, handler = self.router.search(
+                        "websocket", websocket["path"]
+                    )
+                    websocket["path_params"] = path_params
+                except NoMatchFound:
+                    return await websocket.close(1001)
+                else:
+                    return await handler()
+            finally:
+                await websocket.background_tasks.run()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

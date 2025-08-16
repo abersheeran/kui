@@ -15,6 +15,8 @@ from baize.exceptions import HTTPException
 from baize.utils import cached_property
 from typing_extensions import Annotated
 
+from .background import BackgroundTasks
+
 if typing.TYPE_CHECKING:
     from .applications import Kui
 
@@ -38,6 +40,10 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
 
     def url_for(self, name: str, path_params: typing.Mapping[str, typing.Any]) -> URL:
         return self.url.replace(path=self.app.router.url_for(name, path_params))
+
+    @cached_property
+    def background_tasks(self) -> BackgroundTasks:
+        return BackgroundTasks()
 
 
 class HttpRequest(BaiZeRequest, HTTPConnection):

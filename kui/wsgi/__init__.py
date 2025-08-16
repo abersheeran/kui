@@ -15,7 +15,13 @@ from .applications import FactoryClass, Kui
 from .cors import allow_cors
 from .openapi import OpenAPI
 from .parameters import auto_params
-from .requests import HttpRequest, request, request_var
+from .requests import (
+    HttpRequest,
+    http_connection,
+    http_connection_var,
+    request,
+    request_var,
+)
 from .responses import (
     FileResponse,
     HTMLResponse,
@@ -38,6 +44,8 @@ __all__ = [
     "FactoryClass",
     "OpenAPI",
     "HttpRequest",
+    "http_connection",
+    "http_connection_var",
     "request",
     "request_var",
     "HTTPException",

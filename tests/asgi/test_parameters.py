@@ -19,6 +19,7 @@ from kui.asgi import (
     SocketView,
     UploadFile,
     auto_params,
+    request,
     websocket,
 )
 
@@ -360,3 +361,97 @@ async def test_websocket():
         async with aconnect_ws("http://testserver/?name=kui", client=client) as client:
             await client.send_text("ping")
             assert await client.receive_text() == "kui"
+
+
+@pytest.mark.asyncio
+async def test_request_depends_cache():
+    app = Kui()
+
+    closed = False
+
+    async def di():
+        request.state["di"] = "start"
+        yield
+        request.state["di"] = "end"
+        nonlocal closed
+        closed = True
+
+    @auto_params
+    async def d(t: str = Depends(di)):
+        assert request.state["di"] == "start"
+
+    @app.router.http.get("/")
+    async def index(t: Annotated[str, Depends(di)]):
+        await d()
+        assert request.state["di"] == "start"
+        return b""
+
+    async with httpx.AsyncClient(
+        base_url="http://testserver",
+        transport=httpx.ASGITransport(app=app),  # type: ignore
+    ) as client:
+        resp = await client.get("/")
+        assert resp.text == ""
+        assert closed
+
+
+@pytest.mark.asyncio
+async def test_request_depends_exception():
+    app = Kui()
+
+    closed = False
+
+    async def di():
+        request.state["di"] = "start"
+        try:
+            yield
+        except NotImplementedError:
+            request.state["di"] = "end"
+            nonlocal closed
+            closed = True
+            raise
+
+    @app.router.http.get("/")
+    async def index(t: Annotated[str, Depends(di)]):
+        raise NotImplementedError
+
+    async with httpx.AsyncClient(
+        base_url="http://testserver",
+        transport=httpx.ASGITransport(app=app),  # type: ignore
+    ) as client:
+        with pytest.raises(NotImplementedError):
+            await client.get("/")
+        assert closed
+
+
+@pytest.mark.asyncio
+async def test_request_depends_cache_exception():
+    app = Kui()
+
+    closed = False
+
+    async def di():
+        request.state["di"] = "start"
+        try:
+            yield
+        except NotImplementedError:
+            request.state["di"] = "end"
+            nonlocal closed
+            closed = True
+            raise
+
+    @auto_params
+    async def d(t: str = Depends(di)):
+        assert request.state["di"] == "start"
+
+    @app.router.http.get("/")
+    async def index(t: Annotated[str, Depends(di, cache=True)]):
+        raise NotImplementedError
+
+    async with httpx.AsyncClient(
+        base_url="http://testserver",
+        transport=httpx.ASGITransport(app=app),  # type: ignore
+    ) as client:
+        with pytest.raises(NotImplementedError):
+            await client.get("/")
+        assert closed
