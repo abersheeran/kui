@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
+import sys
 from pathlib import PurePath
 from types import GeneratorType
 from typing import Any, Callable, Iterable, List, Mapping, NoReturn, Optional, Type
@@ -119,7 +120,8 @@ class Kui:
                 yield from response(environ, start_response)
             finally:
                 try:
-                    request.background_tasks.run()
+                    request.exit_stack.__exit__(*sys.exc_info())
+                    request.background_tasks()
                 finally:
                     request.close()
 

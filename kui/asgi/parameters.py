@@ -2,13 +2,7 @@ from __future__ import annotations
 
 import functools
 import inspect
-import sys
-from contextlib import (
-    _AsyncGeneratorContextManager,
-    _GeneratorContextManager,
-    asynccontextmanager,
-    contextmanager,
-)
+from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar
 from typing import cast as typing_cast
 
@@ -25,6 +19,7 @@ from ..parameters import (
     _validate_parameters_and_request_body,
     create_auto_params,
 )
+from ..parameters.fields import Depends
 from ..utils import is_async_gen_callable, is_coroutine_callable, is_gen_callable
 from .requests import http_connection, request
 
@@ -34,6 +29,52 @@ CallableObject = TypeVar("CallableObject", bound=Callable)
 __all__ = [
     "auto_params",
 ]
+
+
+async def call_dependencies_injection(
+    depend_functions: Dict[str, Callable[..., Any]],
+    depend_attrs: Dict[str, Depends],
+    cache: Dict[Any, Any],
+    close_soon: AsyncExitStack,
+    after_response: AsyncExitStack,
+) -> Dict[str, Any]:
+    keyword_params: Dict[str, Any] = {}
+    for name, function in depend_functions.items():
+        info = depend_attrs[name]
+        if info.cache and info.call in cache:
+            keyword_params[name] = cache[info.call]
+            continue
+        if is_async_gen_callable(info.call):
+            asyncgenerator = asynccontextmanager(function)()
+            if inspect.isawaitable(asyncgenerator.gen):
+                asyncgenerator.gen = await asyncgenerator.gen
+            if info.cache:
+                keyword_params[name] = await after_response.enter_async_context(
+                    asyncgenerator
+                )
+            else:
+                keyword_params[name] = await close_soon.enter_async_context(
+                    asyncgenerator
+                )
+        elif is_coroutine_callable(info.call):
+            keyword_params[name] = await function()
+        elif is_gen_callable(info.call):
+            generator = contextmanager(function)()
+            if inspect.isawaitable(generator.gen):
+                generator.gen = await generator.gen
+            if info.cache:
+                keyword_params[name] = after_response.enter_context(generator)
+            else:
+                keyword_params[name] = close_soon.enter_context(generator)
+        else:
+            result = function()
+            if inspect.isawaitable(result):
+                result = await result
+            keyword_params[name] = result
+
+        if info.cache:
+            cache[info.call] = keyword_params[name]
+    return keyword_params
 
 
 def _create_new_callback(callback: CallableObject) -> CallableObject:
@@ -59,49 +100,18 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
         async def callback_with_auto_bound_params(*args, **kwargs) -> Any:
             keyword_params: Dict[str, Any] = {}
 
-            need_closes: list[
-                _GeneratorContextManager | _AsyncGeneratorContextManager
-            ] = []
-            try:
+            after_response = http_connection.exit_stack
+            async with AsyncExitStack() as close_soon:
                 # try to call depend functions
                 cache = http_connection.state.setdefault("depend_functions_cache", {})
-                for name, function in depend_functions.items():
-                    info = depend_attrs[name]
-                    if info.cache and info.call in cache:
-                        keyword_params[name] = cache[info.call]
-                        continue
-                    if is_async_gen_callable(info.call):
-                        asyncgenerator = asynccontextmanager(function)()
-                        if inspect.isawaitable(asyncgenerator.gen):
-                            asyncgenerator.gen = await asyncgenerator.gen
-                        keyword_params[name] = await asyncgenerator.__aenter__()
-                        if info.cache:
-                            http_connection.background_tasks.append(
-                                lambda: asyncgenerator.__aexit__(*sys.exc_info())
-                            )
-                        else:
-                            need_closes.append(asyncgenerator)
-                    elif is_coroutine_callable(info.call):
-                        keyword_params[name] = await function()
-                    elif is_gen_callable(info.call):
-                        generator = contextmanager(function)()
-                        if inspect.isawaitable(generator.gen):
-                            generator.gen = await generator.gen
-                        keyword_params[name] = generator.__enter__()
-                        if info.cache:
-                            http_connection.background_tasks.append(
-                                lambda: generator.__exit__(*sys.exc_info())
-                            )
-                        else:
-                            need_closes.append(generator)
-                    else:
-                        result = function()
-                        if inspect.isawaitable(result):
-                            result = await result
-                        keyword_params[name] = result
-
-                    if info.cache:
-                        cache[info.call] = keyword_params[name]
+                depends_result = await call_dependencies_injection(
+                    depend_functions,
+                    depend_attrs,
+                    cache,
+                    close_soon=close_soon,
+                    after_response=after_response,
+                )
+                keyword_params.update(depends_result)
 
                 data: List[Tuple[Type[BaseModel], Any]]
 
@@ -127,12 +137,6 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
                 if inspect.isawaitable(result):
                     result = await result
                 return result
-            finally:
-                for need_close in need_closes:
-                    if isinstance(need_close, _GeneratorContextManager):
-                        need_close.__exit__(*sys.exc_info())
-                    else:
-                        await need_close.__aexit__(*sys.exc_info())
 
         del callback_with_auto_bound_params.__wrapped__  # type: ignore
 
