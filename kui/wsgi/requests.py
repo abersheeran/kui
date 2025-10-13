@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import typing
+from contextlib import ExitStack
 from contextvars import ContextVar
 from http import HTTPStatus
 
@@ -37,9 +38,13 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
     def url_for(self, name: str, path_params: typing.Mapping[str, typing.Any]) -> URL:
         return self.url.replace(path=self.app.router.url_for(name, path_params))
 
-    @cached_property
+    @property
     def background_tasks(self) -> BackgroundTasks:
-        return BackgroundTasks()
+        return self.state.setdefault("background_tasks", BackgroundTasks())
+
+    @property
+    def exit_stack(self) -> ExitStack:
+        return self.state.setdefault("exit_stack", ExitStack())
 
 
 class HttpRequest(BaiZeRequest, HTTPConnection):

@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import functools
 import inspect
-import sys
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from typing import Any, Callable, Dict, List, Tuple, Type, TypeVar
 from typing import cast as typing_cast
 
 from baize.datastructures import FormData
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-from ..exceptions import RequestValidationError
 from ..parameters import (
     _convert_model_data_to_keyword_arguments,
     _create_new_signature,
@@ -21,7 +19,7 @@ from ..parameters import (
     _validate_parameters_and_request_body,
     create_auto_params,
 )
-from ..pydantic_compatible import validate_model
+from ..parameters.fields import Depends
 from ..utils import is_gen_callable
 from .requests import http_connection, request
 
@@ -31,6 +29,34 @@ CallableObject = TypeVar("CallableObject", bound=Callable)
 __all__ = [
     "auto_params",
 ]
+
+
+def call_dependencies_injection(
+    depend_functions: Dict[str, Callable[..., Any]],
+    depend_attrs: Dict[str, Depends],
+    cache: Dict[str, Any],
+    close_soon: ExitStack,
+    after_response: ExitStack,
+) -> Dict[str, Any]:
+    keyword_params: Dict[str, Any] = {}
+    for name, function in depend_functions.items():
+        info = depend_attrs[name]
+        if info.cache and info.call in cache:
+            keyword_params[name] = cache[info.call]
+            continue
+        elif is_gen_callable(info.call):
+            generator = contextmanager(function)()
+            if info.cache:
+                keyword_params[name] = after_response.enter_context(generator)
+            else:
+                keyword_params[name] = close_soon.enter_context(generator)
+        else:
+            result = function()
+            keyword_params[name] = result
+
+        if info.cache:
+            cache[info.call] = keyword_params[name]
+    return keyword_params
 
 
 def _create_new_callback(callback: CallableObject) -> CallableObject:
@@ -56,30 +82,18 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
         def callback_with_auto_bound_params(*args, **kwargs) -> Any:
             keyword_params: Dict[str, Any] = {}
 
-            need_closes = []
-            try:
+            after_response = http_connection.exit_stack
+            with ExitStack() as close_soon:
                 # try to call depend functions
                 cache = http_connection.state.setdefault("depend_functions_cache", {})
-                for name, function in depend_functions.items():
-                    info = depend_attrs[name]
-                    if info.call in cache:
-                        keyword_params[name] = cache[info.call]
-                        continue
-                    if is_gen_callable(info.call):
-                        generator = contextmanager(function)()
-                        keyword_params[name] = generator.__enter__()
-                        if info.cache:
-                            http_connection.background_tasks.append(
-                                lambda: generator.__exit__(*sys.exc_info())
-                            )
-                        else:
-                            need_closes.append(generator)
-                    else:
-                        result = function()
-                        keyword_params[name] = result
-
-                    if info.cache:
-                        cache[info.call] = keyword_params[name]
+                depends_result = call_dependencies_injection(
+                    depend_functions,
+                    depend_attrs,
+                    cache,
+                    close_soon=close_soon,
+                    after_response=after_response,
+                )
+                keyword_params.update(depends_result)
 
                 data: List[Tuple[Type[BaseModel], Any]]
 
@@ -103,9 +117,6 @@ def _create_new_callback(callback: CallableObject) -> CallableObject:
 
                 result = callback(*args, **{**keyword_params, **kwargs})
                 return result
-            finally:
-                for need_close in need_closes:
-                    need_close.__exit__(*sys.exc_info())
 
         del callback_with_auto_bound_params.__wrapped__  # type: ignore
 

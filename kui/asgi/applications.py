@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import functools
+import sys
 from pathlib import PurePath
 from types import AsyncGeneratorType
 from typing import (
@@ -154,7 +155,8 @@ class Kui:
                 return await response(scope, receive, send)
             finally:
                 try:
-                    await request.background_tasks.run()
+                    await request.exit_stack.__aexit__(*sys.exc_info())
+                    await request.background_tasks()
                 finally:
                     await request.close()
 
@@ -175,7 +177,8 @@ class Kui:
                 else:
                     return await handler()
             finally:
-                await websocket.background_tasks.run()
+                await websocket.exit_stack.__aexit__(*sys.exc_info())
+                await websocket.background_tasks()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope["app"] = self

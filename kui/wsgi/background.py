@@ -10,24 +10,23 @@ else:  # pragma: no cover
     from typing_extensions import ParamSpec
 
 P = ParamSpec("P")
-R = TypeVar("R")
 
 
-class BackgroundTask(Generic[P, R]):
+class BackgroundTask:
     """
     Background task.
     """
 
-    def __init__(self, func: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> None:
+    def __init__(self, func: Callable[P, Any], *args: P.args, **kwargs: P.kwargs) -> None:
         self.func = func
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self) -> R:
-        return self.func(*self.args, **self.kwargs)
+    def __call__(self) -> None:
+        self.func(*self.args, **self.kwargs)
 
 
-class BackgroundTasks(BackgroundTask):
+class BackgroundTasks:
     def __init__(self, tasks: Iterable[BackgroundTask] | None = None):
         self.tasks: deque[BackgroundTask] = deque(tasks) if tasks else deque()
 
@@ -35,6 +34,6 @@ class BackgroundTasks(BackgroundTask):
         task = BackgroundTask(func, *args, **kwargs)
         self.tasks.append(task)
 
-    def run(self) -> None:
+    def __call__(self) -> None:
         for task in self.tasks:
             task()
