@@ -50,6 +50,7 @@ class HTTPConnection(BaiZeHTTPConnection, typing.MutableMapping[str, typing.Any]
     def exit_stack(self) -> AsyncExitStack:
         return self.state.setdefault("exit_stack", AsyncExitStack())
 
+
 class HttpRequest(BaiZeRequest, HTTPConnection):
     async def data(
         self,

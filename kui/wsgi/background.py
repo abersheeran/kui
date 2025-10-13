@@ -17,7 +17,9 @@ class BackgroundTask:
     Background task.
     """
 
-    def __init__(self, func: Callable[P, Any], *args: P.args, **kwargs: P.kwargs) -> None:
+    def __init__(
+        self, func: Callable[P, Any], *args: P.args, **kwargs: P.kwargs
+    ) -> None:
         self.func = func
         self.args = args
         self.kwargs = kwargs

@@ -34,7 +34,7 @@ __all__ = [
 def call_dependencies_injection(
     depend_functions: Dict[str, Callable[..., Any]],
     depend_attrs: Dict[str, Depends],
-    cache: Dict[str, Any],
+    cache: Dict[Any, Any],
     close_soon: ExitStack,
     after_response: ExitStack,
 ) -> Dict[str, Any]:
