@@ -52,6 +52,8 @@ class JSONResponseDocsMetaclass(abc.ABCMeta):
         else:
             status_code, headers, content = parameters, {}, {}
         assert isinstance(status_code, int) or status_code == "default"
+        if isinstance(status_code, int):  # IntEnum
+            status_code = int(status_code)
 
         docs: typing.Dict[str, typing.Any] = {
             str(status_code): {
