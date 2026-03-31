@@ -1,9 +1,21 @@
 from __future__ import annotations
 
 import copy
+import re
 import typing
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 from typing_extensions import Literal, TypedDict
 
@@ -15,7 +27,7 @@ if TYPE_CHECKING:
 
 from ..exceptions import RequestValidationError
 from ..parameters import _get_response_docs
-from ..pydantic_compatible import DEFINITIONS_KEY
+from ..pydantic_compatible import DEFINITIONS_KEY, REF_TEMPLATE
 from . import specification as spec
 from .extra_docs import merge_openapi_info
 from .schema import schema_request_body, schema_response
@@ -229,7 +241,7 @@ class OpenAPI:
         if self.security_schemes:
             components.setdefault("securitySchemes", {}).update(self.security_schemes)
         schemas = components.setdefault("schemas", {})
-        schemas.update(**_pop_definitions(paths))
+        schemas.update(**_resolve_definitions(paths))
         openapi["paths"] = paths
         return openapi
 
@@ -249,6 +261,7 @@ def _create_model(bases: List[type]) -> Optional[type]:
 
 
 def _pop_definitions(d: Dict[str, Any]) -> Dict[str, spec.Schema]:
+    # Recursively extract all $defs/definitions blocks from a nested OpenAPI structure.
     definitions: Dict[str, Any] = {}
     for key, value in d.items():
         if key == "schema":
@@ -260,6 +273,199 @@ def _pop_definitions(d: Dict[str, Any]) -> Dict[str, spec.Schema]:
             for v in value:
                 if isinstance(v, dict):
                     definitions.update(_pop_definitions(v))
-        else:
-            pass
     return definitions
+
+
+_REF_PREFIX = REF_TEMPLATE.format(model="")
+
+
+def _path_to_prefix(path: str) -> str:
+    # Convert a path into a readable prefix, for example "/api/v1/users/{id}" -> "ApiV1UsersId".
+    parts = re.findall(r"[A-Za-z0-9]+", path)
+    if not parts:
+        return "Root"
+    return "".join(part[:1].upper() + part[1:] for part in parts)
+
+
+def _update_refs(d: Any, rename_map: Dict[str, str]) -> None:
+    # Recursively walk dict/list structures and rewrite $ref strings using rename_map.
+    if isinstance(d, dict):
+        ref = d.get("$ref")
+        if isinstance(ref, str) and ref.startswith(_REF_PREFIX):
+            schema_name = ref[len(_REF_PREFIX) :]
+            if schema_name in rename_map:
+                d["$ref"] = f"{_REF_PREFIX}{rename_map[schema_name]}"
+        for value in d.values():
+            _update_refs(value, rename_map)
+    elif isinstance(d, (list, tuple)):
+        for value in d:
+            _update_refs(value, rename_map)
+
+
+def _collect_ref_names(d: Any) -> Set[str]:
+    # Recursively collect schema names referenced as "#/components/schemas/X".
+    names: Set[str] = set()
+    if isinstance(d, dict):
+        ref = d.get("$ref")
+        if isinstance(ref, str) and ref.startswith(_REF_PREFIX):
+            names.add(ref[len(_REF_PREFIX) :])
+        for value in d.values():
+            names.update(_collect_ref_names(value))
+    elif isinstance(d, (list, tuple)):
+        for value in d:
+            names.update(_collect_ref_names(value))
+    return names
+
+
+def _resolve_definitions(paths: Dict[str, Any]) -> Dict[str, spec.Schema]:
+    """
+    Extract all schema definitions from paths into components/schemas
+    and resolve conflicts between schemas with the same name.
+
+    Algorithm:
+    1. Extract each path's $defs.
+    2. Detect schemas with the same name but different content (direct conflicts).
+    3. Propagate transitive conflicts so schemas that reference conflicting schemas also conflict.
+    4. Group conflicting schemas by content so each group shares one path-prefixed name.
+    5. Update all $ref references.
+
+    Keep original names when there is no conflict.
+    """
+    definitions_by_path: Dict[str, Dict[str, spec.Schema]] = {}
+    definitions_by_name: Dict[str, List[Tuple[str, spec.Schema]]] = {}
+
+    # Step 1: Extract definitions by path.
+    for path, path_item in paths.items():
+        path_definitions = _pop_definitions(path_item)
+        definitions_by_path[path] = path_definitions
+        for schema_name, schema in path_definitions.items():
+            definitions_by_name.setdefault(schema_name, []).append((path, schema))
+
+    conflicting_names: Set[str] = set()
+    # Step 2: Detect direct conflicts where schemas share a name but differ in content.
+    for schema_name, entries in definitions_by_name.items():
+        first_schema = entries[0][1]
+        if not all(schema == first_schema for _, schema in entries[1:]):
+            conflicting_names.add(schema_name)
+
+    changed = True
+    # Step 3: Propagate transitive conflicts to schemas that reference conflicting schemas.
+    while changed:
+        changed = False
+        for schema_name, entries in definitions_by_name.items():
+            if schema_name in conflicting_names:
+                continue
+            if _collect_ref_names(entries[0][1]) & conflicting_names:
+                conflicting_names.add(schema_name)
+                changed = True
+
+    if not conflicting_names:
+        # Merge all definitions directly when there are no conflicts.
+        result: Dict[str, spec.Schema] = {}
+        for defs in definitions_by_path.values():
+            result.update(defs)
+        return result
+
+    rename_maps: Dict[str, Dict[str, str]] = {path: {} for path in paths}
+    final_schemas: Dict[str, spec.Schema] = {}
+    used_names = {
+        schema_name
+        for schema_name in definitions_by_name
+        if schema_name not in conflicting_names
+    }
+
+    conflict_groups: Dict[str, Dict[str, int]] = {}
+
+    # Compute the grouping key for a schema: compare both its content and the group of any conflicting schemas it references.
+    # This keeps schemas with the same content but references to different conflict groups in separate groups.
+    def _schema_group_key(
+        schema: Any, path: str, groups: Dict[str, Dict[str, int]]
+    ) -> Any:
+        if isinstance(schema, dict):
+            items: List[Tuple[str, Any] | Tuple[str, str, int]] = []
+            for key, value in sorted(schema.items()):
+                if (
+                    key == "$ref"
+                    and isinstance(value, str)
+                    and value.startswith(_REF_PREFIX)
+                ):
+                    ref_name = value[len(_REF_PREFIX) :]
+                    if ref_name in conflicting_names and path in groups.get(
+                        ref_name, {}
+                    ):
+                        items.append((key, ("$ref", ref_name, groups[ref_name][path])))
+                    else:
+                        items.append((key, ("$ref", ref_name)))
+                else:
+                    items.append((key, _schema_group_key(value, path, groups)))
+            return tuple(items)
+        if isinstance(schema, (list, tuple)):
+            return tuple(_schema_group_key(value, path, groups) for value in schema)
+        return schema
+
+    # Step 4: Group conflicting schemas by content and reference chain.
+    for schema_name in conflicting_names:
+        key_to_group: Dict[Any, int] = {}
+        for path, schema in definitions_by_name[schema_name]:
+            key = _schema_group_key(schema, path, {})
+            conflict_groups.setdefault(schema_name, {})[path] = key_to_group.setdefault(
+                key, len(key_to_group)
+            )
+
+    changed = True
+    # Iteratively refine groups until they stabilize.
+    while changed:
+        changed = False
+        next_groups: Dict[str, Dict[str, int]] = {}
+        for schema_name in conflicting_names:
+            key_to_group = {}
+            next_groups[schema_name] = {}
+            for path, schema in definitions_by_name[schema_name]:
+                key = _schema_group_key(schema, path, conflict_groups)
+                next_groups[schema_name][path] = key_to_group.setdefault(
+                    key, len(key_to_group)
+                )
+            if next_groups[schema_name] != conflict_groups[schema_name]:
+                changed = True
+        conflict_groups = next_groups
+
+    # Step 5: Assign path-prefixed names to conflicting schemas.
+    for schema_name, entries in definitions_by_name.items():
+        if schema_name not in conflicting_names:
+            final_schemas[schema_name] = entries[0][1]
+            continue
+
+        grouped_entries: List[Tuple[int, spec.Schema, List[str]]] = []
+        for path, schema in entries:
+            group_id = conflict_groups[schema_name][path]
+            for grouped_id, _, grouped_paths in grouped_entries:
+                if group_id == grouped_id:
+                    grouped_paths.append(path)
+                    break
+            else:
+                grouped_entries.append((group_id, schema, [path]))
+
+        for _, schema, grouped_paths in grouped_entries:
+            prefix = _path_to_prefix(grouped_paths[0])
+            resolved_name = f"{prefix}_{schema_name}"
+            if resolved_name in used_names:
+                suffix = 2
+                while f"{resolved_name}_{suffix}" in used_names:
+                    suffix += 1
+                resolved_name = f"{resolved_name}_{suffix}"
+            for path in grouped_paths:
+                rename_maps[path][schema_name] = resolved_name
+            final_schemas[resolved_name] = schema
+            used_names.add(resolved_name)
+
+    # Step 6: Update $ref values in paths and definitions.
+    for path, path_item in paths.items():
+        rename_map = rename_maps[path]
+        if not rename_map:
+            continue
+
+        _update_refs(path_item, rename_map)
+        for schema in definitions_by_path[path].values():
+            _update_refs(schema, rename_map)
+
+    return final_schemas

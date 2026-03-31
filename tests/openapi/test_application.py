@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 
 import httpx
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from typing_extensions import Annotated
 
 from kui.asgi import (
@@ -884,3 +884,115 @@ async def test_openapi_components_schemas():
                 },
             ],
         }, openapi_docs_text
+
+
+@pytest.mark.asyncio
+async def test_openapi_schema_name_conflict():
+    """当不同路径使用同名但不同定义的 model 时，schema 应被路径前缀消歧"""
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= Routes("/docs" // openapi.routes, namespace="docs")
+
+    item_a = create_model("Item", name=(str, ...))
+    item_b = create_model("Item", price=(int, ...))
+    response_a = create_model("Response", item=(item_a, ...))
+    response_b = create_model("Response", item=(item_b, ...))
+
+    @app.router.http.get("/a")
+    async def get_a() -> Annotated[Any, JSONResponse[200, {}, response_a]]:
+        pass
+
+    @app.router.http.get("/b")
+    async def get_b() -> Annotated[Any, JSONResponse[200, {}, response_b]]:
+        pass
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        response = await client.get("/docs/json")
+        openapi_docs = response.json()
+        schemas = openapi_docs["components"]["schemas"]
+
+        assert "Item" not in schemas
+        assert {"A_Item", "B_Item"} <= set(schemas)
+        assert schemas["A_Item"]["properties"] == {
+            "name": {"title": "Name", "type": "string"}
+        }
+        assert schemas["B_Item"]["properties"] == {
+            "price": {"title": "Price", "type": "integer"}
+        }
+
+        path_a_schema = openapi_docs["paths"]["/a"]["get"]["responses"]["200"][
+            "content"
+        ]["application/json"]["schema"]
+        path_b_schema = openapi_docs["paths"]["/b"]["get"]["responses"]["200"][
+            "content"
+        ]["application/json"]["schema"]
+
+        assert (
+            path_a_schema["properties"]["item"]["$ref"] == "#/components/schemas/A_Item"
+        )
+        assert (
+            path_b_schema["properties"]["item"]["$ref"] == "#/components/schemas/B_Item"
+        )
+
+
+@pytest.mark.asyncio
+async def test_openapi_transitive_schema_conflict():
+    """当内层同名 model 冲突时，外层引用它的 schema 也应被一并消歧"""
+    app = Kui()
+    openapi = OpenAPI()
+    app.router <<= Routes("/docs" // openapi.routes, namespace="docs")
+
+    profile_a = create_model("Profile", name=(str, ...))
+    profile_b = create_model("Profile", age=(int, ...))
+    user_a = create_model("User", profile=(profile_a, ...))
+    user_b = create_model("User", profile=(profile_b, ...))
+    envelope_a = create_model("Envelope", user=(user_a, ...))
+    envelope_b = create_model("Envelope", user=(user_b, ...))
+
+    @app.router.http.get("/a")
+    async def get_a() -> Annotated[Any, JSONResponse[200, {}, envelope_a]]:
+        pass
+
+    @app.router.http.get("/b")
+    async def get_b() -> Annotated[Any, JSONResponse[200, {}, envelope_b]]:
+        pass
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+    ) as client:
+        response = await client.get("/docs/json")
+        openapi_docs = response.json()
+        schemas = openapi_docs["components"]["schemas"]
+
+        assert "Profile" not in schemas
+        assert "User" not in schemas
+        assert {"A_Profile", "A_User", "B_Profile", "B_User"} <= set(schemas)
+
+        assert schemas["A_Profile"]["properties"] == {
+            "name": {"title": "Name", "type": "string"}
+        }
+        assert schemas["B_Profile"]["properties"] == {
+            "age": {"title": "Age", "type": "integer"}
+        }
+        assert schemas["A_User"]["properties"]["profile"]["$ref"] == (
+            "#/components/schemas/A_Profile"
+        )
+        assert schemas["B_User"]["properties"]["profile"]["$ref"] == (
+            "#/components/schemas/B_Profile"
+        )
+
+        path_a_schema = openapi_docs["paths"]["/a"]["get"]["responses"]["200"][
+            "content"
+        ]["application/json"]["schema"]
+        path_b_schema = openapi_docs["paths"]["/b"]["get"]["responses"]["200"][
+            "content"
+        ]["application/json"]["schema"]
+
+        assert (
+            path_a_schema["properties"]["user"]["$ref"] == "#/components/schemas/A_User"
+        )
+        assert (
+            path_b_schema["properties"]["user"]["$ref"] == "#/components/schemas/B_User"
+        )

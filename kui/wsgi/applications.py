@@ -70,7 +70,7 @@ class Kui:
         if cors_config is not None:
             http_middlewares.append(allow_cors(**cors_config))
 
-        self.router = Router(routes, http_middlewares, [])
+        self.router: Router[Callable[..., Any]] = Router(routes, http_middlewares, [])
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorHandlerType

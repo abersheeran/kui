@@ -9,6 +9,7 @@ def merge_openapi_info(
     operation_info: typing.Dict[str, typing.Any],
     more_info: typing.Dict[str, typing.Any],
 ) -> typing.Dict[str, typing.Any]:
+    # Merge strategy: append sequences, merge dicts recursively, and let later values override earlier ones.
     for key, value in more_info.items():
         if key in operation_info:
             if isinstance(operation_info[key], typing.Sequence):
@@ -28,7 +29,7 @@ def describe_extra_docs(
     """
     describe more openapi info in HTTP handler
 
-    https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.3.md#operationObject
+    https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#operationObject
     """
     if isinstance(handler, type):
         for method in getattr(handler, "__methods__"):

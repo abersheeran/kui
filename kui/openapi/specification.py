@@ -1,7 +1,7 @@
 """
-OpenAPI specification 3.0.3
+OpenAPI specification 3.1.0
 
-https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md
+https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md
 """
 
 from __future__ import annotations

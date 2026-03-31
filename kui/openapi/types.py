@@ -10,7 +10,7 @@ if IS_V1:
 
     class UploadFile(_UploadFile):  # type: ignore
         """
-        wrap baize UploadFile
+        Wrap baize's UploadFile so Pydantic can validate it correctly and generate JSON Schema.
         """
 
         @classmethod
@@ -44,7 +44,7 @@ else:
 
     class UploadFile(_UploadFile):  # type: ignore
         """
-        wrap baize UploadFile
+        Wrap baize's UploadFile so Pydantic can validate it correctly and generate JSON Schema.
         """
 
         @classmethod

@@ -8,12 +8,10 @@ from ...routing import BaseRoute, HttpRoute, Routes
 from ..typing import ViewType
 
 
-class MultimethodRoutes(Routes[ViewType], typing.Generic[ViewType]):
+class MultimethodRoutes(Routes[ViewType]):
     def __init__(
         self,
-        *iterable: typing.Union[
-            BaseRoute[ViewType], typing.Iterable[BaseRoute[ViewType]]
-        ],
+        *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
         base_class: type,
         namespace: str = "",
         tags: typing.Iterable[str] | None = None,
@@ -29,7 +27,7 @@ class MultimethodRoutes(Routes[ViewType], typing.Generic[ViewType]):
             socket_middlewares=socket_middlewares,
         )
 
-    def append(self: Self, route: BaseRoute[ViewType]) -> Self:
+    def append(self: Self, route: BaseRoute) -> Self:
         if hasattr(route.endpoint, "__methods__"):
             raise TypeError("MultimethodRoutes not allow use class-base view.")
 

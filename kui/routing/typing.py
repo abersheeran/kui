@@ -1,7 +1,7 @@
 import typing
 
 SyncView = typing.Callable[..., typing.Any]
-AsyncView = typing.Callable[..., typing.Awaitable[typing.Any]]
+AsyncView = typing.Callable[..., typing.Any]
 
 
 SyncViewType = typing.TypeVar("SyncViewType", bound=SyncView)

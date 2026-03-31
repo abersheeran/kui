@@ -16,10 +16,13 @@ theme:
   features:
     - content.action.edit
     - content.action.view
+    - content.code.copy
     - search.suggest
     - search.highlight
     - search.share
     - navigation.tabs
+    - navigation.top
+    - navigation.expand
 
 # Plugins
 plugins:
@@ -57,30 +60,32 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 # Page tree
 nav:
-  - Intro: index.md
-  - ASGI:
-      - Intro: asgi/index.md
-      - Application: asgi/application.md
-      - Routing: asgi/routing.md
-      - Http: asgi/http.md
-      - Lifespan: asgi/lifespan.md
-      - WebSocket: asgi/websocket.md
-  - WSGI:
-      - Intro: wsgi/index.md
-      - Application: wsgi/application.md
-      - Routing: wsgi/routing.md
-      - Http: wsgi/http.md
-  - Dependency injection:
-      - Intro: dependency-injection/index.md
-      - Request Parameters: dependency-injection/request.md
-      - Depends: dependency-injection/depends.md
-      - Security: dependency-injection/security.md
-      - OpenAPI Document: dependency-injection/openapi.md
+  - Home: index.md
+  - Basics:
+      - Routing: routing.md
+      - HTTP: http.md
+      - WebSocket: websocket.md
+  - Parameters & DI:
+      - Parameter Binding: parameters.md
+      - Dependency Injection: dependency-injection.md
+      - Security: security.md
+  - Features:
+      - Middleware: middleware.md
+      - OpenAPI Documentation: openapi.md
+      - Exception Handling: exceptions.md
+      - CORS: cors.md
+      - Lifespan: lifespan.md
+      - Background Tasks: background-tasks.md
+      - Templates: templates.md
+  - WSGI Mode: wsgi.md

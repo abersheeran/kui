@@ -10,6 +10,7 @@ from ..routing import Routes as _Routes
 from ..routing import SocketRoute as _SocketRoute
 from ..routing.extensions import MultimethodRoutes as _MultimethodRoutes
 from .parameters import auto_params
+from .views import required_method
 
 
 @dataclass
@@ -23,15 +24,18 @@ class SocketRoute(_SocketRoute[AsyncViewType]):
 
 
 class Routes(_Routes[AsyncViewType]):
-    pass
+    _http_route_class = HttpRoute
+    _required_method_factory = staticmethod(required_method)
 
 
 class MultimethodRoutes(_MultimethodRoutes[AsyncViewType]):
-    pass
+    _http_route_class = HttpRoute
+    _required_method_factory = staticmethod(required_method)
 
 
 class Router(_Router[AsyncViewType]):
-    pass
+    _http_route_class = HttpRoute
+    _required_method_factory = staticmethod(required_method)
 
 
 __all__ = [

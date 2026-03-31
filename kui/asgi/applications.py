@@ -4,10 +4,12 @@ import copy
 import dataclasses
 import functools
 import sys
+import warnings
 from pathlib import PurePath
 from types import AsyncGeneratorType
 from typing import (
     Any,
+    Awaitable,
     Callable,
     Iterable,
     List,
@@ -32,7 +34,7 @@ from ..utils import ImmutableAttribute, State
 from ..utils.contextvars import context_setter
 from .cors import allow_cors
 from .exceptions import ErrorHandlerType, ExceptionMiddleware, HTTPException
-from .lifespan import Lifespan, LifespanCallback
+from .lifespan import Lifespan, LifespanCallback, LifespanFunc
 from .requests import (
     HttpRequest,
     WebSocket,
@@ -67,6 +69,7 @@ class Kui:
         self,
         *,
         templates: Optional[BaseTemplates] = None,
+        lifespan: Optional[LifespanFunc] = None,
         on_startup: List[LifespanCallback] = [],
         on_shutdown: List[LifespanCallback] = [],
         routes: Iterable[BaseRoute] = [],
@@ -78,6 +81,17 @@ class Kui:
         response_converters: Mapping[type, Callable[..., HttpResponse]] = {},
         json_encoder: Mapping[type, Callable[[Any], Any]] = {},
     ) -> None:
+        legacy_lifespan_callbacks = bool(on_startup) or bool(on_shutdown)
+        if legacy_lifespan_callbacks:
+            warnings.warn(
+                "on_startup/on_shutdown are deprecated. "
+                "Pass an async generator function to Kui(lifespan=func).",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if lifespan is not None and legacy_lifespan_callbacks:
+            raise ValueError("Cannot use lifespan together with on_startup/on_shutdown")
+
         self.should_exit = False
 
         self.state = State()
@@ -85,7 +99,11 @@ class Kui:
         self.json_encoder = create_json_encoder(*json_encoder.items())
         self.factory_class = factory_class
         self.templates = templates
-        self.lifespan = Lifespan(copy.copy(on_startup), copy.copy(on_shutdown))
+        self.lifespan = Lifespan(
+            _lifespan=lifespan,
+            on_startup=copy.copy(on_startup),
+            on_shutdown=copy.copy(on_shutdown),
+        )
 
         http_middlewares = [*http_middlewares]
 
@@ -95,7 +113,9 @@ class Kui:
         if cors_config is not None:
             http_middlewares.append(allow_cors(**cors_config))
 
-        self.router = Router(routes, http_middlewares, socket_middlewares)
+        self.router: Router[Callable[..., Awaitable[Any]]] = Router(
+            routes, http_middlewares, socket_middlewares
+        )
 
     def add_exception_handler(
         self, exc_class_or_status_code: int | Type[Exception], handler: ErrorHandlerType
@@ -114,10 +134,22 @@ class Kui:
         return decorator
 
     def on_startup(self, func: LifespanCallbackTypeVar) -> LifespanCallbackTypeVar:
+        warnings.warn(
+            "Kui.on_startup() is deprecated. "
+            "Pass an async generator function to Kui(lifespan=func).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.lifespan.on_startup.append(func)
         return func
 
     def on_shutdown(self, func: LifespanCallbackTypeVar) -> LifespanCallbackTypeVar:
+        warnings.warn(
+            "Kui.on_shutdown() is deprecated. "
+            "Pass an async generator function to Kui(lifespan=func).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.lifespan.on_shutdown.append(func)
         return func
 

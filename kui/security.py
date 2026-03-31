@@ -1,4 +1,5 @@
 import base64
+import binascii
 from http import HTTPStatus
 from typing import Callable, Tuple, Type, Union
 
@@ -106,7 +107,13 @@ def basic_auth(
             401,
             headers={"WWW-Authenticate": "Basic"},
         )
-    username, password = base64.b64decode(token).decode("utf8").split(":")
+    try:
+        username, password = base64.b64decode(token).decode("utf8").split(":", 1)
+    except (binascii.Error, UnicodeDecodeError, ValueError):
+        raise HTTPException(
+            401,
+            headers={"WWW-Authenticate": "Basic"},
+        )
     return username, password
 
 

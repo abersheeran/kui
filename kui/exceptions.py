@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import json
 from typing import Any, Callable, Dict, Generic, List, Mapping, Type, TypeVar, Union
 
 from baize.exceptions import HTTPException
@@ -24,7 +25,7 @@ class RequestValidationError(Exception):
         return errors  # type: ignore
 
     def json(self, *, indent: Union[None, int] = 2) -> str:
-        return self.validation_error.json(indent=indent)
+        return json.dumps(self.errors(), indent=indent, default=str)
 
     @staticmethod
     def schema() -> Dict[str, Any]:

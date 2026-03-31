@@ -20,7 +20,7 @@ class BaseRoute(typing.Generic[ViewType]):
 
     _auto_params: typing.ClassVar
 
-    def extend_middlewares(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> None:
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         raise NotImplementedError
 
     def _extend_middlewares(
@@ -62,7 +62,7 @@ class BaseRoute(typing.Generic[ViewType]):
 
 
 @dataclass
-class HttpRoute(BaseRoute[ViewType], typing.Generic[ViewType]):
+class HttpRoute(BaseRoute[ViewType]):
     summary: typing.Optional[str] = None
     description: typing.Optional[str] = None
     tags: typing.Optional[typing.Iterable[str]] = None
@@ -85,11 +85,11 @@ class HttpRoute(BaseRoute[ViewType], typing.Generic[ViewType]):
         if self.tags:
             setattr(w, "__docs_tags__", list(self.tags))
 
-    def extend_middlewares(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> None:
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_http_middlewares", []))
 
 
 @dataclass
-class SocketRoute(BaseRoute[ViewType], typing.Generic[ViewType]):
-    def extend_middlewares(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> None:
+class SocketRoute(BaseRoute[ViewType]):
+    def extend_middlewares(self, routes: typing.Iterable[BaseRoute]) -> None:
         self._extend_middlewares(getattr(routes, "_socket_middlewares", []))

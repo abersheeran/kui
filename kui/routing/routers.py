@@ -8,13 +8,12 @@ from copy import deepcopy
 from functools import reduce
 
 from baize.routing import compile_path
-from baize.utils import cached_property
-from typing_extensions import Literal, Self, get_args, get_origin
+from typing_extensions import Literal, Self
 
-from ..utils import FF, F, safe_issubclass
+from ..utils import FF, F
 from .routes import BaseRoute, HttpRoute, SocketRoute
 from .tree import RadixTree, RouteType
-from .typing import AsyncViewType, MiddlewareType, SyncViewType, ViewType
+from .typing import MiddlewareType, ViewType
 
 
 class NoMatchFound(Exception):
@@ -43,34 +42,6 @@ class HttpRegister(typing.Generic[ViewType]):
     def __init__(self, routes: RouteRegisterMixin[ViewType]) -> None:
         self.__routes = routes
 
-    @cached_property
-    def _required_method(self) -> typing.Callable[[str], MiddlewareType]:
-        for origin_base in self.__orig_bases__:  # type: ignore
-            if safe_issubclass(get_origin(origin_base), HttpRegister):
-                generic_type = get_args(origin_base)[0]
-                if generic_type == AsyncViewType:
-                    from ..asgi.views import required_method
-                elif generic_type == SyncViewType:
-                    from ..wsgi.views import required_method
-                else:
-                    raise RuntimeError
-                return required_method  # type: ignore
-        raise RuntimeError(f"{self.__class__.__name__} must be used with ViewType")
-
-    @cached_property
-    def _http_route(self) -> typing.Type[HttpRoute[ViewType]]:
-        for origin_base in self.__orig_bases__:  # type: ignore
-            if safe_issubclass(get_origin(origin_base), HttpRegister):
-                generic_type = get_args(origin_base)[0]
-                if generic_type == AsyncViewType:
-                    from ..asgi.routing import HttpRoute  # type: ignore
-                elif generic_type == SyncViewType:
-                    from ..wsgi.routing import HttpRoute  # type: ignore
-                else:
-                    raise RuntimeError
-                return HttpRoute  # type: ignore
-        raise RuntimeError(f"{self.__class__.__name__} must be used with ViewType")
-
     def _register_with_method(
         self,
         method: str,
@@ -87,11 +58,11 @@ class HttpRegister(typing.Generic[ViewType]):
         """
 
         def register(endpoint: ViewType) -> ViewType:
-            route: HttpRoute[ViewType] = self._http_route(
+            route: HttpRoute[ViewType] = self.__routes._http_route_class(
                 path, endpoint, name, summary, description, tags
             )
             if method != "any":
-                route = route @ self._required_method(method.upper())
+                route = route @ self.__routes._required_method_factory(method.upper())
 
             reduce(operator.matmul, middlewares, route)
 
@@ -276,13 +247,16 @@ class HttpRegister(typing.Generic[ViewType]):
 
 
 class RouteRegisterMixin(abc.ABC, typing.Generic[ViewType]):
+    _required_method_factory: typing.ClassVar
+    _http_route_class: typing.ClassVar
+
     @abc.abstractmethod
-    def append(self: Self, route: BaseRoute[ViewType]) -> Self:
+    def append(self: Self, route: BaseRoute) -> Self:
         raise NotImplementedError
 
     def __lshift__(
         self: Self,
-        other: typing.Union[BaseRoute[ViewType], typing.Iterable[BaseRoute[ViewType]]],
+        other: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
     ) -> Self:
         """
         self << routes
@@ -302,15 +276,7 @@ class RouteRegisterMixin(abc.ABC, typing.Generic[ViewType]):
 
     @property
     def http(self) -> HttpRegister[ViewType]:
-        for origin_base in self.__orig_bases__:  # type: ignore
-            if safe_issubclass(get_origin(origin_base), RouteRegisterMixin):
-                view_type = get_args(origin_base)[0]
-
-                class _HttpRegister(HttpRegister[view_type]):  # type: ignore
-                    pass
-
-                return _HttpRegister(self)
-        raise RuntimeError
+        return HttpRegister(self)
 
     def websocket(
         self,
@@ -342,10 +308,10 @@ class RouteRegisterMixin(abc.ABC, typing.Generic[ViewType]):
 
 def _set_tags(tags: typing.Iterable[str] | None = None):
     def _set_tags_middleware(endpoint: ViewType) -> ViewType:
-        stupid_type_checker = endpoint
+        handler = endpoint
         w: typing.Any
-        if inspect.ismethod(stupid_type_checker):
-            w = stupid_type_checker.__func__
+        if inspect.ismethod(handler):
+            w = handler.__func__
         else:
             w = endpoint
         all_tags = list(getattr(w, "__docs_tags__", [])) + list(tags or [])
@@ -358,13 +324,10 @@ def _set_tags(tags: typing.Iterable[str] | None = None):
 class Routes(
     typing.Sequence[BaseRoute[ViewType]],
     RouteRegisterMixin[ViewType],
-    typing.Generic[ViewType],
 ):
     def __init__(
         self,
-        *iterable: typing.Union[
-            BaseRoute[ViewType], typing.Iterable[BaseRoute[ViewType]]
-        ],
+        *iterable: typing.Union[BaseRoute, typing.Iterable[BaseRoute]],
         namespace: str = "",
         tags: typing.Iterable[str] | None = None,
         http_middlewares: typing.Sequence[MiddlewareType] = [],
@@ -390,7 +353,7 @@ class Routes(
     def __len__(self) -> int:
         return len(self._list)
 
-    def append(self: Self, route: BaseRoute[ViewType]) -> Self:
+    def append(self: Self, route: BaseRoute) -> Self:
         self._list.append(route)
         return self
 
@@ -403,13 +366,13 @@ class Routes(
 
         return Prefix(other) // self
 
-    def __add__(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> Routes:
+    def __add__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
         self + routes
         """
         return Routes[ViewType]() << self << routes
 
-    def __radd__(self, routes: typing.Iterable[BaseRoute[ViewType]]) -> Routes:
+    def __radd__(self, routes: typing.Iterable[BaseRoute]) -> Routes:
         """
         routes + self
         """
@@ -480,10 +443,10 @@ class Prefix(str):
         return typing.cast(_RouteSequence, result)
 
 
-class Router(RouteRegisterMixin[ViewType], typing.Generic[ViewType]):
+class Router(RouteRegisterMixin[ViewType]):
     def __init__(
         self,
-        routes: typing.Iterable[BaseRoute[ViewType]],
+        routes: typing.Iterable[BaseRoute],
         http_middlewares: typing.Sequence[MiddlewareType] = [],
         socket_middlewares: typing.Sequence[MiddlewareType] = [],
     ) -> None:
@@ -496,7 +459,7 @@ class Router(RouteRegisterMixin[ViewType], typing.Generic[ViewType]):
         self._socket_middlewares = list(socket_middlewares)
         self.__lshift__(routes)
 
-    def append(self: Self, route: BaseRoute[ViewType]) -> Self:
+    def append(self: Self, route: BaseRoute) -> Self:
         if isinstance(route, HttpRoute):
             route._extend_middlewares(self._http_middlewares)
             radix_tree = self.http_tree

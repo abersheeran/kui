@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import typing
 from http import HTTPStatus
+from typing import Mapping
 
 from pydantic import BaseModel
 
@@ -28,17 +29,17 @@ class JSONResponseDocsMetaclass(abc.ABCMeta):
         cls,
         parameters: typing.Tuple[
             int,
-            typing.Dict[str, spec.Header | spec.Reference],
+            Mapping[str, typing.Any],
             typing.Type[BaseModel] | spec.Schema | typing.Any,
         ]
-        | typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
+        | typing.Tuple[int, Mapping[str, typing.Any]]
         | int,
     ) -> spec.Responses:
         """
         Use JSONResponse[status, headers, content] to describe response
         """
         status_code: int
-        headers: typing.Dict[str, spec.Header | spec.Reference]
+        headers: Mapping[str, typing.Any]
         content: typing.Type[BaseModel] | spec.Schema | typing.Any
 
         if isinstance(parameters, tuple):
@@ -89,8 +90,7 @@ class JSONResponseMixin(metaclass=JSONResponseDocsMetaclass):
 class FileResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[str, typing.Dict[str, spec.Header | spec.Reference]]
-        | str,
+        parameters: typing.Tuple[str, Mapping[str, typing.Any]] | str,
     ) -> spec.Responses:
         """
         Use FileResponse[content_type, headers] to describe response
@@ -101,22 +101,25 @@ class FileResponseDocsMetaclass(abc.ABCMeta):
             content_type, headers = parameters, {}
         assert isinstance(content_type, str)
 
-        return {
-            "200": {
-                "description": HTTPStatus.OK.description,
-                "content": {
-                    content_type: {"schema": {"type": "string", "format": "binary"}}
+        return typing.cast(
+            spec.Responses,
+            {
+                "200": {
+                    "description": HTTPStatus.OK.description,
+                    "content": {
+                        content_type: {"schema": {"type": "string", "format": "binary"}}
+                    },
+                    "headers": headers,
                 },
-                "headers": headers,
-            },
-            "206": {
-                "description": HTTPStatus.PARTIAL_CONTENT.description,
-                "content": {
-                    content_type: {"schema": {"type": "string", "format": "binary"}}
+                "206": {
+                    "description": HTTPStatus.PARTIAL_CONTENT.description,
+                    "content": {
+                        content_type: {"schema": {"type": "string", "format": "binary"}}
+                    },
+                    "headers": headers,
                 },
-                "headers": headers,
             },
-        }
+        )
 
 
 class FileResponseMixin(metaclass=FileResponseDocsMetaclass):
@@ -128,8 +131,7 @@ class FileResponseMixin(metaclass=FileResponseDocsMetaclass):
 class PlainTextResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
-        | int,
+        parameters: typing.Tuple[int, Mapping[str, typing.Any]] | int,
     ) -> spec.Responses:
         """
         Use PlainTextResponse[status, headers] to describe response
@@ -140,13 +142,16 @@ class PlainTextResponseDocsMetaclass(abc.ABCMeta):
             status_code, headers = parameters, {}
         assert isinstance(status_code, int)
 
-        return {
-            str(status_code): {
-                "description": HTTPStatus(status_code).description,
-                "content": {"text/plain": {"schema": {"type": "string"}}},
-                "headers": headers,
-            }
-        }
+        return typing.cast(
+            spec.Responses,
+            {
+                str(status_code): {
+                    "description": HTTPStatus(status_code).description,
+                    "content": {"text/plain": {"schema": {"type": "string"}}},
+                    "headers": headers,
+                }
+            },
+        )
 
 
 class PlainTextResponseMixin(metaclass=PlainTextResponseDocsMetaclass):
@@ -158,8 +163,7 @@ class PlainTextResponseMixin(metaclass=PlainTextResponseDocsMetaclass):
 class HTMLResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
-        | int,
+        parameters: typing.Tuple[int, Mapping[str, typing.Any]] | int,
     ) -> spec.Responses:
         """
         Use HTMLResponse[status, headers] to describe response
@@ -170,13 +174,16 @@ class HTMLResponseDocsMetaclass(abc.ABCMeta):
             status_code, headers = parameters, {}
         assert isinstance(status_code, int)
 
-        return {
-            str(status_code): {
-                "description": HTTPStatus(status_code).description,
-                "content": {"text/html": {"schema": {"type": "string"}}},
-                "headers": headers,
-            }
-        }
+        return typing.cast(
+            spec.Responses,
+            {
+                str(status_code): {
+                    "description": HTTPStatus(status_code).description,
+                    "content": {"text/html": {"schema": {"type": "string"}}},
+                    "headers": headers,
+                }
+            },
+        )
 
 
 class HTMLResponseMixin(metaclass=HTMLResponseDocsMetaclass):
@@ -188,8 +195,7 @@ class HTMLResponseMixin(metaclass=HTMLResponseDocsMetaclass):
 class RedirectResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
-        | int,
+        parameters: typing.Tuple[int, Mapping[str, typing.Any]] | int,
     ) -> spec.Responses:
         """
         Use RedirectResponse[status, headers] to describe response
@@ -200,15 +206,18 @@ class RedirectResponseDocsMetaclass(abc.ABCMeta):
             status_code, headers = parameters, {}
         assert isinstance(status_code, int)
 
-        return {
-            str(status_code): {
-                "description": HTTPStatus(status_code).description,
-                "headers": {
-                    "Location": {"schema": {"type": "string"}},
-                    **headers,
-                },
-            }
-        }
+        return typing.cast(
+            spec.Responses,
+            {
+                str(status_code): {
+                    "description": HTTPStatus(status_code).description,
+                    "headers": {
+                        "Location": {"schema": {"type": "string"}},
+                        **headers,
+                    },
+                }
+            },
+        )
 
 
 class RedirectResponseMixin(metaclass=RedirectResponseDocsMetaclass):
@@ -220,8 +229,7 @@ class RedirectResponseMixin(metaclass=RedirectResponseDocsMetaclass):
 class SendEventResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
-        | int,
+        parameters: typing.Tuple[int, Mapping[str, typing.Any]] | int,
     ) -> spec.Responses:
         """
         Use SendEventResponse[status, headers] to describe response
@@ -234,13 +242,16 @@ class SendEventResponseDocsMetaclass(abc.ABCMeta):
 
         # TODO: Follow the spec
         # https://github.com/OAI/OpenAPI-Specification/issues/396
-        return {
-            str(status_code): {
-                "description": HTTPStatus(status_code).description,
-                "content": {"text/event-stream": {"schema": {"type": "string"}}},
-                "headers": headers,
-            }
-        }
+        return typing.cast(
+            spec.Responses,
+            {
+                str(status_code): {
+                    "description": HTTPStatus(status_code).description,
+                    "content": {"text/event-stream": {"schema": {"type": "string"}}},
+                    "headers": headers,
+                }
+            },
+        )
 
 
 class SendEventResponseMixin(metaclass=SendEventResponseDocsMetaclass):
@@ -252,8 +263,7 @@ class SendEventResponseMixin(metaclass=SendEventResponseDocsMetaclass):
 class StreamResponseDocsMetaclass(abc.ABCMeta):
     def __getitem__(
         cls,
-        parameters: typing.Tuple[int, typing.Dict[str, spec.Header | spec.Reference]]
-        | int,
+        parameters: typing.Tuple[int, Mapping[str, typing.Any]] | int,
     ) -> spec.Responses:
         """
         Use StreamResponse[status, headers] to describe response
@@ -266,18 +276,21 @@ class StreamResponseDocsMetaclass(abc.ABCMeta):
 
         # TODO: Follow the spec
         # https://github.com/OAI/OpenAPI-Specification/issues/1576
-        return {
-            str(status_code): {
-                "description": HTTPStatus(status_code).description,
-                "headers": {
-                    "Transfer-Encoding": {
-                        "schema": {"type": "string"},
-                        "description": "chunked",
+        return typing.cast(
+            spec.Responses,
+            {
+                str(status_code): {
+                    "description": HTTPStatus(status_code).description,
+                    "headers": {
+                        "Transfer-Encoding": {
+                            "schema": {"type": "string"},
+                            "description": "chunked",
+                        },
+                        **headers,
                     },
-                    **headers,
-                },
-            }
-        }
+                }
+            },
+        )
 
 
 class StreamResponseMixin(metaclass=StreamResponseDocsMetaclass):
