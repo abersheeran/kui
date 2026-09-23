@@ -1,6 +1,6 @@
 # Routing
 
-Kuí uses a **Radix Tree** (compressed prefix tree) for fast route matching.
+Kuí first matches static routes by exact path lookup in a **hash table**, then matches dynamic routes with path parameters using a **Radix Tree** (compressed prefix tree).
 
 ## Route Registration
 
@@ -100,7 +100,7 @@ Path parameters are declared with `{name}` or `{name:type}` syntax:
 | `any` | `{name:any}` | Anything including `/` | `/files/path/to/file.txt` |
 
 !!! note
-    `{name:any}` must be at the end of the path. Static routes take precedence over dynamic routes (e.g., `/users/me` matches before `/users/{id}`).
+    `{name:any}` must be at the end of the path. The hash-table lookup happens before the radix-tree search, so static routes take precedence over dynamic routes (e.g., `/users/me` matches before `/users/{id}`).
 
 ```python
 @app.router.http.get("/users/{user_id:int}")

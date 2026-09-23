@@ -65,6 +65,7 @@ def test_tree_fail_search(tree: RadixTree, path):
         "/sayhi/{name:int}/suffix",
         "/sayhi/{hi}/suffix",
         "/hello/{time:int}",
+        "",
         "a",
         "/static/{filename}.py",
     ],
@@ -75,21 +76,52 @@ def test_tree_fail_add(tree, path):
 
 
 def test_tree_iterator(tree: RadixTree):
-    for _0, _1 in zip(
-        tree.iterator(),
-        [
-            ("/hello", ...),
-            ("/hello/{time}", ...),
-            ("/hello/world", ...),
-            ("/sayhi/{name}", ...),
-            ("/sayhi/{name}/suffix", ...),
-            ("/sayhi/{name}/avatar.{suffix}", ...),
-            ("/path/{filepath}", ...),
-            ("/decimal/{number}", ...),
-            ("/uuid/{id}", ...),
-        ],
-    ):
-        assert _0 == _1
+    assert list(tree.iterator()) == [
+        ("/hello", ...),
+        ("/hello/world", ...),
+        ("/hello/{time}", ...),
+        ("/sayhi/{name}", ...),
+        ("/sayhi/{name}/suffix", ...),
+        ("/sayhi/{name}/avatar.{suffix}", ...),
+        ("/path/{filepath}", ...),
+        ("/decimal/{number}", ...),
+        ("/uuid/{id}", ...),
+    ]
+
+
+@pytest.mark.parametrize("static_path", ["/", "/users/me"])
+@pytest.mark.parametrize("static_first", [False, True])
+def test_static_route_stored_only_in_dict(static_path, static_first):
+    tree: RadixTree[str] = RadixTree()
+    dynamic_tree: RadixTree[str] = RadixTree()
+    dynamic_tree.append("/{path:any}", "dynamic")
+
+    if static_first:
+        tree.append(static_path, "static")
+    tree.append("/{path:any}", "dynamic")
+    if not static_first:
+        tree.append(static_path, "static")
+
+    static_route = (static_path, {}, "static")
+    assert tree.static_routes == {static_path: static_route}
+    assert tree.root == dynamic_tree.root
+    assert tree.search(static_path) == (static_route, {})
+    assert tree.search("/other") == dynamic_tree.search("/other")
+    assert list(tree.iterator()) == [
+        (static_path, "static"),
+        ("/{path}", "dynamic"),
+    ]
+
+
+@pytest.mark.parametrize("path", ["/", "/users/me"])
+def test_duplicate_static_route_raises_conflict(path):
+    tree: RadixTree[str] = RadixTree()
+    tree.append(path, "original")
+
+    with pytest.raises(ValueError, match=f"^Routing conflict: {path}$"):
+        tree.append(path, "duplicate")
+
+    assert tree.search(path) == ((path, {}, "original"), {})
 
 
 def test_static_preferred_over_dynamic_dynamic_first():

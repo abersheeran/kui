@@ -110,11 +110,18 @@ def append(
 class RadixTree(Generic[T]):
     def __init__(self) -> None:
         self.root = TreeNode[T]("/")
+        self.static_routes: Dict[str, RouteType[T]] = {}
 
     def append(self, path: str, endpoint: T) -> None:
-        if path[0] != "/":
+        if not path.startswith("/"):
             raise ValueError('path must start with "/"')
         path_format, param_convertors = compile_path(path)
+        if not param_convertors:
+            if path_format in self.static_routes:
+                raise ValueError(f"Routing conflict: {path}")
+            self.static_routes[path_format] = (path_format, param_convertors, endpoint)
+            return
+
         point = append(self.root, path_format[1:], param_convertors)
 
         if point.route is not None:
@@ -125,6 +132,10 @@ class RadixTree(Generic[T]):
     def search(
         self, path: str
     ) -> Tuple[RouteType[T], Dict[str, Any]] | Tuple[None, None]:
+        route = self.static_routes.get(path)
+        if route is not None:
+            return route, {}
+
         stack: List[Tuple[str, TreeNode[T]]] = [(path, self.root)]
         params: Dict[str, Any] = {}
 
@@ -159,6 +170,9 @@ class RadixTree(Generic[T]):
         return None, None
 
     def iterator(self) -> Iterator[Tuple[str, T]]:
+        for path_format, _, endpoint in self.static_routes.values():
+            yield path_format, endpoint
+
         stack: List[TreeNode] = [self.root]
 
         while stack:

@@ -4,7 +4,7 @@ Kuí is a lightweight Python web framework built on [baize](https://baize.aber.s
 
 ## Features
 
-- **Radix Tree Routing** — Fast path matching with typed parameters (`{id:int}`, `{slug:uuid}`, etc.)
+- **Radix Tree Routing** — Hash-table matching for static routes and radix-tree matching for dynamic routes, with typed parameters (`{id:int}`, `{slug:uuid}`, etc.)
 - **Type-Safe Parameter Binding** — Extract and validate request parameters via `Annotated` and Pydantic
 - **Dependency Injection** — Function-level DI with caching, cleanup, and nested resolution
 - **OpenAPI Auto-Generation** — Swagger, ReDoc, and RapiDoc UIs from your code

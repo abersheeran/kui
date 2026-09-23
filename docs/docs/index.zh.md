@@ -4,7 +4,7 @@ Kuí 是一个轻量级 Python Web 框架，基于 [baize](https://baize.aber.sh
 
 ## 特性
 
-- **基数树路由** — 快速路径匹配，支持类型化参数（`{id:int}`、`{slug:uuid}` 等）
+- **基数树路由** — 静态路由通过哈希表匹配，动态路由通过基数树匹配，支持类型化参数（`{id:int}`、`{slug:uuid}` 等）
 - **类型安全的参数绑定** — 通过 `Annotated` 和 Pydantic 提取并验证请求参数
 - **依赖注入** — 函数级别的依赖注入，支持缓存、清理和嵌套解析
 - **OpenAPI 自动生成** — 从代码自动生成 Swagger、ReDoc 和 RapiDoc 文档界面
