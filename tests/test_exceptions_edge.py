@@ -1,7 +1,8 @@
 import json
 from typing import Callable
 
-from pydantic import BaseModel, ValidationError
+import pytest
+from pydantic import BaseModel, Field, ValidationError
 
 from kui.exceptions import (
     ExceptionMiddlewareBase,
@@ -82,3 +83,38 @@ def test_request_validation_error_errors_include_in_field():
     errors = request_validation_error.errors()
 
     assert errors[0]["in"] == "body"
+
+
+def test_request_validation_error_schema_matches_context_and_collection_indices():
+    class ConstrainedPayload(BaseModel):
+        count: int = Field(gt=0)
+        values: list[int]
+
+    with pytest.raises(ValidationError) as exc_info:
+        ConstrainedPayload(count=0, values=["bad"])  # type: ignore
+
+    error = RequestValidationError(exc_info.value, "body")
+    errors = error.errors()
+    assert isinstance(errors[0]["ctx"], dict)
+    assert errors[0]["ctx"]
+    assert errors[0]["loc"] == ("count",)
+    assert errors[1]["loc"] == ("values", 0)
+    assert all(item["in"] == "body" for item in errors)
+
+    emitted = json.loads(error.json())
+    assert emitted[0]["ctx"] == errors[0]["ctx"]
+    assert emitted[0]["loc"] == ["count"]
+    assert emitted[1]["loc"] == ["values", 0]
+    assert all(item["in"] == "body" for item in emitted)
+
+    assert error.schema()["items"]["required"] == ["loc", "type", "msg", "in"]
+    properties = error.schema()["items"]["properties"]
+    assert properties["loc"]["items"] == {
+        "anyOf": [{"type": "string"}, {"type": "integer"}]
+    }
+    assert properties["ctx"] == {
+        "title": "Context",
+        "description": "error context",
+        "type": "object",
+        "additionalProperties": True,
+    }
