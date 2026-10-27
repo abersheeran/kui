@@ -201,7 +201,12 @@ async def test_openapi_page():
                                                         "title": "Location",
                                                         "description": "error field",
                                                         "type": "array",
-                                                        "items": {"type": "string"},
+                                                        "items": {
+                                                            "anyOf": [
+                                                                {"type": "string"},
+                                                                {"type": "integer"},
+                                                            ]
+                                                        },
                                                     },
                                                     "type": {
                                                         "title": "Type",
@@ -216,7 +221,8 @@ async def test_openapi_page():
                                                     "ctx": {
                                                         "title": "Context",
                                                         "description": "error context",
-                                                        "type": "string",
+                                                        "type": "object",
+                                                        "additionalProperties": True,
                                                     },
                                                     "in": {
                                                         "title": "In",
@@ -230,7 +236,12 @@ async def test_openapi_page():
                                                         ],
                                                     },
                                                 },
-                                                "required": ["loc", "type", "msg"],
+                                                "required": [
+                                                    "loc",
+                                                    "type",
+                                                    "msg",
+                                                    "in",
+                                                ],
                                             },
                                         }
                                     }
@@ -278,7 +289,12 @@ async def test_openapi_page():
                                                         "title": "Location",
                                                         "description": "error field",
                                                         "type": "array",
-                                                        "items": {"type": "string"},
+                                                        "items": {
+                                                            "anyOf": [
+                                                                {"type": "string"},
+                                                                {"type": "integer"},
+                                                            ]
+                                                        },
                                                     },
                                                     "type": {
                                                         "title": "Type",
@@ -293,7 +309,8 @@ async def test_openapi_page():
                                                     "ctx": {
                                                         "title": "Context",
                                                         "description": "error context",
-                                                        "type": "string",
+                                                        "type": "object",
+                                                        "additionalProperties": True,
                                                     },
                                                     "in": {
                                                         "title": "In",
@@ -307,7 +324,12 @@ async def test_openapi_page():
                                                         ],
                                                     },
                                                 },
-                                                "required": ["loc", "type", "msg"],
+                                                "required": [
+                                                    "loc",
+                                                    "type",
+                                                    "msg",
+                                                    "in",
+                                                ],
                                             },
                                         }
                                     }
@@ -364,7 +386,12 @@ async def test_openapi_page():
                                                         "title": "Location",
                                                         "description": "error field",
                                                         "type": "array",
-                                                        "items": {"type": "string"},
+                                                        "items": {
+                                                            "anyOf": [
+                                                                {"type": "string"},
+                                                                {"type": "integer"},
+                                                            ]
+                                                        },
                                                     },
                                                     "type": {
                                                         "title": "Type",
@@ -379,7 +406,8 @@ async def test_openapi_page():
                                                     "ctx": {
                                                         "title": "Context",
                                                         "description": "error context",
-                                                        "type": "string",
+                                                        "type": "object",
+                                                        "additionalProperties": True,
                                                     },
                                                     "in": {
                                                         "title": "In",
@@ -393,7 +421,12 @@ async def test_openapi_page():
                                                         ],
                                                     },
                                                 },
-                                                "required": ["loc", "type", "msg"],
+                                                "required": [
+                                                    "loc",
+                                                    "type",
+                                                    "msg",
+                                                    "in",
+                                                ],
                                             },
                                         }
                                     }
@@ -435,7 +468,12 @@ async def test_openapi_page():
                                                         "title": "Location",
                                                         "description": "error field",
                                                         "type": "array",
-                                                        "items": {"type": "string"},
+                                                        "items": {
+                                                            "anyOf": [
+                                                                {"type": "string"},
+                                                                {"type": "integer"},
+                                                            ]
+                                                        },
                                                     },
                                                     "type": {
                                                         "title": "Type",
@@ -450,7 +488,8 @@ async def test_openapi_page():
                                                     "ctx": {
                                                         "title": "Context",
                                                         "description": "error context",
-                                                        "type": "string",
+                                                        "type": "object",
+                                                        "additionalProperties": True,
                                                     },
                                                     "in": {
                                                         "title": "In",
@@ -464,7 +503,12 @@ async def test_openapi_page():
                                                         ],
                                                     },
                                                 },
-                                                "required": ["loc", "type", "msg"],
+                                                "required": [
+                                                    "loc",
+                                                    "type",
+                                                    "msg",
+                                                    "in",
+                                                ],
                                             },
                                         }
                                     }
@@ -716,7 +760,12 @@ def test_openapi_depend_response():
                                                 "title": "Location",
                                                 "description": "error field",
                                                 "type": "array",
-                                                "items": {"type": "string"},
+                                                "items": {
+                                                    "anyOf": [
+                                                        {"type": "string"},
+                                                        {"type": "integer"},
+                                                    ]
+                                                },
                                             },
                                             "type": {
                                                 "title": "Type",
@@ -731,7 +780,8 @@ def test_openapi_depend_response():
                                             "ctx": {
                                                 "title": "Context",
                                                 "description": "error context",
-                                                "type": "string",
+                                                "type": "object",
+                                                "additionalProperties": True,
                                             },
                                             "in": {
                                                 "title": "In",
@@ -745,7 +795,7 @@ def test_openapi_depend_response():
                                                 ],
                                             },
                                         },
-                                        "required": ["loc", "type", "msg"],
+                                        "required": ["loc", "type", "msg", "in"],
                                     },
                                 }
                             }

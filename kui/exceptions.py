@@ -38,7 +38,7 @@ class RequestValidationError(Exception):
                         "title": "Location",
                         "description": "error field",
                         "type": "array",
-                        "items": {"type": "string"},
+                        "items": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
                     },
                     "type": {
                         "title": "Type",
@@ -53,7 +53,8 @@ class RequestValidationError(Exception):
                     "ctx": {
                         "title": "Context",
                         "description": "error context",
-                        "type": "string",
+                        "type": "object",
+                        "additionalProperties": True,
                     },
                     "in": {
                         "title": "In",
@@ -61,7 +62,7 @@ class RequestValidationError(Exception):
                         "enum": ["path", "query", "header", "cookie", "body"],
                     },
                 },
-                "required": ["loc", "type", "msg"],
+                "required": ["loc", "type", "msg", "in"],
             },
         }
 
